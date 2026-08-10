@@ -90,6 +90,25 @@ final class PulseAppModelTests: XCTestCase {
         XCTAssertFalse(context.scheduler.snapshots.last?.enabled ?? true)
     }
 
+    func testExternallyRevokedPermissionFailsClosedInsteadOfLeavingToggleEnabled() async throws {
+        let context = try makeContext(notificationPermission: .authorized)
+        await context.model.start()
+        context.model.requestReminderEnabled(true)
+        await waitUntil {
+            context.model.reminderSyncState == .synced
+                && context.model.settings.reminderEnabled
+        }
+
+        context.scheduler.permission = .denied
+        await context.model.handleSceneActivation()
+
+        XCTAssertFalse(context.model.settings.reminderEnabled)
+        XCTAssertFalse(context.model.displayedReminderEnabled)
+        XCTAssertEqual(context.model.notificationPermission, .denied)
+        XCTAssertEqual(context.model.reminderSyncState, .failed)
+        XCTAssertNotNil(context.model.errorMessage)
+    }
+
     func testPendingResetJournalIsRecoveredOnStart() async throws {
         let context = try makeContext()
         await context.model.start()

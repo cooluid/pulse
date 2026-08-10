@@ -115,6 +115,30 @@ final class PulseFlowUITests: XCTestCase {
         XCTAssertTrue(app.staticTexts["today.day.number"].exists)
     }
 
+    func testMissedDayUsesExplicitCalendarSemantics() throws {
+        configureApp()
+        app.launch()
+        XCTAssertTrue(app.buttons["today.checkin.button"].waitForExistence(timeout: 5))
+
+        app.terminate()
+        app.launchEnvironment.removeValue(forKey: "PULSE_UI_TEST_RESET")
+        app.launchEnvironment["PULSE_UI_TEST_NOW"] = "2026-08-11T04:00:00Z"
+        app.launch()
+
+        let historyNavigation = app.buttons["primary.navigation.history"]
+        XCTAssertTrue(historyNavigation.waitForExistence(timeout: 5))
+        historyNavigation.tap()
+
+        let missedDay = app.descendants(matching: .any)["calendar.day.2026-08-10"]
+        XCTAssertTrue(missedDay.waitForExistence(timeout: 3))
+        XCTAssertTrue(missedDay.label.contains("漏签"))
+
+        let attachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
+        attachment.name = "History with explicit missed-day mark"
+        attachment.lifetime = .keepAlways
+        add(attachment)
+    }
+
     private func assertRemovedTodayCopyIsAbsent() {
         XCTAssertFalse(app.staticTexts["给今天留下一枚印记"].exists)
         XCTAssertFalse(app.staticTexts["今天已留下一枚印记"].exists)

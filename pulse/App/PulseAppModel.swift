@@ -107,18 +107,19 @@ final class PulseAppModel {
 
     func start() async {
         loadState = .loading
+#if DEBUG
+        if !hasAppliedUITestReset,
+           ProcessInfo.processInfo.environment["PULSE_UI_TEST_RESET"] == "1" {
+            hasAppliedUITestReset = true
+            loadState = await resetAllData() ? .ready : .failed
+            return
+        }
+#endif
         if settings.isResetPending {
             loadState = await resetAllData() ? .ready : .failed
         } else {
             await reload(reconcileReminders: true)
         }
-#if DEBUG
-        if !hasAppliedUITestReset,
-           ProcessInfo.processInfo.environment["PULSE_UI_TEST_RESET"] == "1" {
-            hasAppliedUITestReset = true
-            _ = await resetAllData()
-        }
-#endif
     }
 
     func handleSceneActivation() async {
@@ -477,10 +478,15 @@ final class PulseAppModel {
                 self.reminderSyncState = .synced
             } catch {
                 guard revision == self.reminderReconcileRevision else { return }
-                self.reminderSyncState = .failed
                 if snapshot.enabled {
+                    let permission = await self.reminderScheduler.permissionState()
+                    guard revision == self.reminderReconcileRevision else { return }
+                    self.settings.setReminderEnabled(false)
+                    self.reminderEnabledIntent = nil
+                    self.notificationPermission = permission
                     self.present(error)
                 }
+                self.reminderSyncState = .failed
             }
         }
         reminderReconcileTask = task

@@ -227,6 +227,16 @@ private struct CalendarDayCell: View {
                         .font(.caption2.bold())
                 }
                 .foregroundStyle(PulseDesign.grassForeground)
+            } else if item.status == .missed {
+                VStack(spacing: 0) {
+                    Text(item.day.day, format: .number)
+                        .font(.caption)
+                        .monospacedDigit()
+                    Image(systemName: "minus")
+                        .font(.caption2.bold())
+                        .accessibilityHidden(true)
+                }
+                .foregroundStyle(PulseDesign.secondary)
             } else {
                 Text(item.day.day, format: .number)
                     .font(isToday ? .caption.bold() : .caption)
