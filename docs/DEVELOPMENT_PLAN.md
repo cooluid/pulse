@@ -30,7 +30,7 @@
 - `FND-002` 创建 `pulseTests` 单元测试 target。
 - `FND-003` 创建 `pulseUITests` UI 测试 target。
 - `FND-004` 建立 SwiftData schema 和内存测试容器。
-- `FND-005` 建立 `AppEnvironment`，注入 Clock、Repository 和设置存储。
+- `FND-005` 通过 `PulseBootstrap` 和 `PulseAppModel` 注入 Clock、Repository、提醒、触觉和设置服务。
 - `FND-006` 配置 Debug / Release 构建检查。
 - `FND-007` 确认 iPhone 与 iPad 是否都作为正式验收平台。
 
@@ -67,7 +67,7 @@
 
 ### 任务
 
-- `TOD-001` 实现 TodayViewModel 状态机。
+- `TOD-001` 实现 `PulseAppModel` 的今日状态机。
 - `TOD-002` 实现今日日期和签到主按钮。
 - `TOD-003` 实现保存中、成功和失败状态。
 - `TOD-004` 实现最近 7 天概览。
@@ -187,4 +187,3 @@
 - 影响日期、唯一性或统计的变更，必须先修改业务规则和测试。
 - 不在迭代中途加入账号、CloudKit 或多项目；它们会改变数据所有权和冲突模型。
 - 任何任务只有在实现、自动化测试和相应手工验证都完成时才可关闭。
-

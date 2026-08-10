@@ -7,16 +7,16 @@
 
 仓库当前状态：
 
-- SwiftUI App，入口为 `pulseApp`。
-- 单一 `pulse` target。
-- 无单元测试 target。
-- 无 UI 测试 target。
+- SwiftUI App，入口为 `PulseApp`。
+- App target：`pulse`。
+- 单元测试 target：`pulseTests`。
+- UI 测试 target：`pulseUITests`。
 - 支持 iPhone 和 iPad。
 - Bundle Identifier 为 `cool.pulse`。
 - Swift Language Version 为 5。
-- 当前 Deployment Target 为 iOS / iPadOS 26.4。
+- Deployment Target 已统一为 iOS / iPadOS 17.0。
 
-开发前应先建立测试 target。若目标是对外发布，建议在使用新系统专属 API 前先决定是否将最低版本调整为 iOS / iPadOS 17.0；SwiftData 的基础能力可以覆盖这个基线。
+工程使用共享 scheme，Debug、Release、单元测试和 UI 测试不依赖个人 `xcuserdata`。
 
 ## 2. 技术目标
 
@@ -25,15 +25,15 @@
 - 同一天重复签到在 UI 和数据层均安全。
 - 页面只消费可观察状态，不自行拼接日期和统计规则。
 - 初期结构足够小，不引入不必要的第三方架构框架。
-- 为多项目、提醒、导出和 CloudKit 留出清晰边界，但不提前实现。
+- 提醒和导入/导出已经通过正式服务边界实现；CloudKit 在冲突模型确定前不启用。
 
 ## 3. 推荐技术栈
 
 - UI：SwiftUI。
 - 持久化：SwiftData。
 - 并发：Swift Concurrency；持有 `ModelContext` 的写入服务限定在 `@MainActor`。
-- 通知：UserNotifications，P1 启用。
-- 测试：XCTest；如项目团队确定采用 Swift Testing，可在建测试 target 时统一切换，不能两套体系混用。
+- 通知：UserNotifications，使用 30 天滚动一次性请求。
+- 测试：统一使用 XCTest，不并存第二套测试框架。
 - 依赖：MVP 不引入第三方库。
 
 ## 4. 模块边界
@@ -44,54 +44,44 @@
 pulse/
   App/
     PulseApp.swift
-    AppEnvironment.swift
-    AppRouter.swift
+    RootView.swift
+    PulseAppModel.swift
   Domain/
-    Models/
-      Habit.swift
-      CheckInRecord.swift
-      LogicalDay.swift
-    Policies/
-      LogicalDayCalculator.swift
-      StreakCalculator.swift
-      CheckInStatistics.swift
-    Protocols/
-      Clock.swift
-      CheckInRepository.swift
+    Habit.swift
+    CheckInRecord.swift
+    LogicalDay.swift
+    CheckInStatistics.swift
+    PulseClock.swift
+    PulseError.swift
   Data/
-    Persistence/
-      PersistenceController.swift
-      SwiftDataCheckInRepository.swift
-    Notifications/
-      ReminderScheduler.swift
-    Settings/
-      AppSettingsStore.swift
+    PersistenceController.swift
+    CheckInRepository.swift
+    AppSettings.swift
+    PulseExportDocument.swift
+  Services/
+    ReminderScheduler.swift
+    HapticFeedback.swift
   Features/
     Today/
       TodayView.swift
-      TodayViewModel.swift
     History/
       HistoryView.swift
-      HistoryViewModel.swift
-      CalendarMonthGrid.swift
     Settings/
       SettingsView.swift
-      SettingsViewModel.swift
   Shared/
-    Components/
-    Formatting/
+    PulseDesignSystem.swift
+    PulseFormatting.swift
 
 pulseTests/
-  Domain/
-  Data/
-  Features/
+  LogicalDayTests.swift
+  CheckInStatisticsTests.swift
+  CheckInRepositoryTests.swift
+  PulseExportDocumentTests.swift
+  PulseAppModelTests.swift
 
 pulseUITests/
-  TodayFlowUITests.swift
-  HistoryFlowUITests.swift
+  PulseFlowUITests.swift
 ```
-
-实际创建文件时可以按开发阶段逐步加入，不要求先建立空目录。
 
 ## 5. 数据模型
 
@@ -201,7 +191,9 @@ ViewModel 不直接操作 `ModelContext`，否则不同页面会逐渐形成不�
 
 ## 8. 状态管理
 
-### 8.1 TodayViewModel
+MVP 使用一个 `@MainActor @Observable PulseAppModel` 持有当前项目、记录快照、逻辑日和页面派生状态。选择单一根状态的原因是当前只有一个签到项目，今日页和历史页必须消费同一份记录，避免多个 ViewModel 各自缓存并发生刷新漂移。功能扩展为多项目前不拆分第二套状态所有者。
+
+### 8.1 今日状态
 
 建议可观察状态：
 
@@ -221,7 +213,7 @@ errorPresentation
 - `refreshForDateBoundary()`：重新计算 today 并刷新。
 - `sceneDidBecomeActive()`：处理后台跨日和系统设置变化。
 
-### 8.2 HistoryViewModel
+### 8.2 历史状态
 
 职责：
 
@@ -247,6 +239,8 @@ errorPresentation
 建议策略：
 
 - 用户开启提醒后请求权限。
+- 提醒时间只存储一个 `0...1439` 的午夜起分钟数；小时、分钟只是派生值，不分别持久化。
+- 时间选择器使用固定的纯时间表示，通知投递统一解释为签到项目固定时区中的墙上时间，不读取设备当前日历作为业务规则。
 - 为未来 30 个逻辑日分别安排一次性通知。
 - 每次 App 启动、回到前台、修改提醒设置或完成签到后重新协调窗口。
 - 当天签到成功后删除当天尚未发送的请求。
@@ -262,7 +256,7 @@ errorPresentation
 - 可重试保存失败：保留页面数据，恢复签到按钮，提示重试。
 - 数据读取失败：显示错误状态和重新加载入口。
 - 通知权限拒绝：签到照常可用，设置页提供系统设置入口。
-- 无效时区标识：回退到 GMT 仅用于避免崩溃，同时记录诊断；不得静默重写项目时区。
+- 无效时区标识或损坏的持久化设置：阻止相关状态加载并显示明确错误，不回退、不静默重写。
 - 数据模型迁移失败：发布阶段需要迁移测试，不能通过清库掩盖。
 
 面向用户的文案不暴露 SwiftData、ModelContext 或错误码。调试构建可以记录底层错误。
@@ -276,7 +270,7 @@ errorPresentation
 - 不把删除用户数据库作为正常迁移策略。
 - `recordKey` 格式一旦发布即视为持久化协议；若需调整必须显式迁移。
 
-## 13. 数据导出（P1）
+## 13. 数据导入与导出
 
 推荐首先支持 JSON，字段语义稳定且便于未来恢复：
 
@@ -294,7 +288,7 @@ errorPresentation
 }
 ```
 
-CSV 可以作为便于阅读的附加格式，但不能在没有定义时区和 schema 版本的情况下承担恢复协议。
+JSON 是唯一恢复协议。导入先完整解码和验证，再通过 Repository 原子替换现有项目与记录；不执行隐式合并。CSV 可以作为未来便于阅读的附加格式，但不能承担恢复协议。
 
 ## 14. 安全与隐私边界
 
@@ -323,4 +317,3 @@ CSV 可以作为便于阅读的附加格式，但不能在没有定义时区和 
 - 单元测试与核心 UI 测试通过。
 - SwiftData 真机持久化、跨启动恢复和删除经过验证。
 - 不存在用于演示的内存假数据路径进入 Release。
-
