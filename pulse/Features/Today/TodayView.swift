@@ -65,7 +65,7 @@ struct TodayView: View {
                 .accessibilityIdentifier("today.hero.kicker")
 
                 dayNumber(today)
-                .padding(.top, PulseDesign.spacing12)
+                    .padding(.top, PulseDesign.spacing12)
             }
         }
         .frame(maxWidth: .infinity)
