@@ -3,6 +3,17 @@ import UniformTypeIdentifiers
 @testable import pulse
 
 final class PulseExportDocumentTests: XCTestCase {
+    func testExportFilenameHasJSONExtension() {
+        XCTAssertEqual(
+            PulseDataContract.exportFilename(day: "2026-08-11"),
+            "pulse-2026-08-11.json"
+        )
+        XCTAssertEqual(
+            PulseDataContract.exportFilename(day: nil),
+            "pulse-export.json"
+        )
+    }
+
     func testDocumentTypeContractHasOneJSONAuthorityForImportAndExport() {
         XCTAssertEqual(PulseExportDocument.readableContentTypes, [.json])
         XCTAssertEqual(PulseExportDocument.writableContentTypes, [.json])

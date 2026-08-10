@@ -4,10 +4,15 @@ import UniformTypeIdentifiers
 
 enum PulseDataContract {
     static let formatIdentifier = "co.fanr.pulse.export"
+    static let fileExtension = "json"
     static let exportSchemaVersion = 1
     static let maximumRecordCount = 50_000
     static let maximumHabitNameLength = 80
     static let maximumImportBytes = 32 * 1_024 * 1_024
+
+    static func exportFilename(day: String?) -> String {
+        "pulse-\(day ?? "export").\(fileExtension)"
+    }
 }
 
 struct PulseExportPayload: Codable, Sendable {

@@ -285,8 +285,7 @@ struct SettingsView: View {
     }
 
     private var exportFilename: String {
-        let day = model.today?.storageValue ?? "export"
-        return "pulse-\(day)"
+        PulseDataContract.exportFilename(day: model.today?.storageValue)
     }
 
     private var appVersion: String {
