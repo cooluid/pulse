@@ -17,6 +17,9 @@ struct SettingsView: View {
             dataSection
             aboutSection
         }
+        .scrollContentBackground(.hidden)
+        .background(PulseDesign.background)
+        .foregroundStyle(PulseDesign.ink)
         .tint(PulseDesign.tint)
         .navigationTitle("settings.navigation_title")
         .navigationBarTitleDisplayMode(.inline)
@@ -145,7 +148,7 @@ struct SettingsView: View {
             } label: {
                 LabeledContent("settings.timezone") {
                     Text(model.habit?.timeZoneIdentifier ?? "")
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(PulseDesign.secondary)
                         .lineLimit(1)
                 }
             }
@@ -232,19 +235,21 @@ private struct TimeZonePickerView: View {
                 HStack {
                     VStack(alignment: .leading, spacing: 3) {
                         Text(displayName(identifier))
-                            .foregroundStyle(.primary)
+                            .foregroundStyle(PulseDesign.ink)
                         Text(identifier)
                             .font(.caption)
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(PulseDesign.secondary)
                     }
                     Spacer()
                     if identifier == model.habit?.timeZoneIdentifier {
                         Image(systemName: "checkmark")
-                            .foregroundStyle(PulseDesign.primary)
+                            .foregroundStyle(PulseDesign.action)
                     }
                 }
             }
         }
+        .scrollContentBackground(.hidden)
+        .background(PulseDesign.background)
         .tint(PulseDesign.tint)
         .navigationTitle("settings.timezone")
         .navigationBarTitleDisplayMode(.inline)

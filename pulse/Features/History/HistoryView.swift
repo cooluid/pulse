@@ -2,154 +2,187 @@ import SwiftUI
 
 struct HistoryView: View {
     @Bindable var model: PulseAppModel
+    let isActive: Bool
+
     @State private var selectedRecord: CheckInRecord?
 
-    private let columns = Array(repeating: GridItem(.flexible(), spacing: 8), count: 7)
+    private let columns = Array(
+        repeating: GridItem(.flexible(), spacing: PulseDesign.spacing4),
+        count: 7
+    )
 
     var body: some View {
         ZStack {
             PulseScreenBackground()
+            PulseFieldBackground(isActive: isActive)
 
-            ScrollView {
-                VStack(spacing: PulseDesign.contentSpacing) {
-                    statisticsGrid
-                    calendarCard
+            VStack(spacing: 0) {
+                PulseAppHeader {
+                    SettingsView(model: model)
                 }
-                .frame(maxWidth: 760)
-                .padding(.horizontal, PulseDesign.horizontalPadding)
-                .padding(.top, 12)
-                .padding(.bottom, 32)
-                .frame(maxWidth: .infinity)
-                .foregroundStyle(PulseDesign.primary)
+
+                ScrollView {
+                    VStack(spacing: 0) {
+                        historyHeading
+                        statisticsRow
+                        calendar
+                    }
+                    .frame(maxWidth: PulseDesign.historyMaxWidth)
+                    .padding(.horizontal, PulseDesign.horizontalPadding)
+                    .padding(.top, 2)
+                    .padding(.bottom, PulseDesign.spacing24)
+                    .frame(maxWidth: .infinity)
+                }
+                .scrollIndicators(.hidden)
             }
         }
-        .navigationTitle("history.navigation_title")
+        .toolbar(.hidden, for: .navigationBar)
         .sheet(item: $selectedRecord) { record in
             RecordDetailView(record: record, model: model)
                 .presentationDetents([.medium])
         }
     }
 
-    private var statisticsGrid: some View {
-        GroupBox {
-            HStack(spacing: 0) {
-                StatisticTile(
-                    value: model.statistics.currentStreak,
-                    labelKey: "history.current_streak",
-                    accessibilityIdentifier: "history.stat.current"
+    private var historyHeading: some View {
+        VStack(alignment: .leading, spacing: PulseDesign.spacing8) {
+            if let month = selectedMonth, let timeZone = model.timeZone {
+                Text(
+                    String(
+                        format: String(localized: "history.archive_format"),
+                        PulseFormatting.year(month, timeZone: timeZone)
+                    )
                 )
+                .font(.system(size: 11, weight: .bold))
+                .tracking(1.43)
+                .textCase(.uppercase)
+                .foregroundStyle(PulseDesign.secondary)
 
-                Divider()
-                    .frame(height: 58)
-
-                StatisticTile(
-                    value: model.statistics.longestStreak,
-                    labelKey: "history.longest_streak",
-                    accessibilityIdentifier: "history.stat.longest"
+                Text(
+                    String(
+                        format: String(localized: "history.month_records_format"),
+                        PulseFormatting.monthOnly(month, timeZone: timeZone)
+                    )
                 )
-
-                Divider()
-                    .frame(height: 58)
-
-                StatisticTile(
-                    value: model.statistics.totalCount,
-                    labelKey: "history.total",
-                    accessibilityIdentifier: "history.stat.total"
-                )
+                .font(.system(size: 40, weight: .bold))
+                .tracking(-2.4)
+                .foregroundStyle(PulseDesign.ink)
             }
-            .padding(.vertical, 4)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.top, PulseDesign.spacing16)
+        .padding(.bottom, PulseDesign.spacing20)
+        .overlay(alignment: .bottom) {
+            Rectangle()
+                .fill(PulseDesign.separator)
+                .frame(height: PulseDesign.thinLineWidth)
+        }
+        .contentShape(Rectangle())
+        .gesture(monthSwipeGesture)
+        .accessibilityElement(children: .combine)
+        .accessibilityAction(named: Text("history.previous_month")) {
+            model.moveSelectedMonth(by: -1)
+        }
+        .accessibilityAction(named: Text("history.next_month")) {
+            moveToNextMonthIfAvailable()
         }
     }
 
-    private var calendarCard: some View {
-        GroupBox {
-            VStack(spacing: 18) {
-                monthHeader
+    private var statisticsRow: some View {
+        HStack(spacing: 0) {
+            StatisticTile(
+                value: model.statistics.currentStreak,
+                labelKey: "history.current_streak",
+                accessibilityIdentifier: "history.stat.current"
+            )
 
-                LazyVGrid(columns: columns, spacing: 10) {
-                    ForEach(
-                        Array(PulseFormatting.weekdayHeaders(weekStart: model.settings.weekStart).enumerated()),
-                        id: \.offset
-                    ) { index, weekday in
-                        Text(weekday)
-                            .font(.caption.weight(.semibold))
-                            .foregroundStyle(PulseDesign.secondary)
-                            .frame(maxWidth: .infinity)
-                            .accessibilityIdentifier("calendar.weekday.\(index)")
-                    }
+            Divider()
 
-                    ForEach(0..<leadingEmptyDays, id: \.self) { _ in
-                        Color.clear
-                            .frame(height: 44)
-                            .accessibilityHidden(true)
-                    }
+            StatisticTile(
+                value: model.statistics.longestStreak,
+                labelKey: "history.longest_streak",
+                accessibilityIdentifier: "history.stat.longest"
+            )
 
-                    ForEach(model.calendarItemsForSelectedMonth()) { item in
+            Divider()
+
+            StatisticTile(
+                value: model.statistics.totalCount,
+                labelKey: "history.total",
+                accessibilityIdentifier: "history.stat.total"
+            )
+        }
+        .padding(.vertical, PulseDesign.spacing20)
+        .overlay(alignment: .bottom) {
+            Rectangle()
+                .fill(PulseDesign.separator)
+                .frame(height: PulseDesign.thinLineWidth)
+        }
+    }
+
+    private var calendar: some View {
+        LazyVGrid(columns: columns, spacing: PulseDesign.spacing8) {
+            ForEach(
+                Array(PulseFormatting.weekdayHeaders(weekStart: model.settings.weekStart).enumerated()),
+                id: \.offset
+            ) { index, weekday in
+                Text(weekday)
+                    .font(.system(size: 9, weight: .bold))
+                    .foregroundStyle(PulseDesign.secondary)
+                    .frame(maxWidth: .infinity, minHeight: 24)
+                    .accessibilityIdentifier("calendar.weekday.\(index)")
+            }
+
+            ForEach(leadingPlaceholderIDs, id: \.self) { _ in
+                Color.clear
+                    .frame(height: PulseDesign.calendarDayHitSize)
+                    .accessibilityHidden(true)
+            }
+
+            ForEach(model.calendarItemsForSelectedMonth()) { item in
+                if item.status == .checked {
+                    Button {
+                        selectedRecord = model.record(for: item.day)
+                    } label: {
                         CalendarDayCell(item: item, isToday: item.day == model.today)
-                            .onTapGesture {
-                                guard item.status == .checked else { return }
-                                selectedRecord = model.record(for: item.day)
-                            }
                     }
+                    .buttonStyle(.plain)
+                } else {
+                    CalendarDayCell(item: item, isToday: item.day == model.today)
                 }
-
-                calendarLegend
             }
-            .padding(.vertical, 4)
         }
+        .padding(.top, PulseDesign.spacing20)
     }
 
-    private var monthHeader: some View {
-        HStack {
-            Button {
-                model.moveSelectedMonth(by: -1)
-            } label: {
-                Image(systemName: "chevron.left")
-                    .frame(width: 44, height: 44)
-            }
-            .accessibilityLabel("history.previous_month")
-
-            Spacer()
-
-            if let month = model.selectedMonth ?? model.today?.firstDayOfMonth(),
-               let timeZone = model.timeZone {
-                Text(PulseFormatting.monthAndYear(month, timeZone: timeZone))
-                    .font(.headline)
-            }
-
-            Spacer()
-
-            Button {
-                model.moveSelectedMonth(by: 1)
-            } label: {
-                Image(systemName: "chevron.right")
-                    .frame(width: 44, height: 44)
-            }
-            .disabled((model.selectedMonth ?? model.today?.firstDayOfMonth()) == model.today?.firstDayOfMonth())
-            .accessibilityLabel("history.next_month")
-        }
+    private var selectedMonth: LogicalDay? {
+        model.selectedMonth ?? model.today?.firstDayOfMonth()
     }
 
     private var leadingEmptyDays: Int {
-        guard let month = model.selectedMonth ?? model.today?.firstDayOfMonth(),
-              let timeZone = model.timeZone else { return 0 }
+        guard let month = selectedMonth, let timeZone = model.timeZone else { return 0 }
         let calendar = Calendar.pulseGregorian(timeZone: timeZone)
         let weekday = calendar.component(.weekday, from: month.date(timeZone: timeZone))
         return (weekday - model.settings.weekStart.rawValue + 7) % 7
     }
 
-    private var calendarLegend: some View {
-        HStack(spacing: 18) {
-            Label("calendar.status.checked", systemImage: "checkmark.circle.fill")
-                .foregroundStyle(PulseDesign.primary)
-            Label("calendar.status.missed", systemImage: "circle")
-                .foregroundStyle(PulseDesign.secondary)
-            Label("calendar.status.today", systemImage: "circle.dotted")
-                .foregroundStyle(PulseDesign.primary)
-        }
-        .font(.caption)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .accessibilityElement(children: .contain)
+    private var leadingPlaceholderIDs: [String] {
+        (0..<leadingEmptyDays).map { "calendar.leading.\($0)" }
+    }
+
+    private var monthSwipeGesture: some Gesture {
+        DragGesture(minimumDistance: PulseDesign.minimumHitTarget)
+            .onEnded { value in
+                if value.translation.width > PulseDesign.minimumHitTarget {
+                    model.moveSelectedMonth(by: -1)
+                } else if value.translation.width < -PulseDesign.minimumHitTarget {
+                    moveToNextMonthIfAvailable()
+                }
+            }
+    }
+
+    private func moveToNextMonthIfAvailable() {
+        guard selectedMonth != model.today?.firstDayOfMonth() else { return }
+        model.moveSelectedMonth(by: 1)
     }
 }
 
@@ -159,16 +192,17 @@ private struct StatisticTile: View {
     let accessibilityIdentifier: String
 
     var body: some View {
-        VStack(spacing: 6) {
+        VStack(spacing: PulseDesign.spacing4) {
             Text(value, format: .number)
-                .font(.title.weight(.semibold))
+                .font(.system(size: 28, weight: .bold))
+                .tracking(-1.12)
                 .monospacedDigit()
-                .foregroundStyle(PulseDesign.primary)
+                .foregroundStyle(PulseDesign.ink)
+
             Text(labelKey)
-                .font(.caption)
+                .font(.system(size: 10))
                 .foregroundStyle(PulseDesign.secondary)
                 .lineLimit(1)
-                .minimumScaleFactor(0.72)
         }
         .frame(maxWidth: .infinity)
         .accessibilityElement(children: .combine)
@@ -183,52 +217,33 @@ private struct CalendarDayCell: View {
     var body: some View {
         ZStack {
             Circle()
-                .fill(backgroundColor)
+                .fill(item.status == .checked ? PulseDesign.grass : Color.clear)
+                .frame(
+                    width: PulseDesign.calendarDayVisualSize,
+                    height: PulseDesign.calendarDayVisualSize
+                )
 
-            if item.status == .checked {
-                VStack(spacing: 1) {
-                    Text(item.day.day, format: .number)
-                        .font(.subheadline.bold())
-                    Image(systemName: "checkmark")
-                        .font(.caption2.bold())
-                }
-                .foregroundStyle(PulseDesign.actionForeground)
-            } else {
-                Text(item.day.day, format: .number)
-                    .font(.subheadline.weight(isToday ? .bold : .regular))
-                    .foregroundStyle(foregroundColor)
-            }
+            Text(item.day.day, format: .number)
+                .font(.system(size: 11, weight: item.status == .checked || isToday ? .bold : .regular))
+                .monospacedDigit()
+                .foregroundStyle(item.status == .checked ? PulseDesign.grassForeground : PulseDesign.secondary)
         }
-        .frame(height: 44)
+        .frame(maxWidth: .infinity)
+        .frame(height: PulseDesign.calendarDayHitSize)
         .overlay {
             if isToday {
                 Circle()
-                    .stroke(PulseDesign.primary, lineWidth: 2)
+                    .stroke(PulseDesign.action, lineWidth: PulseDesign.emphasisLineWidth)
+                    .frame(
+                        width: PulseDesign.calendarDayVisualSize,
+                        height: PulseDesign.calendarDayVisualSize
+                    )
             }
         }
         .contentShape(Rectangle())
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(accessibilityLabel)
         .accessibilityIdentifier("calendar.day.\(item.day.storageValue)")
-        .accessibilityAddTraits(item.status == .checked ? .isButton : [])
-    }
-
-    private var backgroundColor: Color {
-        switch item.status {
-        case .checked: PulseDesign.actionBackground
-        case .missed: PulseDesign.secondaryBackground
-        case .todayPending: PulseDesign.primary.opacity(0.08)
-        case .beforeHabit, .future: Color.clear
-        }
-    }
-
-    private var foregroundColor: Color {
-        switch item.status {
-        case .beforeHabit, .future: PulseDesign.secondary
-        case .missed: PulseDesign.secondary
-        case .todayPending: PulseDesign.primary
-        case .checked: PulseDesign.actionForeground
-        }
     }
 
     private var accessibilityLabel: String {
@@ -252,34 +267,37 @@ private struct RecordDetailView: View {
 
     var body: some View {
         NavigationStack {
-            VStack(spacing: 24) {
-                Image(systemName: "checkmark.seal.fill")
-                    .font(.system(size: 56))
-                    .foregroundStyle(PulseDesign.primary)
+            ZStack {
+                PulseScreenBackground()
 
-                VStack(spacing: 8) {
-                    if let day = record.logicalDay, let timeZone = model.timeZone {
-                        Text(PulseFormatting.fullDate(day, timeZone: timeZone))
-                            .font(.title3.bold())
-                    }
-                    if let timeZone = model.timeZone {
-                        Text(
-                            String(
-                                format: String(localized: "history.checked_at"),
-                                PulseFormatting.time(record.checkedAt, timeZone: timeZone)
+                VStack(spacing: PulseDesign.spacing24) {
+                    PulseBrandMark(size: 64)
+
+                    VStack(spacing: PulseDesign.spacing8) {
+                        if let day = record.logicalDay, let timeZone = model.timeZone {
+                            Text(PulseFormatting.fullDate(day, timeZone: timeZone))
+                                .font(.title3.bold())
+                                .foregroundStyle(PulseDesign.ink)
+                        }
+                        if let timeZone = model.timeZone {
+                            Text(
+                                String(
+                                    format: String(localized: "history.checked_at"),
+                                    PulseFormatting.time(record.checkedAt, timeZone: timeZone)
+                                )
                             )
-                        )
-                        .foregroundStyle(PulseDesign.secondary)
+                            .foregroundStyle(PulseDesign.secondary)
+                        }
                     }
-                }
 
-                Button("history.delete_record", role: .destructive) {
-                    showsDeleteConfirmation = true
+                    Button("history.delete_record", role: .destructive) {
+                        showsDeleteConfirmation = true
+                    }
+                    .buttonStyle(.bordered)
                 }
-                .buttonStyle(.bordered)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .padding(PulseDesign.spacing24)
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .padding(24)
             .navigationTitle("history.record_detail")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -303,5 +321,6 @@ private struct RecordDetailView: View {
                 Text("history.delete_confirmation.message")
             }
         }
+        .tint(PulseDesign.tint)
     }
 }

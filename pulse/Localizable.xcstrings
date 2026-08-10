@@ -1,538 +1,1512 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "" : {
+
+    },
     "action.cancel" : {
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Cancel" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "取消" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cancel"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "取消"
+          }
+        }
       }
     },
     "action.done" : {
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Done" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "完成" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Done"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "完成"
+          }
+        }
       }
     },
     "action.ok" : {
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "OK" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "好" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "OK"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "好"
+          }
+        }
       }
     },
     "action.retry" : {
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Try Again" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "重试" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Try Again"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "重试"
+          }
+        }
       }
     },
     "app.loading" : {
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Loading…" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "正在加载…" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Loading…"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在加载…"
+          }
+        }
       }
     },
     "calendar.status.before_habit" : {
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Before tracking began" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "开始记录前" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Before tracking began"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "开始记录前"
+          }
+        }
       }
     },
     "calendar.status.checked" : {
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Checked in" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "已签到" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Checked in"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已签到"
+          }
+        }
       }
     },
     "calendar.status.future" : {
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Future date" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "未来日期" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Future date"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "未来日期"
+          }
+        }
       }
     },
     "calendar.status.missed" : {
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Missed" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "漏签" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Missed"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "漏签"
+          }
+        }
       }
     },
     "calendar.status.not_checked" : {
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Not checked in" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "未签到" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not checked in"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "未签到"
+          }
+        }
       }
     },
     "calendar.status.pending" : {
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Pending today" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "今日待签到" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pending today"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "今日待签到"
+          }
+        }
       }
     },
     "calendar.status.today" : {
+      "extractionState" : "stale",
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Today" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "今天" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Today"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "今天"
+          }
+        }
       }
     },
     "error.export" : {
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "The export could not be created." } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "无法创建导出文件。" } }
-      }
-    },
-    "error.import_invalid" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "The selected file is not a valid Pulse export." } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "所选文件不是有效的一日一印导出数据。" } }
-      }
-    },
-    "error.import_version" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "This export was created by an unsupported Pulse data version." } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "该文件使用了当前版本不支持的一日一印数据格式。" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The export could not be created."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "无法创建导出文件。"
+          }
+        }
       }
     },
     "error.generic" : {
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Something went wrong. Please try again." } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "操作未完成，请重试。" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Something went wrong. Please try again."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "操作未完成，请重试。"
+          }
+        }
       }
     },
     "error.habit_missing" : {
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "The daily check-in could not be loaded." } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "无法加载每日签到项目。" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The daily check-in could not be loaded."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "无法加载每日签到项目。"
+          }
+        }
+      }
+    },
+    "error.import_invalid" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The selected file is not a valid Pulse export."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "所选文件不是有效的一日一印导出数据。"
+          }
+        }
+      }
+    },
+    "error.import_version" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This export was created by an unsupported Pulse data version."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "该文件使用了当前版本不支持的一日一印数据格式。"
+          }
+        }
       }
     },
     "error.notification_denied" : {
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Notifications are disabled. You can enable them in System Settings." } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "通知权限已关闭，可前往系统设置开启。" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Notifications are disabled. You can enable them in System Settings."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "通知权限已关闭，可前往系统设置开启。"
+          }
+        }
       }
     },
     "error.persistence" : {
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Your check-in data could not be opened." } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "无法打开签到数据。" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your check-in data could not be opened."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "无法打开签到数据。"
+          }
+        }
       }
     },
     "error.record_date" : {
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "A check-in record contains an invalid date." } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "签到记录包含无效日期。" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A check-in record contains an invalid date."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "签到记录包含无效日期。"
+          }
+        }
       }
     },
     "error.settings" : {
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "The saved app settings are invalid." } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "保存的应用设置无效。" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The saved app settings are invalid."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "保存的应用设置无效。"
+          }
+        }
       }
     },
     "error.timezone" : {
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "The saved check-in time zone is invalid." } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "保存的签到时区无效。" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The saved check-in time zone is invalid."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "保存的签到时区无效。"
+          }
+        }
       }
     },
     "error.title" : {
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Unable to Complete" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "操作未完成" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unable to Complete"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "操作未完成"
+          }
+        }
       }
     },
     "habit.default_name" : {
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Daily Check-in" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "每日签到" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Daily Check-in"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "每日签到"
+          }
+        }
+      }
+    },
+    "history.archive_format" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ARCHIVE / %@"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ARCHIVE / %@"
+          }
+        }
       }
     },
     "history.checked_at" : {
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Checked in at %@" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "签到时间：%@" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Checked in at %@"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "签到时间：%@"
+          }
+        }
       }
     },
     "history.current_streak" : {
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Current" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "当前连续" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Current"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "当前连续"
+          }
+        }
       }
     },
     "history.delete_confirmation.action" : {
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Delete Record" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "删除记录" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete Record"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "删除记录"
+          }
+        }
       }
     },
     "history.delete_confirmation.message" : {
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Streaks and statistics will be recalculated immediately." } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "删除后，连续天数和统计会立即重新计算。" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Streaks and statistics will be recalculated immediately."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "删除后，连续天数和统计会立即重新计算。"
+          }
+        }
       }
     },
     "history.delete_confirmation.title" : {
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Delete this check-in?" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "删除这条签到记录？" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete this check-in?"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "删除这条签到记录？"
+          }
+        }
       }
     },
     "history.delete_record" : {
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Delete Check-in" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "删除签到记录" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete Check-in"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "删除签到记录"
+          }
+        }
       }
     },
     "history.longest_streak" : {
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Longest" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "最长连续" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Longest"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "最长连续"
+          }
+        }
       }
     },
-    "history.navigation_title" : {
+    "history.month_records_format" : {
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "History" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "签到记录" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ Records"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@记录"
+          }
+        }
+      }
+    },
+    "history.navigation.subtitle" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "View calendar"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "查看日历"
+          }
+        }
       }
     },
     "history.next_month" : {
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Next month" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "下个月" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Next month"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "下个月"
+          }
+        }
       }
     },
     "history.previous_month" : {
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Previous month" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "上个月" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Previous month"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "上个月"
+          }
+        }
       }
     },
     "history.record_detail" : {
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Check-in Details" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "签到详情" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Check-in Details"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "签到详情"
+          }
+        }
       }
     },
     "history.total" : {
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Total" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "累计签到" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Total"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "累计签到"
+          }
+        }
       }
     },
     "load.failure.message" : {
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Pulse could not load your check-in records." } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "一日一印无法加载签到记录。" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pulse could not load your check-in records."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "一日一印无法加载签到记录。"
+          }
+        }
       }
     },
     "load.failure.title" : {
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Data Unavailable" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "数据不可用" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Data Unavailable"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "数据不可用"
+          }
+        }
       }
     },
     "notification.body" : {
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Take a moment to record today’s check-in." } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "花一点时间，完成今天的签到吧。" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Take a moment to record today’s check-in."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "花一点时间，完成今天的签到吧。"
+          }
+        }
       }
     },
     "notification.title" : {
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Daily Check-in" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "每日签到" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Daily Check-in"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "每日签到"
+          }
+        }
       }
     },
     "settings.about.section" : {
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "About" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "关于" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "About"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "关于"
+          }
+        }
       }
     },
     "settings.data.footer" : {
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Pulse stores check-ins locally. Export a JSON copy before deleting the app." } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "一日一印将签到记录保存在本机。删除 App 前请先导出 JSON 副本。" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pulse stores check-ins locally. Export a JSON copy before deleting the app."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "一日一印将签到记录保存在本机。删除 App 前请先导出 JSON 副本。"
+          }
+        }
       }
     },
     "settings.data.section" : {
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Data" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "数据" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Data"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "数据"
+          }
+        }
       }
     },
     "settings.experience.section" : {
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Experience" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "使用体验" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Experience"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "使用体验"
+          }
+        }
       }
     },
     "settings.export" : {
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Export Check-in Data" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "导出签到数据" } }
-      }
-    },
-    "settings.import" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Import Check-in Data" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "导入签到数据" } }
-      }
-    },
-    "settings.import_confirmation.action" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Replace Current Data" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "替换当前数据" } }
-      }
-    },
-    "settings.import_confirmation.message" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "The file contains %lld check-ins. Importing replaces all current check-in data and cannot be undone." } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "文件包含 %lld 条签到记录。导入会替换当前全部签到数据，且无法撤销。" } }
-      }
-    },
-    "settings.import_confirmation.title" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Replace current check-in data?" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "替换当前签到数据？" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Export Check-in Data"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "导出签到数据"
+          }
+        }
       }
     },
     "settings.haptics" : {
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Haptic Feedback" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "触觉反馈" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Haptic Feedback"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "触觉反馈"
+          }
+        }
+      }
+    },
+    "settings.import" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Import Check-in Data"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "导入签到数据"
+          }
+        }
+      }
+    },
+    "settings.import_confirmation.action" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Replace Current Data"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "替换当前数据"
+          }
+        }
+      }
+    },
+    "settings.import_confirmation.message" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The file contains %lld check-ins. Importing replaces all current check-in data and cannot be undone."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "文件包含 %lld 条签到记录。导入会替换当前全部签到数据，且无法撤销。"
+          }
+        }
+      }
+    },
+    "settings.import_confirmation.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Replace current check-in data?"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "替换当前签到数据？"
+          }
+        }
       }
     },
     "settings.navigation_title" : {
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Settings" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "设置" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Settings"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "设置"
+          }
+        }
       }
     },
     "settings.notification.open_system_settings" : {
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Open Notification Settings" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "打开系统通知设置" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open Notification Settings"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "打开系统通知设置"
+          }
+        }
       }
     },
     "settings.reminder.footer" : {
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "No reminder is sent after you check in for the day." } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "当天完成签到后，不再发送当天提醒。" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No reminder is sent after you check in for the day."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "当天完成签到后，不再发送当天提醒。"
+          }
+        }
       }
     },
     "settings.reminder.section" : {
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Reminder" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "签到提醒" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reminder"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "签到提醒"
+          }
+        }
       }
     },
     "settings.reminder.time" : {
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Reminder Time" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "提醒时间" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reminder Time"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "提醒时间"
+          }
+        }
       }
     },
     "settings.reminder.toggle" : {
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Daily Reminder" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "每日提醒" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Daily Reminder"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "每日提醒"
+          }
+        }
       }
     },
     "settings.reset" : {
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Erase All Data" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "清除全部数据" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Erase All Data"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "清除全部数据"
+          }
+        }
       }
     },
     "settings.reset_confirmation.action" : {
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Erase All Data" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "确认清除" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Erase All Data"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "确认清除"
+          }
+        }
       }
     },
     "settings.reset_confirmation.message" : {
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "All check-ins, preferences, and pending Pulse reminders will be removed. This cannot be undone." } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "所有签到、偏好设置和待发送提醒都会被删除，且无法恢复。" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "All check-ins, preferences, and pending Pulse reminders will be removed. This cannot be undone."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "所有签到、偏好设置和待发送提醒都会被删除，且无法恢复。"
+          }
+        }
       }
     },
     "settings.reset_confirmation.title" : {
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Erase all Pulse data?" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "清除一日一印的全部数据？" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Erase all Pulse data?"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "清除一日一印的全部数据？"
+          }
+        }
       }
     },
     "settings.storage" : {
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Storage" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "存储方式" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Storage"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "存储方式"
+          }
+        }
       }
     },
     "settings.storage.local" : {
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "On This Device" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "本机存储" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "On This Device"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "本机存储"
+          }
+        }
       }
     },
     "settings.timezone" : {
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Check-in Time Zone" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "签到时区" } }
-      }
-    },
-    "settings.timezone.search" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Search cities or time zones" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "搜索城市或时区" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Check-in Time Zone"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "签到时区"
+          }
+        }
       }
     },
     "settings.timezone_confirmation.action" : {
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Change Time Zone" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "更改时区" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Change Time Zone"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "更改时区"
+          }
+        }
       }
     },
     "settings.timezone_confirmation.message" : {
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Past check-in dates remain unchanged. The new time zone applies to future check-ins and reminders." } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "历史签到日期不会改变；新时区会用于之后的签到和提醒。" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Past check-in dates remain unchanged. The new time zone applies to future check-ins and reminders."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "历史签到日期不会改变；新时区会用于之后的签到和提醒。"
+          }
+        }
       }
     },
     "settings.timezone_confirmation.title" : {
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Change check-in time zone?" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "更改签到时区？" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Change check-in time zone?"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "更改签到时区？"
+          }
+        }
+      }
+    },
+    "settings.timezone.search" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Search cities or time zones"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "搜索城市或时区"
+          }
+        }
       }
     },
     "settings.version" : {
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Version" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "版本" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Version"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "版本"
+          }
+        }
       }
     },
     "settings.week_start" : {
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Week Starts On" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "每周起始日" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Week Starts On"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "每周起始日"
+          }
+        }
       }
     },
     "settings.week_start.monday" : {
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Monday" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "星期一" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Monday"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "星期一"
+          }
+        }
       }
     },
     "settings.week_start.sunday" : {
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Sunday" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "星期日" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sunday"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "星期日"
+          }
+        }
       }
     },
     "startup.failure.message" : {
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Pulse could not open its data store. Restart the app. If the problem continues, contact support before deleting the app." } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "一日一印无法打开数据存储。请重新启动 App；如果问题持续存在，请在删除 App 前联系支持。" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pulse could not open its data store. Restart the app. If the problem continues, contact support before deleting the app."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "一日一印无法打开数据存储。请重新启动 App；如果问题持续存在，请在删除 App 前联系支持。"
+          }
+        }
       }
     },
     "startup.failure.title" : {
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Pulse Could Not Start" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "一日一印无法启动" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pulse Could Not Start"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "一日一印无法启动"
+          }
+        }
       }
     },
     "tab.history" : {
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "History" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "记录" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "History"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "记录"
+          }
+        }
       }
     },
     "tab.today" : {
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Today" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "今天" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Today"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "今天"
+          }
+        }
       }
     },
     "today.accessibility.check_in" : {
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Check in for today" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "完成今日签到" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Check in for today"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "完成今日签到"
+          }
+        }
       }
     },
     "today.accessibility.checked" : {
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Today is checked in" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "今日已签到" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Today is checked in"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "今日已签到"
+          }
+        }
       }
     },
     "today.accessibility.hint" : {
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Double-tap to save today’s check-in." } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "轻点两下保存今天的签到。" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Double-tap to save today’s check-in."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "轻点两下保存今天的签到。"
+          }
+        }
+      }
+    },
+    "today.action_note" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Complete after saving locally"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "写入本机后完成"
+          }
+        }
       }
     },
     "today.check_in" : {
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Check In" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "今日签到" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Check In"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "今日签到"
+          }
+        }
       }
     },
     "today.checked" : {
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Completed" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "今日已签到" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Completed"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "今日已签到"
+          }
+        }
       }
     },
     "today.checked_at" : {
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Saved at %@" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "%@ 完成签到" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Saved locally at %@"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已于 %@ 写入本机"
+          }
+        }
       }
     },
     "today.completed_prompt" : {
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Today has its mark" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "今天已经留下记号" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Today has its mark"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "今天已留下一枚印记"
+          }
+        }
       }
     },
-    "today.current_streak" : {
+    "today.kicker_format" : {
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Current streak" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "当前连续签到" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "TODAY / %@"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "TODAY / %@"
+          }
+        }
       }
     },
     "today.navigation_title" : {
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Pulse" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "一日一印" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pulse"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "一日一印"
+          }
+        }
       }
     },
-    "today.offline_note" : {
+    "today.navigation.checked" : {
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Saved securely on this device" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "签到记录会保存在本机" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Today complete"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "今天已完成"
+          }
+        }
+      }
+    },
+    "today.navigation.pending" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Leave today’s mark"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "待留下印记"
+          }
+        }
+      }
+    },
+    "today.pending_status" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Today has no mark yet"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "还没有留下今天的印"
+          }
+        }
       }
     },
     "today.prompt" : {
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Leave a mark for today" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "给今天留下一个记号" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Leave a mark for today"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "给今天留下一枚印记"
+          }
+        }
       }
     },
-    "today.recent_days" : {
+    "today.rhythm_label" : {
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Last 7 Days" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "最近 7 天" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "CURRENT RHYTHM"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "CURRENT RHYTHM"
+          }
+        }
       }
     },
     "today.streak_encouragement" : {
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Keep your rhythm" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "保持自己的节奏" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keep your rhythm, without comparison"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "保持自己的节奏，不与别人比较"
+          }
+        }
       }
     },
     "unit.days" : {
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "days" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "天" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "days"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "天"
+          }
+        }
       }
     }
   },

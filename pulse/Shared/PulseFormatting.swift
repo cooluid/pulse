@@ -8,18 +8,48 @@ enum PulseFormatting {
         ).string(from: day.date(timeZone: timeZone))
     }
 
-    static func monthAndYear(_ day: LogicalDay, timeZone: TimeZone) -> String {
+    static func monthOnly(_ day: LogicalDay, timeZone: TimeZone) -> String {
         formatter(
-            template: "yMMMM",
+            template: "MMMM",
             timeZone: timeZone
         ).string(from: day.date(timeZone: timeZone))
     }
 
-    static func weekday(_ day: LogicalDay, timeZone: TimeZone) -> String {
+    static func year(_ day: LogicalDay, timeZone: TimeZone) -> String {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.calendar = .pulseGregorian(timeZone: timeZone)
+        formatter.timeZone = timeZone
+        formatter.dateFormat = "yyyy"
+        return formatter.string(from: day.date(timeZone: timeZone))
+    }
+
+    static func numericYearAndMonth(_ day: LogicalDay, timeZone: TimeZone) -> String {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.calendar = .pulseGregorian(timeZone: timeZone)
+        formatter.timeZone = timeZone
+        formatter.dateFormat = "yyyy.MM"
+        return formatter.string(from: day.date(timeZone: timeZone))
+    }
+
+    static func fullWeekday(_ day: LogicalDay, timeZone: TimeZone) -> String {
         formatter(
-            template: "EEE",
+            template: "EEEE",
             timeZone: timeZone
         ).string(from: day.date(timeZone: timeZone))
+    }
+
+    static func shortWeekday(_ day: LogicalDay, timeZone: TimeZone) -> String {
+        formatter(
+            template: "EEEEE",
+            timeZone: timeZone
+        ).string(from: day.date(timeZone: timeZone))
+    }
+
+    static func numberOfDaysInMonth(_ day: LogicalDay, timeZone: TimeZone) -> Int? {
+        let calendar = Calendar.pulseGregorian(timeZone: timeZone)
+        return calendar.range(of: .day, in: .month, for: day.date(timeZone: timeZone))?.count
     }
 
     static func time(_ date: Date, timeZone: TimeZone) -> String {
@@ -51,4 +81,3 @@ enum PulseFormatting {
         return formatter
     }
 }
-

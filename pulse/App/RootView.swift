@@ -3,6 +3,7 @@ import SwiftUI
 struct RootView: View {
     @Bindable var model: PulseAppModel
     @Environment(\.scenePhase) private var scenePhase
+    @State private var selectedSection: PulsePrimarySection = .today
 
     var body: some View {
         Group {
@@ -10,23 +11,10 @@ struct RootView: View {
             case .loading:
                 ProgressView("app.loading")
                     .controlSize(.large)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .background(PulseScreenBackground())
             case .ready:
-                TabView {
-                    NavigationStack {
-                        TodayView(model: model)
-                    }
-                    .tabItem {
-                        Label("tab.today", systemImage: "checkmark.circle.fill")
-                    }
-
-                    NavigationStack {
-                        HistoryView(model: model)
-                    }
-                    .tabItem {
-                        Label("tab.history", systemImage: "calendar")
-                    }
-                }
-                .tint(PulseDesign.tint)
+                primaryInterface
             case .failed:
                 ContentUnavailableView {
                     Label("load.failure.title", systemImage: "exclamationmark.triangle")
@@ -37,10 +25,13 @@ struct RootView: View {
                         Task { await model.start() }
                     }
                     .buttonStyle(.borderedProminent)
+                    .tint(PulseDesign.action)
                 }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .background(PulseScreenBackground())
             }
         }
-        .background(PulseDesign.background)
+        .foregroundStyle(PulseDesign.ink)
         .tint(PulseDesign.tint)
         .task {
             if model.loadState == .loading {
@@ -67,5 +58,39 @@ struct RootView: View {
         } message: {
             Text(model.errorMessage ?? "")
         }
+    }
+
+    private var primaryInterface: some View {
+        ZStack {
+            NavigationStack {
+                TodayView(model: model, isActive: selectedSection == .today)
+            }
+            .opacity(selectedSection == .today ? 1 : 0)
+            .allowsHitTesting(selectedSection == .today)
+            .accessibilityHidden(selectedSection != .today)
+            .zIndex(selectedSection == .today ? 1 : 0)
+
+            NavigationStack {
+                HistoryView(model: model, isActive: selectedSection == .history)
+            }
+            .opacity(selectedSection == .history ? 1 : 0)
+            .allowsHitTesting(selectedSection == .history)
+            .accessibilityHidden(selectedSection != .history)
+            .zIndex(selectedSection == .history ? 1 : 0)
+        }
+        .background(PulseScreenBackground())
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            PulsePrimaryNavigation(
+                selection: $selectedSection,
+                todayDayNumber: model.today?.day,
+                historyMonthDayCount: historyMonthDayCount,
+                isTodayChecked: model.todayRecord != nil
+            )
+        }
+    }
+
+    private var historyMonthDayCount: Int? {
+        guard let today = model.today, let timeZone = model.timeZone else { return nil }
+        return PulseFormatting.numberOfDaysInMonth(today, timeZone: timeZone)
     }
 }

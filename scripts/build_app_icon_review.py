@@ -9,7 +9,7 @@ from PIL import Image, ImageDraw, ImageFont
 
 ROOT = Path(__file__).resolve().parents[1]
 ICON_DIR = ROOT / "pulse" / "Assets.xcassets" / "AppIcon.appiconset"
-PALETTE_PATH = ROOT / "design" / "app-icon-source" / "palette.json"
+TOKEN_PATH = ROOT / "design" / "brand-tokens.json"
 OUTPUT = ROOT / "design" / "app-icon-review.png"
 CANVAS = (1600, 1220)
 
@@ -40,20 +40,20 @@ def clipped(image: Image.Image, size: int, background: tuple[int, int, int]) -> 
 
 
 def main() -> None:
-    palette = json.loads(PALETTE_PATH.read_text())
-    canvas_color = hex_color(palette["review"]["canvas"])
-    ink = hex_color(palette["review"]["ink"])
-    muted = hex_color(palette["review"]["secondary"])
+    tokens = json.loads(TOKEN_PATH.read_text())
+    canvas_color = hex_color(tokens["review"]["canvas"])
+    ink = hex_color(tokens["review"]["ink"])
+    muted = hex_color(tokens["review"]["secondary"])
     canvas = Image.new("RGB", CANVAS, canvas_color)
     draw = ImageDraw.Draw(canvas)
 
-    draw.text((72, 58), "YI RI YI YIN · B2 OPEN DAY RING", font=font(50, bold=True), fill=ink)
-    draw.text((72, 126), "Approved geometry · deterministic iOS-native monochrome review", font=font(25), fill=muted)
+    draw.text((72, 58), "YI RI YI YIN · OPEN DAY RING", font=font(50, bold=True), fill=ink)
+    draw.text((72, 126), "Approved geometry · deterministic Grass Pulse brand review", font=font(25), fill=muted)
 
     appearances = [
-        ("DEFAULT", "AppIcon-Any.png", hex_color(palette["default"]["background"])),
-        ("DARK", "AppIcon-Dark.png", hex_color(palette["dark"]["previewBackground"])),
-        ("TINTED SOURCE", "AppIcon-Tinted.png", hex_color(palette["review"]["tintedPreviewBackground"])),
+        ("DEFAULT", "AppIcon-Any.png", hex_color(tokens["icon"]["defaultBackground"])),
+        ("DARK", "AppIcon-Dark.png", hex_color(tokens["icon"]["darkPreviewBackground"])),
+        ("TINTED SOURCE", "AppIcon-Tinted.png", hex_color(tokens["review"]["tintedPreviewBackground"])),
     ]
     for index, (label, filename, background) in enumerate(appearances):
         x = 72 + index * 350
@@ -69,7 +69,7 @@ def main() -> None:
     source = Image.open(ICON_DIR / "AppIcon-Any.png")
     for column, size in enumerate((180, 60, 40, 29)):
         x = 72 + column * 370
-        actual = clipped(source, size, hex_color(palette["default"]["background"]))
+        actual = clipped(source, size, hex_color(tokens["icon"]["defaultBackground"]))
         zoom = max(1, 232 // size)
         enlarged = actual.resize((size * zoom, size * zoom), Image.Resampling.NEAREST)
         draw.text((x, 656), f"{size} px", font=font(26, bold=True), fill=ink)

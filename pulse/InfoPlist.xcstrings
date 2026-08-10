@@ -17,6 +17,18 @@
           }
         }
       }
+    },
+    "CFBundleName" : {
+      "comment" : "Bundle name",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "pulse"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

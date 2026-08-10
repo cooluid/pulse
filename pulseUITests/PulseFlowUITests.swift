@@ -30,7 +30,14 @@ final class PulseFlowUITests: XCTestCase {
         XCTAssertTrue(app.staticTexts["today.checked.time"].waitForExistence(timeout: 5))
         XCTAssertFalse(app.buttons["today.checkin.button"].isEnabled)
 
-        app.tabBars.buttons["History"].tap()
+        let todayAttachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
+        todayAttachment.name = "Today after persisted check-in"
+        todayAttachment.lifetime = .keepAlways
+        add(todayAttachment)
+
+        let historyNavigation = app.buttons["primary.navigation.history"]
+        XCTAssertTrue(historyNavigation.waitForExistence(timeout: 3))
+        historyNavigation.tap()
         let totalStatistic = app.descendants(matching: .any)
             .matching(identifier: "history.stat.total")
             .firstMatch

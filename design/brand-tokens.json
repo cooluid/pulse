@@ -1,0 +1,44 @@
+{
+  "light" : {
+    "action" : "#1F5E34",
+    "actionForeground" : "#FFFFFF",
+    "background" : "#EDF5E7",
+    "field" : "#68B33F",
+    "grass" : "#68B33F",
+    "grassForeground" : "#102013",
+    "ink" : "#172119",
+    "navigationGlyphSurface" : "#F7FBF2",
+    "secondary" : "#667064",
+    "separator" : "#D3D9CF",
+    "shadow" : "#182D1D",
+    "surface" : "#F6FAEF",
+    "tint" : "#1F5E34"
+  },
+  "dark" : {
+    "action" : "#9BDB69",
+    "actionForeground" : "#0C1A0E",
+    "background" : "#07120A",
+    "field" : "#91D55B",
+    "grass" : "#91D55B",
+    "grassForeground" : "#0C1A0E",
+    "ink" : "#F0F5EC",
+    "navigationGlyphSurface" : "#F7FBF2",
+    "secondary" : "#A6B0A2",
+    "separator" : "#3D4B3E",
+    "shadow" : "#000000",
+    "surface" : "#0D1C10",
+    "tint" : "#91D55B"
+  },
+  "icon" : {
+    "darkMark" : "#91D55B",
+    "defaultBackground" : "#1F5E34",
+    "defaultMark" : "#FFFFFF",
+    "darkPreviewBackground" : "#07120A"
+  },
+  "review" : {
+    "canvas" : "#EEF0E8",
+    "ink" : "#172119",
+    "secondary" : "#667064",
+    "tintedPreviewBackground" : "#68B33F"
+  }
+}
