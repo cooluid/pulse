@@ -157,8 +157,8 @@ struct TodayView: View {
             Rectangle()
                 .fill(PulseDesign.separator)
                 .frame(height: PulseDesign.thinLineWidth)
-                .padding(.horizontal, PulseDesign.weekRailCurrentDot / 2)
-                .padding(.bottom, PulseDesign.weekRailDot / 2)
+                .padding(.horizontal, PulseDesign.weekRailDotDiameter / 2)
+                .padding(.bottom, PulseDesign.weekRailDotDiameter / 2)
                 .accessibilityHidden(true)
 
             HStack(alignment: .bottom, spacing: 0) {
@@ -185,29 +185,27 @@ struct TodayView: View {
             }
 
             Circle()
-                .fill(dotFill(isChecked: isChecked, isToday: isToday))
+                .fill(dotFill(isChecked: isChecked))
                 .frame(
-                    width: isToday ? PulseDesign.weekRailCurrentDot : PulseDesign.weekRailDot,
-                    height: isToday ? PulseDesign.weekRailCurrentDot : PulseDesign.weekRailDot
+                    width: PulseDesign.weekRailDotDiameter,
+                    height: PulseDesign.weekRailDotDiameter
                 )
                 .overlay {
                     Circle()
                         .stroke(
                             isToday || isChecked ? PulseDesign.grass : PulseDesign.separator,
-                            lineWidth: isToday
-                                ? PulseDesign.weekRailCurrentBorder
-                                : PulseDesign.emphasisLineWidth
+                            lineWidth: PulseDesign.emphasisLineWidth
                         )
                 }
         }
         .animation(completionSecondaryAnimation, value: item.status)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(weekDayAccessibilityLabel(item))
+        .accessibilityIdentifier("today.week.day.\(item.day.storageValue)")
     }
 
-    private func dotFill(isChecked: Bool, isToday: Bool) -> Color {
+    private func dotFill(isChecked: Bool) -> Color {
         if isChecked { return PulseDesign.grass }
-        if isToday { return PulseDesign.background }
         return PulseDesign.background
     }
 

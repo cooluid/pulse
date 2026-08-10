@@ -42,9 +42,7 @@ enum PulseDesign {
     static let checkInHeroOverlap: CGFloat = -42
     static let accessibilityActionMinimumHeight: CGFloat = 72
     static let weekRailWidth: CGFloat = 244
-    static let weekRailDot: CGFloat = 13
-    static let weekRailCurrentDot: CGFloat = 20
-    static let weekRailCurrentBorder: CGFloat = 5
+    static let weekRailDotDiameter: CGFloat = 13
     static let checkInDiameter: CGFloat = 152
     static let checkInMarkInset: CGFloat = 20
     static let checkInInnerHalo: CGFloat = 18

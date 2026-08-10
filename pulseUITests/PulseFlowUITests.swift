@@ -24,6 +24,7 @@ final class PulseFlowUITests: XCTestCase {
         let weekRail = app.otherElements["today.week.rail"]
         XCTAssertTrue(weekRail.waitForExistence(timeout: 3))
         XCTAssertGreaterThanOrEqual(weekRail.frame.minY, checkInButton.frame.maxY)
+        assertWeekRailGeometry()
         assertRemovedTodayCopyIsAbsent()
         assertHeroGeometry()
 
@@ -36,6 +37,7 @@ final class PulseFlowUITests: XCTestCase {
 
         XCTAssertFalse(checkInButton.isEnabled)
         XCTAssertTrue(checkInButton.label.contains("已签到"))
+        assertWeekRailGeometry()
         assertRemovedTodayCopyIsAbsent()
         assertHeroGeometry()
 
@@ -205,6 +207,15 @@ final class PulseFlowUITests: XCTestCase {
             ).count,
             0
         )
+    }
+
+    private func assertWeekRailGeometry() {
+        let today = app.descendants(matching: .any)["today.week.day.2026-08-10"]
+        let previousDay = app.descendants(matching: .any)["today.week.day.2026-08-09"]
+        XCTAssertTrue(today.waitForExistence(timeout: 3))
+        XCTAssertTrue(previousDay.waitForExistence(timeout: 3))
+        XCTAssertEqual(today.frame.minY, previousDay.frame.minY, accuracy: 1)
+        XCTAssertEqual(today.frame.maxY, previousDay.frame.maxY, accuracy: 1)
     }
 
     private func assertHeroGeometry() {
