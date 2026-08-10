@@ -104,6 +104,49 @@ final class PulseFlowUITests: XCTestCase {
         XCTAssertTrue(app.buttons["primary.navigation.history"].exists)
     }
 
+    func testResetConfirmationIsPresentedFromTheResetRow() throws {
+        configureApp()
+        app.launch()
+
+        let settingsButton = app.buttons["settings.navigation.open.today"]
+        XCTAssertTrue(settingsButton.waitForExistence(timeout: 5))
+        settingsButton.tap()
+
+        let resetButton = app.buttons["settings.reset.button"]
+        XCTAssertTrue(resetButton.waitForExistence(timeout: 3))
+        XCTAssertTrue(app.descendants(matching: .any)["settings.data.note"].exists)
+        resetButton.tap()
+
+        let confirmButton = app.buttons["settings.reset.confirm.button"]
+        XCTAssertTrue(confirmButton.waitForExistence(timeout: 3))
+    }
+
+    func testRecordDetailUsesSheetDismissalAndSourceAnchoredDeleteConfirmation() throws {
+        configureApp()
+        app.launch()
+
+        let checkInButton = app.buttons["today.checkin.button"]
+        XCTAssertTrue(checkInButton.waitForExistence(timeout: 5))
+        checkInButton.tap()
+
+        let historyNavigation = app.buttons["primary.navigation.history"]
+        XCTAssertTrue(historyNavigation.waitForExistence(timeout: 3))
+        historyNavigation.tap()
+
+        let checkedDay = app.descendants(matching: .any)["calendar.day.2026-08-10"]
+        XCTAssertTrue(checkedDay.waitForExistence(timeout: 3))
+        checkedDay.tap()
+
+        let deleteButton = app.descendants(matching: .any)["history.record.delete.button"]
+        XCTAssertTrue(deleteButton.waitForExistence(timeout: 3))
+        XCTAssertFalse(app.buttons["完成"].exists)
+        deleteButton.tap()
+
+        XCTAssertTrue(
+            app.buttons["history.record.delete.confirm.button"].waitForExistence(timeout: 3)
+        )
+    }
+
     func testAccessibilityXXXLUsesExpandableCheckInControl() throws {
         configureApp()
         app.launchArguments += [
@@ -201,6 +244,7 @@ final class PulseFlowUITests: XCTestCase {
         XCTAssertFalse(app.staticTexts["给今天留下一枚印记"].exists)
         XCTAssertFalse(app.staticTexts["今天已留下一枚印记"].exists)
         XCTAssertFalse(app.staticTexts["写入本机后完成"].exists)
+        XCTAssertFalse(app.staticTexts["还没有留下今天的印"].exists)
         XCTAssertEqual(
             app.staticTexts.matching(
                 NSPredicate(format: "label CONTAINS %@", "写入本机")

@@ -1,7 +1,13 @@
 import XCTest
+import UniformTypeIdentifiers
 @testable import pulse
 
 final class PulseExportDocumentTests: XCTestCase {
+    func testDocumentTypeContractHasOneJSONAuthorityForImportAndExport() {
+        XCTAssertEqual(PulseExportDocument.readableContentTypes, [.json])
+        XCTAssertEqual(PulseExportDocument.writableContentTypes, [.json])
+    }
+
     func testJSONRoundTripPreservesCompleteV1Contract() throws {
         let habitID = UUID()
         let recordID = UUID()

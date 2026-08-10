@@ -56,7 +56,6 @@ struct TodayView: View {
                     dayHero
                     checkInControl
                         .padding(.top, PulseDesign.checkInHeroOverlap)
-                    pendingStatusIfNeeded
                 }
                 .frame(maxWidth: .infinity)
 
@@ -77,27 +76,12 @@ struct TodayView: View {
                             ? PulseDesign.spacing12
                             : PulseDesign.checkInHeroOverlap
                     )
-                if model.todayRecord == nil {
-                    pendingCheckInStatus
-                        .padding(.top, PulseDesign.spacing12)
-                    weekRail
-                        .padding(.top, PulseDesign.spacing20)
-                } else {
-                    weekRail
-                        .padding(.top, PulseDesign.checkInOuterHalo + PulseDesign.spacing12)
-                }
+                weekRail
+                    .padding(.top, PulseDesign.checkInOuterHalo + PulseDesign.spacing12)
                 streakBand
                     .padding(.top, PulseDesign.spacing24)
             }
             .padding(.bottom, PulseDesign.spacing24)
-        }
-    }
-
-    @ViewBuilder
-    private var pendingStatusIfNeeded: some View {
-        if model.todayRecord == nil {
-            pendingCheckInStatus
-                .padding(.top, PulseDesign.spacing12)
         }
     }
 
@@ -339,23 +323,6 @@ struct TodayView: View {
                 .foregroundStyle(foreground)
                 .transition(.opacity)
         }
-    }
-
-    private var pendingCheckInStatus: some View {
-        Text(pendingStatusKey)
-        .font(.footnote)
-        .foregroundStyle(PulseDesign.secondary)
-        .multilineTextAlignment(.center)
-        .frame(maxWidth: .infinity)
-    }
-
-    private var pendingStatusKey: LocalizedStringKey {
-        if let today = model.today,
-           let habitStartDay = model.habitStartDay,
-           today < habitStartDay {
-            return "today.before_start_status"
-        }
-        return "today.pending_status"
     }
 
     private var completedCheckInText: String? {

@@ -54,6 +54,7 @@ struct HistoryView: View {
         .sheet(item: $selectedRecord) { record in
             RecordDetailView(record: record, model: model)
                 .presentationDetents([.medium])
+                .presentationDragIndicator(.visible)
         }
     }
 
@@ -411,62 +412,59 @@ private struct RecordDetailView: View {
     @State private var showsDeleteConfirmation = false
 
     var body: some View {
-        NavigationStack {
-            ZStack {
-                PulseScreenBackground()
+        ZStack {
+            PulseScreenBackground()
 
-                VStack(spacing: PulseDesign.spacing24) {
-                    PulseBrandMark(size: PulseDesign.recordDetailBrandMarkSize)
+            VStack(spacing: PulseDesign.spacing24) {
+                PulseBrandMark(size: PulseDesign.recordDetailBrandMarkSize)
 
-                    VStack(spacing: PulseDesign.spacing8) {
-                        if let day = record.logicalDay, let timeZone = record.timeZone {
-                            Text(PulseFormatting.fullDate(day, timeZone: timeZone))
-                                .font(.title3.bold())
-                                .foregroundStyle(PulseDesign.ink)
-                        }
-                        if let timeZone = record.timeZone {
-                            Text(
-                                String(
-                                    format: String(localized: "history.checked_at"),
-                                    PulseFormatting.time(record.checkedAt, timeZone: timeZone)
-                                )
+                VStack(spacing: PulseDesign.spacing8) {
+                    if let day = record.logicalDay, let timeZone = record.timeZone {
+                        Text(PulseFormatting.fullDate(day, timeZone: timeZone))
+                            .font(.title3.bold())
+                            .foregroundStyle(PulseDesign.ink)
+                    }
+                    if let timeZone = record.timeZone {
+                        Text(
+                            String(
+                                format: String(localized: "history.checked_at"),
+                                PulseFormatting.time(record.checkedAt, timeZone: timeZone)
                             )
-                            .foregroundStyle(PulseDesign.secondary)
-                        }
+                        )
+                        .foregroundStyle(PulseDesign.secondary)
                     }
+                }
 
-                    Button("history.delete_record", role: .destructive) {
-                        showsDeleteConfirmation = true
-                    }
-                    .buttonStyle(.bordered)
-                }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .padding(PulseDesign.spacing24)
+                deleteButton
             }
-            .navigationTitle("history.record_detail")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("action.done") { dismiss() }
-                }
-            }
-            .confirmationDialog(
-                "history.delete_confirmation.title",
-                isPresented: $showsDeleteConfirmation,
-                titleVisibility: .visible
-            ) {
-                Button("history.delete_confirmation.action", role: .destructive) {
-                    Task {
-                        if await model.delete(recordID: record.id) {
-                            dismiss()
-                        }
-                    }
-                }
-                Button("action.cancel", role: .cancel) {}
-            } message: {
-                Text("history.delete_confirmation.message")
-            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .padding(PulseDesign.spacing24)
         }
         .tint(PulseDesign.tint)
+    }
+
+    private var deleteButton: some View {
+        Button("history.delete_record", role: .destructive) {
+            showsDeleteConfirmation = true
+        }
+        .buttonStyle(.bordered)
+        .accessibilityIdentifier("history.record.delete.button")
+        .confirmationDialog(
+            "history.delete_confirmation.title",
+            isPresented: $showsDeleteConfirmation,
+            titleVisibility: .visible
+        ) {
+            Button("history.delete_confirmation.action", role: .destructive) {
+                Task {
+                    if await model.delete(recordID: record.id) {
+                        dismiss()
+                    }
+                }
+            }
+            .accessibilityIdentifier("history.record.delete.confirm.button")
+            Button("action.cancel", role: .cancel) {}
+        } message: {
+            Text("history.delete_confirmation.message")
+        }
     }
 }

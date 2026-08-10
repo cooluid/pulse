@@ -17,22 +17,6 @@
         }
       }
     },
-    "action.done" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Done"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "完成"
-          }
-        }
-      }
-    },
     "action.ok" : {
       "localizations" : {
         "en" : {
@@ -161,6 +145,22 @@
         }
       }
     },
+    "error.check_in_invalid" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This check-in could not be validated."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "本次签到未通过数据校验，请重试。"
+          }
+        }
+      }
+    },
     "error.export" : {
       "localizations" : {
         "en" : {
@@ -189,22 +189,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "操作未完成，请重试。"
-          }
-        }
-      }
-    },
-    "error.check_in_invalid" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "This check-in could not be validated."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "本次签到未通过数据校验，请重试。"
           }
         }
       }
@@ -545,22 +529,6 @@
         }
       }
     },
-    "history.record_detail" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Check-in Details"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "签到详情"
-          }
-        }
-      }
-    },
     "history.total" : {
       "localizations" : {
         "en" : {
@@ -849,6 +817,22 @@
         }
       }
     },
+    "settings.reminder.section" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reminder"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "签到提醒"
+          }
+        }
+      }
+    },
     "settings.reminder.sync_failed" : {
       "localizations" : {
         "en" : {
@@ -877,22 +861,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "正在同步提醒计划"
-          }
-        }
-      }
-    },
-    "settings.reminder.section" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Reminder"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "签到提醒"
           }
         }
       }
@@ -1313,34 +1281,18 @@
         }
       }
     },
-    "today.before_start_status" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Today is before this check-in began"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "当前日期早于项目开始日"
-          }
-        }
-      }
-    },
     "today.check_in" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Check In"
+            "value" : "Check In Today"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "今日签到"
+            "value" : "今日待签到"
           }
         }
       }
@@ -1421,22 +1373,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "待留下印记"
-          }
-        }
-      }
-    },
-    "today.pending_status" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Today has no mark yet"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "还没有留下今天的印"
           }
         }
       }

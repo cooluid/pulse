@@ -24,82 +24,28 @@ struct SettingsView: View {
         .navigationTitle("settings.navigation_title")
         .navigationBarTitleDisplayMode(.inline)
         .disabled(model.operation != nil)
-        .confirmationDialog(
-            "settings.reset_confirmation.title",
-            isPresented: $showsResetConfirmation,
-            titleVisibility: .visible
-        ) {
-            Button("settings.reset_confirmation.action", role: .destructive) {
-                Task { _ = await model.resetAllData() }
-            }
-            Button("action.cancel", role: .cancel) {}
-        } message: {
-            Text("settings.reset_confirmation.message")
-        }
-        .fileExporter(
-            isPresented: $showsExporter,
-            document: exportDocument,
-            contentType: .json,
-            defaultFilename: exportFilename
-        ) { result in
-            if case .failure(let error) = result {
-                model.errorMessage = error.localizedDescription
-            }
-            exportDocument = nil
-        }
-        .fileImporter(
-            isPresented: $showsImporter,
-            allowedContentTypes: [.json],
-            allowsMultipleSelection: false
-        ) { result in
-            do {
-                guard let url = try result.get().first else { return }
-                pendingImport = try model.decodeImport(from: url)
-            } catch {
-                model.errorMessage = error.localizedDescription
-            }
-        }
-        .confirmationDialog(
-            "settings.import_confirmation.title",
-            isPresented: Binding(
-                get: { pendingImport != nil },
-                set: { if !$0 { pendingImport = nil } }
-            ),
-            titleVisibility: .visible
-        ) {
-            if let pendingImport {
-                Button("settings.import_confirmation.action", role: .destructive) {
-                    Task {
-                        if await model.importData(pendingImport) {
-                            self.pendingImport = nil
-                        }
-                    }
-                }
-            }
-            Button("action.cancel", role: .cancel) {
-                pendingImport = nil
-            }
-        } message: {
-            Text(
-                String(
-                    format: String(localized: "settings.import_confirmation.message"),
-                    pendingImport?.records.count ?? 0
-                )
-            )
-        }
     }
 
     private var reminderSection: some View {
         Section {
             Toggle(
-                "settings.reminder.toggle",
                 isOn: Binding(
                     get: { model.displayedReminderEnabled },
                     set: { enabled in
                         model.requestReminderEnabled(enabled)
                     }
                 )
-            )
+            ) {
+                VStack(alignment: .leading, spacing: PulseDesign.spacing4) {
+                    Text("settings.reminder.toggle")
+                    Text("settings.reminder.footer")
+                        .font(.footnote)
+                        .foregroundStyle(PulseDesign.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+            .accessibilityLabel("settings.reminder.toggle")
+            .accessibilityHint("settings.reminder.footer")
 
             if model.settings.reminderEnabled {
                 DatePicker(
@@ -127,8 +73,6 @@ struct SettingsView: View {
             }
         } header: {
             Text("settings.reminder.section")
-        } footer: {
-            Text("settings.reminder.footer")
         }
     }
 
@@ -168,32 +112,116 @@ struct SettingsView: View {
 
     private var dataSection: some View {
         Section {
-            Button {
-                do {
-                    exportDocument = try model.makeExportDocument()
-                    showsExporter = true
-                } catch {
-                    model.errorMessage = error.localizedDescription
-                }
-            } label: {
-                Label("settings.export", systemImage: "square.and.arrow.up")
-            }
+            exportButton
+            importButton
+            resetButton
 
-            Button {
-                showsImporter = true
-            } label: {
-                Label("settings.import", systemImage: "square.and.arrow.down")
+            Label {
+                Text("settings.data.footer")
+                    .fixedSize(horizontal: false, vertical: true)
+            } icon: {
+                Image(systemName: "externaldrive")
             }
-
-            Button(role: .destructive) {
-                showsResetConfirmation = true
-            } label: {
-                Label("settings.reset", systemImage: "trash")
-            }
+            .font(.footnote)
+            .foregroundStyle(PulseDesign.secondary)
+            .accessibilityIdentifier("settings.data.note")
         } header: {
             Text("settings.data.section")
-        } footer: {
-            Text("settings.data.footer")
+        }
+    }
+
+    private var exportButton: some View {
+        Button {
+            do {
+                exportDocument = try model.makeExportDocument()
+                showsExporter = true
+            } catch {
+                model.errorMessage = error.localizedDescription
+            }
+        } label: {
+            Label("settings.export", systemImage: "square.and.arrow.up")
+        }
+        .accessibilityIdentifier("settings.export.button")
+        .fileExporter(
+            isPresented: $showsExporter,
+            document: exportDocument,
+            contentType: .json,
+            defaultFilename: exportFilename
+        ) { result in
+            if case .failure(let error) = result {
+                model.errorMessage = error.localizedDescription
+            }
+            exportDocument = nil
+        }
+    }
+
+    private var importButton: some View {
+        Button {
+            showsImporter = true
+        } label: {
+            Label("settings.import", systemImage: "square.and.arrow.down")
+        }
+        .accessibilityIdentifier("settings.import.button")
+        .fileImporter(
+            isPresented: $showsImporter,
+            allowedContentTypes: PulseExportDocument.readableContentTypes
+        ) { result in
+            do {
+                pendingImport = try model.decodeImport(from: result.get())
+            } catch {
+                model.errorMessage = error.localizedDescription
+            }
+        }
+        .confirmationDialog(
+            "settings.import_confirmation.title",
+            isPresented: Binding(
+                get: { pendingImport != nil },
+                set: { if !$0 { pendingImport = nil } }
+            ),
+            titleVisibility: .visible
+        ) {
+            if let pendingImport {
+                Button("settings.import_confirmation.action", role: .destructive) {
+                    Task {
+                        if await model.importData(pendingImport) {
+                            self.pendingImport = nil
+                        }
+                    }
+                }
+                .accessibilityIdentifier("settings.import.confirm.button")
+            }
+            Button("action.cancel", role: .cancel) {
+                pendingImport = nil
+            }
+        } message: {
+            Text(
+                String(
+                    format: String(localized: "settings.import_confirmation.message"),
+                    pendingImport?.records.count ?? 0
+                )
+            )
+        }
+    }
+
+    private var resetButton: some View {
+        Button(role: .destructive) {
+            showsResetConfirmation = true
+        } label: {
+            Label("settings.reset", systemImage: "trash")
+        }
+        .accessibilityIdentifier("settings.reset.button")
+        .confirmationDialog(
+            "settings.reset_confirmation.title",
+            isPresented: $showsResetConfirmation,
+            titleVisibility: .visible
+        ) {
+            Button("settings.reset_confirmation.action", role: .destructive) {
+                Task { _ = await model.resetAllData() }
+            }
+            .accessibilityIdentifier("settings.reset.confirm.button")
+            Button("action.cancel", role: .cancel) {}
+        } message: {
+            Text("settings.reset_confirmation.message")
         }
     }
 

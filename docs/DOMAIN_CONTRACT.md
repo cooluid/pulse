@@ -76,6 +76,8 @@ recordKey = lowercased(habitID) + ":" + logicalDay
 
 完整验证成功后才全量替换；任一校验或保存失败都不修改现有事实。导入不覆盖设备偏好，完成后重新协调提醒。
 
+文件选择器只消费 `PulseExportDocument.readableContentTypes` 声明的 JSON 类型，并通过安全作用域读取文件提供器 URL。App 必须声明 `LSSupportsOpeningDocumentsInPlace`，确保 iCloud Drive 等文件提供器可交付原文件；扩展名与提供器元数据只负责筛选，内容、格式标识和 schema 校验才是导入权威边界。
+
 未上线阶段的旧开发数据库与旧 JSON 不是发布合同，不提供自动迁移、猜测字段或静默兜底。首个公开版本发布后，任何 schema 变化都必须新增显式迁移与旧版本 fixture，不能再使用清洁断代。
 
 ## 7. 范围变更
