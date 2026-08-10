@@ -1,45 +1,41 @@
 import SwiftUI
 
 enum PulseDesign {
-    static let brand = Color(red: 0.35, green: 0.29, blue: 0.92)
-    static let brandDeep = Color(red: 0.22, green: 0.18, blue: 0.68)
-    static let success = Color(red: 0.12, green: 0.64, blue: 0.45)
-    static let warning = Color(red: 0.91, green: 0.48, blue: 0.16)
-    static let cardCornerRadius: CGFloat = 24
-    static let contentSpacing: CGFloat = 20
-    static let horizontalPadding: CGFloat = 20
+    static let background = Color("PulseBackground")
+    static let surface = Color("PulseSurface")
+    static let ink = Color("PulseInk")
+    static let secondary = Color("PulseSecondary")
+    static let brand = Color.accentColor
+    static let success = Color("PulseSuccess")
+    static let actionForeground = background
+    static let separator = ink.opacity(0.14)
+
+    static let surfaceCornerRadius: CGFloat = 20
+    static let contentSpacing: CGFloat = 24
+    static let horizontalPadding: CGFloat = 24
 }
 
-struct PulseCardModifier: ViewModifier {
+struct PulseSurfaceModifier: ViewModifier {
     func body(content: Content) -> some View {
         content
             .padding(20)
-            .background(.regularMaterial, in: RoundedRectangle(cornerRadius: PulseDesign.cardCornerRadius))
+            .background(PulseDesign.surface, in: RoundedRectangle(cornerRadius: PulseDesign.surfaceCornerRadius))
             .overlay {
-                RoundedRectangle(cornerRadius: PulseDesign.cardCornerRadius)
-                    .stroke(.primary.opacity(0.06), lineWidth: 1)
+                RoundedRectangle(cornerRadius: PulseDesign.surfaceCornerRadius)
+                    .stroke(PulseDesign.separator, lineWidth: 1)
             }
     }
 }
 
 extension View {
-    func pulseCard() -> some View {
-        modifier(PulseCardModifier())
+    func pulseSurface() -> some View {
+        modifier(PulseSurfaceModifier())
     }
 }
 
 struct PulseBackground: View {
     var body: some View {
-        LinearGradient(
-            colors: [
-                PulseDesign.brand.opacity(0.12),
-                Color(uiColor: .systemBackground),
-                PulseDesign.success.opacity(0.06)
-            ],
-            startPoint: .topLeading,
-            endPoint: .bottomTrailing
-        )
-        .ignoresSafeArea()
+        PulseDesign.background
+            .ignoresSafeArea()
     }
 }
-

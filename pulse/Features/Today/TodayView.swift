@@ -3,6 +3,7 @@ import SwiftUI
 struct TodayView: View {
     @Bindable var model: PulseAppModel
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     var body: some View {
         ZStack {
@@ -20,6 +21,7 @@ struct TodayView: View {
                 .padding(.top, 12)
                 .padding(.bottom, 32)
                 .frame(maxWidth: .infinity)
+                .foregroundStyle(PulseDesign.ink)
             }
         }
         .navigationTitle("today.navigation_title")
@@ -41,11 +43,11 @@ struct TodayView: View {
             if let today = model.today, let timeZone = model.timeZone {
                 Text(PulseFormatting.fullDate(today, timeZone: timeZone))
                     .font(.subheadline.weight(.medium))
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(PulseDesign.secondary)
             }
 
             Text(model.todayRecord == nil ? "today.prompt" : "today.completed_prompt")
-                .font(.title2.bold())
+                .font(.system(.title2, design: .serif, weight: .semibold))
                 .multilineTextAlignment(.center)
         }
         .frame(maxWidth: .infinity)
@@ -61,41 +63,31 @@ struct TodayView: View {
             } label: {
                 ZStack {
                     Circle()
-                        .fill(
-                            LinearGradient(
-                                colors: isChecked
-                                    ? [PulseDesign.success, PulseDesign.success.opacity(0.78)]
-                                    : [PulseDesign.brand, PulseDesign.brandDeep],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        )
-                        .shadow(
-                            color: (isChecked ? PulseDesign.success : PulseDesign.brand).opacity(0.28),
-                            radius: 24,
-                            y: 14
-                        )
+                        .fill(isChecked ? PulseDesign.success : PulseDesign.brand)
 
                     Circle()
-                        .stroke(.white.opacity(0.22), lineWidth: 1)
-                        .padding(10)
+                        .stroke(PulseDesign.actionForeground.opacity(0.42), lineWidth: 1)
+                        .padding(12)
 
                     if model.isSaving {
                         ProgressView()
                             .controlSize(.large)
-                            .tint(.white)
+                            .tint(PulseDesign.actionForeground)
                     } else {
-                        VStack(spacing: 10) {
-                            Image(systemName: isChecked ? "checkmark" : "hand.tap.fill")
-                                .font(.system(size: 42, weight: .semibold))
-                                .symbolRenderingMode(.monochrome)
+                        VStack(spacing: 12) {
+                            if isChecked {
+                                Image(systemName: "checkmark")
+                                    .font(.system(size: 34, weight: .medium))
+                            }
                             Text(isChecked ? "today.checked" : "today.check_in")
-                                .font(.title3.bold())
+                                .font(.system(.headline, design: .serif, weight: .semibold))
+                                .multilineTextAlignment(.center)
                         }
-                        .foregroundStyle(.white)
+                        .foregroundStyle(PulseDesign.actionForeground)
+                        .padding(20)
                     }
                 }
-                .frame(width: 218, height: 218)
+                .frame(width: checkInDiameter, height: checkInDiameter)
                 .contentShape(Circle())
             }
             .buttonStyle(.plain)
@@ -114,57 +106,55 @@ struct TodayView: View {
                     )
                 )
                 .font(.subheadline)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(PulseDesign.secondary)
                 .accessibilityIdentifier("today.checked.time")
             } else {
                 Text("today.offline_note")
                     .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(PulseDesign.secondary)
             }
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 12)
     }
 
+    private var checkInDiameter: CGFloat {
+        dynamicTypeSize.isAccessibilitySize ? 236 : 196
+    }
+
     private var streakCard: some View {
-        HStack(spacing: 16) {
-            ZStack {
-                Circle()
-                    .fill(PulseDesign.warning.opacity(0.14))
-                Image(systemName: "flame.fill")
-                    .font(.title2)
-                    .foregroundStyle(PulseDesign.warning)
-            }
-            .frame(width: 52, height: 52)
+        VStack(spacing: 16) {
+            HStack(alignment: .firstTextBaseline, spacing: 12) {
+                Text(model.statistics.currentStreak, format: .number)
+                    .font(.system(.largeTitle, design: .serif, weight: .regular))
+                    .foregroundStyle(PulseDesign.brand)
 
-            VStack(alignment: .leading, spacing: 4) {
-                Text("today.current_streak")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                HStack(alignment: .firstTextBaseline, spacing: 5) {
-                    Text(model.statistics.currentStreak, format: .number)
-                        .font(.system(.title, design: .rounded, weight: .bold))
+                VStack(alignment: .leading, spacing: 2) {
                     Text("unit.days")
-                        .font(.subheadline.weight(.semibold))
-                        .foregroundStyle(.secondary)
+                        .font(.subheadline.weight(.medium))
+                    Text("today.current_streak")
+                        .font(.caption)
+                        .foregroundStyle(PulseDesign.secondary)
                 }
-            }
 
-            Spacer()
+                Spacer(minLength: 12)
+            }
 
             Text("today.streak_encouragement")
-                .font(.caption)
-                .foregroundStyle(.secondary)
-                .multilineTextAlignment(.trailing)
+                .font(.subheadline)
+                .foregroundStyle(PulseDesign.secondary)
+                .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .pulseCard()
+        .padding(.vertical, 20)
+        .overlay(alignment: .top) { Divider().overlay(PulseDesign.separator) }
+        .overlay(alignment: .bottom) { Divider().overlay(PulseDesign.separator) }
         .accessibilityElement(children: .combine)
     }
 
     private var recentDaysCard: some View {
         VStack(alignment: .leading, spacing: 16) {
             Text("today.recent_days")
-                .font(.headline)
+                .font(.system(.headline, design: .serif, weight: .semibold))
 
             HStack(spacing: 8) {
                 ForEach(model.recentDays) { item in
@@ -173,7 +163,7 @@ struct TodayView: View {
                 }
             }
         }
-        .pulseCard()
+        .pulseSurface()
     }
 
     private func recentDay(_ item: CalendarDayItem) -> some View {
@@ -189,23 +179,22 @@ struct TodayView: View {
 
             ZStack {
                 Circle()
-                    .fill(isChecked ? PulseDesign.success : Color.secondary.opacity(0.1))
+                    .fill(isChecked ? PulseDesign.success : PulseDesign.background)
                 if isChecked {
                     Image(systemName: "checkmark")
                         .font(.caption.bold())
-                        .foregroundStyle(.white)
+                        .foregroundStyle(PulseDesign.actionForeground)
                 } else {
                     Text(item.day.day, format: .number)
                         .font(.caption.weight(.semibold))
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(PulseDesign.secondary)
                 }
             }
             .frame(width: 34, height: 34)
             .overlay {
-                if isToday {
-                    Circle().stroke(PulseDesign.brand, lineWidth: 2)
-                        .padding(-3)
-                }
+                Circle()
+                    .stroke(isToday ? PulseDesign.brand : PulseDesign.separator, lineWidth: isToday ? 2 : 1)
+                    .padding(isToday ? -3 : 0)
             }
         }
         .accessibilityElement(children: .ignore)

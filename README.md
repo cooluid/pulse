@@ -6,7 +6,7 @@ Pulse 是一个本地优先的 iPhone / iPad 日签到应用。当前产品阶�
 
 ## 当前状态
 
-- 产品阶段：核心功能工程候选版，尚未完成视觉、真机与发布验收
+- 产品阶段：核心功能与 B 方向视觉实现候选版，尚未完成最终界面、真机与发布验收
 - App target：`pulse`
 - 测试 target：`pulseTests`、`pulseUITests`
 - 最低系统版本：iOS / iPadOS 17.0
@@ -17,11 +17,13 @@ Pulse 是一个本地优先的 iPhone / iPad 日签到应用。当前产品阶�
 
 - [文档总览](./docs/README.md)
 - [产品需求](./docs/PRODUCT_REQUIREMENTS.md)
+- [1.0 发布范围合同](./docs/RELEASE_SCOPE_1_0.md)
 - [签到业务规则](./docs/DOMAIN_CONTRACT.md)
 - [技术设计](./docs/TECHNICAL_DESIGN.md)
 - [开发计划](./docs/DEVELOPMENT_PLAN.md)
 - [测试与验收计划](./docs/TEST_PLAN.md)
 - [实现与验收状态](./docs/IMPLEMENTATION_STATUS.md)
+- [视觉方向评审](./design/README.md)
 
 ## 开发原则
 

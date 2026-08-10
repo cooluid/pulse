@@ -37,6 +37,11 @@ final class PulseFlowUITests: XCTestCase {
         XCTAssertTrue(totalStatistic.waitForExistence(timeout: 3))
         XCTAssertTrue(totalStatistic.label.contains("1"))
 
+        let weekdayHeaders = app.staticTexts.matching(
+            NSPredicate(format: "identifier BEGINSWITH %@", "calendar.weekday.")
+        )
+        XCTAssertEqual(weekdayHeaders.count, 7)
+
         let attachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
         attachment.name = "History after first check-in"
         attachment.lifetime = .keepAlways

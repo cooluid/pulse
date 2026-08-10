@@ -40,6 +40,8 @@ struct RootView: View {
                 }
             }
         }
+        .background(PulseDesign.background)
+        .tint(PulseDesign.brand)
         .task {
             if model.loadState == .loading {
                 await model.start()
@@ -67,4 +69,3 @@ struct RootView: View {
         }
     }
 }
-

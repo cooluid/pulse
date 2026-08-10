@@ -489,8 +489,8 @@
     },
     "today.completed_prompt" : {
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Today is complete" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "今天已经完成" } }
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Today has its mark" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "今天已经留下记号" } }
       }
     },
     "today.current_streak" : {
@@ -513,8 +513,8 @@
     },
     "today.prompt" : {
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Ready for today’s check-in?" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "准备好完成今天的签到了吗？" } }
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Leave a mark for today" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "给今天留下一个记号" } }
       }
     },
     "today.recent_days" : {

@@ -20,6 +20,7 @@ struct HistoryView: View {
                 .padding(.top, 12)
                 .padding(.bottom, 32)
                 .frame(maxWidth: .infinity)
+                .foregroundStyle(PulseDesign.ink)
             }
         }
         .navigationTitle("history.navigation_title")
@@ -30,29 +31,34 @@ struct HistoryView: View {
     }
 
     private var statisticsGrid: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: 0) {
             StatisticTile(
                 value: model.statistics.currentStreak,
                 labelKey: "history.current_streak",
-                symbol: "flame.fill",
-                color: PulseDesign.warning,
                 accessibilityIdentifier: "history.stat.current"
             )
+
+            Divider()
+                .frame(height: 58)
+                .overlay(PulseDesign.separator)
+
             StatisticTile(
                 value: model.statistics.longestStreak,
                 labelKey: "history.longest_streak",
-                symbol: "trophy.fill",
-                color: PulseDesign.brand,
                 accessibilityIdentifier: "history.stat.longest"
             )
+
+            Divider()
+                .frame(height: 58)
+                .overlay(PulseDesign.separator)
+
             StatisticTile(
                 value: model.statistics.totalCount,
                 labelKey: "history.total",
-                symbol: "checkmark.seal.fill",
-                color: PulseDesign.success,
                 accessibilityIdentifier: "history.stat.total"
             )
         }
+        .pulseSurface()
     }
 
     private var calendarCard: some View {
@@ -60,11 +66,15 @@ struct HistoryView: View {
             monthHeader
 
             LazyVGrid(columns: columns, spacing: 10) {
-                ForEach(PulseFormatting.weekdayHeaders(weekStart: model.settings.weekStart), id: \.self) { weekday in
+                ForEach(
+                    Array(PulseFormatting.weekdayHeaders(weekStart: model.settings.weekStart).enumerated()),
+                    id: \.offset
+                ) { index, weekday in
                     Text(weekday)
                         .font(.caption.weight(.semibold))
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(PulseDesign.secondary)
                         .frame(maxWidth: .infinity)
+                        .accessibilityIdentifier("calendar.weekday.\(index)")
                 }
 
                 ForEach(0..<leadingEmptyDays, id: \.self) { _ in
@@ -84,7 +94,7 @@ struct HistoryView: View {
 
             calendarLegend
         }
-        .pulseCard()
+        .pulseSurface()
     }
 
     private var monthHeader: some View {
@@ -131,7 +141,7 @@ struct HistoryView: View {
             Label("calendar.status.checked", systemImage: "checkmark.circle.fill")
                 .foregroundStyle(PulseDesign.success)
             Label("calendar.status.missed", systemImage: "circle")
-                .foregroundStyle(.secondary)
+                .foregroundStyle(PulseDesign.secondary)
             Label("calendar.status.today", systemImage: "circle.dotted")
                 .foregroundStyle(PulseDesign.brand)
         }
@@ -144,25 +154,20 @@ struct HistoryView: View {
 private struct StatisticTile: View {
     let value: Int
     let labelKey: LocalizedStringKey
-    let symbol: String
-    let color: Color
     let accessibilityIdentifier: String
 
     var body: some View {
-        VStack(spacing: 8) {
-            Image(systemName: symbol)
-                .font(.headline)
-                .foregroundStyle(color)
+        VStack(spacing: 6) {
             Text(value, format: .number)
-                .font(.system(.title2, design: .rounded, weight: .bold))
+                .font(.system(.title, design: .serif, weight: .medium))
+                .foregroundStyle(PulseDesign.brand)
             Text(labelKey)
                 .font(.caption)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(PulseDesign.secondary)
                 .lineLimit(1)
                 .minimumScaleFactor(0.72)
         }
         .frame(maxWidth: .infinity)
-        .pulseCard()
         .accessibilityElement(children: .combine)
         .accessibilityIdentifier(accessibilityIdentifier)
     }
@@ -174,17 +179,17 @@ private struct CalendarDayCell: View {
 
     var body: some View {
         ZStack {
-            RoundedRectangle(cornerRadius: 12)
+            Circle()
                 .fill(backgroundColor)
 
             if item.status == .checked {
-                VStack(spacing: 2) {
+                VStack(spacing: 1) {
                     Text(item.day.day, format: .number)
                         .font(.subheadline.bold())
                     Image(systemName: "checkmark")
                         .font(.caption2.bold())
                 }
-                .foregroundStyle(.white)
+                .foregroundStyle(PulseDesign.actionForeground)
             } else {
                 Text(item.day.day, format: .number)
                     .font(.subheadline.weight(isToday ? .bold : .regular))
@@ -194,7 +199,7 @@ private struct CalendarDayCell: View {
         .frame(height: 44)
         .overlay {
             if isToday {
-                RoundedRectangle(cornerRadius: 12)
+                Circle()
                     .stroke(PulseDesign.brand, lineWidth: 2)
             }
         }
@@ -208,7 +213,7 @@ private struct CalendarDayCell: View {
     private var backgroundColor: Color {
         switch item.status {
         case .checked: PulseDesign.success
-        case .missed: Color.secondary.opacity(0.08)
+        case .missed: PulseDesign.surface
         case .todayPending: PulseDesign.brand.opacity(0.08)
         case .beforeHabit, .future: Color.clear
         }
@@ -216,10 +221,10 @@ private struct CalendarDayCell: View {
 
     private var foregroundColor: Color {
         switch item.status {
-        case .beforeHabit, .future: .secondary.opacity(0.45)
-        case .missed: .secondary
+        case .beforeHabit, .future: PulseDesign.secondary
+        case .missed: PulseDesign.secondary
         case .todayPending: PulseDesign.brand
-        case .checked: .white
+        case .checked: PulseDesign.actionForeground
         }
     }
 
@@ -261,7 +266,7 @@ private struct RecordDetailView: View {
                                 PulseFormatting.time(record.checkedAt, timeZone: timeZone)
                             )
                         )
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(PulseDesign.secondary)
                     }
                 }
 
