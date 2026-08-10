@@ -178,9 +178,16 @@ def main() -> None:
         print(f"Verified {len(outputs)} generated brand assets")
         return
 
+    updated_paths = []
     for path, data in outputs.items():
+        if output_matches(path, data):
+            continue
         write_atomically(path, data)
-    print(f"Generated {len(outputs)} brand assets from {TOKEN_PATH.relative_to(ROOT)}")
+        updated_paths.append(path)
+    print(
+        f"Updated {len(updated_paths)} of {len(outputs)} brand assets "
+        f"from {TOKEN_PATH.relative_to(ROOT)}"
+    )
 
 
 if __name__ == "__main__":

@@ -15,8 +15,8 @@
     "tint" : "#1F5E34"
   },
   "dark" : {
-    "action" : "#9BDB69",
-    "actionForeground" : "#0C1A0E",
+    "action" : "#276D3D",
+    "actionForeground" : "#F7FBF2",
     "background" : "#07120A",
     "field" : "#91D55B",
     "grass" : "#91D55B",

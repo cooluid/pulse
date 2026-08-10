@@ -6,11 +6,6 @@
 	objectVersion = 77;
 	objects = {
 
-/* Begin PBXBuildFile section */
-		C0D00000000000000000000C /* XCTest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C0D00000000000000000000D /* XCTest.framework */; };
-		D0D00000000000000000000C /* XCTest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C0D00000000000000000000D /* XCTest.framework */; };
-/* End PBXBuildFile section */
-
 /* Begin PBXContainerItemProxy section */
 		C0D00000000000000000000A /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -31,7 +26,6 @@
 /* Begin PBXFileReference section */
 		B9538A823029A88800432B53 /* pulse.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = pulse.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		C0D000000000000000000001 /* pulseTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = pulseTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		C0D00000000000000000000D /* XCTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XCTest.framework; path = System/Library/Frameworks/XCTest.framework; sourceTree = SDKROOT; };
 		D0D000000000000000000001 /* pulseUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = pulseUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -65,7 +59,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				C0D00000000000000000000C /* XCTest.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -73,7 +66,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D0D00000000000000000000C /* XCTest.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -104,7 +96,6 @@
 		B9538B693029B4E800432B53 /* Recovered References */ = {
 			isa = PBXGroup;
 			children = (
-				C0D00000000000000000000D /* XCTest.framework */,
 			);
 			name = "Recovered References";
 			sourceTree = "<group>";

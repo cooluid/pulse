@@ -3,8 +3,13 @@ import SwiftUI
 struct HistoryView: View {
     @Bindable var model: PulseAppModel
     let isActive: Bool
+    let primaryNavigationClearance: CGFloat
 
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @State private var selectedRecord: CheckInRecord?
+    @State private var monthTransitionDirection = -1
 
     private let columns = Array(
         repeating: GridItem(.flexible(), spacing: PulseDesign.spacing4),
@@ -19,19 +24,30 @@ struct HistoryView: View {
             VStack(spacing: 0) {
                 PulseAppHeader(source: .history)
 
-                ScrollView {
-                    VStack(spacing: 0) {
-                        historyHeading
-                        statisticsRow
-                        calendar
+                GeometryReader { proxy in
+                    ScrollView {
+                        historyContent
+                            .frame(
+                                maxWidth: usesRegularWidthLayout
+                                    ? PulseDesign.regularWidthContentMaxWidth
+                                    : PulseDesign.historyMaxWidth
+                            )
+                            .frame(
+                                minHeight: usesRegularWidthLayout ? proxy.size.height : nil,
+                                alignment: .center
+                            )
+                            .padding(.horizontal, PulseDesign.horizontalPadding)
+                            .padding(
+                                .vertical,
+                                usesRegularWidthLayout
+                                    ? PulseDesign.regularWidthVerticalPadding
+                                    : PulseDesign.spacing4
+                            )
+                            .padding(.bottom, accessibilityScrollClearance)
+                            .frame(maxWidth: .infinity)
                     }
-                    .frame(maxWidth: PulseDesign.historyMaxWidth)
-                    .padding(.horizontal, PulseDesign.horizontalPadding)
-                    .padding(.top, PulseDesign.spacing4)
-                    .padding(.bottom, PulseDesign.spacing24)
-                    .frame(maxWidth: .infinity)
+                    .scrollIndicators(.hidden)
                 }
-                .scrollIndicators(.hidden)
             }
         }
         .toolbar(.hidden, for: .navigationBar)
@@ -41,7 +57,64 @@ struct HistoryView: View {
         }
     }
 
+    @ViewBuilder
+    private var historyContent: some View {
+        if usesRegularWidthLayout {
+            HStack(alignment: .top, spacing: PulseDesign.regularWidthColumnGap) {
+                VStack(spacing: 0) {
+                    historyHeading
+                    statisticsRow
+                }
+                .frame(maxWidth: .infinity)
+
+                animatedCalendar
+                    .frame(maxWidth: .infinity)
+            }
+        } else {
+            VStack(spacing: 0) {
+                historyHeading
+                statisticsRow
+                animatedCalendar
+            }
+            .padding(.bottom, PulseDesign.spacing24)
+        }
+    }
+
+    private var usesRegularWidthLayout: Bool {
+        horizontalSizeClass == .regular && !dynamicTypeSize.isAccessibilitySize
+    }
+
+    private var accessibilityScrollClearance: CGFloat {
+        dynamicTypeSize.isAccessibilitySize ? primaryNavigationClearance : 0
+    }
+
     private var historyHeading: some View {
+        HStack(alignment: .bottom, spacing: PulseDesign.spacing16) {
+            monthTitle
+
+            Spacer(minLength: PulseDesign.spacing16)
+
+            monthNavigationControls
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.top, PulseDesign.spacing16)
+        .padding(.bottom, PulseDesign.spacing20)
+        .overlay(alignment: .bottom) {
+            Rectangle()
+                .fill(PulseDesign.separator)
+                .frame(height: PulseDesign.thinLineWidth)
+        }
+        .contentShape(Rectangle())
+        .simultaneousGesture(monthSwipeGesture)
+        .accessibilityAction(named: Text("history.previous_month")) {
+            moveMonth(by: -1)
+        }
+        .accessibilityAction(named: Text("history.next_month")) {
+            moveMonth(by: 1)
+        }
+    }
+
+    private var monthTitle: some View {
         VStack(alignment: .leading, spacing: PulseDesign.spacing8) {
             if let month = selectedMonth, let timeZone = model.timeZone {
                 Text(
@@ -64,23 +137,40 @@ struct HistoryView: View {
                 .foregroundStyle(PulseDesign.ink)
             }
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.top, PulseDesign.spacing16)
-        .padding(.bottom, PulseDesign.spacing20)
-        .overlay(alignment: .bottom) {
-            Rectangle()
-                .fill(PulseDesign.separator)
-                .frame(height: PulseDesign.thinLineWidth)
-        }
-        .contentShape(Rectangle())
-        .gesture(monthSwipeGesture)
         .accessibilityElement(children: .combine)
-        .accessibilityAction(named: Text("history.previous_month")) {
-            model.moveSelectedMonth(by: -1)
+        .accessibilityIdentifier("history.month.heading")
+    }
+
+    private var monthNavigationControls: some View {
+        HStack(spacing: PulseDesign.spacing8) {
+            Button {
+                moveMonth(by: -1)
+            } label: {
+                Image(systemName: "chevron.left")
+                    .frame(
+                        minWidth: PulseDesign.minimumHitTarget,
+                        minHeight: PulseDesign.minimumHitTarget
+                    )
+            }
+            .accessibilityLabel("history.previous_month")
+            .accessibilityIdentifier("history.month.previous")
+
+            Button {
+                moveMonth(by: 1)
+            } label: {
+                Image(systemName: "chevron.right")
+                    .frame(
+                        minWidth: PulseDesign.minimumHitTarget,
+                        minHeight: PulseDesign.minimumHitTarget
+                    )
+            }
+            .disabled(isShowingCurrentMonth)
+            .accessibilityLabel("history.next_month")
+            .accessibilityIdentifier("history.month.next")
         }
-        .accessibilityAction(named: Text("history.next_month")) {
-            moveToNextMonthIfAvailable()
-        }
+        .font(.headline.weight(.semibold))
+        .foregroundStyle(PulseDesign.ink)
+        .buttonStyle(.plain)
     }
 
     private var statisticsRow: some View {
@@ -113,6 +203,7 @@ struct HistoryView: View {
                 .fill(PulseDesign.separator)
                 .frame(height: PulseDesign.thinLineWidth)
         }
+        .fixedSize(horizontal: false, vertical: true)
     }
 
     private var calendar: some View {
@@ -150,6 +241,12 @@ struct HistoryView: View {
         .padding(.top, PulseDesign.spacing20)
     }
 
+    private var animatedCalendar: some View {
+        calendar
+            .id(selectedMonth)
+            .transition(monthTransition)
+    }
+
     private var selectedMonth: LogicalDay? {
         model.selectedMonth ?? model.today?.firstDayOfMonth()
     }
@@ -169,16 +266,43 @@ struct HistoryView: View {
         DragGesture(minimumDistance: PulseDesign.minimumHitTarget)
             .onEnded { value in
                 if value.translation.width > PulseDesign.minimumHitTarget {
-                    model.moveSelectedMonth(by: -1)
+                    moveMonth(by: -1)
                 } else if value.translation.width < -PulseDesign.minimumHitTarget {
-                    moveToNextMonthIfAvailable()
+                    moveMonth(by: 1)
                 }
             }
     }
 
-    private func moveToNextMonthIfAvailable() {
-        guard selectedMonth != model.today?.firstDayOfMonth() else { return }
-        model.moveSelectedMonth(by: 1)
+    private var isShowingCurrentMonth: Bool {
+        selectedMonth == model.today?.firstDayOfMonth()
+    }
+
+    private var monthTransition: AnyTransition {
+        guard !reduceMotion else { return .opacity }
+        if monthTransitionDirection > 0 {
+            return .asymmetric(
+                insertion: .move(edge: .trailing).combined(with: .opacity),
+                removal: .move(edge: .leading).combined(with: .opacity)
+            )
+        }
+        return .asymmetric(
+            insertion: .move(edge: .leading).combined(with: .opacity),
+            removal: .move(edge: .trailing).combined(with: .opacity)
+        )
+    }
+
+    private func moveMonth(by offset: Int) {
+        guard offset != 0 else { return }
+        guard offset < 0 || !isShowingCurrentMonth else { return }
+        monthTransitionDirection = offset
+
+        guard !reduceMotion else {
+            model.moveSelectedMonth(by: offset)
+            return
+        }
+        withAnimation(.easeInOut(duration: PulseDesign.monthTransitionDuration)) {
+            model.moveSelectedMonth(by: offset)
+        }
     }
 }
 

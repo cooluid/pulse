@@ -87,6 +87,9 @@ final class PulseFlowUITests: XCTestCase {
         XCTAssertTrue(settingsNavigationBar.waitForExistence(timeout: 3))
         XCTAssertFalse(app.buttons["primary.navigation.today"].exists)
         XCTAssertFalse(app.buttons["primary.navigation.history"].exists)
+        XCTAssertFalse(app.staticTexts["today.day.number"].exists)
+        XCTAssertFalse(app.otherElements["today.week.rail"].exists)
+        XCTAssertFalse(app.otherElements["today.streak.band"].exists)
 
         let settingsAttachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
         settingsAttachment.name = "Settings without primary navigation"
@@ -113,6 +116,59 @@ final class PulseFlowUITests: XCTestCase {
         XCTAssertGreaterThanOrEqual(checkInButton.frame.minX, app.frame.minX)
         XCTAssertLessThanOrEqual(checkInButton.frame.maxX, app.frame.maxX)
         XCTAssertTrue(app.staticTexts["today.day.number"].exists)
+
+        let settingsButton = app.buttons["settings.navigation.open.today"]
+        XCTAssertTrue(settingsButton.exists)
+
+        let todayNavigation = app.buttons["primary.navigation.today"]
+        let historyNavigation = app.buttons["primary.navigation.history"]
+        XCTAssertTrue(todayNavigation.waitForExistence(timeout: 3))
+        XCTAssertTrue(historyNavigation.exists)
+        XCTAssertEqual(todayNavigation.frame.width, historyNavigation.frame.width, accuracy: 2)
+        XCTAssertEqual(todayNavigation.frame.height, historyNavigation.frame.height, accuracy: 2)
+        XCTAssertGreaterThanOrEqual(todayNavigation.frame.minX, app.frame.minX)
+        XCTAssertLessThanOrEqual(historyNavigation.frame.maxX, app.frame.maxX)
+        XCTAssertLessThanOrEqual(todayNavigation.frame.maxY, app.frame.maxY)
+        XCTAssertLessThanOrEqual(historyNavigation.frame.maxY, app.frame.maxY)
+
+        let streakBand = app.descendants(matching: .any)["today.streak.band"]
+        XCTAssertTrue(streakBand.exists)
+        checkInButton.swipeUp()
+        app.swipeUp()
+        XCTAssertTrue(streakBand.isHittable)
+        XCTAssertLessThanOrEqual(streakBand.frame.maxY, todayNavigation.frame.minY)
+    }
+
+    func testHistoryExposesBidirectionalMonthNavigation() throws {
+        configureApp()
+        app.launch()
+
+        let historyNavigation = app.buttons["primary.navigation.history"]
+        XCTAssertTrue(historyNavigation.waitForExistence(timeout: 5))
+        historyNavigation.tap()
+
+        let heading = app.descendants(matching: .any)["history.month.heading"]
+        let previousMonth = app.buttons["history.month.previous"]
+        let nextMonth = app.buttons["history.month.next"]
+        XCTAssertTrue(heading.waitForExistence(timeout: 3))
+        XCTAssertTrue(previousMonth.exists)
+        XCTAssertTrue(nextMonth.exists)
+        XCTAssertTrue(previousMonth.isEnabled)
+        XCTAssertFalse(nextMonth.isEnabled)
+
+        let currentMonthLabel = heading.label
+        previousMonth.tap()
+
+        let changedMonth = NSPredicate(format: "label != %@", currentMonthLabel)
+        expectation(for: changedMonth, evaluatedWith: heading)
+        waitForExpectations(timeout: 3)
+        XCTAssertTrue(nextMonth.isEnabled)
+
+        nextMonth.tap()
+        let restoredMonth = NSPredicate(format: "label == %@", currentMonthLabel)
+        expectation(for: restoredMonth, evaluatedWith: heading)
+        waitForExpectations(timeout: 3)
+        XCTAssertFalse(nextMonth.isEnabled)
     }
 
     func testMissedDayUsesExplicitCalendarSemantics() throws {

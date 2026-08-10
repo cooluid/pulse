@@ -27,6 +27,9 @@ enum PulseDesign {
     static let horizontalPadding: CGFloat = spacing20
     static let screenMaxWidth: CGFloat = 680
     static let historyMaxWidth: CGFloat = 760
+    static let regularWidthContentMaxWidth: CGFloat = 1_080
+    static let regularWidthColumnGap: CGFloat = spacing32 + spacing16
+    static let regularWidthVerticalPadding: CGFloat = spacing32
     static let minimumHitTarget: CGFloat = 44
 
     static let topBarHeight: CGFloat = 58
@@ -35,6 +38,7 @@ enum PulseDesign {
 
     static let todayHeroMinimumHeight: CGFloat = 270
     static let dayNumberBaseSize: CGFloat = 104
+    static let dayNumberAccessibilityMaximumSize: CGFloat = 144
     static let checkInHeroOverlap: CGFloat = -42
     static let accessibilityActionMinimumHeight: CGFloat = 72
     static let weekRailWidth: CGFloat = 244
@@ -56,6 +60,7 @@ enum PulseDesign {
     static let primaryNavigationPadding: CGFloat = spacing8
     static let primaryNavigationGlyph: CGFloat = 30
     static let primaryNavigationHorizontalInset: CGFloat = spacing16
+    static let accessibilityNavigationMinimumHeight: CGFloat = 88
 
     static let calendarDayVisualSize: CGFloat = 34
     static let calendarDayHitSize: CGFloat = minimumHitTarget
@@ -68,6 +73,14 @@ enum PulseDesign {
     static let fieldHeightRatio = 1.05
     static let fieldRingInset: CGFloat = 76
     static let fieldVerticalPositionRatio = 0.275
+    static let regularWidthFieldWidthRatio = 1.45
+    static let regularWidthFieldHeightRatio = 0.82
+    static let regularWidthFieldRingInset: CGFloat = 96
+    static let regularWidthFieldVerticalPositionRatio = 0.46
+    static let fieldFadeStartRatio = 0.52
+    static let fieldFadeEndRatio = 0.72
+    static let regularWidthFieldFadeStartRatio = 0.66
+    static let regularWidthFieldFadeEndRatio = 0.86
     static let fieldExpandedScale = 1.035
     static let fieldCollapsedScale = 0.98
 
@@ -90,7 +103,14 @@ enum PulseDesign {
 
     static let fieldBreathingDuration = 4.8
     static let savingAnimationDuration = 0.18
+    static let savingIndicatorDelay = 0.25
     static let completionAnimationDuration = 0.42
+    static let completionSecondaryDelay = 0.14
+    static let completionSecondaryDuration = 0.28
+    static let primaryNavigationSelectionDuration = 0.24
+    static let primaryContentTransitionDuration = 0.18
+    static let primaryContentTransitionOffset: CGFloat = spacing8
+    static let monthTransitionDuration = 0.2
 }
 
 struct PulseScreenBackground: View {
@@ -104,10 +124,25 @@ struct PulseFieldBackground: View {
     let isActive: Bool
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @State private var isExpanded = false
 
     var body: some View {
         GeometryReader { proxy in
+            let usesRegularWidthGeometry = horizontalSizeClass == .regular
+            let widthRatio = usesRegularWidthGeometry
+                ? PulseDesign.regularWidthFieldWidthRatio
+                : PulseDesign.fieldWidthRatio
+            let heightRatio = usesRegularWidthGeometry
+                ? PulseDesign.regularWidthFieldHeightRatio
+                : PulseDesign.fieldHeightRatio
+            let ringInset = usesRegularWidthGeometry
+                ? PulseDesign.regularWidthFieldRingInset
+                : PulseDesign.fieldRingInset
+            let verticalPositionRatio = usesRegularWidthGeometry
+                ? PulseDesign.regularWidthFieldVerticalPositionRatio
+                : PulseDesign.fieldVerticalPositionRatio
+
             ZStack {
                 Ellipse()
                     .stroke(
@@ -115,8 +150,8 @@ struct PulseFieldBackground: View {
                         lineWidth: PulseDesign.thinLineWidth
                     )
                     .frame(
-                        width: proxy.size.width * PulseDesign.fieldWidthRatio,
-                        height: proxy.size.height * PulseDesign.fieldHeightRatio
+                        width: proxy.size.width * widthRatio,
+                        height: proxy.size.height * heightRatio
                     )
 
                 ForEach(1...PulseDesign.fieldRingCount, id: \.self) { ring in
@@ -128,25 +163,47 @@ struct PulseFieldBackground: View {
                         .frame(
                             width: max(
                                 0,
-                                proxy.size.width * PulseDesign.fieldWidthRatio
-                                    - CGFloat(ring) * PulseDesign.fieldRingInset
+                                proxy.size.width * widthRatio
+                                    - CGFloat(ring) * ringInset
                             ),
                             height: max(
                                 0,
-                                proxy.size.height * PulseDesign.fieldHeightRatio
-                                    - CGFloat(ring) * PulseDesign.fieldRingInset
+                                proxy.size.height * heightRatio
+                                    - CGFloat(ring) * ringInset
                             )
                         )
                 }
             }
             .position(
                 x: proxy.size.width / 2,
-                y: proxy.size.height * PulseDesign.fieldVerticalPositionRatio
+                y: proxy.size.height * verticalPositionRatio
             )
             .scaleEffect(
                 isExpanded ? PulseDesign.fieldExpandedScale : PulseDesign.fieldCollapsedScale
             )
             .opacity(isExpanded ? 1 : PulseDesign.fieldCollapsedOpacity)
+        }
+        .mask {
+            LinearGradient(
+                stops: [
+                    .init(color: .black, location: 0),
+                    .init(
+                        color: .black,
+                        location: horizontalSizeClass == .regular
+                            ? PulseDesign.regularWidthFieldFadeStartRatio
+                            : PulseDesign.fieldFadeStartRatio
+                    ),
+                    .init(
+                        color: .clear,
+                        location: horizontalSizeClass == .regular
+                            ? PulseDesign.regularWidthFieldFadeEndRatio
+                            : PulseDesign.fieldFadeEndRatio
+                    )
+                ],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+            .ignoresSafeArea()
         }
         .ignoresSafeArea()
         .allowsHitTesting(false)
@@ -192,6 +249,8 @@ struct PulseBrandMark: View {
 struct PulseAppHeader: View {
     let source: PulsePrimarySection
 
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
     var body: some View {
         HStack(spacing: PulseDesign.spacing8) {
             PulseBrandMark()
@@ -199,17 +258,35 @@ struct PulseAppHeader: View {
             Text("today.navigation_title")
                 .font(.subheadline.weight(.medium))
                 .foregroundStyle(PulseDesign.ink)
+                .lineLimit(1)
 
             Spacer(minLength: PulseDesign.spacing16)
 
-            NavigationLink(value: PulseNavigationDestination.settings) {
-                Text("settings.navigation_title")
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(PulseDesign.ink)
-                    .frame(minWidth: PulseDesign.minimumHitTarget, minHeight: PulseDesign.minimumHitTarget)
+            if dynamicTypeSize.isAccessibilitySize {
+                NavigationLink(value: PulseNavigationDestination.settings) {
+                    Image(systemName: "gearshape")
+                        .font(.title2.weight(.semibold))
+                        .foregroundStyle(PulseDesign.ink)
+                        .frame(
+                            minWidth: PulseDesign.minimumHitTarget,
+                            minHeight: PulseDesign.minimumHitTarget
+                        )
+                }
+                .accessibilityLabel("settings.navigation_title")
+                .accessibilityIdentifier("settings.navigation.open.\(source.rawValue)")
+            } else {
+                NavigationLink(value: PulseNavigationDestination.settings) {
+                    Text("settings.navigation_title")
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(PulseDesign.ink)
+                        .frame(
+                            minWidth: PulseDesign.minimumHitTarget,
+                            minHeight: PulseDesign.minimumHitTarget
+                        )
+                }
+                .accessibilityLabel("settings.navigation_title")
+                .accessibilityIdentifier("settings.navigation.open.\(source.rawValue)")
             }
-            .accessibilityLabel("settings.navigation_title")
-            .accessibilityIdentifier("settings.navigation.open.\(source.rawValue)")
         }
         .frame(maxWidth: PulseDesign.screenMaxWidth)
         .frame(minHeight: PulseDesign.topBarHeight)

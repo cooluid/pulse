@@ -3,10 +3,13 @@ import SwiftUI
 struct TodayView: View {
     @Bindable var model: PulseAppModel
     let isActive: Bool
+    let primaryNavigationClearance: CGFloat
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @ScaledMetric(relativeTo: .largeTitle) private var dayNumberSize = PulseDesign.dayNumberBaseSize
+    @State private var showsSavingIndicator = false
 
     var body: some View {
         ZStack {
@@ -16,38 +19,94 @@ struct TodayView: View {
             VStack(spacing: 0) {
                 PulseAppHeader(source: .today)
 
-                ScrollView {
-                    VStack(spacing: 0) {
-                        dayHero
-                        checkInControl
-                            .padding(
-                                .top,
-                                dynamicTypeSize.isAccessibilitySize
-                                    ? PulseDesign.spacing12
-                                    : PulseDesign.checkInHeroOverlap
+                GeometryReader { proxy in
+                    ScrollView {
+                        todayContent
+                            .frame(
+                                maxWidth: usesRegularWidthLayout
+                                    ? PulseDesign.regularWidthContentMaxWidth
+                                    : PulseDesign.screenMaxWidth
                             )
-                        if model.todayRecord == nil {
-                            pendingCheckInStatus
-                                .padding(.top, PulseDesign.spacing12)
-                            weekRail
-                                .padding(.top, PulseDesign.spacing20)
-                        } else {
-                            weekRail
-                                .padding(.top, PulseDesign.checkInOuterHalo + PulseDesign.spacing12)
-                        }
-                        streakBand
-                            .padding(.top, PulseDesign.spacing24)
+                            .frame(
+                                minHeight: usesRegularWidthLayout ? proxy.size.height : nil,
+                                alignment: .center
+                            )
+                            .padding(.horizontal, PulseDesign.horizontalPadding)
+                            .padding(
+                                .vertical,
+                                usesRegularWidthLayout
+                                    ? PulseDesign.regularWidthVerticalPadding
+                                    : PulseDesign.spacing4
+                            )
+                            .padding(.bottom, accessibilityScrollClearance)
+                            .frame(maxWidth: .infinity)
                     }
-                    .frame(maxWidth: PulseDesign.screenMaxWidth)
-                    .padding(.horizontal, PulseDesign.horizontalPadding)
-                    .padding(.top, PulseDesign.spacing4)
-                    .padding(.bottom, PulseDesign.spacing24)
-                    .frame(maxWidth: .infinity)
+                    .scrollIndicators(.hidden)
                 }
-                .scrollIndicators(.hidden)
             }
         }
         .toolbar(.hidden, for: .navigationBar)
+    }
+
+    @ViewBuilder
+    private var todayContent: some View {
+        if usesRegularWidthLayout {
+            HStack(alignment: .center, spacing: PulseDesign.regularWidthColumnGap) {
+                VStack(spacing: 0) {
+                    dayHero
+                    checkInControl
+                        .padding(.top, PulseDesign.checkInHeroOverlap)
+                    pendingStatusIfNeeded
+                }
+                .frame(maxWidth: .infinity)
+
+                VStack(spacing: 0) {
+                    weekRail
+                    streakBand
+                        .padding(.top, PulseDesign.spacing32)
+                }
+                .frame(maxWidth: .infinity)
+            }
+        } else {
+            VStack(spacing: 0) {
+                dayHero
+                checkInControl
+                    .padding(
+                        .top,
+                        dynamicTypeSize.isAccessibilitySize
+                            ? PulseDesign.spacing12
+                            : PulseDesign.checkInHeroOverlap
+                    )
+                if model.todayRecord == nil {
+                    pendingCheckInStatus
+                        .padding(.top, PulseDesign.spacing12)
+                    weekRail
+                        .padding(.top, PulseDesign.spacing20)
+                } else {
+                    weekRail
+                        .padding(.top, PulseDesign.checkInOuterHalo + PulseDesign.spacing12)
+                }
+                streakBand
+                    .padding(.top, PulseDesign.spacing24)
+            }
+            .padding(.bottom, PulseDesign.spacing24)
+        }
+    }
+
+    @ViewBuilder
+    private var pendingStatusIfNeeded: some View {
+        if model.todayRecord == nil {
+            pendingCheckInStatus
+                .padding(.top, PulseDesign.spacing12)
+        }
+    }
+
+    private var usesRegularWidthLayout: Bool {
+        horizontalSizeClass == .regular && !dynamicTypeSize.isAccessibilitySize
+    }
+
+    private var accessibilityScrollClearance: CGFloat {
+        dynamicTypeSize.isAccessibilitySize ? primaryNavigationClearance : 0
     }
 
     private var dayHero: some View {
@@ -80,11 +139,17 @@ struct TodayView: View {
 
     private func dayNumber(_ today: LogicalDay) -> some View {
         Text(today.day, format: .number)
-            .font(.system(size: dayNumberSize, weight: .regular))
+            .font(.system(size: resolvedDayNumberSize, weight: .regular))
             .monospacedDigit()
             .fixedSize(horizontal: true, vertical: false)
             .foregroundStyle(PulseDesign.ink)
             .accessibilityIdentifier("today.day.number")
+    }
+
+    private var resolvedDayNumberSize: CGFloat {
+        dynamicTypeSize.isAccessibilitySize
+            ? min(dayNumberSize, PulseDesign.dayNumberAccessibilityMaximumSize)
+            : dayNumberSize
     }
 
     private var weekRail: some View {
@@ -135,6 +200,7 @@ struct TodayView: View {
                         )
                 }
         }
+        .animation(completionSecondaryAnimation, value: item.status)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(weekDayAccessibilityLabel(item))
     }
@@ -147,21 +213,25 @@ struct TodayView: View {
 
     private var checkInControl: some View {
         let isChecked = model.todayRecord != nil
+        let controlFill = isChecked ? PulseDesign.grass : PulseDesign.action
+        let controlForeground = isChecked
+            ? PulseDesign.grassForeground
+            : PulseDesign.actionForeground
 
         return Button {
             Task { await model.checkIn() }
         } label: {
             if dynamicTypeSize.isAccessibilitySize {
                 HStack(spacing: PulseDesign.spacing12) {
-                    checkInStatusContent
+                    checkInStatusContent(foreground: controlForeground)
                 }
                 .padding(.horizontal, PulseDesign.spacing24)
                 .frame(maxWidth: .infinity, minHeight: PulseDesign.accessibilityActionMinimumHeight)
-                .background(PulseDesign.action, in: Capsule())
+                .background(controlFill, in: Capsule())
                 .overlay {
                     Capsule()
                         .stroke(
-                            PulseDesign.actionForeground.opacity(PulseDesign.actionBorderOpacity),
+                            controlForeground.opacity(PulseDesign.actionBorderOpacity),
                             lineWidth: PulseDesign.thinLineWidth
                         )
                 }
@@ -169,11 +239,11 @@ struct TodayView: View {
             } else {
                 ZStack {
                     Circle()
-                        .fill(PulseDesign.action)
+                        .fill(controlFill)
                         .overlay {
                             Circle()
                                 .stroke(
-                                    PulseDesign.actionForeground.opacity(PulseDesign.actionBorderOpacity),
+                                    controlForeground.opacity(PulseDesign.actionBorderOpacity),
                                     lineWidth: PulseDesign.thinLineWidth
                                 )
                         }
@@ -186,7 +256,7 @@ struct TodayView: View {
                     Circle()
                         .trim(from: isChecked ? 0 : 0.08, to: isChecked ? 1 : 0.94)
                         .stroke(
-                            PulseDesign.actionForeground.opacity(PulseDesign.actionRingOpacity),
+                            controlForeground.opacity(PulseDesign.actionRingOpacity),
                             lineWidth: PulseDesign.thinLineWidth
                         )
                         .rotationEffect(.degrees(isChecked ? 378 : 18))
@@ -198,7 +268,7 @@ struct TodayView: View {
                             value: isChecked
                         )
 
-                    checkInStatusContent
+                    checkInStatusContent(foreground: controlForeground)
                 }
                 .frame(width: PulseDesign.checkInDiameter, height: PulseDesign.checkInDiameter)
                 .background {
@@ -228,16 +298,32 @@ struct TodayView: View {
             reduceMotion ? nil : .easeInOut(duration: PulseDesign.savingAnimationDuration),
             value: model.isSaving
         )
+        .animation(completionAnimation, value: isChecked)
+        .task(id: model.isSaving) {
+            guard model.isSaving else {
+                showsSavingIndicator = false
+                return
+            }
+
+            do {
+                try await Task.sleep(for: .seconds(PulseDesign.savingIndicatorDelay))
+            } catch {
+                return
+            }
+            guard !Task.isCancelled, model.isSaving else { return }
+            showsSavingIndicator = true
+        }
         .accessibilityLabel(checkInAccessibilityLabel)
         .accessibilityHint(isChecked ? "" : String(localized: "today.accessibility.hint"))
     }
 
     @ViewBuilder
-    private var checkInStatusContent: some View {
-        if model.isSaving {
+    private func checkInStatusContent(foreground: Color) -> some View {
+        if model.isSaving && showsSavingIndicator {
             ProgressView()
                 .controlSize(.large)
-                .tint(PulseDesign.actionForeground)
+                .tint(foreground)
+                .transition(.opacity)
         } else if let completedCheckInText {
             VStack(spacing: PulseDesign.spacing4) {
                 Image(systemName: "checkmark")
@@ -246,12 +332,14 @@ struct TodayView: View {
                 Text(completedCheckInText)
                     .font(.headline.bold())
             }
-            .foregroundStyle(PulseDesign.actionForeground)
+            .foregroundStyle(foreground)
             .multilineTextAlignment(.center)
+            .transition(.scale(scale: 0.88).combined(with: .opacity))
         } else {
             Text("today.check_in")
                 .font(.headline.bold())
-                .foregroundStyle(PulseDesign.actionForeground)
+                .foregroundStyle(foreground)
+                .transition(.opacity)
         }
     }
 
@@ -312,6 +400,9 @@ struct TodayView: View {
                     .font(.title.bold())
                     .monospacedDigit()
                     .foregroundStyle(PulseDesign.ink)
+                    .contentTransition(
+                        .numericText(value: Double(model.statistics.currentStreak))
+                    )
 
                 Text("unit.days")
                     .font(.footnote.bold())
@@ -324,7 +415,25 @@ struct TodayView: View {
             Capsule()
                 .stroke(PulseDesign.separator, lineWidth: PulseDesign.thinLineWidth)
         }
+        .animation(
+            completionSecondaryAnimation,
+            value: model.statistics.currentStreak
+        )
         .accessibilityElement(children: .combine)
+        .accessibilityIdentifier("today.streak.band")
+    }
+
+    private var completionAnimation: Animation? {
+        reduceMotion
+            ? nil
+            : .easeOut(duration: PulseDesign.completionAnimationDuration)
+    }
+
+    private var completionSecondaryAnimation: Animation? {
+        reduceMotion
+            ? nil
+            : .easeOut(duration: PulseDesign.completionSecondaryDuration)
+                .delay(PulseDesign.completionSecondaryDelay)
     }
 
     private func weekDayAccessibilityLabel(_ item: CalendarDayItem) -> String {
