@@ -82,13 +82,13 @@
     "error.import_invalid" : {
       "localizations" : {
         "en" : { "stringUnit" : { "state" : "translated", "value" : "The selected file is not a valid Pulse export." } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "所选文件不是有效的 Pulse 导出数据。" } }
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "所选文件不是有效的一日一印导出数据。" } }
       }
     },
     "error.import_version" : {
       "localizations" : {
         "en" : { "stringUnit" : { "state" : "translated", "value" : "This export was created by an unsupported Pulse data version." } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "该文件使用了当前版本不支持的 Pulse 数据格式。" } }
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "该文件使用了当前版本不支持的一日一印数据格式。" } }
       }
     },
     "error.generic" : {
@@ -220,7 +220,7 @@
     "load.failure.message" : {
       "localizations" : {
         "en" : { "stringUnit" : { "state" : "translated", "value" : "Pulse could not load your check-in records." } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "Pulse 无法加载签到记录。" } }
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "一日一印无法加载签到记录。" } }
       }
     },
     "load.failure.title" : {
@@ -250,7 +250,7 @@
     "settings.data.footer" : {
       "localizations" : {
         "en" : { "stringUnit" : { "state" : "translated", "value" : "Pulse stores check-ins locally. Export a JSON copy before deleting the app." } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "Pulse 将签到记录保存在本机。删除 App 前请先导出 JSON 副本。" } }
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "一日一印将签到记录保存在本机。删除 App 前请先导出 JSON 副本。" } }
       }
     },
     "settings.data.section" : {
@@ -358,7 +358,7 @@
     "settings.reset_confirmation.title" : {
       "localizations" : {
         "en" : { "stringUnit" : { "state" : "translated", "value" : "Erase all Pulse data?" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "清除 Pulse 的全部数据？" } }
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "清除一日一印的全部数据？" } }
       }
     },
     "settings.storage" : {
@@ -430,13 +430,13 @@
     "startup.failure.message" : {
       "localizations" : {
         "en" : { "stringUnit" : { "state" : "translated", "value" : "Pulse could not open its data store. Restart the app. If the problem continues, contact support before deleting the app." } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "Pulse 无法打开数据存储。请重新启动 App；如果问题持续存在，请在删除 App 前联系支持。" } }
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "一日一印无法打开数据存储。请重新启动 App；如果问题持续存在，请在删除 App 前联系支持。" } }
       }
     },
     "startup.failure.title" : {
       "localizations" : {
         "en" : { "stringUnit" : { "state" : "translated", "value" : "Pulse Could Not Start" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "Pulse 无法启动" } }
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "一日一印无法启动" } }
       }
     },
     "tab.history" : {
@@ -502,7 +502,7 @@
     "today.navigation_title" : {
       "localizations" : {
         "en" : { "stringUnit" : { "state" : "translated", "value" : "Pulse" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "Pulse" } }
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "一日一印" } }
       }
     },
     "today.offline_note" : {
