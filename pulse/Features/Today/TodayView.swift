@@ -7,7 +7,7 @@ struct TodayView: View {
 
     var body: some View {
         ZStack {
-            PulseBackground()
+            PulseScreenBackground()
 
             ScrollView {
                 VStack(spacing: PulseDesign.contentSpacing) {
@@ -21,11 +21,11 @@ struct TodayView: View {
                 .padding(.top, 12)
                 .padding(.bottom, 32)
                 .frame(maxWidth: .infinity)
-                .foregroundStyle(PulseDesign.ink)
+                .foregroundStyle(PulseDesign.primary)
             }
         }
         .navigationTitle("today.navigation_title")
-        .navigationBarTitleDisplayMode(.inline)
+        .navigationBarTitleDisplayMode(.large)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 NavigationLink {
@@ -47,7 +47,7 @@ struct TodayView: View {
             }
 
             Text(model.todayRecord == nil ? "today.prompt" : "today.completed_prompt")
-                .font(.system(.title2, design: .serif, weight: .semibold))
+                .font(.title2.weight(.semibold))
                 .multilineTextAlignment(.center)
         }
         .frame(maxWidth: .infinity)
@@ -63,11 +63,7 @@ struct TodayView: View {
             } label: {
                 ZStack {
                     Circle()
-                        .fill(isChecked ? PulseDesign.success : PulseDesign.brand)
-
-                    Circle()
-                        .stroke(PulseDesign.actionForeground.opacity(0.42), lineWidth: 1)
-                        .padding(12)
+                        .fill(PulseDesign.actionBackground)
 
                     if model.isSaving {
                         ProgressView()
@@ -80,7 +76,7 @@ struct TodayView: View {
                                     .font(.system(size: 34, weight: .medium))
                             }
                             Text(isChecked ? "today.checked" : "today.check_in")
-                                .font(.system(.headline, design: .serif, weight: .semibold))
+                                .font(.headline)
                                 .multilineTextAlignment(.center)
                         }
                         .foregroundStyle(PulseDesign.actionForeground)
@@ -126,8 +122,10 @@ struct TodayView: View {
         VStack(spacing: 16) {
             HStack(alignment: .firstTextBaseline, spacing: 12) {
                 Text(model.statistics.currentStreak, format: .number)
-                    .font(.system(.largeTitle, design: .serif, weight: .regular))
-                    .foregroundStyle(PulseDesign.brand)
+                    .font(.largeTitle)
+                    .fontWeight(.semibold)
+                    .monospacedDigit()
+                    .foregroundStyle(PulseDesign.primary)
 
                 VStack(alignment: .leading, spacing: 2) {
                     Text("unit.days")
@@ -146,24 +144,24 @@ struct TodayView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
         }
         .padding(.vertical, 20)
-        .overlay(alignment: .top) { Divider().overlay(PulseDesign.separator) }
-        .overlay(alignment: .bottom) { Divider().overlay(PulseDesign.separator) }
+        .overlay(alignment: .top) { Divider() }
+        .overlay(alignment: .bottom) { Divider() }
         .accessibilityElement(children: .combine)
     }
 
     private var recentDaysCard: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Text("today.recent_days")
-                .font(.system(.headline, design: .serif, weight: .semibold))
-
+        GroupBox {
             HStack(spacing: 8) {
                 ForEach(model.recentDays) { item in
                     recentDay(item)
                         .frame(maxWidth: .infinity)
                 }
             }
+            .padding(.top, 4)
+        } label: {
+            Text("today.recent_days")
+                .font(.headline)
         }
-        .pulseSurface()
     }
 
     private func recentDay(_ item: CalendarDayItem) -> some View {
@@ -179,7 +177,7 @@ struct TodayView: View {
 
             ZStack {
                 Circle()
-                    .fill(isChecked ? PulseDesign.success : PulseDesign.background)
+                    .fill(isChecked ? PulseDesign.actionBackground : PulseDesign.background)
                 if isChecked {
                     Image(systemName: "checkmark")
                         .font(.caption.bold())
@@ -193,7 +191,7 @@ struct TodayView: View {
             .frame(width: 34, height: 34)
             .overlay {
                 Circle()
-                    .stroke(isToday ? PulseDesign.brand : PulseDesign.separator, lineWidth: isToday ? 2 : 1)
+                    .stroke(isToday ? PulseDesign.primary : PulseDesign.separator, lineWidth: isToday ? 2 : 1)
                     .padding(isToday ? -3 : 0)
             }
         }

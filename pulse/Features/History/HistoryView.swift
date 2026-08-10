@@ -8,7 +8,7 @@ struct HistoryView: View {
 
     var body: some View {
         ZStack {
-            PulseBackground()
+            PulseScreenBackground()
 
             ScrollView {
                 VStack(spacing: PulseDesign.contentSpacing) {
@@ -20,7 +20,7 @@ struct HistoryView: View {
                 .padding(.top, 12)
                 .padding(.bottom, 32)
                 .frame(maxWidth: .infinity)
-                .foregroundStyle(PulseDesign.ink)
+                .foregroundStyle(PulseDesign.primary)
             }
         }
         .navigationTitle("history.navigation_title")
@@ -31,70 +31,72 @@ struct HistoryView: View {
     }
 
     private var statisticsGrid: some View {
-        HStack(spacing: 0) {
-            StatisticTile(
-                value: model.statistics.currentStreak,
-                labelKey: "history.current_streak",
-                accessibilityIdentifier: "history.stat.current"
-            )
+        GroupBox {
+            HStack(spacing: 0) {
+                StatisticTile(
+                    value: model.statistics.currentStreak,
+                    labelKey: "history.current_streak",
+                    accessibilityIdentifier: "history.stat.current"
+                )
 
-            Divider()
-                .frame(height: 58)
-                .overlay(PulseDesign.separator)
+                Divider()
+                    .frame(height: 58)
 
-            StatisticTile(
-                value: model.statistics.longestStreak,
-                labelKey: "history.longest_streak",
-                accessibilityIdentifier: "history.stat.longest"
-            )
+                StatisticTile(
+                    value: model.statistics.longestStreak,
+                    labelKey: "history.longest_streak",
+                    accessibilityIdentifier: "history.stat.longest"
+                )
 
-            Divider()
-                .frame(height: 58)
-                .overlay(PulseDesign.separator)
+                Divider()
+                    .frame(height: 58)
 
-            StatisticTile(
-                value: model.statistics.totalCount,
-                labelKey: "history.total",
-                accessibilityIdentifier: "history.stat.total"
-            )
+                StatisticTile(
+                    value: model.statistics.totalCount,
+                    labelKey: "history.total",
+                    accessibilityIdentifier: "history.stat.total"
+                )
+            }
+            .padding(.vertical, 4)
         }
-        .pulseSurface()
     }
 
     private var calendarCard: some View {
-        VStack(spacing: 18) {
-            monthHeader
+        GroupBox {
+            VStack(spacing: 18) {
+                monthHeader
 
-            LazyVGrid(columns: columns, spacing: 10) {
-                ForEach(
-                    Array(PulseFormatting.weekdayHeaders(weekStart: model.settings.weekStart).enumerated()),
-                    id: \.offset
-                ) { index, weekday in
-                    Text(weekday)
-                        .font(.caption.weight(.semibold))
-                        .foregroundStyle(PulseDesign.secondary)
-                        .frame(maxWidth: .infinity)
-                        .accessibilityIdentifier("calendar.weekday.\(index)")
+                LazyVGrid(columns: columns, spacing: 10) {
+                    ForEach(
+                        Array(PulseFormatting.weekdayHeaders(weekStart: model.settings.weekStart).enumerated()),
+                        id: \.offset
+                    ) { index, weekday in
+                        Text(weekday)
+                            .font(.caption.weight(.semibold))
+                            .foregroundStyle(PulseDesign.secondary)
+                            .frame(maxWidth: .infinity)
+                            .accessibilityIdentifier("calendar.weekday.\(index)")
+                    }
+
+                    ForEach(0..<leadingEmptyDays, id: \.self) { _ in
+                        Color.clear
+                            .frame(height: 44)
+                            .accessibilityHidden(true)
+                    }
+
+                    ForEach(model.calendarItemsForSelectedMonth()) { item in
+                        CalendarDayCell(item: item, isToday: item.day == model.today)
+                            .onTapGesture {
+                                guard item.status == .checked else { return }
+                                selectedRecord = model.record(for: item.day)
+                            }
+                    }
                 }
 
-                ForEach(0..<leadingEmptyDays, id: \.self) { _ in
-                    Color.clear
-                        .frame(height: 44)
-                        .accessibilityHidden(true)
-                }
-
-                ForEach(model.calendarItemsForSelectedMonth()) { item in
-                    CalendarDayCell(item: item, isToday: item.day == model.today)
-                        .onTapGesture {
-                            guard item.status == .checked else { return }
-                            selectedRecord = model.record(for: item.day)
-                        }
-                }
+                calendarLegend
             }
-
-            calendarLegend
+            .padding(.vertical, 4)
         }
-        .pulseSurface()
     }
 
     private var monthHeader: some View {
@@ -139,11 +141,11 @@ struct HistoryView: View {
     private var calendarLegend: some View {
         HStack(spacing: 18) {
             Label("calendar.status.checked", systemImage: "checkmark.circle.fill")
-                .foregroundStyle(PulseDesign.success)
+                .foregroundStyle(PulseDesign.primary)
             Label("calendar.status.missed", systemImage: "circle")
                 .foregroundStyle(PulseDesign.secondary)
             Label("calendar.status.today", systemImage: "circle.dotted")
-                .foregroundStyle(PulseDesign.brand)
+                .foregroundStyle(PulseDesign.primary)
         }
         .font(.caption)
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -159,8 +161,9 @@ private struct StatisticTile: View {
     var body: some View {
         VStack(spacing: 6) {
             Text(value, format: .number)
-                .font(.system(.title, design: .serif, weight: .medium))
-                .foregroundStyle(PulseDesign.brand)
+                .font(.title.weight(.semibold))
+                .monospacedDigit()
+                .foregroundStyle(PulseDesign.primary)
             Text(labelKey)
                 .font(.caption)
                 .foregroundStyle(PulseDesign.secondary)
@@ -200,7 +203,7 @@ private struct CalendarDayCell: View {
         .overlay {
             if isToday {
                 Circle()
-                    .stroke(PulseDesign.brand, lineWidth: 2)
+                    .stroke(PulseDesign.primary, lineWidth: 2)
             }
         }
         .contentShape(Rectangle())
@@ -212,9 +215,9 @@ private struct CalendarDayCell: View {
 
     private var backgroundColor: Color {
         switch item.status {
-        case .checked: PulseDesign.success
-        case .missed: PulseDesign.surface
-        case .todayPending: PulseDesign.brand.opacity(0.08)
+        case .checked: PulseDesign.actionBackground
+        case .missed: PulseDesign.secondaryBackground
+        case .todayPending: PulseDesign.primary.opacity(0.08)
         case .beforeHabit, .future: Color.clear
         }
     }
@@ -223,7 +226,7 @@ private struct CalendarDayCell: View {
         switch item.status {
         case .beforeHabit, .future: PulseDesign.secondary
         case .missed: PulseDesign.secondary
-        case .todayPending: PulseDesign.brand
+        case .todayPending: PulseDesign.primary
         case .checked: PulseDesign.actionForeground
         }
     }
@@ -252,7 +255,7 @@ private struct RecordDetailView: View {
             VStack(spacing: 24) {
                 Image(systemName: "checkmark.seal.fill")
                     .font(.system(size: 56))
-                    .foregroundStyle(PulseDesign.success)
+                    .foregroundStyle(PulseDesign.primary)
 
                 VStack(spacing: 8) {
                     if let day = record.logicalDay, let timeZone = model.timeZone {

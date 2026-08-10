@@ -6,7 +6,7 @@
 
 ## 当前状态
 
-- 产品阶段：核心功能与 B 方向视觉工程完成；真实设备核心流程曾通过，新 Bundle ID 的安装与通知聚焦复验待完成
+- 产品阶段：核心功能与 iOS 原生黑白视觉工程完成；真实设备核心流程曾通过，新 Bundle ID 的安装与通知聚焦复验待完成
 - App target：`pulse`
 - 测试 target：`pulseTests`、`pulseUITests`
 - 最低系统版本：iOS / iPadOS 17.0

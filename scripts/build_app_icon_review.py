@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Create a review sheet that preserves actual small-icon raster evidence."""
 
+import json
 from pathlib import Path
 
 from PIL import Image, ImageDraw, ImageFont
@@ -8,8 +9,13 @@ from PIL import Image, ImageDraw, ImageFont
 
 ROOT = Path(__file__).resolve().parents[1]
 ICON_DIR = ROOT / "pulse" / "Assets.xcassets" / "AppIcon.appiconset"
+PALETTE_PATH = ROOT / "design" / "app-icon-source" / "palette.json"
 OUTPUT = ROOT / "design" / "app-icon-review.png"
 CANVAS = (1600, 1220)
+
+
+def hex_color(value: str) -> tuple[int, int, int]:
+    return tuple(int(value[index : index + 2], 16) for index in (1, 3, 5))
 
 
 def font(size: int, *, bold: bool = False) -> ImageFont.FreeTypeFont:
@@ -34,18 +40,20 @@ def clipped(image: Image.Image, size: int, background: tuple[int, int, int]) -> 
 
 
 def main() -> None:
-    canvas = Image.new("RGB", CANVAS, (235, 232, 224))
+    palette = json.loads(PALETTE_PATH.read_text())
+    canvas_color = hex_color(palette["review"]["canvas"])
+    ink = hex_color(palette["review"]["ink"])
+    muted = hex_color(palette["review"]["secondary"])
+    canvas = Image.new("RGB", CANVAS, canvas_color)
     draw = ImageDraw.Draw(canvas)
-    ink = (42, 39, 34)
-    muted = (103, 98, 89)
 
-    draw.text((72, 58), "Pulse · B2 Open Day Ring", font=font(50, bold=True), fill=ink)
-    draw.text((72, 126), "Approved geometry · deterministic flat-color production review", font=font(25), fill=muted)
+    draw.text((72, 58), "YI RI YI YIN · B2 OPEN DAY RING", font=font(50, bold=True), fill=ink)
+    draw.text((72, 126), "Approved geometry · deterministic iOS-native monochrome review", font=font(25), fill=muted)
 
     appearances = [
-        ("DEFAULT", "AppIcon-Any.png", (247, 243, 233)),
-        ("DARK", "AppIcon-Dark.png", (29, 27, 24)),
-        ("TINTED SOURCE", "AppIcon-Tinted.png", (95, 95, 95)),
+        ("DEFAULT", "AppIcon-Any.png", hex_color(palette["default"]["background"])),
+        ("DARK", "AppIcon-Dark.png", hex_color(palette["dark"]["previewBackground"])),
+        ("TINTED SOURCE", "AppIcon-Tinted.png", hex_color(palette["review"]["tintedPreviewBackground"])),
     ]
     for index, (label, filename, background) in enumerate(appearances):
         x = 72 + index * 350
@@ -61,7 +69,7 @@ def main() -> None:
     source = Image.open(ICON_DIR / "AppIcon-Any.png")
     for column, size in enumerate((180, 60, 40, 29)):
         x = 72 + column * 370
-        actual = clipped(source, size, (247, 243, 233))
+        actual = clipped(source, size, hex_color(palette["default"]["background"]))
         zoom = max(1, 232 // size)
         enlarged = actual.resize((size * zoom, size * zoom), Image.Resampling.NEAREST)
         draw.text((x, 656), f"{size} px", font=font(26, bold=True), fill=ink)

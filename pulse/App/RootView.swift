@@ -26,7 +26,7 @@ struct RootView: View {
                         Label("tab.history", systemImage: "calendar")
                     }
                 }
-                .tint(PulseDesign.brand)
+                .tint(PulseDesign.tint)
             case .failed:
                 ContentUnavailableView {
                     Label("load.failure.title", systemImage: "exclamationmark.triangle")
@@ -41,7 +41,7 @@ struct RootView: View {
             }
         }
         .background(PulseDesign.background)
-        .tint(PulseDesign.brand)
+        .tint(PulseDesign.tint)
         .task {
             if model.loadState == .loading {
                 await model.start()
