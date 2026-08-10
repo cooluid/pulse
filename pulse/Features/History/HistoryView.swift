@@ -129,15 +129,7 @@ struct HistoryView: View {
                 .textCase(.uppercase)
                 .foregroundStyle(PulseDesign.secondary)
 
-                Text(
-                    String(
-                        format: PulseLocalization.string(
-                            "history.month_records_format",
-                            locale: locale
-                        ),
-                        PulseFormatting.monthOnly(month, timeZone: timeZone, locale: locale)
-                    )
-                )
+                Text(PulseFormatting.monthOnly(month, timeZone: timeZone, locale: locale))
                 .font(.largeTitle.bold())
                 .foregroundStyle(PulseDesign.ink)
             }

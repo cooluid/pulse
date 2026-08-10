@@ -99,11 +99,7 @@ struct SettingsView: View {
                 }
             }
 
-            if model.reminderSyncState == .syncing {
-                LabeledContent("settings.reminder.syncing") {
-                    ProgressView()
-                }
-            } else if model.reminderSyncState == .failed {
+            if model.reminderSyncState == .failed {
                 Label("settings.reminder.sync_failed", systemImage: "exclamationmark.triangle")
                     .foregroundStyle(PulseDesign.action)
             }

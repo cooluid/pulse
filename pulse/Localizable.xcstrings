@@ -499,23 +499,6 @@
         }
       }
     },
-    "history.month_records_format" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ Records"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@记录"
-          }
-        }
-      }
-    },
     "history.navigation.subtitle" : {
       "localizations" : {
         "en" : {
@@ -966,22 +949,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "提醒计划尚未同步"
-          }
-        }
-      }
-    },
-    "settings.reminder.syncing" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Synchronizing reminder schedule"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "正在同步提醒计划"
           }
         }
       }

@@ -87,6 +87,7 @@ final class PulseFlowUITests: XCTestCase {
 
         let settingsNavigationBar = app.navigationBars["设置"]
         XCTAssertTrue(settingsNavigationBar.waitForExistence(timeout: 3))
+        XCTAssertFalse(app.staticTexts["正在同步提醒计划"].exists)
         XCTAssertFalse(app.buttons["primary.navigation.today"].exists)
         XCTAssertFalse(app.buttons["primary.navigation.history"].exists)
         XCTAssertFalse(app.staticTexts["today.day.number"].exists)
@@ -248,6 +249,8 @@ final class PulseFlowUITests: XCTestCase {
         let previousMonth = app.buttons["history.month.previous"]
         let nextMonth = app.buttons["history.month.next"]
         XCTAssertTrue(heading.waitForExistence(timeout: 3))
+        XCTAssertTrue(heading.label.contains("八月"))
+        XCTAssertFalse(heading.label.contains("记录"))
         XCTAssertTrue(previousMonth.exists)
         XCTAssertTrue(nextMonth.exists)
         XCTAssertTrue(previousMonth.isEnabled)
