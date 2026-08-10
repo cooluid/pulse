@@ -24,7 +24,6 @@ protocol ReminderScheduling: AnyObject {
 @MainActor
 final class ReminderScheduler: ReminderScheduling {
     private enum Configuration {
-        static let requestPrefix = "cool.pulse.daily-reminder."
         static let schedulingWindowDays = 30
     }
 
@@ -92,7 +91,7 @@ final class ReminderScheduler: ReminderScheduling {
             content.sound = .default
 
             let request = UNNotificationRequest(
-                identifier: Configuration.requestPrefix + day.storageValue,
+                identifier: PulseRuntimeIdentity.reminderRequestPrefix + day.storageValue,
                 content: content,
                 trigger: UNCalendarNotificationTrigger(dateMatching: components, repeats: false)
             )
@@ -105,7 +104,7 @@ final class ReminderScheduler: ReminderScheduling {
         let delivered = await center.deliveredNotifications()
         let identifiers = delivered
             .map(\.request.identifier)
-            .filter { $0.hasPrefix(Configuration.requestPrefix) }
+            .filter { $0.hasPrefix(PulseRuntimeIdentity.reminderRequestPrefix) }
         center.removeDeliveredNotifications(withIdentifiers: identifiers)
     }
 
@@ -113,7 +112,7 @@ final class ReminderScheduler: ReminderScheduling {
         let requests = await center.pendingNotificationRequests()
         let identifiers = requests
             .map(\.identifier)
-            .filter { $0.hasPrefix(Configuration.requestPrefix) }
+            .filter { $0.hasPrefix(PulseRuntimeIdentity.reminderRequestPrefix) }
         center.removePendingNotificationRequests(withIdentifiers: identifiers)
     }
 }

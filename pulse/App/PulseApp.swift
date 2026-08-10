@@ -5,7 +5,10 @@ private enum PulseBootstrap {
     case ready(PulseAppModel)
     case failed
 
-    private static let logger = Logger(subsystem: "cool.pulse", category: "persistence")
+    private static let logger = Logger(
+        subsystem: PulseRuntimeIdentity.bundleIdentifier,
+        category: "persistence"
+    )
 
     @MainActor
     static func build() -> PulseBootstrap {

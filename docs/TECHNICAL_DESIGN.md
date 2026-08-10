@@ -1,7 +1,7 @@
 # Pulse 日签到技术设计
 
 文档版本：1.0  
-状态：Ready for Implementation
+状态：已实现；当前验收结论见 `IMPLEMENTATION_STATUS.md`
 
 ## 1. 当前工程基线
 
@@ -12,7 +12,7 @@
 - 单元测试 target：`pulseTests`。
 - UI 测试 target：`pulseUITests`。
 - 支持 iPhone 和 iPad。
-- Bundle Identifier 为 `cool.pulse`。
+- Bundle Identifier 为 `co.fanr.pulse`，以用户持有的 `fanr.co` 反向域名作为永久命名空间。
 - Swift Language Version 为 5。
 - Deployment Target 已统一为 iOS / iPadOS 17.0。
 
