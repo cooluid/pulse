@@ -152,12 +152,8 @@ struct PulseBrandMark: View {
     }
 }
 
-struct PulseAppHeader<Destination: View>: View {
-    private let destination: Destination
-
-    init(@ViewBuilder destination: () -> Destination) {
-        self.destination = destination()
-    }
+struct PulseAppHeader: View {
+    let source: PulsePrimarySection
 
     var body: some View {
         HStack(spacing: PulseDesign.spacing9) {
@@ -170,15 +166,14 @@ struct PulseAppHeader<Destination: View>: View {
 
             Spacer(minLength: PulseDesign.spacing16)
 
-            NavigationLink {
-                destination
-            } label: {
+            NavigationLink(value: PulseNavigationDestination.settings) {
                 Text("settings.navigation_title")
                     .font(.system(size: 13, weight: .semibold))
                     .foregroundStyle(PulseDesign.ink)
                     .frame(minWidth: PulseDesign.minimumHitTarget, minHeight: PulseDesign.minimumHitTarget)
             }
             .accessibilityLabel("settings.navigation_title")
+            .accessibilityIdentifier("settings.navigation.open.\(source.rawValue)")
         }
         .frame(maxWidth: PulseDesign.screenMaxWidth)
         .frame(height: PulseDesign.topBarHeight)

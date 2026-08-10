@@ -17,9 +17,7 @@ struct HistoryView: View {
             PulseFieldBackground(isActive: isActive)
 
             VStack(spacing: 0) {
-                PulseAppHeader {
-                    SettingsView(model: model)
-                }
+                PulseAppHeader(source: .history)
 
                 ScrollView {
                     VStack(spacing: 0) {

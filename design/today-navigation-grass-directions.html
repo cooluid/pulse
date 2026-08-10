@@ -517,26 +517,6 @@
       font-variant-numeric: tabular-nums;
     }
 
-    .day-meta {
-      display: grid;
-      gap: 4px;
-      padding-bottom: 4px;
-    }
-
-    .day-meta span {
-      color: var(--phone-muted);
-      font-size: 12px;
-      font-weight: 650;
-    }
-
-    .day-meta strong {
-      max-width: 160px;
-      font-size: 18px;
-      line-height: 1.18;
-      letter-spacing: -.03em;
-      text-wrap: balance;
-    }
-
     .week-rail {
       position: relative;
       z-index: 2;
@@ -718,6 +698,65 @@
     .mini-day.now span:last-child { border: 2px solid var(--phone-action); font-weight: 800; }
     .phone.is-checked .mini-day.now span:last-child { background: var(--phone-action); color: var(--phone-action-ink); }
 
+    .settings-screen .topbar {
+      border-bottom: 1px solid var(--phone-rule);
+    }
+
+    .settings-back {
+      min-width: 44px;
+      min-height: 44px;
+      border: 0;
+      background: transparent;
+      color: var(--phone-ink);
+      font-size: 13px;
+      font-weight: 700;
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .settings-title {
+      font-size: 15px;
+      font-weight: 760;
+    }
+
+    .settings-topbar-spacer { width: 44px; }
+
+    .settings-content {
+      height: calc(100% - 58px);
+      padding: 16px 20px 28px;
+      overflow-y: auto;
+      scrollbar-width: none;
+    }
+
+    .settings-content::-webkit-scrollbar { display: none; }
+
+    .settings-group {
+      margin-bottom: 20px;
+      border-top: 1px solid var(--phone-rule);
+    }
+
+    .settings-group h4 {
+      margin: 12px 0 6px;
+      color: var(--phone-muted);
+      font-size: 10px;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    .settings-row {
+      min-height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      border-bottom: 1px solid var(--phone-rule);
+      font-size: 13px;
+    }
+
+    .settings-row span:last-child { color: var(--phone-muted); }
+
+    .phone[data-route="settings"] .bottom-nav { display: none; }
+
     .bottom-nav {
       position: absolute;
       z-index: 10;
@@ -889,8 +928,6 @@
 
     .phone[data-variant="b"] .hero-row { margin-top: 30px; align-items: start; }
     .phone[data-variant="b"] .day-number { font-size: 112px; }
-    .phone[data-variant="b"] .day-meta { padding-top: 12px; }
-    .phone[data-variant="b"] .day-meta strong { max-width: 118px; font-size: 20px; }
     .phone[data-variant="b"] .week-rail { margin-top: 20px; max-width: 250px; }
 
     .phone[data-variant="b"] .checkin-action {
@@ -1016,11 +1053,11 @@
     }
 
     .phone[data-variant="c"] .hero-kicker { color: var(--phone-ink); }
-    .phone[data-variant="c"] .hero-row { justify-content: center; align-items: center; margin-top: 12px; }
-    .phone[data-variant="c"] .day-number { font-size: 104px; font-weight: 420; }
-    .phone[data-variant="c"] .day-meta { text-align: left; }
-    .phone[data-variant="c"] .day-meta strong { max-width: 120px; font-size: 16px; font-weight: 560; }
-    .phone[data-variant="c"] .week-rail { width: 244px; margin: 28px auto 0; }
+    .phone[data-variant="c"] .hero-row { justify-content: center; margin-top: 12px; }
+    .phone[data-variant="c"] .day-number { font-size: 104px; font-weight: 420; letter-spacing: 0; }
+    .phone[data-variant="c"] .week-rail { width: 244px; margin: 20px auto 0; }
+
+    .phone.is-checked[data-variant="c"] .week-rail { margin-top: 48px; }
 
     .phone[data-variant="c"] .checkin-action {
       width: 152px;
@@ -1182,24 +1219,14 @@
                     <span class="brand-mark" aria-hidden="true"><img src="app-icon-source/open-day-ring-mask.png" alt=""></span>
                     <span>一日一印</span>
                   </div>
-                  <button class="settings-button" type="button" aria-label="设置">设置</button>
+                  <button class="settings-button" type="button" data-open-settings aria-label="设置">设置</button>
                 </header>
 
                 <div class="today-content">
                   <section class="day-hero">
-                    <div class="hero-kicker">Today / 2026.08</div>
+                    <div class="hero-kicker">Today / 2026.08 / 星期一</div>
                     <div class="hero-row">
                       <div class="day-number">10</div>
-                      <div class="day-meta"><span>星期一</span><strong>给今天留下一枚印记</strong></div>
-                    </div>
-                    <div class="week-rail" aria-label="本周节奏">
-                      <div class="rail-day past"><span>二</span><i class="rail-dot"></i></div>
-                      <div class="rail-day past"><span>三</span><i class="rail-dot"></i></div>
-                      <div class="rail-day past"><span>四</span><i class="rail-dot"></i></div>
-                      <div class="rail-day past"><span>五</span><i class="rail-dot"></i></div>
-                      <div class="rail-day past"><span>六</span><i class="rail-dot"></i></div>
-                      <div class="rail-day past"><span>日</span><i class="rail-dot"></i></div>
-                      <div class="rail-day current"><span>一</span><i class="rail-dot"></i></div>
                     </div>
                   </section>
 
@@ -1208,11 +1235,20 @@
                     <span class="action-copy">
                       <span class="checkmark" aria-hidden="true">✓</span>
                       <strong class="action-idle">今日签到</strong>
-                      <strong class="action-done" hidden>今日已签到</strong>
-                      <span class="action-note">写入本机后完成</span>
+                      <strong class="action-done" hidden>09:41已签到</strong>
                     </span>
                   </button>
                   <p class="status-line" id="status-line" aria-live="polite">还没有留下今天的印</p>
+
+                  <div class="week-rail" aria-label="本周节奏">
+                    <div class="rail-day past"><span>二</span><i class="rail-dot"></i></div>
+                    <div class="rail-day past"><span>三</span><i class="rail-dot"></i></div>
+                    <div class="rail-day past"><span>四</span><i class="rail-dot"></i></div>
+                    <div class="rail-day past"><span>五</span><i class="rail-dot"></i></div>
+                    <div class="rail-day past"><span>六</span><i class="rail-dot"></i></div>
+                    <div class="rail-day past"><span>日</span><i class="rail-dot"></i></div>
+                    <div class="rail-day current"><span>一</span><i class="rail-dot"></i></div>
+                  </div>
 
                   <section class="streak-band">
                     <div><div class="micro-label">Current rhythm</div><div class="streak-copy">保持自己的节奏，不与别人比较</div></div>
@@ -1237,7 +1273,7 @@
                     <span class="brand-mark" aria-hidden="true"><img src="app-icon-source/open-day-ring-mask.png" alt=""></span>
                     <span>一日一印</span>
                   </div>
-                  <button class="settings-button" type="button" aria-label="设置">设置</button>
+                  <button class="settings-button" type="button" data-open-settings aria-label="设置">设置</button>
                 </header>
                 <div class="history-content">
                   <header class="history-head"><div class="micro-label">Archive / 2026</div><h4>八月记录</h4></header>
@@ -1247,6 +1283,38 @@
                     <div class="stat"><strong id="history-total">42</strong><span>累计签到</span></div>
                   </div>
                   <div class="calendar" id="calendar" aria-label="2026年8月签到日历"></div>
+                </div>
+              </section>
+
+              <section class="screen settings-screen" data-screen="settings">
+                <header class="topbar">
+                  <button class="settings-back" type="button" data-settings-back aria-label="返回">‹ 返回</button>
+                  <span class="settings-title">设置</span>
+                  <span class="settings-topbar-spacer" aria-hidden="true"></span>
+                </header>
+                <div class="settings-content">
+                  <section class="settings-group">
+                    <h4>提醒</h4>
+                    <div class="settings-row"><span>每日提醒</span><span>关闭</span></div>
+                    <div class="settings-row"><span>提醒时间</span><span>20:00</span></div>
+                  </section>
+                  <section class="settings-group">
+                    <h4>体验</h4>
+                    <div class="settings-row"><span>触觉反馈</span><span>开启</span></div>
+                    <div class="settings-row"><span>一周开始于</span><span>星期一</span></div>
+                    <div class="settings-row"><span>签到时区</span><span>Asia/Shanghai</span></div>
+                  </section>
+                  <section class="settings-group">
+                    <h4>数据</h4>
+                    <div class="settings-row"><span>导出数据</span><span>›</span></div>
+                    <div class="settings-row"><span>导入数据</span><span>›</span></div>
+                    <div class="settings-row"><span>清除全部数据</span><span>›</span></div>
+                  </section>
+                  <section class="settings-group">
+                    <h4>关于</h4>
+                    <div class="settings-row"><span>存储</span><span>仅本机</span></div>
+                    <div class="settings-row"><span>版本</span><span>1.0</span></div>
+                  </section>
                 </div>
               </section>
 
@@ -1282,7 +1350,7 @@
     }/*EDITMODE-END*/;
 
     const stored = JSON.parse(localStorage.getItem('pulse-grass-fusion-tweaks') || 'null');
-    const state = { ...TWEAK_DEFAULTS, ...(stored || {}), route: 'today' };
+    const state = { ...TWEAK_DEFAULTS, ...(stored || {}), route: 'today', previousRoute: 'today' };
     const phone = document.querySelector('#phone');
     const statusLine = document.querySelector('#status-line');
     const checkinButton = document.querySelector('#checkin-button');
@@ -1328,9 +1396,12 @@
       const checked = value === 'checked';
       phone.classList.toggle('is-checked', checked);
       checkinButton.disabled = checked;
-      checkinButton.setAttribute('aria-label', checked ? '今日已签到' : '今日签到');
-      checkinButton.querySelector('.action-done').hidden = !checked;
-      statusLine.textContent = checked ? '已于 09:41 写入本机' : '还没有留下今天的印';
+      checkinButton.setAttribute('aria-label', checked ? '09:41已签到' : '今日签到');
+      const completedLabel = checkinButton.querySelector('.action-done');
+      completedLabel.hidden = !checked;
+      completedLabel.textContent = '09:41已签到';
+      statusLine.hidden = checked;
+      statusLine.textContent = '还没有留下今天的印';
       document.querySelector('#streak-count').textContent = checked ? '7' : '6';
       document.querySelector('#history-current').textContent = checked ? '7' : '6';
       document.querySelector('#history-total').textContent = checked ? '43' : '42';
@@ -1340,9 +1411,11 @@
     }
 
     function applyRoute(value) {
+      if (value === 'settings' && state.route !== 'settings') state.previousRoute = state.route;
       state.route = value;
+      phone.dataset.route = value;
       document.querySelectorAll('.screen').forEach((screen) => screen.classList.toggle('active', screen.dataset.screen === value));
-      document.querySelectorAll('[data-route]').forEach((button) => button.classList.toggle('active', button.dataset.route === value));
+      document.querySelectorAll('.nav-button[data-route]').forEach((button) => button.classList.toggle('active', button.dataset.route === value));
     }
 
     function renderCalendar() {
@@ -1374,9 +1447,14 @@
     document.querySelectorAll('[data-route]').forEach((button) => {
       button.addEventListener('click', () => applyRoute(button.dataset.route));
     });
+    document.querySelectorAll('[data-open-settings]').forEach((button) => {
+      button.addEventListener('click', () => applyRoute('settings'));
+    });
+    document.querySelector('[data-settings-back]').addEventListener('click', () => {
+      applyRoute(state.previousRoute);
+    });
     checkinButton.addEventListener('click', () => {
       checkinButton.disabled = true;
-      statusLine.textContent = '正在写入本机…';
       window.setTimeout(() => applyCheckState('checked'), 520);
     });
 

@@ -13,19 +13,24 @@ struct TodayView: View {
             PulseFieldBackground(isActive: isActive)
 
             VStack(spacing: 0) {
-                PulseAppHeader {
-                    SettingsView(model: model)
-                }
+                PulseAppHeader(source: .today)
 
                 ScrollView {
                     VStack(spacing: 0) {
                         dayHero
                         checkInControl
                             .padding(.top, -42)
-                        checkInStatus
-                            .padding(.top, PulseDesign.spacing12)
+                        if model.todayRecord == nil {
+                            pendingCheckInStatus
+                                .padding(.top, PulseDesign.spacing12)
+                            weekRail
+                                .padding(.top, PulseDesign.spacing20)
+                        } else {
+                            weekRail
+                                .padding(.top, PulseDesign.checkInOuterHalo + PulseDesign.spacing12)
+                        }
                         streakBand
-                            .padding(.top, PulseDesign.spacing28)
+                            .padding(.top, PulseDesign.spacing24)
                     }
                     .frame(maxWidth: PulseDesign.screenMaxWidth)
                     .padding(.horizontal, PulseDesign.horizontalPadding)
@@ -45,39 +50,22 @@ struct TodayView: View {
     private var dayHero: some View {
         VStack(spacing: 0) {
             if let today = model.today, let timeZone = model.timeZone {
+                let weekday = PulseFormatting.fullWeekday(today, timeZone: timeZone)
+
                 Text(
                     String(
-                        format: String(localized: "today.kicker_format"),
-                        PulseFormatting.numericYearAndMonth(today, timeZone: timeZone)
+                        format: String(localized: "today.kicker_with_weekday_format"),
+                        PulseFormatting.numericYearAndMonth(today, timeZone: timeZone),
+                        weekday
                     )
                 )
                 .font(.system(size: 11, weight: .bold))
                 .tracking(0.88)
                 .foregroundStyle(PulseDesign.ink)
+                .accessibilityIdentifier("today.hero.kicker")
 
-                HStack(alignment: .center, spacing: PulseDesign.spacing16) {
-                    Text(today.day, format: .number)
-                        .font(.system(size: PulseDesign.dayNumberSize, weight: .regular))
-                        .tracking(-8.5)
-                        .monospacedDigit()
-                        .foregroundStyle(PulseDesign.ink)
-
-                    VStack(alignment: .leading, spacing: PulseDesign.spacing4) {
-                        Text(PulseFormatting.fullWeekday(today, timeZone: timeZone))
-                            .font(.system(size: 12, weight: .semibold))
-                            .foregroundStyle(PulseDesign.secondary)
-
-                        Text(model.todayRecord == nil ? "today.prompt" : "today.completed_prompt")
-                            .font(.system(size: 16, weight: .medium))
-                            .foregroundStyle(PulseDesign.ink)
-                            .multilineTextAlignment(.leading)
-                            .frame(maxWidth: 120, alignment: .leading)
-                    }
-                }
+                dayNumber(today)
                 .padding(.top, PulseDesign.spacing12)
-
-                weekRail
-                    .padding(.top, PulseDesign.spacing28)
             }
         }
         .frame(maxWidth: .infinity)
@@ -86,6 +74,15 @@ struct TodayView: View {
         .padding(.bottom, PulseDesign.spacing18)
         .frame(minHeight: PulseDesign.todayHeroMinimumHeight, alignment: .top)
         .accessibilityElement(children: .contain)
+    }
+
+    private func dayNumber(_ today: LogicalDay) -> some View {
+        Text(today.day, format: .number)
+            .font(.system(size: PulseDesign.dayNumberSize, weight: .regular))
+            .monospacedDigit()
+            .fixedSize(horizontal: true, vertical: false)
+            .foregroundStyle(PulseDesign.ink)
+            .accessibilityIdentifier("today.day.number")
     }
 
     private var weekRail: some View {
@@ -105,6 +102,8 @@ struct TodayView: View {
             }
         }
         .frame(width: PulseDesign.weekRailWidth)
+        .accessibilityElement(children: .contain)
+        .accessibilityIdentifier("today.week.rail")
     }
 
     private func weekRailDay(_ item: CalendarDayItem) -> some View {
@@ -179,23 +178,22 @@ struct TodayView: View {
                     ProgressView()
                         .controlSize(.large)
                         .tint(PulseDesign.actionForeground)
-                } else {
+                } else if let completedCheckInText {
                     VStack(spacing: PulseDesign.spacing4) {
-                        if isChecked {
-                            Image(systemName: "checkmark")
-                                .font(.system(size: 32, weight: .medium))
-                        }
+                        Image(systemName: "checkmark")
+                            .font(.system(size: 32, weight: .medium))
 
-                        Text(isChecked ? "today.checked" : "today.check_in")
+                        Text(completedCheckInText)
                             .font(.system(size: 17, weight: .bold))
                             .tracking(-0.34)
-
-                        Text("today.action_note")
-                            .font(.system(size: 10))
-                            .opacity(0.78)
                     }
                     .foregroundStyle(PulseDesign.actionForeground)
                     .multilineTextAlignment(.center)
+                } else {
+                    Text("today.check_in")
+                        .font(.system(size: 17, weight: .bold))
+                        .tracking(-0.34)
+                        .foregroundStyle(PulseDesign.actionForeground)
                 }
             }
             .frame(width: PulseDesign.checkInDiameter, height: PulseDesign.checkInDiameter)
@@ -226,28 +224,36 @@ struct TodayView: View {
             reduceMotion ? nil : .easeInOut(duration: PulseDesign.savingAnimationDuration),
             value: model.isSaving
         )
-        .accessibilityLabel(isChecked ? "today.accessibility.checked" : "today.accessibility.check_in")
+        .accessibilityLabel(checkInAccessibilityLabel)
         .accessibilityHint(isChecked ? "" : String(localized: "today.accessibility.hint"))
     }
 
-    private var checkInStatus: some View {
-        Group {
-            if let record = model.todayRecord, let timeZone = model.timeZone {
-                Text(
-                    String(
-                        format: String(localized: "today.checked_at"),
-                        PulseFormatting.time(record.checkedAt, timeZone: timeZone)
-                    )
-                )
-                .accessibilityIdentifier("today.checked.time")
-            } else {
-                Text("today.pending_status")
-            }
-        }
+    private var pendingCheckInStatus: some View {
+        Text("today.pending_status")
         .font(.system(size: 12))
         .foregroundStyle(PulseDesign.secondary)
         .multilineTextAlignment(.center)
         .frame(maxWidth: .infinity)
+    }
+
+    private var completedCheckInText: String? {
+        guard let record = model.todayRecord, let timeZone = model.timeZone else {
+            return nil
+        }
+        return String(
+            format: String(localized: "today.checked_with_time"),
+            PulseFormatting.time(record.checkedAt, timeZone: timeZone)
+        )
+    }
+
+    private var checkInAccessibilityLabel: Text {
+        if let completedCheckInText {
+            return Text(completedCheckInText)
+        }
+        if model.todayRecord != nil {
+            return Text("today.accessibility.checked")
+        }
+        return Text("today.accessibility.check_in")
     }
 
     private var streakBand: some View {

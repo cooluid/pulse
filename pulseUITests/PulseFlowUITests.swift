@@ -6,7 +6,7 @@ final class PulseFlowUITests: XCTestCase {
     override func setUpWithError() throws {
         continueAfterFailure = false
         app = XCUIApplication()
-        app.launchArguments = ["-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
+        app.launchArguments = ["-AppleLanguages", "(zh-Hans)", "-AppleLocale", "zh_CN"]
         app.launchEnvironment["PULSE_UI_TEST_RESET"] = "1"
     }
 
@@ -17,18 +17,34 @@ final class PulseFlowUITests: XCTestCase {
         XCTAssertTrue(checkInButton.waitForExistence(timeout: 5))
         XCTAssertTrue(checkInButton.isEnabled)
 
+        let weekRail = app.otherElements["today.week.rail"]
+        XCTAssertTrue(weekRail.waitForExistence(timeout: 3))
+        XCTAssertGreaterThanOrEqual(weekRail.frame.minY, checkInButton.frame.maxY)
+        assertRemovedTodayCopyIsAbsent()
+        assertHeroGeometry()
+
+        let pendingAttachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
+        pendingAttachment.name = "Today before check-in"
+        pendingAttachment.lifetime = .keepAlways
+        add(pendingAttachment)
+
         checkInButton.tap()
 
-        let checkedTime = app.staticTexts["today.checked.time"]
-        XCTAssertTrue(checkedTime.waitForExistence(timeout: 3))
         XCTAssertFalse(checkInButton.isEnabled)
+        XCTAssertTrue(checkInButton.label.contains("已签到"))
+        assertRemovedTodayCopyIsAbsent()
+        assertHeroGeometry()
 
         app.terminate()
         app.launchEnvironment.removeValue(forKey: "PULSE_UI_TEST_RESET")
         app.launch()
 
-        XCTAssertTrue(app.staticTexts["today.checked.time"].waitForExistence(timeout: 5))
-        XCTAssertFalse(app.buttons["today.checkin.button"].isEnabled)
+        let persistedCheckInButton = app.buttons["today.checkin.button"]
+        XCTAssertTrue(persistedCheckInButton.waitForExistence(timeout: 5))
+        XCTAssertFalse(persistedCheckInButton.isEnabled)
+        XCTAssertTrue(persistedCheckInButton.label.contains("已签到"))
+        assertRemovedTodayCopyIsAbsent()
+        assertHeroGeometry()
 
         let todayAttachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
         todayAttachment.name = "Today after persisted check-in"
@@ -53,5 +69,50 @@ final class PulseFlowUITests: XCTestCase {
         attachment.name = "History after first check-in"
         attachment.lifetime = .keepAlways
         add(attachment)
+    }
+
+    func testSettingsHidesPrimaryNavigationUntilClosed() throws {
+        app.launch()
+
+        let settingsButton = app.buttons["settings.navigation.open.today"]
+        XCTAssertTrue(settingsButton.waitForExistence(timeout: 5))
+        settingsButton.tap()
+
+        let settingsNavigationBar = app.navigationBars["设置"]
+        XCTAssertTrue(settingsNavigationBar.waitForExistence(timeout: 3))
+        XCTAssertFalse(app.buttons["primary.navigation.today"].exists)
+        XCTAssertFalse(app.buttons["primary.navigation.history"].exists)
+
+        let settingsAttachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
+        settingsAttachment.name = "Settings without primary navigation"
+        settingsAttachment.lifetime = .keepAlways
+        add(settingsAttachment)
+
+        settingsNavigationBar.buttons.firstMatch.tap()
+
+        XCTAssertTrue(app.buttons["primary.navigation.today"].waitForExistence(timeout: 3))
+        XCTAssertTrue(app.buttons["primary.navigation.history"].exists)
+    }
+
+    private func assertRemovedTodayCopyIsAbsent() {
+        XCTAssertFalse(app.staticTexts["给今天留下一枚印记"].exists)
+        XCTAssertFalse(app.staticTexts["今天已留下一枚印记"].exists)
+        XCTAssertFalse(app.staticTexts["写入本机后完成"].exists)
+        XCTAssertEqual(
+            app.staticTexts.matching(
+                NSPredicate(format: "label CONTAINS %@", "写入本机")
+            ).count,
+            0
+        )
+    }
+
+    private func assertHeroGeometry() {
+        let dayNumber = app.staticTexts["today.day.number"]
+        let kicker = app.staticTexts["today.hero.kicker"]
+        XCTAssertTrue(dayNumber.exists)
+        XCTAssertTrue(kicker.exists)
+        XCTAssertTrue(kicker.label.contains("星期"))
+        XCTAssertEqual(dayNumber.frame.midX, app.frame.midX, accuracy: 1)
+        XCTAssertLessThan(kicker.frame.maxY, dayNumber.frame.minY)
     }
 }

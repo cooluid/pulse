@@ -1285,22 +1285,6 @@
         }
       }
     },
-    "today.action_note" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Complete after saving locally"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "写入本机后完成"
-          }
-        }
-      }
-    },
     "today.check_in" : {
       "localizations" : {
         "en" : {
@@ -1317,66 +1301,34 @@
         }
       }
     },
-    "today.checked" : {
+    "today.checked_with_time" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Completed"
+            "value" : "%@ checked in"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "今日已签到"
+            "value" : "%@已签到"
           }
         }
       }
     },
-    "today.checked_at" : {
+    "today.kicker_with_weekday_format" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Saved locally at %@"
+            "value" : "TODAY / %@ / %@"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "已于 %@ 写入本机"
-          }
-        }
-      }
-    },
-    "today.completed_prompt" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Today has its mark"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "今天已留下一枚印记"
-          }
-        }
-      }
-    },
-    "today.kicker_format" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "TODAY / %@"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "TODAY / %@"
+            "value" : "TODAY / %@ / %@"
           }
         }
       }
@@ -1441,22 +1393,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "还没有留下今天的印"
-          }
-        }
-      }
-    },
-    "today.prompt" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Leave a mark for today"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "给今天留下一枚印记"
           }
         }
       }

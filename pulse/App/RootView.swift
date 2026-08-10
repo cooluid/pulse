@@ -4,6 +4,8 @@ struct RootView: View {
     @Bindable var model: PulseAppModel
     @Environment(\.scenePhase) private var scenePhase
     @State private var selectedSection: PulsePrimarySection = .today
+    @State private var todayPath: [PulseNavigationDestination] = []
+    @State private var historyPath: [PulseNavigationDestination] = []
 
     var body: some View {
         Group {
@@ -62,16 +64,22 @@ struct RootView: View {
 
     private var primaryInterface: some View {
         ZStack {
-            NavigationStack {
+            NavigationStack(path: $todayPath) {
                 TodayView(model: model, isActive: selectedSection == .today)
+                    .navigationDestination(for: PulseNavigationDestination.self) { destination in
+                        secondaryDestination(destination)
+                    }
             }
             .opacity(selectedSection == .today ? 1 : 0)
             .allowsHitTesting(selectedSection == .today)
             .accessibilityHidden(selectedSection != .today)
             .zIndex(selectedSection == .today ? 1 : 0)
 
-            NavigationStack {
+            NavigationStack(path: $historyPath) {
                 HistoryView(model: model, isActive: selectedSection == .history)
+                    .navigationDestination(for: PulseNavigationDestination.self) { destination in
+                        secondaryDestination(destination)
+                    }
             }
             .opacity(selectedSection == .history ? 1 : 0)
             .allowsHitTesting(selectedSection == .history)
@@ -80,12 +88,29 @@ struct RootView: View {
         }
         .background(PulseScreenBackground())
         .safeAreaInset(edge: .bottom, spacing: 0) {
-            PulsePrimaryNavigation(
-                selection: $selectedSection,
-                todayDayNumber: model.today?.day,
-                historyMonthDayCount: historyMonthDayCount,
-                isTodayChecked: model.todayRecord != nil
-            )
+            if isPrimaryNavigationVisible {
+                PulsePrimaryNavigation(
+                    selection: $selectedSection,
+                    todayDayNumber: model.today?.day,
+                    historyMonthDayCount: historyMonthDayCount,
+                    isTodayChecked: model.todayRecord != nil
+                )
+            }
+        }
+    }
+
+    private var isPrimaryNavigationVisible: Bool {
+        switch selectedSection {
+        case .today: todayPath.isEmpty
+        case .history: historyPath.isEmpty
+        }
+    }
+
+    @ViewBuilder
+    private func secondaryDestination(_ destination: PulseNavigationDestination) -> some View {
+        switch destination {
+        case .settings:
+            SettingsView(model: model)
         }
     }
 
@@ -93,4 +118,8 @@ struct RootView: View {
         guard let today = model.today, let timeZone = model.timeZone else { return nil }
         return PulseFormatting.numberOfDaysInMonth(today, timeZone: timeZone)
     }
+}
+
+enum PulseNavigationDestination: Hashable {
+    case settings
 }
