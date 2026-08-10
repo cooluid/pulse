@@ -8,6 +8,7 @@ struct TodayView: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+    @Environment(\.locale) private var locale
     @ScaledMetric(relativeTo: .largeTitle) private var dayNumberSize = PulseDesign.dayNumberBaseSize
     @State private var showsSavingIndicator = false
 
@@ -96,11 +97,18 @@ struct TodayView: View {
     private var dayHero: some View {
         VStack(spacing: 0) {
             if let today = model.today, let timeZone = model.timeZone {
-                let weekday = PulseFormatting.fullWeekday(today, timeZone: timeZone)
+                let weekday = PulseFormatting.fullWeekday(
+                    today,
+                    timeZone: timeZone,
+                    locale: locale
+                )
 
                 Text(
                     String(
-                        format: String(localized: "today.kicker_with_weekday_format"),
+                        format: PulseLocalization.string(
+                            "today.kicker_with_weekday_format",
+                            locale: locale
+                        ),
                         PulseFormatting.numericYearAndMonth(today, timeZone: timeZone),
                         weekday
                     )
@@ -163,7 +171,13 @@ struct TodayView: View {
 
         return VStack(spacing: PulseDesign.spacing8) {
             if let timeZone = model.timeZone {
-                Text(PulseFormatting.shortWeekday(item.day, timeZone: timeZone))
+                Text(
+                    PulseFormatting.shortWeekday(
+                        item.day,
+                        timeZone: timeZone,
+                        locale: locale
+                    )
+                )
                     .font(.system(.caption2, design: .default, weight: isToday ? .bold : .regular))
                     .foregroundStyle(isToday ? PulseDesign.ink : PulseDesign.secondary)
             }
@@ -296,7 +310,11 @@ struct TodayView: View {
             showsSavingIndicator = true
         }
         .accessibilityLabel(checkInAccessibilityLabel)
-        .accessibilityHint(isChecked ? "" : String(localized: "today.accessibility.hint"))
+        .accessibilityHint(
+            isChecked
+                ? ""
+                : PulseLocalization.string("today.accessibility.hint", locale: locale)
+        )
     }
 
     @ViewBuilder
@@ -330,8 +348,8 @@ struct TodayView: View {
             return nil
         }
         return String(
-            format: String(localized: "today.checked_with_time"),
-            PulseFormatting.time(record.checkedAt, timeZone: timeZone)
+            format: PulseLocalization.string("today.checked_with_time", locale: locale),
+            PulseFormatting.time(record.checkedAt, timeZone: timeZone, locale: locale)
         )
     }
 
@@ -403,16 +421,25 @@ struct TodayView: View {
 
     private func weekDayAccessibilityLabel(_ item: CalendarDayItem) -> String {
         guard let timeZone = model.timeZone else { return "" }
-        let date = PulseFormatting.fullDate(item.day, timeZone: timeZone)
+        let date = PulseFormatting.fullDate(item.day, timeZone: timeZone, locale: locale)
         let state: String
         switch item.status {
-        case .beforeHabit: state = String(localized: "calendar.status.before_habit")
-        case .checked: state = String(localized: "calendar.status.checked")
-        case .missed: state = String(localized: "calendar.status.missed")
-        case .todayPending: state = String(localized: "calendar.status.pending")
-        case .future: state = String(localized: "calendar.status.future")
+        case .beforeHabit:
+            state = PulseLocalization.string("calendar.status.before_habit", locale: locale)
+        case .checked:
+            state = PulseLocalization.string("calendar.status.checked", locale: locale)
+        case .missed:
+            state = PulseLocalization.string("calendar.status.missed", locale: locale)
+        case .todayPending:
+            state = PulseLocalization.string("calendar.status.pending", locale: locale)
+        case .future:
+            state = PulseLocalization.string("calendar.status.future", locale: locale)
         }
-        return "\(date)，\(state)"
+        return String(
+            format: PulseLocalization.string("accessibility.date_status_format", locale: locale),
+            date,
+            state
+        )
     }
 
 }

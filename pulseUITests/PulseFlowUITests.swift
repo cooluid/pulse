@@ -121,6 +121,58 @@ final class PulseFlowUITests: XCTestCase {
         XCTAssertTrue(confirmButton.waitForExistence(timeout: 3))
     }
 
+    func testThemeAndLanguageChoicesApplyImmediatelyAndPersistAcrossRelaunch() throws {
+        configureApp()
+        app.launch()
+
+        let settingsButton = app.buttons["settings.navigation.open.today"]
+        XCTAssertTrue(settingsButton.waitForExistence(timeout: 5))
+        settingsButton.tap()
+
+        let languagePicker = app.descendants(matching: .any)["settings.language.picker"]
+        XCTAssertTrue(languagePicker.waitForExistence(timeout: 3))
+        languagePicker.tap()
+        let englishOption = app.descendants(matching: .any)
+            .matching(NSPredicate(format: "label == %@", "English"))
+            .firstMatch
+        XCTAssertTrue(englishOption.waitForExistence(timeout: 3))
+        englishOption.tap()
+
+        XCTAssertTrue(app.navigationBars["Settings"].waitForExistence(timeout: 3))
+        let themePicker = app.descendants(matching: .any)["settings.theme.picker"]
+        XCTAssertTrue(themePicker.waitForExistence(timeout: 3))
+        themePicker.tap()
+        let darkOption = app.descendants(matching: .any)
+            .matching(NSPredicate(format: "label == %@", "Dark"))
+            .firstMatch
+        XCTAssertTrue(darkOption.waitForExistence(timeout: 3))
+        darkOption.tap()
+        let darkThemeApplied = NSPredicate(format: "label CONTAINS %@", "Dark")
+        expectation(for: darkThemeApplied, evaluatedWith: themePicker)
+        waitForExpectations(timeout: 3)
+
+        let darkEnglishAttachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
+        darkEnglishAttachment.name = "Settings in English with dark theme"
+        darkEnglishAttachment.lifetime = .keepAlways
+        add(darkEnglishAttachment)
+
+        app.terminate()
+        app.launchEnvironment.removeValue(forKey: "PULSE_UI_TEST_RESET")
+        app.launch()
+
+        let persistedSettingsButton = app.buttons["settings.navigation.open.today"]
+        XCTAssertTrue(persistedSettingsButton.waitForExistence(timeout: 5))
+        persistedSettingsButton.tap()
+        XCTAssertTrue(app.navigationBars["Settings"].waitForExistence(timeout: 3))
+
+        let persistedLanguagePicker = app.descendants(matching: .any)["settings.language.picker"]
+        let persistedThemePicker = app.descendants(matching: .any)["settings.theme.picker"]
+        XCTAssertTrue(persistedLanguagePicker.waitForExistence(timeout: 3))
+        XCTAssertTrue(persistedThemePicker.waitForExistence(timeout: 3))
+        XCTAssertTrue(persistedLanguagePicker.label.contains("English"))
+        XCTAssertTrue(persistedThemePicker.label.contains("Dark"))
+    }
+
     func testRecordDetailUsesSheetDismissalAndSourceAnchoredDeleteConfirmation() throws {
         configureApp()
         app.launch()

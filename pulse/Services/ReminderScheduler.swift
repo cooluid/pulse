@@ -11,6 +11,7 @@ struct ReminderScheduleSnapshot: Sendable {
     let enabled: Bool
     let time: ReminderTime
     let timeZoneIdentifier: String
+    let localeIdentifier: String
     let checkedDays: Set<LogicalDay>
     let now: Date
 }
@@ -65,6 +66,7 @@ final class ReminderScheduler: ReminderScheduling {
         }
         let today = LogicalDay.resolve(at: snapshot.now, timeZone: timeZone)
         let calendar = Calendar.pulseGregorian(timeZone: timeZone)
+        let locale = Locale(identifier: snapshot.localeIdentifier)
 
         do {
             for offset in 0..<Configuration.schedulingWindowDays {
@@ -87,8 +89,8 @@ final class ReminderScheduler: ReminderScheduling {
                 }
 
                 let content = UNMutableNotificationContent()
-                content.title = String(localized: "notification.title")
-                content.body = String(localized: "notification.body")
+                content.title = PulseLocalization.string("notification.title", locale: locale)
+                content.body = PulseLocalization.string("notification.body", locale: locale)
                 content.sound = .default
 
                 let request = UNNotificationRequest(

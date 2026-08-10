@@ -8,6 +8,7 @@ struct HistoryView: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+    @Environment(\.locale) private var locale
     @State private var selectedRecord: CheckInRecord?
     @State private var monthTransitionDirection = -1
 
@@ -120,7 +121,7 @@ struct HistoryView: View {
             if let month = selectedMonth, let timeZone = model.timeZone {
                 Text(
                     String(
-                        format: String(localized: "history.archive_format"),
+                        format: PulseLocalization.string("history.archive_format", locale: locale),
                         PulseFormatting.year(month, timeZone: timeZone)
                     )
                 )
@@ -130,8 +131,11 @@ struct HistoryView: View {
 
                 Text(
                     String(
-                        format: String(localized: "history.month_records_format"),
-                        PulseFormatting.monthOnly(month, timeZone: timeZone)
+                        format: PulseLocalization.string(
+                            "history.month_records_format",
+                            locale: locale
+                        ),
+                        PulseFormatting.monthOnly(month, timeZone: timeZone, locale: locale)
                     )
                 )
                 .font(.largeTitle.bold())
@@ -210,7 +214,12 @@ struct HistoryView: View {
     private var calendar: some View {
         LazyVGrid(columns: columns, spacing: PulseDesign.spacing8) {
             ForEach(
-                Array(PulseFormatting.weekdayHeaders(weekStart: model.settings.weekStart).enumerated()),
+                Array(
+                    PulseFormatting.weekdayHeaders(
+                        weekStart: model.settings.weekStart,
+                        locale: locale
+                    ).enumerated()
+                ),
                 id: \.offset
             ) { index, weekday in
                 Text(weekday)
@@ -333,6 +342,7 @@ private struct StatisticTile: View {
 private struct CalendarDayCell: View {
     let item: CalendarDayItem
     let isToday: Bool
+    @Environment(\.locale) private var locale
 
     var body: some View {
         ZStack {
@@ -391,13 +401,22 @@ private struct CalendarDayCell: View {
     private var accessibilityLabel: String {
         let state: String
         switch item.status {
-        case .checked: state = String(localized: "calendar.status.checked")
-        case .missed: state = String(localized: "calendar.status.missed")
-        case .todayPending: state = String(localized: "calendar.status.pending")
-        case .future: state = String(localized: "calendar.status.future")
-        case .beforeHabit: state = String(localized: "calendar.status.before_habit")
+        case .checked:
+            state = PulseLocalization.string("calendar.status.checked", locale: locale)
+        case .missed:
+            state = PulseLocalization.string("calendar.status.missed", locale: locale)
+        case .todayPending:
+            state = PulseLocalization.string("calendar.status.pending", locale: locale)
+        case .future:
+            state = PulseLocalization.string("calendar.status.future", locale: locale)
+        case .beforeHabit:
+            state = PulseLocalization.string("calendar.status.before_habit", locale: locale)
         }
-        return "\(item.day.storageValue)，\(state)"
+        return String(
+            format: PulseLocalization.string("accessibility.date_status_format", locale: locale),
+            item.day.storageValue,
+            state
+        )
     }
 
     private var isDeemphasized: Bool {
@@ -409,6 +428,7 @@ private struct RecordDetailView: View {
     let record: CheckInRecord
     @Bindable var model: PulseAppModel
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.locale) private var locale
     @State private var showsDeleteConfirmation = false
 
     var body: some View {
@@ -420,15 +440,22 @@ private struct RecordDetailView: View {
 
                 VStack(spacing: PulseDesign.spacing8) {
                     if let day = record.logicalDay, let timeZone = record.timeZone {
-                        Text(PulseFormatting.fullDate(day, timeZone: timeZone))
+                        Text(PulseFormatting.fullDate(day, timeZone: timeZone, locale: locale))
                             .font(.title3.bold())
                             .foregroundStyle(PulseDesign.ink)
                     }
                     if let timeZone = record.timeZone {
                         Text(
                             String(
-                                format: String(localized: "history.checked_at"),
-                                PulseFormatting.time(record.checkedAt, timeZone: timeZone)
+                                format: PulseLocalization.string(
+                                    "history.checked_at",
+                                    locale: locale
+                                ),
+                                PulseFormatting.time(
+                                    record.checkedAt,
+                                    timeZone: timeZone,
+                                    locale: locale
+                                )
                             )
                         )
                         .foregroundStyle(PulseDesign.secondary)

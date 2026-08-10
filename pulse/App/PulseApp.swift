@@ -86,7 +86,7 @@ struct PulseApp: App {
         WindowGroup {
             switch bootstrap {
             case .ready(let model):
-                RootView(model: model)
+                ConfiguredRootView(model: model)
             case .failed(let failure):
                 StartupFailureView(
                     failure: failure,
@@ -97,6 +97,32 @@ struct PulseApp: App {
                     }
                 )
             }
+        }
+    }
+}
+
+private struct ConfiguredRootView: View {
+    let model: PulseAppModel
+    @Bindable var settings: AppSettings
+
+    init(model: PulseAppModel) {
+        self.model = model
+        settings = model.settings
+    }
+
+    var body: some View {
+        RootView(model: model)
+            .environment(\.locale, settings.locale)
+            .preferredColorScheme(settings.theme.preferredColorScheme)
+    }
+}
+
+private extension AppTheme {
+    var preferredColorScheme: ColorScheme? {
+        switch self {
+        case .system: nil
+        case .light: .light
+        case .dark: .dark
         }
     }
 }

@@ -4,6 +4,7 @@ import UniformTypeIdentifiers
 struct SettingsView: View {
     @Bindable var model: PulseAppModel
     @Environment(\.openURL) private var openURL
+    @Environment(\.locale) private var locale
     @State private var showsResetConfirmation = false
     @State private var showsExporter = false
     @State private var exportDocument: PulseExportDocument?
@@ -13,6 +14,7 @@ struct SettingsView: View {
     var body: some View {
         Form {
             reminderSection
+            personalizationSection
             experienceSection
             dataSection
             aboutSection
@@ -21,9 +23,43 @@ struct SettingsView: View {
         .background(PulseDesign.background)
         .foregroundStyle(PulseDesign.ink)
         .tint(PulseDesign.tint)
-        .navigationTitle("settings.navigation_title")
+        .navigationTitle(
+            PulseLocalization.string("settings.navigation_title", locale: locale)
+        )
         .navigationBarTitleDisplayMode(.inline)
         .disabled(model.operation != nil)
+    }
+
+    private var personalizationSection: some View {
+        Section("settings.personalization.section") {
+            Picker(
+                "settings.theme",
+                selection: Binding(
+                    get: { model.settings.theme },
+                    set: { model.settings.theme = $0 }
+                )
+            ) {
+                ForEach(AppTheme.allCases) { theme in
+                    Text(theme.localizedName(locale: locale)).tag(theme)
+                }
+            }
+            .accessibilityIdentifier("settings.theme.picker")
+            .id("settings.theme.\(locale.identifier)")
+
+            Picker(
+                "settings.language",
+                selection: Binding(
+                    get: { model.settings.language },
+                    set: { model.requestLanguage($0) }
+                )
+            ) {
+                ForEach(AppLanguage.allCases) { language in
+                    Text(language.localizedName(locale: locale)).tag(language)
+                }
+            }
+            .accessibilityIdentifier("settings.language.picker")
+            .id("settings.language.\(locale.identifier)")
+        }
     }
 
     private var reminderSection: some View {
@@ -94,9 +130,10 @@ struct SettingsView: View {
                 )
             ) {
                 ForEach(WeekStart.allCases) { start in
-                    Text(start.localizedName).tag(start)
+                    Text(start.localizedName(locale: locale)).tag(start)
                 }
             }
+            .id("settings.week-start.\(locale.identifier)")
 
             NavigationLink {
                 TimeZonePickerView(model: model)
@@ -196,7 +233,10 @@ struct SettingsView: View {
         } message: {
             Text(
                 String(
-                    format: String(localized: "settings.import_confirmation.message"),
+                    format: PulseLocalization.string(
+                        "settings.import_confirmation.message",
+                        locale: locale
+                    ),
                     pendingImport?.records.count ?? 0
                 )
             )
@@ -228,7 +268,10 @@ struct SettingsView: View {
     private var aboutSection: some View {
         Section("settings.about.section") {
             LabeledContent("settings.version", value: appVersion)
-            LabeledContent("settings.storage", value: String(localized: "settings.storage.local"))
+            LabeledContent(
+                "settings.storage",
+                value: PulseLocalization.string("settings.storage.local", locale: locale)
+            )
         }
     }
 
@@ -237,7 +280,7 @@ struct SettingsView: View {
             get: { model.settings.reminderTime.pickerDate },
             set: { date in
                 guard let reminderTime = ReminderTime(pickerDate: date) else {
-                    model.errorMessage = String(localized: "error.settings")
+                    model.errorMessage = PulseLocalization.string("error.settings", locale: locale)
                     return
                 }
                 model.requestReminderTime(reminderTime)
@@ -262,6 +305,7 @@ struct SettingsView: View {
 private struct TimeZonePickerView: View {
     @Bindable var model: PulseAppModel
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.locale) private var locale
     @State private var searchText = ""
     @State private var pendingIdentifier: String?
 
@@ -328,6 +372,6 @@ private struct TimeZonePickerView: View {
 
     private func displayName(_ identifier: String) -> String {
         guard let timeZone = TimeZone(identifier: identifier) else { return identifier }
-        return timeZone.localizedName(for: .standard, locale: .autoupdatingCurrent) ?? identifier
+        return timeZone.localizedName(for: .standard, locale: locale) ?? identifier
     }
 }

@@ -27,6 +27,72 @@ final class ReminderTimeTests: XCTestCase {
 
 @MainActor
 final class AppSettingsTests: XCTestCase {
+    func testLocalizationSelectsTheRequestedLanguageBundle() {
+        XCTAssertEqual(
+            PulseLocalization.string(
+                "settings.navigation_title",
+                locale: Locale(identifier: "en")
+            ),
+            "Settings"
+        )
+        XCTAssertEqual(
+            PulseLocalization.string(
+                "settings.navigation_title",
+                locale: Locale(identifier: "zh-Hans")
+            ),
+            "设置"
+        )
+    }
+
+    func testThemeAndLanguageDefaultToSystemAndPersistExplicitChoices() throws {
+        let suiteName = "AppSettingsTests.\(UUID().uuidString)"
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: suiteName))
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+
+        let settings = try AppSettings(defaults: defaults)
+        XCTAssertEqual(settings.theme, .system)
+        XCTAssertEqual(settings.language, .system)
+
+        settings.theme = .dark
+        settings.language = .english
+
+        let reloaded = try AppSettings(defaults: defaults)
+        XCTAssertEqual(reloaded.theme, .dark)
+        XCTAssertEqual(reloaded.language, .english)
+        XCTAssertEqual(reloaded.locale.identifier, "en")
+    }
+
+    func testInvalidPersistedThemeOrLanguageFailsInitialization() throws {
+        let invalidThemeSuite = "AppSettingsTests.Theme.\(UUID().uuidString)"
+        let invalidThemeDefaults = try XCTUnwrap(UserDefaults(suiteName: invalidThemeSuite))
+        invalidThemeDefaults.set("sepia", forKey: AppSettings.StorageKey.theme)
+        XCTAssertThrowsError(try AppSettings(defaults: invalidThemeDefaults))
+        invalidThemeDefaults.removePersistentDomain(forName: invalidThemeSuite)
+
+        let invalidLanguageSuite = "AppSettingsTests.Language.\(UUID().uuidString)"
+        let invalidLanguageDefaults = try XCTUnwrap(UserDefaults(suiteName: invalidLanguageSuite))
+        invalidLanguageDefaults.set("fr", forKey: AppSettings.StorageKey.language)
+        XCTAssertThrowsError(try AppSettings(defaults: invalidLanguageDefaults))
+        invalidLanguageDefaults.removePersistentDomain(forName: invalidLanguageSuite)
+    }
+
+    func testResetRestoresSystemThemeAndLanguage() throws {
+        let suiteName = "AppSettingsTests.\(UUID().uuidString)"
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: suiteName))
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+        let settings = try AppSettings(defaults: defaults)
+        settings.theme = .light
+        settings.language = .simplifiedChinese
+
+        settings.reset()
+
+        XCTAssertEqual(settings.theme, .system)
+        XCTAssertEqual(settings.language, .system)
+        let reloaded = try AppSettings(defaults: defaults)
+        XCTAssertEqual(reloaded.theme, .system)
+        XCTAssertEqual(reloaded.language, .system)
+    }
+
     func testInvalidPersistedReminderTimeFailsInitialization() throws {
         let suiteName = "AppSettingsTests.\(UUID().uuidString)"
         let defaults = try XCTUnwrap(UserDefaults(suiteName: suiteName))

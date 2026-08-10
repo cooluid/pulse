@@ -12,25 +12,29 @@ enum PulseError: LocalizedError, Equatable {
     case invalidImport
 
     var errorDescription: String? {
+        localizedMessage(locale: .autoupdatingCurrent)
+    }
+
+    func localizedMessage(locale: Locale) -> String {
         switch self {
         case .invalidTimeZone:
-            String(localized: "error.timezone")
+            PulseLocalization.string("error.timezone", locale: locale)
         case .invalidTimeZoneTransition:
-            String(localized: "error.timezone_transition")
+            PulseLocalization.string("error.timezone_transition", locale: locale)
         case .invalidRecordDate:
-            String(localized: "error.record_date")
+            PulseLocalization.string("error.record_date", locale: locale)
         case .invalidCheckIn:
-            String(localized: "error.check_in_invalid")
+            PulseLocalization.string("error.check_in_invalid", locale: locale)
         case .invalidSettings:
-            String(localized: "error.settings")
+            PulseLocalization.string("error.settings", locale: locale)
         case .notificationPermissionDenied:
-            String(localized: "error.notification_denied")
+            PulseLocalization.string("error.notification_denied", locale: locale)
         case .exportUnavailable:
-            String(localized: "error.export")
+            PulseLocalization.string("error.export", locale: locale)
         case .unsupportedImportVersion:
-            String(localized: "error.import_version")
+            PulseLocalization.string("error.import_version", locale: locale)
         case .invalidImport:
-            String(localized: "error.import_invalid")
+            PulseLocalization.string("error.import_invalid", locale: locale)
         }
     }
 }

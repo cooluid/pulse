@@ -22,10 +22,15 @@ SwiftDataCheckInRepository ──→ Habit + CheckInRecord
 PulseAppModel ──→ Today / History / Settings
    ↓ value snapshot
 ReminderScheduler ──→ UserNotifications
+
+AppSettings ──→ ConfiguredRootView
+   ↓ persisted theme and language
+SwiftUI environment + PulseLocalization
 ```
 
 - Repository 是事实写入的唯一所有者，并持有与 AppModel 相同的 Clock。
 - AppModel 是页面快照、操作互斥、导航复位和提醒意图顺序的唯一所有者。
+- AppSettings 是主题与应用内语言的唯一持久化所有者；根窗口直接观察它，不能依赖页面级副本。
 - View 只呈现状态与发起意图，不直接访问 SwiftData、UserDefaults 或通知中心。
 - 统计与月历从记录快照派生；按逻辑日字典为内存索引，不是第二份持久化事实。
 
@@ -59,6 +64,9 @@ ReminderScheduler ──→ UserNotifications
 - Debug UI 测试通过 `PULSE_UI_TEST_NOW` 注入 ISO-8601 固定时间，并用 UUID 命名的独立磁盘 store 验证跨重启持久化；单元测试宿主使用内存 store。无效测试配置直接触发前置条件失败。
 - 存储日期使用 `LogicalDay` 固定格式，展示才使用本地化 formatter。
 - 历史签到时间使用记录自己的时区；当前日期与后续签到使用项目当前时区。
+- 主题提供跟随系统、浅色、深色三种模式；语言提供跟随系统、English、简体中文三种模式。
+- SwiftUI 文案消费根环境 Locale；代码生成的错误、格式串、辅助功能标签和通知文案由 `PulseLocalization` 显式选择 `en.lproj` 或 `zh-Hans.lproj`，避免切换后混用系统语言。
+- 日期、星期、时间和时区名称显式消费当前应用 Locale；提醒快照携带不可变 Locale 标识，切换语言会重新协调待发送通知。
 
 ## 7. 设计系统
 

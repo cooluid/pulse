@@ -109,6 +109,26 @@ final class PulseAppModelTests: XCTestCase {
         XCTAssertNotNil(context.model.errorMessage)
     }
 
+    func testChangingLanguageReschedulesReminderContentWithSelectedLocale() async throws {
+        let context = try makeContext(notificationPermission: .authorized)
+        await context.model.start()
+        context.model.requestReminderEnabled(true)
+        await waitUntil {
+            context.model.reminderSyncState == .synced
+                && context.model.settings.reminderEnabled
+        }
+
+        context.model.requestLanguage(.english)
+        await waitUntil {
+            context.scheduler.snapshots.last?.localeIdentifier == "en"
+                && context.model.reminderSyncState == .synced
+        }
+
+        XCTAssertEqual(context.model.settings.language, .english)
+        XCTAssertEqual(context.scheduler.snapshots.last?.localeIdentifier, "en")
+        XCTAssertTrue(context.scheduler.snapshots.last?.enabled ?? false)
+    }
+
     func testPendingResetJournalIsRecoveredOnStart() async throws {
         let context = try makeContext()
         await context.model.start()

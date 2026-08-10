@@ -145,6 +145,7 @@ struct RootView: View {
         switch destination {
         case .settings:
             SettingsView(model: model)
+                .id(model.settings.language)
         }
     }
 

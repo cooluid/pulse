@@ -7,10 +7,57 @@ enum WeekStart: Int, CaseIterable, Identifiable, Sendable {
 
     var id: Int { rawValue }
 
-    var localizedName: String {
+    func localizedName(locale: Locale) -> String {
         switch self {
-        case .sunday: String(localized: "settings.week_start.sunday")
-        case .monday: String(localized: "settings.week_start.monday")
+        case .sunday:
+            PulseLocalization.string("settings.week_start.sunday", locale: locale)
+        case .monday:
+            PulseLocalization.string("settings.week_start.monday", locale: locale)
+        }
+    }
+}
+
+enum AppTheme: String, CaseIterable, Identifiable, Sendable {
+    case system
+    case light
+    case dark
+
+    var id: String { rawValue }
+
+    func localizedName(locale: Locale) -> String {
+        switch self {
+        case .system:
+            PulseLocalization.string("settings.theme.system", locale: locale)
+        case .light:
+            PulseLocalization.string("settings.theme.light", locale: locale)
+        case .dark:
+            PulseLocalization.string("settings.theme.dark", locale: locale)
+        }
+    }
+}
+
+enum AppLanguage: String, CaseIterable, Identifiable, Sendable {
+    case system
+    case english = "en"
+    case simplifiedChinese = "zh-Hans"
+
+    var id: String { rawValue }
+
+    var locale: Locale {
+        switch self {
+        case .system: .autoupdatingCurrent
+        case .english, .simplifiedChinese: Locale(identifier: rawValue)
+        }
+    }
+
+    func localizedName(locale: Locale) -> String {
+        switch self {
+        case .system:
+            PulseLocalization.string("settings.language.system", locale: locale)
+        case .english:
+            PulseLocalization.string("settings.language.english", locale: locale)
+        case .simplifiedChinese:
+            PulseLocalization.string("settings.language.simplified_chinese", locale: locale)
         }
     }
 }
@@ -23,6 +70,8 @@ final class AppSettings {
         static let reminderEnabled = "settings.reminderEnabled"
         static let reminderTimeMinutes = "settings.reminderTimeMinutes"
         static let weekStart = "settings.weekStart"
+        static let theme = "settings.theme"
+        static let language = "settings.language"
         static let resetPending = "maintenance.resetPending"
     }
 
@@ -45,18 +94,32 @@ final class AppSettings {
         didSet { persist(StorageKey.weekStart, value: weekStart.rawValue) }
     }
 
+    var theme: AppTheme {
+        didSet { persist(StorageKey.theme, value: theme.rawValue) }
+    }
+
+    var language: AppLanguage {
+        didSet { persist(StorageKey.language, value: language.rawValue) }
+    }
+
+    var locale: Locale { language.locale }
+
     init(defaults: UserDefaults = .standard) throws {
         self.defaults = defaults
         defaults.register(defaults: [
             StorageKey.hapticsEnabled: true,
             StorageKey.reminderEnabled: false,
             StorageKey.reminderTimeMinutes: ReminderTime.standard.minutesFromMidnight,
-            StorageKey.weekStart: WeekStart.monday.rawValue
+            StorageKey.weekStart: WeekStart.monday.rawValue,
+            StorageKey.theme: AppTheme.system.rawValue,
+            StorageKey.language: AppLanguage.system.rawValue
         ])
 
         guard let loadedReminderTime = ReminderTime(
             minutesFromMidnight: defaults.integer(forKey: StorageKey.reminderTimeMinutes)
-        ), let loadedWeekStart = WeekStart(rawValue: defaults.integer(forKey: StorageKey.weekStart)) else {
+        ), let loadedWeekStart = WeekStart(rawValue: defaults.integer(forKey: StorageKey.weekStart)),
+        let loadedTheme = AppTheme(rawValue: defaults.string(forKey: StorageKey.theme) ?? ""),
+        let loadedLanguage = AppLanguage(rawValue: defaults.string(forKey: StorageKey.language) ?? "") else {
             throw PulseError.invalidSettings
         }
 
@@ -64,6 +127,8 @@ final class AppSettings {
         reminderEnabled = defaults.bool(forKey: StorageKey.reminderEnabled)
         reminderTime = loadedReminderTime
         weekStart = loadedWeekStart
+        theme = loadedTheme
+        language = loadedLanguage
         isLoading = false
     }
 
@@ -79,6 +144,8 @@ final class AppSettings {
         reminderEnabled = false
         reminderTime = .standard
         weekStart = .monday
+        theme = .system
+        language = .system
         isLoading = false
     }
 
@@ -99,7 +166,9 @@ final class AppSettings {
             StorageKey.hapticsEnabled,
             StorageKey.reminderEnabled,
             StorageKey.reminderTimeMinutes,
-            StorageKey.weekStart
+            StorageKey.weekStart,
+            StorageKey.theme,
+            StorageKey.language
         ].forEach(defaults.removeObject(forKey:))
     }
 

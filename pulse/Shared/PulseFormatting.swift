@@ -1,17 +1,19 @@
 import Foundation
 
 enum PulseFormatting {
-    static func fullDate(_ day: LogicalDay, timeZone: TimeZone) -> String {
+    static func fullDate(_ day: LogicalDay, timeZone: TimeZone, locale: Locale) -> String {
         formatter(
             template: "yMMMMEEEEd",
-            timeZone: timeZone
+            timeZone: timeZone,
+            locale: locale
         ).string(from: day.date(timeZone: timeZone))
     }
 
-    static func monthOnly(_ day: LogicalDay, timeZone: TimeZone) -> String {
+    static func monthOnly(_ day: LogicalDay, timeZone: TimeZone, locale: Locale) -> String {
         formatter(
             template: "MMMM",
-            timeZone: timeZone
+            timeZone: timeZone,
+            locale: locale
         ).string(from: day.date(timeZone: timeZone))
     }
 
@@ -33,17 +35,19 @@ enum PulseFormatting {
         return formatter.string(from: day.date(timeZone: timeZone))
     }
 
-    static func fullWeekday(_ day: LogicalDay, timeZone: TimeZone) -> String {
+    static func fullWeekday(_ day: LogicalDay, timeZone: TimeZone, locale: Locale) -> String {
         formatter(
             template: "EEEE",
-            timeZone: timeZone
+            timeZone: timeZone,
+            locale: locale
         ).string(from: day.date(timeZone: timeZone))
     }
 
-    static func shortWeekday(_ day: LogicalDay, timeZone: TimeZone) -> String {
+    static func shortWeekday(_ day: LogicalDay, timeZone: TimeZone, locale: Locale) -> String {
         formatter(
             template: "EEEEE",
-            timeZone: timeZone
+            timeZone: timeZone,
+            locale: locale
         ).string(from: day.date(timeZone: timeZone))
     }
 
@@ -59,18 +63,18 @@ enum PulseFormatting {
         return range.count
     }
 
-    static func time(_ date: Date, timeZone: TimeZone) -> String {
+    static func time(_ date: Date, timeZone: TimeZone, locale: Locale) -> String {
         let formatter = DateFormatter()
-        formatter.locale = .autoupdatingCurrent
+        formatter.locale = locale
         formatter.calendar = .pulseGregorian(timeZone: timeZone)
         formatter.timeZone = timeZone
         formatter.timeStyle = .short
         return formatter.string(from: date)
     }
 
-    static func weekdayHeaders(weekStart: WeekStart) -> [String] {
+    static func weekdayHeaders(weekStart: WeekStart, locale: Locale) -> [String] {
         let formatter = DateFormatter()
-        formatter.locale = .autoupdatingCurrent
+        formatter.locale = locale
         guard var symbols = formatter.veryShortStandaloneWeekdaySymbols,
               symbols.count == 7 else {
             preconditionFailure("The active locale must provide seven weekday symbols.")
@@ -81,9 +85,13 @@ enum PulseFormatting {
         return symbols
     }
 
-    private static func formatter(template: String, timeZone: TimeZone) -> DateFormatter {
+    private static func formatter(
+        template: String,
+        timeZone: TimeZone,
+        locale: Locale
+    ) -> DateFormatter {
         let formatter = DateFormatter()
-        formatter.locale = .autoupdatingCurrent
+        formatter.locale = locale
         formatter.calendar = .pulseGregorian(timeZone: timeZone)
         formatter.timeZone = timeZone
         formatter.setLocalizedDateFormatFromTemplate(template)

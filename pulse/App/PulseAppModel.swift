@@ -249,6 +249,12 @@ final class PulseAppModel {
         _ = enqueueReminderReconciliation()
     }
 
+    func requestLanguage(_ language: AppLanguage) {
+        guard settings.language != language else { return }
+        settings.language = language
+        _ = enqueueReminderReconciliation()
+    }
+
     func updateTimeZone(identifier: String) async -> Bool {
         guard operation == nil, let habit else { return false }
         operation = .updateTimeZone
@@ -464,6 +470,7 @@ final class PulseAppModel {
             enabled: settings.reminderEnabled,
             time: settings.reminderTime,
             timeZoneIdentifier: habit.timeZoneIdentifier,
+            localeIdentifier: settings.locale.identifier,
             checkedDays: checkedDays,
             now: clock.now
         )
@@ -521,7 +528,11 @@ final class PulseAppModel {
     }
 
     private func present(_ error: Error) {
+        if let pulseError = error as? PulseError {
+            errorMessage = pulseError.localizedMessage(locale: settings.locale)
+            return
+        }
         errorMessage = (error as? LocalizedError)?.errorDescription
-            ?? String(localized: "error.generic")
+            ?? PulseLocalization.string("error.generic", locale: settings.locale)
     }
 }
