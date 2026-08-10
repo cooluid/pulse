@@ -23,6 +23,7 @@ final class AppSettings {
         static let reminderEnabled = "settings.reminderEnabled"
         static let reminderTimeMinutes = "settings.reminderTimeMinutes"
         static let weekStart = "settings.weekStart"
+        static let resetPending = "maintenance.resetPending"
     }
 
     @ObservationIgnored private let defaults: UserDefaults
@@ -72,18 +73,34 @@ final class AppSettings {
 
     func reset() {
         isLoading = true
-        [
-            StorageKey.hapticsEnabled,
-            StorageKey.reminderEnabled,
-            StorageKey.reminderTimeMinutes,
-            StorageKey.weekStart
-        ].forEach(defaults.removeObject(forKey:))
+        Self.clearStoredValues(defaults: defaults)
 
         hapticsEnabled = true
         reminderEnabled = false
         reminderTime = .standard
         weekStart = .monday
         isLoading = false
+    }
+
+    var isResetPending: Bool {
+        defaults.bool(forKey: StorageKey.resetPending)
+    }
+
+    func markResetPending() {
+        defaults.set(true, forKey: StorageKey.resetPending)
+    }
+
+    func finishReset() {
+        defaults.removeObject(forKey: StorageKey.resetPending)
+    }
+
+    static func clearStoredValues(defaults: UserDefaults = .standard) {
+        [
+            StorageKey.hapticsEnabled,
+            StorageKey.reminderEnabled,
+            StorageKey.reminderTimeMinutes,
+            StorageKey.weekStart
+        ].forEach(defaults.removeObject(forKey:))
     }
 
     private func persist(_ key: String, value: Any) {

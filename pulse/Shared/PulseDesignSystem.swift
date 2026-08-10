@@ -17,17 +17,12 @@ enum PulseDesign {
     static let tint = Color("AccentColor")
 
     static let spacing4: CGFloat = 4
-    static let spacing6: CGFloat = 6
     static let spacing8: CGFloat = 8
-    static let spacing9: CGFloat = 9
-    static let spacing10: CGFloat = 10
     static let spacing12: CGFloat = 12
-    static let spacing13: CGFloat = 13
     static let spacing16: CGFloat = 16
-    static let spacing18: CGFloat = 18
     static let spacing20: CGFloat = 20
     static let spacing24: CGFloat = 24
-    static let spacing28: CGFloat = 28
+    static let spacing32: CGFloat = 32
 
     static let horizontalPadding: CGFloat = spacing20
     static let screenMaxWidth: CGFloat = 680
@@ -39,7 +34,9 @@ enum PulseDesign {
     static let brandMarkCornerRadius: CGFloat = 8
 
     static let todayHeroMinimumHeight: CGFloat = 270
-    static let dayNumberSize: CGFloat = 104
+    static let dayNumberBaseSize: CGFloat = 104
+    static let checkInHeroOverlap: CGFloat = -42
+    static let accessibilityActionMinimumHeight: CGFloat = 72
     static let weekRailWidth: CGFloat = 244
     static let weekRailDot: CGFloat = 13
     static let weekRailCurrentDot: CGFloat = 20
@@ -55,25 +52,43 @@ enum PulseDesign {
     static let primaryNavigationItemCornerRadius: CGFloat = 18
     static let primaryNavigationSelectedRatio: CGFloat = 1.35
     static let primaryNavigationUnselectedRatio: CGFloat = 0.75
-    static let primaryNavigationGap: CGFloat = spacing6
-    static let primaryNavigationPadding: CGFloat = spacing6
+    static let primaryNavigationGap: CGFloat = spacing8
+    static let primaryNavigationPadding: CGFloat = spacing8
     static let primaryNavigationGlyph: CGFloat = 30
     static let primaryNavigationHorizontalInset: CGFloat = spacing16
 
     static let calendarDayVisualSize: CGFloat = 34
     static let calendarDayHitSize: CGFloat = minimumHitTarget
+    static let recordDetailBrandMarkSize: CGFloat = 64
     static let thinLineWidth: CGFloat = 1
     static let emphasisLineWidth: CGFloat = 2
+    static let fieldBandWidth: CGFloat = 38
+    static let fieldRingCount = 3
+    static let fieldWidthRatio = 2.1
+    static let fieldHeightRatio = 1.05
+    static let fieldRingInset: CGFloat = 76
+    static let fieldVerticalPositionRatio = 0.275
+    static let fieldExpandedScale = 1.035
+    static let fieldCollapsedScale = 0.98
 
     static let navigationShadowOpacity = 0.12
     static let navigationShadowRadius: CGFloat = 30
     static let navigationShadowY: CGFloat = 10
+    static let navigationSurfaceOpacity = 0.9
+    static let navigationSubtitleOpacity = 0.76
     static let actionShadowOpacity = 0.24
     static let actionShadowRadius: CGFloat = 30
     static let actionShadowY: CGFloat = 12
+    static let actionBorderOpacity = 0.55
+    static let actionRingOpacity = 0.62
+    static let outerHaloOpacity = 0.07
+    static let innerHaloOpacity = 0.12
+    static let fieldOutlineOpacity = 0.45
+    static let fieldBandOpacity = 0.06
+    static let fieldCollapsedOpacity = 0.72
+    static let deemphasizedCalendarOpacity = 0.62
 
     static let fieldBreathingDuration = 4.8
-    static let actionFloatingDuration = 3.2
     static let savingAnimationDuration = 0.18
     static let completionAnimationDuration = 0.42
 }
@@ -95,21 +110,43 @@ struct PulseFieldBackground: View {
         GeometryReader { proxy in
             ZStack {
                 Ellipse()
-                    .stroke(PulseDesign.field.opacity(0.45), lineWidth: PulseDesign.thinLineWidth)
-                    .frame(width: proxy.size.width * 2.1, height: proxy.size.height * 1.05)
+                    .stroke(
+                        PulseDesign.field.opacity(PulseDesign.fieldOutlineOpacity),
+                        lineWidth: PulseDesign.thinLineWidth
+                    )
+                    .frame(
+                        width: proxy.size.width * PulseDesign.fieldWidthRatio,
+                        height: proxy.size.height * PulseDesign.fieldHeightRatio
+                    )
 
-                ForEach(1...3, id: \.self) { ring in
+                ForEach(1...PulseDesign.fieldRingCount, id: \.self) { ring in
                     Ellipse()
-                        .stroke(PulseDesign.field.opacity(0.06), lineWidth: 38)
+                        .stroke(
+                            PulseDesign.field.opacity(PulseDesign.fieldBandOpacity),
+                            lineWidth: PulseDesign.fieldBandWidth
+                        )
                         .frame(
-                            width: max(0, proxy.size.width * 2.1 - CGFloat(ring) * 76),
-                            height: max(0, proxy.size.height * 1.05 - CGFloat(ring) * 76)
+                            width: max(
+                                0,
+                                proxy.size.width * PulseDesign.fieldWidthRatio
+                                    - CGFloat(ring) * PulseDesign.fieldRingInset
+                            ),
+                            height: max(
+                                0,
+                                proxy.size.height * PulseDesign.fieldHeightRatio
+                                    - CGFloat(ring) * PulseDesign.fieldRingInset
+                            )
                         )
                 }
             }
-            .position(x: proxy.size.width / 2, y: proxy.size.height * 0.275)
-            .scaleEffect(isExpanded ? 1.035 : 0.98)
-            .opacity(isExpanded ? 1 : 0.72)
+            .position(
+                x: proxy.size.width / 2,
+                y: proxy.size.height * PulseDesign.fieldVerticalPositionRatio
+            )
+            .scaleEffect(
+                isExpanded ? PulseDesign.fieldExpandedScale : PulseDesign.fieldCollapsedScale
+            )
+            .opacity(isExpanded ? 1 : PulseDesign.fieldCollapsedOpacity)
         }
         .ignoresSafeArea()
         .allowsHitTesting(false)
@@ -156,19 +193,18 @@ struct PulseAppHeader: View {
     let source: PulsePrimarySection
 
     var body: some View {
-        HStack(spacing: PulseDesign.spacing9) {
+        HStack(spacing: PulseDesign.spacing8) {
             PulseBrandMark()
 
             Text("today.navigation_title")
-                .font(.system(size: 15, weight: .medium))
-                .tracking(0.6)
+                .font(.subheadline.weight(.medium))
                 .foregroundStyle(PulseDesign.ink)
 
             Spacer(minLength: PulseDesign.spacing16)
 
             NavigationLink(value: PulseNavigationDestination.settings) {
                 Text("settings.navigation_title")
-                    .font(.system(size: 13, weight: .semibold))
+                    .font(.subheadline.weight(.semibold))
                     .foregroundStyle(PulseDesign.ink)
                     .frame(minWidth: PulseDesign.minimumHitTarget, minHeight: PulseDesign.minimumHitTarget)
             }
@@ -176,9 +212,8 @@ struct PulseAppHeader: View {
             .accessibilityIdentifier("settings.navigation.open.\(source.rawValue)")
         }
         .frame(maxWidth: PulseDesign.screenMaxWidth)
-        .frame(height: PulseDesign.topBarHeight)
+        .frame(minHeight: PulseDesign.topBarHeight)
         .padding(.horizontal, PulseDesign.horizontalPadding)
         .frame(maxWidth: .infinity)
-        .dynamicTypeSize(...DynamicTypeSize.xxxLarge)
     }
 }

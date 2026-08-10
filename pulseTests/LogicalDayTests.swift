@@ -35,41 +35,11 @@ final class LogicalDayTests: XCTestCase {
         )
 
         XCTAssertEqual(
-            LogicalDay.resolve(at: beforeMidnight, timeZone: shanghai, dayStartMinutes: 0),
+            LogicalDay.resolve(at: beforeMidnight, timeZone: shanghai),
             LogicalDay(year: 2026, month: 8, day: 10)
         )
         XCTAssertEqual(
-            LogicalDay.resolve(at: midnight, timeZone: shanghai, dayStartMinutes: 0),
-            LogicalDay(year: 2026, month: 8, day: 11)
-        )
-    }
-
-    func testNonZeroDayBoundary() {
-        let beforeBoundary = makeDate(
-            year: 2026,
-            month: 8,
-            day: 11,
-            hour: 3,
-            minute: 59,
-            second: 59,
-            timeZone: shanghai
-        )
-        let atBoundary = makeDate(
-            year: 2026,
-            month: 8,
-            day: 11,
-            hour: 4,
-            minute: 0,
-            second: 0,
-            timeZone: shanghai
-        )
-
-        XCTAssertEqual(
-            LogicalDay.resolve(at: beforeBoundary, timeZone: shanghai, dayStartMinutes: 240),
-            LogicalDay(year: 2026, month: 8, day: 10)
-        )
-        XCTAssertEqual(
-            LogicalDay.resolve(at: atBoundary, timeZone: shanghai, dayStartMinutes: 240),
+            LogicalDay.resolve(at: midnight, timeZone: shanghai),
             LogicalDay(year: 2026, month: 8, day: 11)
         )
     }
@@ -112,6 +82,8 @@ final class LogicalDayTests: XCTestCase {
         let habit = Habit(
             name: "Daily",
             createdAt: instant,
+            startLogicalDay: LogicalDay(year: 2026, month: 8, day: 11),
+            creationTimeZoneIdentifier: shanghai.identifier,
             timeZoneIdentifier: shanghai.identifier
         )
 
@@ -143,4 +115,3 @@ final class LogicalDayTests: XCTestCase {
         )!
     }
 }
-

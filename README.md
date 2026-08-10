@@ -6,12 +6,12 @@
 
 ## 当前状态
 
-- 产品阶段：核心功能与 C×A“草野脉冲”视觉工程完成；31 项自动化通过，iPhone 浅色/深色与 iPad 模拟器已复验，真实设备新 Bundle ID 安装及通知聚焦复验待完成
+- 产品阶段：核心功能与“草野脉冲”视觉进入发布前工程收口；自动化结果见实现状态，真机、通知、最终视觉与分发仍是独立门禁
 - App target：`pulse`
 - 测试 target：`pulseTests`、`pulseUITests`
 - 最低系统版本：iOS / iPadOS 17.0
 - 数据策略：本地优先，支持版本化 JSON 导出和全量恢复
-- 自动化状态：31 项单元、集成与 UI 测试通过
+- 工程基线：Swift 6 严格并发、所有 target 警告即错误
 
 ## 文档入口
 
@@ -20,7 +20,6 @@
 - [1.0 发布范围合同](./docs/RELEASE_SCOPE_1_0.md)
 - [签到业务规则](./docs/DOMAIN_CONTRACT.md)
 - [技术设计](./docs/TECHNICAL_DESIGN.md)
-- [开发计划](./docs/DEVELOPMENT_PLAN.md)
 - [测试与验收计划](./docs/TEST_PLAN.md)
 - [实现与验收状态](./docs/IMPLEMENTATION_STATUS.md)
 - [视觉方向评审](./design/README.md)

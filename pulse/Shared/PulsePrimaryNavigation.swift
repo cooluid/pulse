@@ -14,6 +14,8 @@ struct PulsePrimaryNavigation: View {
     let isTodayChecked: Bool
 
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    @ScaledMetric(relativeTo: .body) private var navigationHeight = PulseDesign.primaryNavigationHeight
+    @ScaledMetric(relativeTo: .body) private var glyphSize = PulseDesign.primaryNavigationGlyph
 
     var body: some View {
         GeometryReader { proxy in
@@ -47,7 +49,7 @@ struct PulsePrimaryNavigation: View {
             .padding(PulseDesign.primaryNavigationPadding)
         }
         .frame(maxWidth: PulseDesign.primaryNavigationMaxWidth)
-        .frame(height: PulseDesign.primaryNavigationHeight)
+        .frame(height: navigationHeight)
         .background {
             RoundedRectangle(
                 cornerRadius: PulseDesign.primaryNavigationCornerRadius,
@@ -59,7 +61,7 @@ struct PulsePrimaryNavigation: View {
                     cornerRadius: PulseDesign.primaryNavigationCornerRadius,
                     style: .continuous
                 )
-                .fill(PulseDesign.surface.opacity(0.9))
+                .fill(PulseDesign.surface.opacity(PulseDesign.navigationSurfaceOpacity))
             }
         }
         .clipShape(
@@ -83,7 +85,6 @@ struct PulsePrimaryNavigation: View {
         .padding(.horizontal, PulseDesign.primaryNavigationHorizontalInset)
         .padding(.vertical, PulseDesign.spacing8)
         .frame(maxWidth: .infinity)
-        .dynamicTypeSize(...DynamicTypeSize.xxxLarge)
     }
 
     private func navigationButton(for section: PulsePrimarySection) -> some View {
@@ -92,25 +93,28 @@ struct PulsePrimaryNavigation: View {
         return Button {
             selection = section
         } label: {
-            HStack(spacing: PulseDesign.spacing10) {
+            HStack(spacing: PulseDesign.spacing12) {
                 navigationGlyph(for: section, isSelected: isSelected)
 
-                VStack(alignment: .leading, spacing: 1) {
+                VStack(alignment: .leading, spacing: PulseDesign.spacing4) {
                     Text(section == .today ? "tab.today" : "tab.history")
-                        .font(.system(size: 13, weight: .bold))
+                        .font(.caption.bold())
                         .lineLimit(1)
 
                     if isSelected, !dynamicTypeSize.isAccessibilitySize {
                         Text(subtitleKey(for: section))
-                            .font(.system(size: 9))
-                            .opacity(0.76)
+                            .font(.caption2)
+                            .opacity(PulseDesign.navigationSubtitleOpacity)
                             .lineLimit(1)
                     }
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
-            .padding(.horizontal, PulseDesign.spacing13)
-            .frame(maxWidth: .infinity, minHeight: 56)
+            .padding(.horizontal, PulseDesign.spacing12)
+            .frame(
+                maxWidth: .infinity,
+                minHeight: navigationHeight - PulseDesign.primaryNavigationPadding * 2
+            )
             .foregroundStyle(isSelected ? PulseDesign.grassForeground : PulseDesign.secondary)
             .background(isSelected ? PulseDesign.grass : Color.clear)
             .clipShape(
@@ -123,7 +127,7 @@ struct PulsePrimaryNavigation: View {
         }
         .buttonStyle(.plain)
         .accessibilityIdentifier("primary.navigation.\(section.rawValue)")
-        .accessibilityValue(isSelected ? Text(subtitleKey(for: section)) : Text(""))
+        .accessibilityValue(isSelected ? Text(subtitleKey(for: section)) : Text(verbatim: ""))
         .accessibilityAddTraits(isSelected ? .isSelected : [])
     }
 
@@ -140,13 +144,13 @@ struct PulsePrimaryNavigation: View {
 
             if let value = glyphValue(for: section) {
                 Text(value, format: .number)
-                    .font(.system(size: 11, weight: .bold))
+                    .font(.caption2.bold())
                     .monospacedDigit()
             }
         }
         .frame(
-            width: PulseDesign.primaryNavigationGlyph,
-            height: PulseDesign.primaryNavigationGlyph
+            width: glyphSize,
+            height: glyphSize
         )
         .foregroundStyle(isSelected ? PulseDesign.grassForeground : PulseDesign.secondary)
         .accessibilityHidden(true)

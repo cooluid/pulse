@@ -1,7 +1,7 @@
 import SwiftData
 
 enum PulseSchemaV1: VersionedSchema {
-    static var versionIdentifier = Schema.Version(1, 0, 0)
+    static let versionIdentifier = Schema.Version(1, 0, 0)
 
     static var models: [any PersistentModel.Type] {
         [Habit.self, CheckInRecord.self]
@@ -19,10 +19,13 @@ enum PulseMigrationPlan: SchemaMigrationPlan {
 }
 
 enum PersistenceController {
-    static func makeContainer(inMemory: Bool = false) throws -> ModelContainer {
+    static func makeContainer(
+        inMemory: Bool = false,
+        storeName: String = "Pulse"
+    ) throws -> ModelContainer {
         let schema = Schema(PulseSchemaV1.models)
         let configuration = ModelConfiguration(
-            "Pulse",
+            storeName,
             schema: schema,
             isStoredInMemoryOnly: inMemory
         )
@@ -34,4 +37,3 @@ enum PersistenceController {
         )
     }
 }
-

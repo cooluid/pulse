@@ -7,6 +7,21 @@ enum AppLoadState: Equatable {
     case failed
 }
 
+enum AppOperation: Equatable {
+    case checkIn
+    case deleteRecord
+    case resetData
+    case importData
+    case updateTimeZone
+}
+
+enum ReminderSyncState: Equatable {
+    case idle
+    case syncing
+    case synced
+    case failed
+}
+
 @MainActor
 @Observable
 final class PulseAppModel {
@@ -15,7 +30,12 @@ final class PulseAppModel {
     private let clock: any PulseClock
     private let hapticFeedback: any HapticFeedbackProviding
     private var dateBoundaryTask: Task<Void, Never>?
+    private var reminderReconcileTask: Task<Void, Never>?
+    private var reminderReconcileRevision = 0
+    private var reminderIntentRevision = 0
+    private var reminderEnabledIntent: Bool?
     private var hasAppliedUITestReset = false
+    private var recordsByDay: [LogicalDay: CheckInRecord] = [:]
 
     let settings: AppSettings
 
@@ -25,9 +45,12 @@ final class PulseAppModel {
     private(set) var timeZone: TimeZone?
     private(set) var today: LogicalDay?
     private(set) var habitStartDay: LogicalDay?
-    private(set) var referenceNow: Date
-    private(set) var isSaving = false
+    private(set) var checkedDays: Set<LogicalDay> = []
+    private(set) var statistics: CheckInStatistics = .empty
+    private(set) var operation: AppOperation?
     private(set) var notificationPermission: NotificationPermissionState = .notDetermined
+    private(set) var reminderSyncState: ReminderSyncState = .idle
+    private(set) var navigationResetToken = UUID()
     var selectedMonth: LogicalDay?
     var errorMessage: String?
 
@@ -43,25 +66,24 @@ final class PulseAppModel {
         self.reminderScheduler = reminderScheduler
         self.clock = clock
         self.hapticFeedback = hapticFeedback
-        referenceNow = clock.now
     }
 
-    var checkedDays: Set<LogicalDay> {
-        Set(records.compactMap(\.logicalDay))
+    var isSaving: Bool {
+        operation == .checkIn
+    }
+
+    var displayedReminderEnabled: Bool {
+        reminderEnabledIntent ?? settings.reminderEnabled
+    }
+
+    var canCheckInToday: Bool {
+        guard operation == nil, let today, let habitStartDay else { return false }
+        return today >= habitStartDay && todayRecord == nil
     }
 
     var todayRecord: CheckInRecord? {
         guard let today else { return nil }
-        return records.first { $0.logicalDay == today }
-    }
-
-    var statistics: CheckInStatistics {
-        guard let today, let timeZone else { return .empty }
-        return CheckInStatistics.calculate(
-            checkedDays: checkedDays,
-            today: today,
-            timeZone: timeZone
-        )
+        return recordsByDay[today]
     }
 
     var recentDays: [CalendarDayItem] {
@@ -84,67 +106,103 @@ final class PulseAppModel {
     }
 
     func start() async {
-        await reload(reconcileReminders: true)
+        loadState = .loading
+        if settings.isResetPending {
+            loadState = await resetAllData() ? .ready : .failed
+        } else {
+            await reload(reconcileReminders: true)
+        }
 #if DEBUG
         if !hasAppliedUITestReset,
            ProcessInfo.processInfo.environment["PULSE_UI_TEST_RESET"] == "1" {
             hasAppliedUITestReset = true
-            await resetAllData()
+            _ = await resetAllData()
         }
 #endif
     }
 
     func handleSceneActivation() async {
+        guard operation == nil else { return }
         await reload(reconcileReminders: true)
     }
 
     func checkIn() async {
-        guard !isSaving, todayRecord == nil, let habit else { return }
-        isSaving = true
-        defer { isSaving = false }
+        guard operation == nil,
+              todayRecord == nil,
+              let habit,
+              let today,
+              let habitStartDay,
+              today >= habitStartDay else { return }
+        operation = .checkIn
+        defer { operation = nil }
 
         await Task.yield()
         do {
-            _ = try repository.checkIn(habit: habit, at: clock.now)
+            _ = try repository.checkIn(habit: habit)
             try loadSnapshot()
             if settings.hapticsEnabled {
                 hapticFeedback.notifySuccess()
             }
-            await reconcileReminders()
+            await enqueueReminderReconciliation().value
             scheduleDateBoundaryRefresh()
         } catch {
             present(error)
         }
     }
 
-    func delete(recordID: UUID) async {
+    func delete(recordID: UUID) async -> Bool {
+        guard operation == nil else { return false }
+        operation = .deleteRecord
+        defer { operation = nil }
         do {
             try repository.delete(recordID: recordID)
             try loadSnapshot()
-            await reconcileReminders()
+            await enqueueReminderReconciliation().value
+            return true
         } catch {
             present(error)
+            return false
         }
     }
 
-    func resetAllData() async {
+    func resetAllData() async -> Bool {
+        guard operation == nil else { return false }
+        operation = .resetData
+        invalidateReminderIntents()
+        defer { operation = nil }
         do {
-            let newHabit = try repository.resetAll(
-                now: clock.now,
-                systemTimeZone: .autoupdatingCurrent
-            )
+            settings.markResetPending()
+            let newHabit = try repository.resetAll(systemTimeZone: .autoupdatingCurrent)
             settings.reset()
+            await reminderReconcileTask?.value
             await reminderScheduler.removeAllPulseNotifications()
             habit = newHabit
+            selectedMonth = nil
             try loadSnapshot()
             notificationPermission = await reminderScheduler.permissionState()
+            reminderSyncState = .synced
+            settings.finishReset()
+            loadState = .ready
+            navigationResetToken = UUID()
             scheduleDateBoundaryRefresh()
+            return true
         } catch {
             present(error)
+            return false
         }
     }
 
-    func setReminderEnabled(_ enabled: Bool) async {
+    func requestReminderEnabled(_ enabled: Bool) {
+        reminderIntentRevision += 1
+        let revision = reminderIntentRevision
+        reminderEnabledIntent = enabled
+        reminderSyncState = .syncing
+        Task { [weak self] in
+            await self?.applyReminderEnabled(enabled, revision: revision)
+        }
+    }
+
+    private func applyReminderEnabled(_ enabled: Bool, revision: Int) async {
         if enabled {
             do {
                 let allowed: Bool
@@ -157,53 +215,71 @@ final class PulseAppModel {
                     allowed = false
                 }
 
+                guard revision == reminderIntentRevision else { return }
                 guard allowed else {
                     settings.setReminderEnabled(false)
                     notificationPermission = .denied
+                    reminderEnabledIntent = nil
                     throw PulseError.notificationPermissionDenied
                 }
 
                 settings.setReminderEnabled(true)
                 notificationPermission = .authorized
-                await reconcileReminders()
+                reminderEnabledIntent = nil
+                await enqueueReminderReconciliation().value
             } catch {
+                guard revision == reminderIntentRevision else { return }
                 settings.setReminderEnabled(false)
+                notificationPermission = await reminderScheduler.permissionState()
+                reminderEnabledIntent = nil
+                await enqueueReminderReconciliation().value
                 present(error)
             }
         } else {
+            guard revision == reminderIntentRevision else { return }
             settings.setReminderEnabled(false)
-            await reconcileReminders()
+            reminderEnabledIntent = nil
+            await enqueueReminderReconciliation().value
         }
     }
 
-    func updateReminderTime(_ reminderTime: ReminderTime) async {
+    func requestReminderTime(_ reminderTime: ReminderTime) {
         settings.reminderTime = reminderTime
-        await reconcileReminders()
+        _ = enqueueReminderReconciliation()
     }
 
-    func updateTimeZone(identifier: String) async {
-        guard let habit else { return }
+    func updateTimeZone(identifier: String) async -> Bool {
+        guard operation == nil, let habit else { return false }
+        operation = .updateTimeZone
+        defer { operation = nil }
         do {
             try repository.updateTimeZone(habit: habit, identifier: identifier)
             try loadSnapshot()
-            await reconcileReminders()
+            await enqueueReminderReconciliation().value
             scheduleDateBoundaryRefresh()
+            return true
         } catch {
             present(error)
+            return false
         }
     }
 
     func makeExportDocument() throws -> PulseExportDocument {
-        guard let habit else { throw PulseError.exportUnavailable }
+        guard let habit,
+              let startLogicalDay = habit.startLogicalDay else {
+            throw PulseError.exportUnavailable
+        }
         let payload = PulseExportPayload(
+            format: PulseDataContract.formatIdentifier,
             schemaVersion: PulseDataContract.exportSchemaVersion,
             exportedAt: clock.now,
             habit: .init(
                 id: habit.id,
                 name: habit.name,
                 createdAt: habit.createdAt,
-                timeZoneIdentifier: habit.timeZoneIdentifier,
-                dayStartMinutes: habit.dayStartMinutes
+                startLogicalDay: startLogicalDay.storageValue,
+                creationTimeZoneIdentifier: habit.creationTimeZoneIdentifier,
+                timeZoneIdentifier: habit.timeZoneIdentifier
             ),
             records: records.map {
                 .init(
@@ -211,7 +287,7 @@ final class PulseAppModel {
                     logicalDay: $0.logicalDayValue,
                     checkedAt: $0.checkedAt,
                     createdAt: $0.createdAt,
-                    source: $0.sourceRawValue
+                    timeZoneIdentifier: $0.timeZoneIdentifier
                 )
             }
         )
@@ -226,22 +302,40 @@ final class PulseAppModel {
             }
         }
 
+        let fileSize = try url.resourceValues(forKeys: [.fileSizeKey]).fileSize
+        guard let fileSize, fileSize <= PulseDataContract.maximumImportBytes else {
+            throw PulseError.invalidImport
+        }
         let data = try Data(contentsOf: url, options: [.mappedIfSafe])
-        let payload = try PulseExportDocument.decode(data)
+        let payload: PulseExportPayload
+        do {
+            payload = try PulseExportDocument.decode(data)
+        } catch {
+            throw PulseError.invalidImport
+        }
         guard payload.schemaVersion == PulseDataContract.exportSchemaVersion else {
             throw PulseError.unsupportedImportVersion(payload.schemaVersion)
         }
+        _ = try PulseDataValidator.validate(payload)
         return payload
     }
 
-    func importData(_ payload: PulseExportPayload) async {
+    func importData(_ payload: PulseExportPayload) async -> Bool {
+        guard operation == nil else { return false }
+        operation = .importData
+        invalidateReminderIntents()
+        defer { operation = nil }
         do {
             habit = try repository.replaceAll(with: payload)
+            selectedMonth = nil
             try loadSnapshot()
-            await reconcileReminders()
+            await enqueueReminderReconciliation().value
+            navigationResetToken = UUID()
             scheduleDateBoundaryRefresh()
+            return true
         } catch {
             present(error)
+            return false
         }
     }
 
@@ -274,7 +368,7 @@ final class PulseAppModel {
     }
 
     func record(for day: LogicalDay) -> CheckInRecord? {
-        records.first { $0.logicalDay == day }
+        recordsByDay[day]
     }
 
     private func reload(reconcileReminders: Bool) async {
@@ -283,7 +377,7 @@ final class PulseAppModel {
             loadState = .ready
             notificationPermission = await reminderScheduler.permissionState()
             if reconcileReminders {
-                await self.reconcileReminders()
+                await enqueueReminderReconciliation().value
             }
             scheduleDateBoundaryRefresh()
         } catch {
@@ -295,18 +389,44 @@ final class PulseAppModel {
     private func loadSnapshot() throws {
         let wasShowingCurrentMonth = selectedMonth == nil
             || selectedMonth == today?.firstDayOfMonth()
-        referenceNow = clock.now
+        let referenceNow = clock.now
         let currentHabit = try repository.primaryHabit(
-            now: referenceNow,
             systemTimeZone: .autoupdatingCurrent
         )
         let resolvedTimeZone = try currentHabit.resolvedTimeZone()
         let resolvedToday = try currentHabit.logicalDay(at: referenceNow)
-        let resolvedStartDay = try currentHabit.logicalDay(at: currentHabit.createdAt)
+        let normalizedName = currentHabit.name.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard let resolvedStartDay = currentHabit.startLogicalDay,
+              let creationTimeZone = TimeZone(identifier: currentHabit.creationTimeZoneIdentifier),
+              LogicalDay.resolve(at: currentHabit.createdAt, timeZone: creationTimeZone)
+                == resolvedStartDay,
+              normalizedName == currentHabit.name,
+              !normalizedName.isEmpty,
+              normalizedName.count <= PulseDataContract.maximumHabitNameLength else {
+            throw PulseError.invalidRecordDate(currentHabit.startLogicalDayValue)
+        }
         let fetchedRecords = try repository.allRecords(habitID: currentHabit.id)
 
-        for record in fetchedRecords where record.logicalDay == nil {
-            throw PulseError.invalidRecordDate(record.logicalDayValue)
+        var resolvedCheckedDays = Set<LogicalDay>()
+        var resolvedRecordsByDay: [LogicalDay: CheckInRecord] = [:]
+        for record in fetchedRecords {
+            guard let day = record.logicalDay,
+                  let recordTimeZone = record.timeZone,
+                  LogicalDay.resolve(
+                    at: record.checkedAt,
+                    timeZone: recordTimeZone
+                  ) == day,
+                  day >= resolvedStartDay,
+                  record.checkedAt >= currentHabit.createdAt,
+                  record.createdAt >= record.checkedAt,
+                  record.recordKey == CheckInRecord.makeRecordKey(
+                    habitID: currentHabit.id,
+                    logicalDay: day
+                  ),
+                  resolvedCheckedDays.insert(day).inserted,
+                  resolvedRecordsByDay.updateValue(record, forKey: day) == nil else {
+                throw PulseError.invalidRecordDate(record.logicalDayValue)
+            }
         }
 
         habit = currentHabit
@@ -314,39 +434,73 @@ final class PulseAppModel {
         timeZone = resolvedTimeZone
         today = resolvedToday
         habitStartDay = resolvedStartDay
+        checkedDays = resolvedCheckedDays
+        recordsByDay = resolvedRecordsByDay
+        statistics = CheckInStatistics.calculate(
+            checkedDays: Set(resolvedCheckedDays.filter { $0 <= resolvedToday }),
+            today: resolvedToday,
+            timeZone: resolvedTimeZone
+        )
         if wasShowingCurrentMonth {
             selectedMonth = resolvedToday.firstDayOfMonth()
         }
     }
 
-    private func reconcileReminders() async {
-        guard let habit else { return }
-        do {
-            try await reminderScheduler.reconcile(
-                enabled: settings.reminderEnabled,
-                time: settings.reminderTime,
-                habit: habit,
-                checkedDays: checkedDays,
-                now: clock.now
-            )
-        } catch {
-            if settings.reminderEnabled {
-                present(error)
+    @discardableResult
+    private func enqueueReminderReconciliation() -> Task<Void, Never> {
+        reminderReconcileRevision += 1
+        let revision = reminderReconcileRevision
+        let previousTask = reminderReconcileTask
+
+        guard let habit else {
+            reminderSyncState = .idle
+            let completedTask = Task<Void, Never> {}
+            reminderReconcileTask = completedTask
+            return completedTask
+        }
+
+        let snapshot = ReminderScheduleSnapshot(
+            enabled: settings.reminderEnabled,
+            time: settings.reminderTime,
+            timeZoneIdentifier: habit.timeZoneIdentifier,
+            checkedDays: checkedDays,
+            now: clock.now
+        )
+        reminderSyncState = .syncing
+
+        let task = Task { @MainActor [weak self] in
+            await previousTask?.value
+            guard let self, revision == self.reminderReconcileRevision else { return }
+            do {
+                try await self.reminderScheduler.reconcile(snapshot)
+                guard revision == self.reminderReconcileRevision else { return }
+                self.reminderSyncState = .synced
+            } catch {
+                guard revision == self.reminderReconcileRevision else { return }
+                self.reminderSyncState = .failed
+                if snapshot.enabled {
+                    self.present(error)
+                }
             }
         }
+        reminderReconcileTask = task
+        return task
+    }
+
+    private func invalidateReminderIntents() {
+        reminderIntentRevision += 1
+        reminderEnabledIntent = nil
+        reminderReconcileRevision += 1
     }
 
     private func scheduleDateBoundaryRefresh() {
         dateBoundaryTask?.cancel()
-        guard let habit, let timeZone, let today else {
+        guard let timeZone, let today else {
             return
         }
 
         let nextDay = today.addingDays(1, timeZone: timeZone)
-        let nextBoundary = nextDay.startDate(
-            timeZone: timeZone,
-            dayStartMinutes: habit.dayStartMinutes
-        )
+        let nextBoundary = nextDay.startDate(timeZone: timeZone)
         let interval = max(nextBoundary.timeIntervalSince(clock.now) + 0.25, 0.25)
 
         dateBoundaryTask = Task { [weak self] in

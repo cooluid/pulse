@@ -47,9 +47,16 @@ enum PulseFormatting {
         ).string(from: day.date(timeZone: timeZone))
     }
 
-    static func numberOfDaysInMonth(_ day: LogicalDay, timeZone: TimeZone) -> Int? {
+    static func numberOfDaysInMonth(_ day: LogicalDay, timeZone: TimeZone) -> Int {
         let calendar = Calendar.pulseGregorian(timeZone: timeZone)
-        return calendar.range(of: .day, in: .month, for: day.date(timeZone: timeZone))?.count
+        guard let range = calendar.range(
+            of: .day,
+            in: .month,
+            for: day.date(timeZone: timeZone)
+        ) else {
+            preconditionFailure("Gregorian calendar must provide a day range for a valid month.")
+        }
+        return range.count
     }
 
     static func time(_ date: Date, timeZone: TimeZone) -> String {
@@ -64,8 +71,10 @@ enum PulseFormatting {
     static func weekdayHeaders(weekStart: WeekStart) -> [String] {
         let formatter = DateFormatter()
         formatter.locale = .autoupdatingCurrent
-        var symbols = formatter.veryShortStandaloneWeekdaySymbols ?? formatter.veryShortWeekdaySymbols ?? []
-        guard symbols.count == 7 else { return symbols }
+        guard var symbols = formatter.veryShortStandaloneWeekdaySymbols,
+              symbols.count == 7 else {
+            preconditionFailure("The active locale must provide seven weekday symbols.")
+        }
         if weekStart == .monday {
             symbols.append(symbols.removeFirst())
         }

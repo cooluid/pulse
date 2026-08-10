@@ -3,30 +3,31 @@ import SwiftData
 
 @MainActor
 protocol CheckInRepositoryProtocol: AnyObject {
-    func primaryHabit(now: Date, systemTimeZone: TimeZone) throws -> Habit
+    func primaryHabit(systemTimeZone: TimeZone) throws -> Habit
     func allRecords(habitID: UUID) throws -> [CheckInRecord]
-    func record(habitID: UUID, day: LogicalDay) throws -> CheckInRecord?
-    func checkIn(habit: Habit, at date: Date) throws -> CheckInRecord
+    func checkIn(habit: Habit) throws -> CheckInRecord
     func delete(recordID: UUID) throws
     func updateTimeZone(habit: Habit, identifier: String) throws
-    func resetAll(now: Date, systemTimeZone: TimeZone) throws -> Habit
+    func resetAll(systemTimeZone: TimeZone) throws -> Habit
     func replaceAll(with payload: PulseExportPayload) throws -> Habit
 }
 
 @MainActor
 final class SwiftDataCheckInRepository: CheckInRepositoryProtocol {
     private let context: ModelContext
+    private let clock: any PulseClock
 
-    init(container: ModelContainer) {
+    init(container: ModelContainer, clock: any PulseClock) {
         context = ModelContext(container)
         context.autosaveEnabled = false
+        self.clock = clock
     }
 
-    func primaryHabit(now: Date, systemTimeZone: TimeZone) throws -> Habit {
+    func primaryHabit(systemTimeZone: TimeZone) throws -> Habit {
         let slotKey = Habit.primarySlotKey
         var descriptor = FetchDescriptor<Habit>(
             predicate: #Predicate { habit in
-                habit.slotKey == slotKey && habit.isArchived == false
+                habit.slotKey == slotKey
             }
         )
         descriptor.fetchLimit = 1
@@ -35,9 +36,16 @@ final class SwiftDataCheckInRepository: CheckInRepositoryProtocol {
             return existing
         }
 
+        let now = clock.now
+        let startLogicalDay = LogicalDay.resolve(
+            at: now,
+            timeZone: systemTimeZone
+        )
         let habit = Habit(
             name: String(localized: "habit.default_name"),
             createdAt: now,
+            startLogicalDay: startLogicalDay,
+            creationTimeZoneIdentifier: systemTimeZone.identifier,
             timeZoneIdentifier: systemTimeZone.identifier
         )
         context.insert(habit)
@@ -55,7 +63,32 @@ final class SwiftDataCheckInRepository: CheckInRepositoryProtocol {
         return try context.fetch(descriptor)
     }
 
-    func record(habitID: UUID, day: LogicalDay) throws -> CheckInRecord? {
+    func checkIn(habit: Habit) throws -> CheckInRecord {
+        let persistedHabit = try requirePrimaryHabit(id: habit.id)
+        let date = clock.now
+        let day = try persistedHabit.logicalDay(at: date)
+        guard let startLogicalDay = persistedHabit.startLogicalDay,
+              day >= startLogicalDay else {
+            throw PulseError.invalidCheckIn
+        }
+
+        if let existing = try record(habitID: persistedHabit.id, day: day) {
+            return existing
+        }
+
+        let newRecord = CheckInRecord(
+            habitID: persistedHabit.id,
+            logicalDay: day,
+            checkedAt: date,
+            createdAt: date,
+            timeZoneIdentifier: persistedHabit.timeZoneIdentifier
+        )
+        context.insert(newRecord)
+        try saveOrRollback()
+        return newRecord
+    }
+
+    private func record(habitID: UUID, day: LogicalDay) throws -> CheckInRecord? {
         let recordKey = CheckInRecord.makeRecordKey(habitID: habitID, logicalDay: day)
         var descriptor = FetchDescriptor<CheckInRecord>(
             predicate: #Predicate { record in
@@ -64,24 +97,6 @@ final class SwiftDataCheckInRepository: CheckInRepositoryProtocol {
         )
         descriptor.fetchLimit = 1
         return try context.fetch(descriptor).first
-    }
-
-    func checkIn(habit: Habit, at date: Date) throws -> CheckInRecord {
-        let day = try habit.logicalDay(at: date)
-        if let existing = try record(habitID: habit.id, day: day) {
-            return existing
-        }
-
-        let newRecord = CheckInRecord(
-            habitID: habit.id,
-            logicalDay: day,
-            checkedAt: date,
-            createdAt: date,
-            source: .manual
-        )
-        context.insert(newRecord)
-        try saveOrRollback()
-        return newRecord
     }
 
     func delete(recordID: UUID) throws {
@@ -98,23 +113,39 @@ final class SwiftDataCheckInRepository: CheckInRepositoryProtocol {
     }
 
     func updateTimeZone(habit: Habit, identifier: String) throws {
-        guard TimeZone(identifier: identifier) != nil else {
+        guard let timeZone = TimeZone(identifier: identifier) else {
             throw PulseError.invalidTimeZone(identifier)
         }
 
-        habit.timeZoneIdentifier = identifier
+        let persistedHabit = try requirePrimaryHabit(id: habit.id)
+        guard let startLogicalDay = persistedHabit.startLogicalDay else {
+            throw PulseError.invalidRecordDate(persistedHabit.startLogicalDayValue)
+        }
+        let newToday = LogicalDay.resolve(at: clock.now, timeZone: timeZone)
+        guard newToday >= startLogicalDay else {
+            throw PulseError.invalidTimeZoneTransition
+        }
+
+        persistedHabit.timeZoneIdentifier = identifier
         try saveOrRollback()
     }
 
-    func resetAll(now: Date, systemTimeZone: TimeZone) throws -> Habit {
+    func resetAll(systemTimeZone: TimeZone) throws -> Habit {
         let records = try context.fetch(FetchDescriptor<CheckInRecord>())
         let habits = try context.fetch(FetchDescriptor<Habit>())
         records.forEach(context.delete)
         habits.forEach(context.delete)
 
+        let now = clock.now
+        let startLogicalDay = LogicalDay.resolve(
+            at: now,
+            timeZone: systemTimeZone
+        )
         let newHabit = Habit(
             name: String(localized: "habit.default_name"),
             createdAt: now,
+            startLogicalDay: startLogicalDay,
+            creationTimeZoneIdentifier: systemTimeZone.identifier,
             timeZoneIdentifier: systemTimeZone.identifier
         )
         context.insert(newHabit)
@@ -126,22 +157,7 @@ final class SwiftDataCheckInRepository: CheckInRepositoryProtocol {
         guard payload.schemaVersion == PulseDataContract.exportSchemaVersion else {
             throw PulseError.unsupportedImportVersion(payload.schemaVersion)
         }
-        guard TimeZone(identifier: payload.habit.timeZoneIdentifier) != nil,
-              (0..<1_440).contains(payload.habit.dayStartMinutes) else {
-            throw PulseError.invalidImport
-        }
-
-        var logicalDays = Set<LogicalDay>()
-        var recordIDs = Set<UUID>()
-        let validatedRecords: [(PulseExportPayload.RecordPayload, LogicalDay, CheckInSource)] = try payload.records.map { record in
-            guard let day = LogicalDay(storageValue: record.logicalDay),
-                  let source = CheckInSource(rawValue: record.source),
-                  logicalDays.insert(day).inserted,
-                  recordIDs.insert(record.id).inserted else {
-                throw PulseError.invalidImport
-            }
-            return (record, day, source)
-        }
+        let validated = try PulseDataValidator.validate(payload)
 
         let currentRecords = try context.fetch(FetchDescriptor<CheckInRecord>())
         let currentHabits = try context.fetch(FetchDescriptor<Habit>())
@@ -152,26 +168,42 @@ final class SwiftDataCheckInRepository: CheckInRepositoryProtocol {
             id: payload.habit.id,
             name: payload.habit.name,
             createdAt: payload.habit.createdAt,
-            timeZoneIdentifier: payload.habit.timeZoneIdentifier,
-            dayStartMinutes: payload.habit.dayStartMinutes
+            startLogicalDay: validated.startLogicalDay,
+            creationTimeZoneIdentifier: payload.habit.creationTimeZoneIdentifier,
+            timeZoneIdentifier: payload.habit.timeZoneIdentifier
         )
         context.insert(importedHabit)
 
-        for (record, day, source) in validatedRecords {
+        for validatedRecord in validated.records {
+            let record = validatedRecord.payload
             context.insert(
                 CheckInRecord(
                     id: record.id,
                     habitID: importedHabit.id,
-                    logicalDay: day,
+                    logicalDay: validatedRecord.logicalDay,
                     checkedAt: record.checkedAt,
                     createdAt: record.createdAt,
-                    source: source
+                    timeZoneIdentifier: record.timeZoneIdentifier
                 )
             )
         }
 
         try saveOrRollback()
         return importedHabit
+    }
+
+    private func requirePrimaryHabit(id: UUID) throws -> Habit {
+        let slotKey = Habit.primarySlotKey
+        var descriptor = FetchDescriptor<Habit>(
+            predicate: #Predicate { habit in
+                habit.slotKey == slotKey && habit.id == id
+            }
+        )
+        descriptor.fetchLimit = 1
+        guard let habit = try context.fetch(descriptor).first else {
+            throw PulseError.invalidCheckIn
+        }
+        return habit
     }
 
     private func saveOrRollback() throws {

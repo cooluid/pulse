@@ -7,17 +7,19 @@ enum NotificationPermissionState: Equatable, Sendable {
     case denied
 }
 
+struct ReminderScheduleSnapshot: Sendable {
+    let enabled: Bool
+    let time: ReminderTime
+    let timeZoneIdentifier: String
+    let checkedDays: Set<LogicalDay>
+    let now: Date
+}
+
 @MainActor
 protocol ReminderScheduling: AnyObject {
     func permissionState() async -> NotificationPermissionState
     func requestPermission() async throws -> Bool
-    func reconcile(
-        enabled: Bool,
-        time: ReminderTime,
-        habit: Habit,
-        checkedDays: Set<LogicalDay>,
-        now: Date
-    ) async throws
+    func reconcile(_ snapshot: ReminderScheduleSnapshot) async throws
     func removeAllPulseNotifications() async
 }
 
@@ -51,51 +53,54 @@ final class ReminderScheduler: ReminderScheduling {
         try await center.requestAuthorization(options: [.alert, .sound, .badge])
     }
 
-    func reconcile(
-        enabled: Bool,
-        time: ReminderTime,
-        habit: Habit,
-        checkedDays: Set<LogicalDay>,
-        now: Date
-    ) async throws {
+    func reconcile(_ snapshot: ReminderScheduleSnapshot) async throws {
         await removePendingPulseNotifications()
-        guard enabled else { return }
+        guard snapshot.enabled else { return }
         guard await permissionState() == .authorized else {
             throw PulseError.notificationPermissionDenied
         }
 
-        let timeZone = try habit.resolvedTimeZone()
-        let today = try habit.logicalDay(at: now)
+        guard let timeZone = TimeZone(identifier: snapshot.timeZoneIdentifier) else {
+            throw PulseError.invalidTimeZone(snapshot.timeZoneIdentifier)
+        }
+        let today = LogicalDay.resolve(at: snapshot.now, timeZone: timeZone)
         let calendar = Calendar.pulseGregorian(timeZone: timeZone)
 
-        for offset in 0..<Configuration.schedulingWindowDays {
-            let day = today.addingDays(offset, timeZone: timeZone)
-            guard !checkedDays.contains(day) else { continue }
+        do {
+            for offset in 0..<Configuration.schedulingWindowDays {
+                try Task.checkCancellation()
+                let day = today.addingDays(offset, timeZone: timeZone)
+                guard !snapshot.checkedDays.contains(day) else { continue }
 
-            var components = DateComponents()
-            components.calendar = calendar
-            components.timeZone = timeZone
-            components.year = day.year
-            components.month = day.month
-            components.day = day.day
-            components.hour = time.hour
-            components.minute = time.minute
+                var components = DateComponents()
+                components.calendar = calendar
+                components.timeZone = timeZone
+                components.year = day.year
+                components.month = day.month
+                components.day = day.day
+                components.hour = snapshot.time.hour
+                components.minute = snapshot.time.minute
 
-            guard let deliveryDate = calendar.date(from: components), deliveryDate > now else {
-                continue
+                guard let deliveryDate = calendar.date(from: components),
+                      deliveryDate > snapshot.now else {
+                    continue
+                }
+
+                let content = UNMutableNotificationContent()
+                content.title = String(localized: "notification.title")
+                content.body = String(localized: "notification.body")
+                content.sound = .default
+
+                let request = UNNotificationRequest(
+                    identifier: PulseRuntimeIdentity.reminderRequestPrefix + day.storageValue,
+                    content: content,
+                    trigger: UNCalendarNotificationTrigger(dateMatching: components, repeats: false)
+                )
+                try await center.add(request)
             }
-
-            let content = UNMutableNotificationContent()
-            content.title = String(localized: "notification.title")
-            content.body = String(localized: "notification.body")
-            content.sound = .default
-
-            let request = UNNotificationRequest(
-                identifier: PulseRuntimeIdentity.reminderRequestPrefix + day.storageValue,
-                content: content,
-                trigger: UNCalendarNotificationTrigger(dateMatching: components, repeats: false)
-            )
-            try await center.add(request)
+        } catch {
+            await removePendingPulseNotifications()
+            throw error
         }
     }
 

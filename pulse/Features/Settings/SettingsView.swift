@@ -23,13 +23,14 @@ struct SettingsView: View {
         .tint(PulseDesign.tint)
         .navigationTitle("settings.navigation_title")
         .navigationBarTitleDisplayMode(.inline)
+        .disabled(model.operation != nil)
         .confirmationDialog(
             "settings.reset_confirmation.title",
             isPresented: $showsResetConfirmation,
             titleVisibility: .visible
         ) {
             Button("settings.reset_confirmation.action", role: .destructive) {
-                Task { await model.resetAllData() }
+                Task { _ = await model.resetAllData() }
             }
             Button("action.cancel", role: .cancel) {}
         } message: {
@@ -69,8 +70,9 @@ struct SettingsView: View {
             if let pendingImport {
                 Button("settings.import_confirmation.action", role: .destructive) {
                     Task {
-                        await model.importData(pendingImport)
-                        self.pendingImport = nil
+                        if await model.importData(pendingImport) {
+                            self.pendingImport = nil
+                        }
                     }
                 }
             }
@@ -92,9 +94,9 @@ struct SettingsView: View {
             Toggle(
                 "settings.reminder.toggle",
                 isOn: Binding(
-                    get: { model.settings.reminderEnabled },
+                    get: { model.displayedReminderEnabled },
                     set: { enabled in
-                        Task { await model.setReminderEnabled(enabled) }
+                        model.requestReminderEnabled(enabled)
                     }
                 )
             )
@@ -113,6 +115,15 @@ struct SettingsView: View {
                     guard let url = URL(string: UIApplication.openNotificationSettingsURLString) else { return }
                     openURL(url)
                 }
+            }
+
+            if model.reminderSyncState == .syncing {
+                LabeledContent("settings.reminder.syncing") {
+                    ProgressView()
+                }
+            } else if model.reminderSyncState == .failed {
+                Label("settings.reminder.sync_failed", systemImage: "exclamationmark.triangle")
+                    .foregroundStyle(PulseDesign.action)
             }
         } header: {
             Text("settings.reminder.section")
@@ -201,7 +212,7 @@ struct SettingsView: View {
                     model.errorMessage = String(localized: "error.settings")
                     return
                 }
-                Task { await model.updateReminderTime(reminderTime) }
+                model.requestReminderTime(reminderTime)
             }
         )
     }
@@ -233,7 +244,7 @@ private struct TimeZonePickerView: View {
                 pendingIdentifier = identifier
             } label: {
                 HStack {
-                    VStack(alignment: .leading, spacing: 3) {
+                    VStack(alignment: .leading, spacing: PulseDesign.spacing4) {
                         Text(displayName(identifier))
                             .foregroundStyle(PulseDesign.ink)
                         Text(identifier)
@@ -265,8 +276,9 @@ private struct TimeZonePickerView: View {
             if let pendingIdentifier {
                 Button("settings.timezone_confirmation.action") {
                     Task {
-                        await model.updateTimeZone(identifier: pendingIdentifier)
-                        dismiss()
+                        if await model.updateTimeZone(identifier: pendingIdentifier) {
+                            dismiss()
+                        }
                     }
                 }
             }

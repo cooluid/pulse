@@ -141,6 +141,25 @@ def write_atomically(path: Path, data: bytes) -> None:
     os.replace(temporary_path, path)
 
 
+def output_matches(path: Path, expected: bytes) -> bool:
+    if not path.exists():
+        return False
+    if path.suffix.lower() != ".png":
+        return path.read_bytes() == expected
+
+    try:
+        with Image.open(path) as actual_image, Image.open(BytesIO(expected)) as expected_image:
+            actual_image.load()
+            expected_image.load()
+            return (
+                actual_image.mode == expected_image.mode
+                and actual_image.size == expected_image.size
+                and actual_image.tobytes() == expected_image.tobytes()
+            )
+    except (OSError, ValueError):
+        return False
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -151,7 +170,7 @@ def main() -> None:
     arguments = parser.parse_args()
     outputs = build_outputs()
 
-    drifted = [path for path, expected in outputs.items() if not path.exists() or path.read_bytes() != expected]
+    drifted = [path for path, expected in outputs.items() if not output_matches(path, expected)]
     if arguments.check:
         if drifted:
             relative = ", ".join(str(path.relative_to(ROOT)) for path in drifted)

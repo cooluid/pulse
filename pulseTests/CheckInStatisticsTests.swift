@@ -68,6 +68,24 @@ final class CheckInStatisticsTests: XCTestCase {
         XCTAssertEqual(result.totalCount, 4)
     }
 
+    func testTenYearsOfDailyFactsRemainOneContinuousStreak() {
+        let firstDay = LogicalDay(year: 2016, month: 8, day: 10)
+        let checkedDays = Set(
+            (0..<3_654).map { firstDay.addingDays($0, timeZone: timeZone) }
+        )
+        let lastDay = firstDay.addingDays(3_653, timeZone: timeZone)
+
+        let result = CheckInStatistics.calculate(
+            checkedDays: checkedDays,
+            today: lastDay,
+            timeZone: timeZone
+        )
+
+        XCTAssertEqual(result.currentStreak, 3_654)
+        XCTAssertEqual(result.longestStreak, 3_654)
+        XCTAssertEqual(result.totalCount, 3_654)
+    }
+
     func testCalendarClassification() {
         let start = today.addingDays(-2, timeZone: timeZone)
         let yesterday = today.addingDays(-1, timeZone: timeZone)
@@ -109,4 +127,3 @@ final class CheckInStatisticsTests: XCTestCase {
         )
     }
 }
-

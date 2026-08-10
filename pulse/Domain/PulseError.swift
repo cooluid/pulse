@@ -1,10 +1,10 @@
 import Foundation
 
-enum PulseError: LocalizedError {
-    case persistenceUnavailable
-    case missingPrimaryHabit
+enum PulseError: LocalizedError, Equatable {
     case invalidTimeZone(String)
+    case invalidTimeZoneTransition
     case invalidRecordDate(String)
+    case invalidCheckIn
     case invalidSettings
     case notificationPermissionDenied
     case exportUnavailable
@@ -13,14 +13,14 @@ enum PulseError: LocalizedError {
 
     var errorDescription: String? {
         switch self {
-        case .persistenceUnavailable:
-            String(localized: "error.persistence")
-        case .missingPrimaryHabit:
-            String(localized: "error.habit_missing")
         case .invalidTimeZone:
             String(localized: "error.timezone")
+        case .invalidTimeZoneTransition:
+            String(localized: "error.timezone_transition")
         case .invalidRecordDate:
             String(localized: "error.record_date")
+        case .invalidCheckIn:
+            String(localized: "error.check_in_invalid")
         case .invalidSettings:
             String(localized: "error.settings")
         case .notificationPermissionDenied:

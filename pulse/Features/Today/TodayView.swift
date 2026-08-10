@@ -5,7 +5,8 @@ struct TodayView: View {
     let isActive: Bool
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @State private var actionIsRaised = false
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    @ScaledMetric(relativeTo: .largeTitle) private var dayNumberSize = PulseDesign.dayNumberBaseSize
 
     var body: some View {
         ZStack {
@@ -19,7 +20,12 @@ struct TodayView: View {
                     VStack(spacing: 0) {
                         dayHero
                         checkInControl
-                            .padding(.top, -42)
+                            .padding(
+                                .top,
+                                dynamicTypeSize.isAccessibilitySize
+                                    ? PulseDesign.spacing12
+                                    : PulseDesign.checkInHeroOverlap
+                            )
                         if model.todayRecord == nil {
                             pendingCheckInStatus
                                 .padding(.top, PulseDesign.spacing12)
@@ -34,7 +40,7 @@ struct TodayView: View {
                     }
                     .frame(maxWidth: PulseDesign.screenMaxWidth)
                     .padding(.horizontal, PulseDesign.horizontalPadding)
-                    .padding(.top, 2)
+                    .padding(.top, PulseDesign.spacing4)
                     .padding(.bottom, PulseDesign.spacing24)
                     .frame(maxWidth: .infinity)
                 }
@@ -42,9 +48,6 @@ struct TodayView: View {
             }
         }
         .toolbar(.hidden, for: .navigationBar)
-        .onAppear(perform: updateActionMotion)
-        .onChange(of: isActive) { _, _ in updateActionMotion() }
-        .onChange(of: reduceMotion) { _, _ in updateActionMotion() }
     }
 
     private var dayHero: some View {
@@ -59,8 +62,7 @@ struct TodayView: View {
                         weekday
                     )
                 )
-                .font(.system(size: 11, weight: .bold))
-                .tracking(0.88)
+                .font(.system(.caption2, design: .default, weight: .bold))
                 .foregroundStyle(PulseDesign.ink)
                 .accessibilityIdentifier("today.hero.kicker")
 
@@ -70,15 +72,15 @@ struct TodayView: View {
         }
         .frame(maxWidth: .infinity)
         .padding(.horizontal, PulseDesign.spacing20)
-        .padding(.top, PulseDesign.spacing28)
-        .padding(.bottom, PulseDesign.spacing18)
+        .padding(.top, PulseDesign.spacing32)
+        .padding(.bottom, PulseDesign.spacing20)
         .frame(minHeight: PulseDesign.todayHeroMinimumHeight, alignment: .top)
         .accessibilityElement(children: .contain)
     }
 
     private func dayNumber(_ today: LogicalDay) -> some View {
         Text(today.day, format: .number)
-            .font(.system(size: PulseDesign.dayNumberSize, weight: .regular))
+            .font(.system(size: dayNumberSize, weight: .regular))
             .monospacedDigit()
             .fixedSize(horizontal: true, vertical: false)
             .foregroundStyle(PulseDesign.ink)
@@ -110,10 +112,10 @@ struct TodayView: View {
         let isChecked = item.status == .checked
         let isToday = item.day == model.today
 
-        return VStack(spacing: PulseDesign.spacing6) {
+        return VStack(spacing: PulseDesign.spacing8) {
             if let timeZone = model.timeZone {
                 Text(PulseFormatting.shortWeekday(item.day, timeZone: timeZone))
-                    .font(.system(size: 9, weight: isToday ? .bold : .regular))
+                    .font(.system(.caption2, design: .default, weight: isToday ? .bold : .regular))
                     .foregroundStyle(isToday ? PulseDesign.ink : PulseDesign.secondary)
             }
 
@@ -149,76 +151,78 @@ struct TodayView: View {
         return Button {
             Task { await model.checkIn() }
         } label: {
-            ZStack {
-                Circle()
-                    .fill(PulseDesign.action)
-                    .overlay {
-                        Circle()
-                            .stroke(PulseDesign.actionForeground.opacity(0.55), lineWidth: 1)
-                    }
-                    .shadow(
-                        color: PulseDesign.shadow.opacity(PulseDesign.actionShadowOpacity),
-                        radius: PulseDesign.actionShadowRadius,
-                        y: PulseDesign.actionShadowY
-                    )
-
-                Circle()
-                    .trim(from: isChecked ? 0 : 0.08, to: isChecked ? 1 : 0.94)
-                    .stroke(PulseDesign.actionForeground.opacity(0.62), lineWidth: 1)
-                    .rotationEffect(.degrees(isChecked ? 378 : 18))
-                    .padding(PulseDesign.checkInMarkInset)
-                    .animation(
-                        reduceMotion
-                            ? nil
-                            : .easeOut(duration: PulseDesign.completionAnimationDuration),
-                        value: isChecked
-                    )
-
-                if model.isSaving {
-                    ProgressView()
-                        .controlSize(.large)
-                        .tint(PulseDesign.actionForeground)
-                } else if let completedCheckInText {
-                    VStack(spacing: PulseDesign.spacing4) {
-                        Image(systemName: "checkmark")
-                            .font(.system(size: 32, weight: .medium))
-
-                        Text(completedCheckInText)
-                            .font(.system(size: 17, weight: .bold))
-                            .tracking(-0.34)
-                    }
-                    .foregroundStyle(PulseDesign.actionForeground)
-                    .multilineTextAlignment(.center)
-                } else {
-                    Text("today.check_in")
-                        .font(.system(size: 17, weight: .bold))
-                        .tracking(-0.34)
-                        .foregroundStyle(PulseDesign.actionForeground)
+            if dynamicTypeSize.isAccessibilitySize {
+                HStack(spacing: PulseDesign.spacing12) {
+                    checkInStatusContent
                 }
-            }
-            .frame(width: PulseDesign.checkInDiameter, height: PulseDesign.checkInDiameter)
-            .background {
+                .padding(.horizontal, PulseDesign.spacing24)
+                .frame(maxWidth: .infinity, minHeight: PulseDesign.accessibilityActionMinimumHeight)
+                .background(PulseDesign.action, in: Capsule())
+                .overlay {
+                    Capsule()
+                        .stroke(
+                            PulseDesign.actionForeground.opacity(PulseDesign.actionBorderOpacity),
+                            lineWidth: PulseDesign.thinLineWidth
+                        )
+                }
+                .contentShape(Capsule())
+            } else {
                 ZStack {
                     Circle()
-                        .fill(PulseDesign.grass.opacity(0.07))
-                        .frame(
-                            width: PulseDesign.checkInDiameter + PulseDesign.checkInOuterHalo * 2,
-                            height: PulseDesign.checkInDiameter + PulseDesign.checkInOuterHalo * 2
+                        .fill(PulseDesign.action)
+                        .overlay {
+                            Circle()
+                                .stroke(
+                                    PulseDesign.actionForeground.opacity(PulseDesign.actionBorderOpacity),
+                                    lineWidth: PulseDesign.thinLineWidth
+                                )
+                        }
+                        .shadow(
+                            color: PulseDesign.shadow.opacity(PulseDesign.actionShadowOpacity),
+                            radius: PulseDesign.actionShadowRadius,
+                            y: PulseDesign.actionShadowY
                         )
+
                     Circle()
-                        .fill(PulseDesign.grass.opacity(0.12))
-                        .frame(
-                            width: PulseDesign.checkInDiameter + PulseDesign.checkInInnerHalo * 2,
-                            height: PulseDesign.checkInDiameter + PulseDesign.checkInInnerHalo * 2
+                        .trim(from: isChecked ? 0 : 0.08, to: isChecked ? 1 : 0.94)
+                        .stroke(
+                            PulseDesign.actionForeground.opacity(PulseDesign.actionRingOpacity),
+                            lineWidth: PulseDesign.thinLineWidth
                         )
+                        .rotationEffect(.degrees(isChecked ? 378 : 18))
+                        .padding(PulseDesign.checkInMarkInset)
+                        .animation(
+                            reduceMotion
+                                ? nil
+                                : .easeOut(duration: PulseDesign.completionAnimationDuration),
+                            value: isChecked
+                        )
+
+                    checkInStatusContent
                 }
+                .frame(width: PulseDesign.checkInDiameter, height: PulseDesign.checkInDiameter)
+                .background {
+                    ZStack {
+                        Circle()
+                            .fill(PulseDesign.grass.opacity(PulseDesign.outerHaloOpacity))
+                            .frame(
+                                width: PulseDesign.checkInDiameter + PulseDesign.checkInOuterHalo * 2,
+                                height: PulseDesign.checkInDiameter + PulseDesign.checkInOuterHalo * 2
+                            )
+                        Circle()
+                            .fill(PulseDesign.grass.opacity(PulseDesign.innerHaloOpacity))
+                            .frame(
+                                width: PulseDesign.checkInDiameter + PulseDesign.checkInInnerHalo * 2,
+                                height: PulseDesign.checkInDiameter + PulseDesign.checkInInnerHalo * 2
+                            )
+                    }
+                }
+                .contentShape(Circle())
             }
-            .contentShape(Circle())
         }
         .buttonStyle(PulseCheckInButtonStyle())
-        .disabled(isChecked || model.isSaving)
+        .disabled(isChecked || !model.canCheckInToday)
         .accessibilityIdentifier("today.checkin.button")
-        .offset(y: actionIsRaised ? -5 : 0)
         .scaleEffect(model.isSaving && !reduceMotion ? 0.97 : 1)
         .animation(
             reduceMotion ? nil : .easeInOut(duration: PulseDesign.savingAnimationDuration),
@@ -228,16 +232,48 @@ struct TodayView: View {
         .accessibilityHint(isChecked ? "" : String(localized: "today.accessibility.hint"))
     }
 
+    @ViewBuilder
+    private var checkInStatusContent: some View {
+        if model.isSaving {
+            ProgressView()
+                .controlSize(.large)
+                .tint(PulseDesign.actionForeground)
+        } else if let completedCheckInText {
+            VStack(spacing: PulseDesign.spacing4) {
+                Image(systemName: "checkmark")
+                    .font(.system(.title, design: .default, weight: .medium))
+
+                Text(completedCheckInText)
+                    .font(.headline.bold())
+            }
+            .foregroundStyle(PulseDesign.actionForeground)
+            .multilineTextAlignment(.center)
+        } else {
+            Text("today.check_in")
+                .font(.headline.bold())
+                .foregroundStyle(PulseDesign.actionForeground)
+        }
+    }
+
     private var pendingCheckInStatus: some View {
-        Text("today.pending_status")
-        .font(.system(size: 12))
+        Text(pendingStatusKey)
+        .font(.footnote)
         .foregroundStyle(PulseDesign.secondary)
         .multilineTextAlignment(.center)
         .frame(maxWidth: .infinity)
     }
 
+    private var pendingStatusKey: LocalizedStringKey {
+        if let today = model.today,
+           let habitStartDay = model.habitStartDay,
+           today < habitStartDay {
+            return "today.before_start_status"
+        }
+        return "today.pending_status"
+    }
+
     private var completedCheckInText: String? {
-        guard let record = model.todayRecord, let timeZone = model.timeZone else {
+        guard let record = model.todayRecord, let timeZone = record.timeZone else {
             return nil
         }
         return String(
@@ -260,13 +296,12 @@ struct TodayView: View {
         HStack(alignment: .bottom, spacing: PulseDesign.spacing16) {
             VStack(alignment: .leading, spacing: PulseDesign.spacing4) {
                 Text("today.rhythm_label")
-                    .font(.system(size: 11, weight: .bold))
-                    .tracking(1.43)
+                    .font(.system(.caption2, design: .default, weight: .bold))
                     .textCase(.uppercase)
                     .foregroundStyle(PulseDesign.ink)
 
                 Text("today.streak_encouragement")
-                    .font(.system(size: 12))
+                    .font(.footnote)
                     .foregroundStyle(PulseDesign.secondary)
             }
 
@@ -274,18 +309,17 @@ struct TodayView: View {
 
             HStack(alignment: .firstTextBaseline, spacing: PulseDesign.spacing4) {
                 Text(model.statistics.currentStreak, format: .number)
-                    .font(.system(size: 35, weight: .bold))
-                    .tracking(-2.1)
+                    .font(.title.bold())
                     .monospacedDigit()
                     .foregroundStyle(PulseDesign.ink)
 
                 Text("unit.days")
-                    .font(.system(size: 12, weight: .bold))
+                    .font(.footnote.bold())
                     .foregroundStyle(PulseDesign.ink)
             }
         }
         .padding(.horizontal, PulseDesign.spacing16)
-        .padding(.vertical, 15)
+        .padding(.vertical, PulseDesign.spacing16)
         .overlay {
             Capsule()
                 .stroke(PulseDesign.separator, lineWidth: PulseDesign.thinLineWidth)
@@ -296,34 +330,27 @@ struct TodayView: View {
     private func weekDayAccessibilityLabel(_ item: CalendarDayItem) -> String {
         guard let timeZone = model.timeZone else { return "" }
         let date = PulseFormatting.fullDate(item.day, timeZone: timeZone)
-        let state = item.status == .checked
-            ? String(localized: "calendar.status.checked")
-            : String(localized: "calendar.status.not_checked")
+        let state: String
+        switch item.status {
+        case .beforeHabit: state = String(localized: "calendar.status.before_habit")
+        case .checked: state = String(localized: "calendar.status.checked")
+        case .missed: state = String(localized: "calendar.status.missed")
+        case .todayPending: state = String(localized: "calendar.status.pending")
+        case .future: state = String(localized: "calendar.status.future")
+        }
         return "\(date)，\(state)"
     }
 
-    private func updateActionMotion() {
-        guard isActive, !reduceMotion else {
-            actionIsRaised = false
-            return
-        }
-
-        actionIsRaised = false
-        withAnimation(
-            .easeInOut(duration: PulseDesign.actionFloatingDuration)
-                .repeatForever(autoreverses: true)
-        ) {
-            actionIsRaised = true
-        }
-    }
 }
 
 private struct PulseCheckInButtonStyle: ButtonStyle {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .scaleEffect(configuration.isPressed ? 0.97 : 1)
+            .scaleEffect(configuration.isPressed && !reduceMotion ? 0.97 : 1)
             .animation(
-                .easeInOut(duration: PulseDesign.savingAnimationDuration),
+                reduceMotion ? nil : .easeInOut(duration: PulseDesign.savingAnimationDuration),
                 value: configuration.isPressed
             )
     }

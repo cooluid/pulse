@@ -1,9 +1,6 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
-    "" : {
-
-    },
     "action.cancel" : {
       "localizations" : {
         "en" : {
@@ -148,22 +145,6 @@
         }
       }
     },
-    "calendar.status.not_checked" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Not checked in"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "未签到"
-          }
-        }
-      }
-    },
     "calendar.status.pending" : {
       "localizations" : {
         "en" : {
@@ -176,23 +157,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "今日待签到"
-          }
-        }
-      }
-    },
-    "calendar.status.today" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Today"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "今天"
           }
         }
       }
@@ -229,18 +193,18 @@
         }
       }
     },
-    "error.habit_missing" : {
+    "error.check_in_invalid" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "The daily check-in could not be loaded."
+            "value" : "This check-in could not be validated."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "无法加载每日签到项目。"
+            "value" : "本次签到未通过数据校验，请重试。"
           }
         }
       }
@@ -293,22 +257,6 @@
         }
       }
     },
-    "error.persistence" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Your check-in data could not be opened."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "无法打开签到数据。"
-          }
-        }
-      }
-    },
     "error.record_date" : {
       "localizations" : {
         "en" : {
@@ -353,6 +301,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "保存的签到时区无效。"
+          }
+        }
+      }
+    },
+    "error.timezone_transition" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The selected time zone would move today before this check-in began."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "所选签到时区会让当前日期早于项目开始日，请选择其他时区。"
           }
         }
       }
@@ -885,6 +849,38 @@
         }
       }
     },
+    "settings.reminder.sync_failed" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reminder schedule is not synchronized"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "提醒计划尚未同步"
+          }
+        }
+      }
+    },
+    "settings.reminder.syncing" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Synchronizing reminder schedule"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在同步提醒计划"
+          }
+        }
+      }
+    },
     "settings.reminder.section" : {
       "localizations" : {
         "en" : {
@@ -1173,18 +1169,50 @@
         }
       }
     },
-    "startup.failure.message" : {
+    "startup.failure.persistence_message" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Pulse could not open its data store. Restart the app. If the problem continues, contact support before deleting the app."
+            "value" : "Pulse could not open its data store. Retry first. If the problem continues, contact support before deleting the app."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "一日一印无法打开数据存储。请重新启动 App；如果问题持续存在，请在删除 App 前联系支持。"
+            "value" : "一日一印无法打开数据存储。请先重试；如果问题持续存在，请在删除 App 前联系支持。"
+          }
+        }
+      }
+    },
+    "startup.failure.reset_settings" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reset App Settings"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "重置应用设置"
+          }
+        }
+      }
+    },
+    "startup.failure.settings_message" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Saved app settings are invalid. Resetting settings keeps all check-in records."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "保存的应用设置无效。重置设置不会删除任何签到记录。"
           }
         }
       }
@@ -1281,6 +1309,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "轻点两下保存今天的签到。"
+          }
+        }
+      }
+    },
+    "today.before_start_status" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Today is before this check-in began"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "当前日期早于项目开始日"
           }
         }
       }

@@ -1,16 +1,20 @@
 import XCTest
 
+@MainActor
 final class PulseFlowUITests: XCTestCase {
     private var app: XCUIApplication!
 
-    override func setUpWithError() throws {
+    private func configureApp() {
         continueAfterFailure = false
         app = XCUIApplication()
         app.launchArguments = ["-AppleLanguages", "(zh-Hans)", "-AppleLocale", "zh_CN"]
         app.launchEnvironment["PULSE_UI_TEST_RESET"] = "1"
+        app.launchEnvironment["PULSE_UI_TEST_STORE_ID"] = UUID().uuidString
+        app.launchEnvironment["PULSE_UI_TEST_NOW"] = "2026-08-10T04:00:00Z"
     }
 
     func testCheckInPersistsAcrossRelaunchAndAppearsInHistory() throws {
+        configureApp()
         app.launch()
 
         let checkInButton = app.buttons["today.checkin.button"]
@@ -72,6 +76,7 @@ final class PulseFlowUITests: XCTestCase {
     }
 
     func testSettingsHidesPrimaryNavigationUntilClosed() throws {
+        configureApp()
         app.launch()
 
         let settingsButton = app.buttons["settings.navigation.open.today"]
@@ -92,6 +97,22 @@ final class PulseFlowUITests: XCTestCase {
 
         XCTAssertTrue(app.buttons["primary.navigation.today"].waitForExistence(timeout: 3))
         XCTAssertTrue(app.buttons["primary.navigation.history"].exists)
+    }
+
+    func testAccessibilityXXXLUsesExpandableCheckInControl() throws {
+        configureApp()
+        app.launchArguments += [
+            "-UIPreferredContentSizeCategoryName",
+            "UICTContentSizeCategoryAccessibilityXXXL"
+        ]
+        app.launch()
+
+        let checkInButton = app.buttons["today.checkin.button"]
+        XCTAssertTrue(checkInButton.waitForExistence(timeout: 5))
+        XCTAssertGreaterThan(checkInButton.frame.width, checkInButton.frame.height)
+        XCTAssertGreaterThanOrEqual(checkInButton.frame.minX, app.frame.minX)
+        XCTAssertLessThanOrEqual(checkInButton.frame.maxX, app.frame.maxX)
+        XCTAssertTrue(app.staticTexts["today.day.number"].exists)
     }
 
     private func assertRemovedTodayCopyIsAbsent() {

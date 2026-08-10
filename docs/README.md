@@ -10,7 +10,6 @@
 | [RELEASE_SCOPE_1_0.md](./RELEASE_SCOPE_1_0.md) | 冻结 1.0 正式范围、排除项、发布身份和上线门禁 | 产品、发布负责人、开发、测试 |
 | [DOMAIN_CONTRACT.md](./DOMAIN_CONTRACT.md) | 定义逻辑日、签到唯一性、连续天数和删除语义 | 开发、测试 |
 | [TECHNICAL_DESIGN.md](./TECHNICAL_DESIGN.md) | 定义架构、数据模型、服务边界和失败处理 | 开发、评审 |
-| [DEVELOPMENT_PLAN.md](./DEVELOPMENT_PLAN.md) | 定义实施顺序、任务拆分、依赖和完成门槛 | 开发、项目管理 |
 | [TEST_PLAN.md](./TEST_PLAN.md) | 定义自动化、手工、设备与发布前验证 | 开发、测试 |
 | [IMPLEMENTATION_STATUS.md](./IMPLEMENTATION_STATUS.md) | 记录当前实现范围、验证证据和发布门槛 | 全员 |
 
@@ -37,11 +36,11 @@
 2. 1.0 已选择本地优先与 JSON 恢复；发布文案必须明确卸载数据边界，CloudKit 不进入 1.0。
 3. App 的正式版本号、隐私说明和商店文案；Bundle ID 与中英文显示名称已经冻结。
 
-视觉评审材料位于 [`design`](../design/README.md)。当前唯一方向是 C 脉冲场今日页 × A 状态式底栏的“草野脉冲”系统；界面、AccentColor、品牌标记与 AppIcon 由同一品牌令牌生成，最终界面与商店素材仍需独立验收。
+生产设计合同位于 [`design`](../design/README.md)。当前唯一方向是“草野脉冲”系统；界面、AccentColor、品牌标记与 AppIcon 由同一品牌令牌生成，最终界面与商店素材仍需独立验收。
 
 ## 变更规则
 
 - 签到规则发生变化时，先修改 `DOMAIN_CONTRACT.md`，再改实现和测试。
-- 产品范围发生变化时，先修改 `PRODUCT_REQUIREMENTS.md` 和开发计划。
+- 产品范围发生变化时，先修改 `PRODUCT_REQUIREMENTS.md` 与 `RELEASE_SCOPE_1_0.md`。
 - 不在多个文档复制完整算法；其他文档通过链接引用业务规则。
 - 完成一项任务时，必须同时满足对应自动化测试和手工验收，不以“能编译”代替完成。

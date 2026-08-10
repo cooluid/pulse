@@ -43,12 +43,10 @@ struct LogicalDay: Hashable, Codable, Comparable, Identifiable, Sendable {
 
     static func resolve(
         at date: Date,
-        timeZone: TimeZone,
-        dayStartMinutes: Int
+        timeZone: TimeZone
     ) -> LogicalDay {
-        let shiftedDate = date.addingTimeInterval(TimeInterval(-dayStartMinutes * 60))
         let calendar = Calendar.pulseGregorian(timeZone: timeZone)
-        let components = calendar.dateComponents([.year, .month, .day], from: shiftedDate)
+        let components = calendar.dateComponents([.year, .month, .day], from: date)
 
         precondition(
             components.year != nil && components.month != nil && components.day != nil,
@@ -70,10 +68,8 @@ struct LogicalDay: Hashable, Codable, Comparable, Identifiable, Sendable {
         return LogicalDay(year: components.year!, month: components.month!, day: components.day!)
     }
 
-    func startDate(timeZone: TimeZone, dayStartMinutes: Int) -> Date {
-        let calendar = Calendar.pulseGregorian(timeZone: timeZone)
-        let midnight = calendar.date(from: DateComponents(year: year, month: month, day: day))!
-        return calendar.date(byAdding: .minute, value: dayStartMinutes, to: midnight)!
+    func startDate(timeZone: TimeZone) -> Date {
+        date(timeZone: timeZone)
     }
 
     func date(timeZone: TimeZone) -> Date {

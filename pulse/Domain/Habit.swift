@@ -9,26 +9,30 @@ final class Habit {
     @Attribute(.unique) var slotKey: String
     var name: String
     var createdAt: Date
+    var startLogicalDayValue: String
+    var creationTimeZoneIdentifier: String
     var timeZoneIdentifier: String
-    var dayStartMinutes: Int
-    var isArchived: Bool
 
     init(
         id: UUID = UUID(),
         slotKey: String = Habit.primarySlotKey,
         name: String,
         createdAt: Date,
-        timeZoneIdentifier: String,
-        dayStartMinutes: Int = 0,
-        isArchived: Bool = false
+        startLogicalDay: LogicalDay,
+        creationTimeZoneIdentifier: String,
+        timeZoneIdentifier: String
     ) {
         self.id = id
         self.slotKey = slotKey
         self.name = name
         self.createdAt = createdAt
+        self.startLogicalDayValue = startLogicalDay.storageValue
+        self.creationTimeZoneIdentifier = creationTimeZoneIdentifier
         self.timeZoneIdentifier = timeZoneIdentifier
-        self.dayStartMinutes = dayStartMinutes
-        self.isArchived = isArchived
+    }
+
+    var startLogicalDay: LogicalDay? {
+        LogicalDay(storageValue: startLogicalDayValue)
     }
 
     func resolvedTimeZone() throws -> TimeZone {
@@ -39,10 +43,6 @@ final class Habit {
     }
 
     func logicalDay(at date: Date) throws -> LogicalDay {
-        LogicalDay.resolve(
-            at: date,
-            timeZone: try resolvedTimeZone(),
-            dayStartMinutes: dayStartMinutes
-        )
+        LogicalDay.resolve(at: date, timeZone: try resolvedTimeZone())
     }
 }

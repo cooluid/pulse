@@ -8,3 +8,7 @@ protocol PulseClock {
 struct SystemPulseClock: PulseClock {
     var now: Date { Date() }
 }
+
+struct FixedPulseClock: PulseClock {
+    let now: Date
+}

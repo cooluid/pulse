@@ -27,7 +27,7 @@ struct HistoryView: View {
                     }
                     .frame(maxWidth: PulseDesign.historyMaxWidth)
                     .padding(.horizontal, PulseDesign.horizontalPadding)
-                    .padding(.top, 2)
+                    .padding(.top, PulseDesign.spacing4)
                     .padding(.bottom, PulseDesign.spacing24)
                     .frame(maxWidth: .infinity)
                 }
@@ -50,8 +50,7 @@ struct HistoryView: View {
                         PulseFormatting.year(month, timeZone: timeZone)
                     )
                 )
-                .font(.system(size: 11, weight: .bold))
-                .tracking(1.43)
+                .font(.system(.caption2, design: .default, weight: .bold))
                 .textCase(.uppercase)
                 .foregroundStyle(PulseDesign.secondary)
 
@@ -61,8 +60,7 @@ struct HistoryView: View {
                         PulseFormatting.monthOnly(month, timeZone: timeZone)
                     )
                 )
-                .font(.system(size: 40, weight: .bold))
-                .tracking(-2.4)
+                .font(.largeTitle.bold())
                 .foregroundStyle(PulseDesign.ink)
             }
         }
@@ -124,9 +122,9 @@ struct HistoryView: View {
                 id: \.offset
             ) { index, weekday in
                 Text(weekday)
-                    .font(.system(size: 9, weight: .bold))
+                    .font(.system(.caption2, design: .default, weight: .bold))
                     .foregroundStyle(PulseDesign.secondary)
-                    .frame(maxWidth: .infinity, minHeight: 24)
+                    .frame(maxWidth: .infinity, minHeight: PulseDesign.spacing24)
                     .accessibilityIdentifier("calendar.weekday.\(index)")
             }
 
@@ -192,13 +190,12 @@ private struct StatisticTile: View {
     var body: some View {
         VStack(spacing: PulseDesign.spacing4) {
             Text(value, format: .number)
-                .font(.system(size: 28, weight: .bold))
-                .tracking(-1.12)
+                .font(.title2.bold())
                 .monospacedDigit()
                 .foregroundStyle(PulseDesign.ink)
 
             Text(labelKey)
-                .font(.system(size: 10))
+                .font(.caption)
                 .foregroundStyle(PulseDesign.secondary)
                 .lineLimit(1)
         }
@@ -221,10 +218,22 @@ private struct CalendarDayCell: View {
                     height: PulseDesign.calendarDayVisualSize
                 )
 
-            Text(item.day.day, format: .number)
-                .font(.system(size: 11, weight: item.status == .checked || isToday ? .bold : .regular))
-                .monospacedDigit()
-                .foregroundStyle(item.status == .checked ? PulseDesign.grassForeground : PulseDesign.secondary)
+            if item.status == .checked {
+                VStack(spacing: 0) {
+                    Text(item.day.day, format: .number)
+                        .font(.caption2.bold())
+                        .monospacedDigit()
+                    Image(systemName: "checkmark")
+                        .font(.caption2.bold())
+                }
+                .foregroundStyle(PulseDesign.grassForeground)
+            } else {
+                Text(item.day.day, format: .number)
+                    .font(isToday ? .caption.bold() : .caption)
+                    .monospacedDigit()
+                    .foregroundStyle(PulseDesign.secondary)
+                    .opacity(isDeemphasized ? PulseDesign.deemphasizedCalendarOpacity : 1)
+            }
         }
         .frame(maxWidth: .infinity)
         .frame(height: PulseDesign.calendarDayHitSize)
@@ -255,6 +264,10 @@ private struct CalendarDayCell: View {
         }
         return "\(item.day.storageValue)，\(state)"
     }
+
+    private var isDeemphasized: Bool {
+        item.status == .future || item.status == .beforeHabit
+    }
 }
 
 private struct RecordDetailView: View {
@@ -269,15 +282,15 @@ private struct RecordDetailView: View {
                 PulseScreenBackground()
 
                 VStack(spacing: PulseDesign.spacing24) {
-                    PulseBrandMark(size: 64)
+                    PulseBrandMark(size: PulseDesign.recordDetailBrandMarkSize)
 
                     VStack(spacing: PulseDesign.spacing8) {
-                        if let day = record.logicalDay, let timeZone = model.timeZone {
+                        if let day = record.logicalDay, let timeZone = record.timeZone {
                             Text(PulseFormatting.fullDate(day, timeZone: timeZone))
                                 .font(.title3.bold())
                                 .foregroundStyle(PulseDesign.ink)
                         }
-                        if let timeZone = model.timeZone {
+                        if let timeZone = record.timeZone {
                             Text(
                                 String(
                                     format: String(localized: "history.checked_at"),
@@ -310,8 +323,9 @@ private struct RecordDetailView: View {
             ) {
                 Button("history.delete_confirmation.action", role: .destructive) {
                     Task {
-                        await model.delete(recordID: record.id)
-                        dismiss()
+                        if await model.delete(recordID: record.id) {
+                            dismiss()
+                        }
                     }
                 }
                 Button("action.cancel", role: .cancel) {}

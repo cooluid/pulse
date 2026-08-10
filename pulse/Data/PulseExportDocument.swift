@@ -3,7 +3,11 @@ import SwiftUI
 import UniformTypeIdentifiers
 
 enum PulseDataContract {
+    static let formatIdentifier = "co.fanr.pulse.export"
     static let exportSchemaVersion = 1
+    static let maximumRecordCount = 50_000
+    static let maximumHabitNameLength = 80
+    static let maximumImportBytes = 32 * 1_024 * 1_024
 }
 
 struct PulseExportPayload: Codable, Sendable {
@@ -11,8 +15,9 @@ struct PulseExportPayload: Codable, Sendable {
         let id: UUID
         let name: String
         let createdAt: Date
+        let startLogicalDay: String
+        let creationTimeZoneIdentifier: String
         let timeZoneIdentifier: String
-        let dayStartMinutes: Int
     }
 
     struct RecordPayload: Codable, Sendable {
@@ -20,9 +25,10 @@ struct PulseExportPayload: Codable, Sendable {
         let logicalDay: String
         let checkedAt: Date
         let createdAt: Date
-        let source: String
+        let timeZoneIdentifier: String
     }
 
+    let format: String
     let schemaVersion: Int
     let exportedAt: Date
     let habit: HabitPayload

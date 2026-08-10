@@ -47,6 +47,11 @@ struct RootView: View {
         .onReceive(NotificationCenter.default.publisher(for: UIApplication.significantTimeChangeNotification)) { _ in
             Task { await model.handleSceneActivation() }
         }
+        .onChange(of: model.navigationResetToken) { _, _ in
+            selectedSection = .today
+            todayPath.removeAll()
+            historyPath.removeAll()
+        }
         .alert(
             "error.title",
             isPresented: Binding(

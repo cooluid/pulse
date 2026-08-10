@@ -1,10 +1,6 @@
 import Foundation
 import SwiftData
 
-enum CheckInSource: String, Codable, Sendable {
-    case manual
-}
-
 @Model
 final class CheckInRecord {
     @Attribute(.unique) var id: UUID
@@ -13,7 +9,7 @@ final class CheckInRecord {
     var logicalDayValue: String
     var checkedAt: Date
     var createdAt: Date
-    var sourceRawValue: String
+    var timeZoneIdentifier: String
 
     init(
         id: UUID = UUID(),
@@ -21,7 +17,7 @@ final class CheckInRecord {
         logicalDay: LogicalDay,
         checkedAt: Date,
         createdAt: Date,
-        source: CheckInSource
+        timeZoneIdentifier: String
     ) {
         self.id = id
         self.recordKey = Self.makeRecordKey(habitID: habitID, logicalDay: logicalDay)
@@ -29,19 +25,18 @@ final class CheckInRecord {
         self.logicalDayValue = logicalDay.storageValue
         self.checkedAt = checkedAt
         self.createdAt = createdAt
-        self.sourceRawValue = source.rawValue
+        self.timeZoneIdentifier = timeZoneIdentifier
     }
 
     var logicalDay: LogicalDay? {
         LogicalDay(storageValue: logicalDayValue)
     }
 
-    var source: CheckInSource? {
-        CheckInSource(rawValue: sourceRawValue)
+    var timeZone: TimeZone? {
+        TimeZone(identifier: timeZoneIdentifier)
     }
 
     static func makeRecordKey(habitID: UUID, logicalDay: LogicalDay) -> String {
         "\(habitID.uuidString.lowercased()):\(logicalDay.storageValue)"
     }
 }
-
