@@ -11,6 +11,11 @@ struct TodayView: View {
     @Environment(\.locale) private var locale
     @ScaledMetric(relativeTo: .largeTitle) private var dayNumberSize = PulseDesign.dayNumberBaseSize
     @State private var showsSavingIndicator = false
+    @State private var isAwaitingCheckInCompletion = false
+    @State private var completionAnimationSequence = 0
+    @State private var completionControlScale: CGFloat = 1
+    @State private var completionRippleVisible = false
+    @State private var completionRippleExpanded = false
 
     var body: some View {
         ZStack {
@@ -215,7 +220,13 @@ struct TodayView: View {
             : PulseDesign.actionForeground
 
         return Button {
-            Task { await model.checkIn() }
+            isAwaitingCheckInCompletion = true
+            Task {
+                await model.checkIn()
+                if model.todayRecord == nil {
+                    isAwaitingCheckInCompletion = false
+                }
+            }
         } label: {
             if dynamicTypeSize.isAccessibilitySize {
                 HStack(spacing: PulseDesign.spacing12) {
@@ -269,19 +280,27 @@ struct TodayView: View {
                 .frame(width: PulseDesign.checkInDiameter, height: PulseDesign.checkInDiameter)
                 .background {
                     ZStack {
+                        PulseCheckInIdleAura(
+                            isBreathing: isActive && !isChecked && model.canCheckInToday
+                        )
                         Circle()
-                            .fill(PulseDesign.grass.opacity(PulseDesign.outerHaloOpacity))
-                            .frame(
-                                width: PulseDesign.checkInDiameter + PulseDesign.checkInOuterHalo * 2,
-                                height: PulseDesign.checkInDiameter + PulseDesign.checkInOuterHalo * 2
+                            .stroke(
+                                PulseDesign.grass.opacity(PulseDesign.completionRippleOpacity),
+                                lineWidth: PulseDesign.emphasisLineWidth
                             )
-                        Circle()
-                            .fill(PulseDesign.grass.opacity(PulseDesign.innerHaloOpacity))
                             .frame(
-                                width: PulseDesign.checkInDiameter + PulseDesign.checkInInnerHalo * 2,
-                                height: PulseDesign.checkInDiameter + PulseDesign.checkInInnerHalo * 2
+                                width: PulseDesign.checkInDiameter,
+                                height: PulseDesign.checkInDiameter
                             )
+                            .scaleEffect(
+                                completionRippleExpanded
+                                    ? PulseDesign.completionRippleEndScale
+                                    : PulseDesign.completionRippleStartScale
+                            )
+                            .opacity(completionRippleVisible ? 1 : 0)
                     }
+                    .allowsHitTesting(false)
+                    .accessibilityHidden(true)
                 }
                 .contentShape(Circle())
             }
@@ -290,11 +309,25 @@ struct TodayView: View {
         .disabled(isChecked || !model.canCheckInToday)
         .accessibilityIdentifier("today.checkin.button")
         .scaleEffect(model.isSaving && !reduceMotion ? 0.97 : 1)
+        .scaleEffect(completionControlScale)
         .animation(
             reduceMotion ? nil : .easeInOut(duration: PulseDesign.savingAnimationDuration),
             value: model.isSaving
         )
         .animation(completionAnimation, value: isChecked)
+        .onChange(of: isChecked) { wasChecked, isNowChecked in
+            guard !wasChecked, isNowChecked, isAwaitingCheckInCompletion else { return }
+            isAwaitingCheckInCompletion = false
+            completionAnimationSequence += 1
+        }
+        .onChange(of: reduceMotion) { _, shouldReduceMotion in
+            if shouldReduceMotion {
+                resetCompletionMotion()
+            }
+        }
+        .task(id: completionAnimationSequence) {
+            await runCompletionMotion()
+        }
         .task(id: model.isSaving) {
             guard model.isSaving else {
                 showsSavingIndicator = false
@@ -419,6 +452,56 @@ struct TodayView: View {
                 .delay(PulseDesign.completionSecondaryDelay)
     }
 
+    private func runCompletionMotion() async {
+        guard completionAnimationSequence > 0, !reduceMotion else {
+            resetCompletionMotion()
+            return
+        }
+
+        resetCompletionMotion(
+            controlScale: PulseDesign.completionControlInitialScale,
+            rippleVisible: true
+        )
+        await Task.yield()
+
+        withAnimation(.easeOut(duration: PulseDesign.completionRippleDuration)) {
+            completionRippleExpanded = true
+            completionRippleVisible = false
+        }
+        withAnimation(.easeOut(duration: PulseDesign.completionPopDuration)) {
+            completionControlScale = PulseDesign.completionControlOvershootScale
+        }
+
+        do {
+            try await Task.sleep(for: .seconds(PulseDesign.completionPopDuration))
+        } catch {
+            resetCompletionMotion()
+            return
+        }
+
+        withAnimation(
+            .spring(
+                response: PulseDesign.completionSettleDuration,
+                dampingFraction: PulseDesign.completionSettleDamping
+            )
+        ) {
+            completionControlScale = 1
+        }
+    }
+
+    private func resetCompletionMotion(
+        controlScale: CGFloat = 1,
+        rippleVisible: Bool = false
+    ) {
+        var transaction = Transaction()
+        transaction.disablesAnimations = true
+        withTransaction(transaction) {
+            completionControlScale = controlScale
+            completionRippleVisible = rippleVisible
+            completionRippleExpanded = false
+        }
+    }
+
     private func weekDayAccessibilityLabel(_ item: CalendarDayItem) -> String {
         guard let timeZone = model.timeZone else { return "" }
         let date = PulseFormatting.fullDate(item.day, timeZone: timeZone, locale: locale)
@@ -454,5 +537,87 @@ private struct PulseCheckInButtonStyle: ButtonStyle {
                 reduceMotion ? nil : .easeInOut(duration: PulseDesign.savingAnimationDuration),
                 value: configuration.isPressed
             )
+    }
+}
+
+private struct PulseCheckInIdleAura: View {
+    let isBreathing: Bool
+
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.scenePhase) private var scenePhase
+    @State private var isExpanded = false
+
+    var body: some View {
+        ZStack {
+            Circle()
+                .fill(PulseDesign.grass.opacity(PulseDesign.outerHaloOpacity))
+                .frame(
+                    width: PulseDesign.checkInDiameter + PulseDesign.checkInOuterHalo * 2,
+                    height: PulseDesign.checkInDiameter + PulseDesign.checkInOuterHalo * 2
+                )
+                .scaleEffect(auraScale)
+                .opacity(auraOpacity)
+
+            Circle()
+                .stroke(
+                    PulseDesign.grass.opacity(PulseDesign.idleAuraRingOpacity),
+                    lineWidth: PulseDesign.thinLineWidth
+                )
+                .frame(
+                    width: PulseDesign.checkInDiameter + PulseDesign.checkInInnerHalo * 2,
+                    height: PulseDesign.checkInDiameter + PulseDesign.checkInInnerHalo * 2
+                )
+                .scaleEffect(auraScale)
+                .opacity(idleRingOpacity)
+
+            Circle()
+                .fill(PulseDesign.grass.opacity(PulseDesign.innerHaloOpacity))
+                .frame(
+                    width: PulseDesign.checkInDiameter + PulseDesign.checkInInnerHalo * 2,
+                    height: PulseDesign.checkInDiameter + PulseDesign.checkInInnerHalo * 2
+                )
+        }
+        .onAppear(perform: updateMotion)
+        .onChange(of: isBreathing) { _, _ in updateMotion() }
+        .onChange(of: reduceMotion) { _, _ in updateMotion() }
+        .onChange(of: scenePhase) { _, _ in updateMotion() }
+    }
+
+    private var motionEnabled: Bool {
+        isBreathing && !reduceMotion && scenePhase == .active
+    }
+
+    private var auraScale: CGFloat {
+        guard motionEnabled else { return 1 }
+        return isExpanded
+            ? PulseDesign.idleAuraExpandedScale
+            : PulseDesign.idleAuraCollapsedScale
+    }
+
+    private var auraOpacity: Double {
+        guard motionEnabled else { return 1 }
+        return isExpanded ? 1 : PulseDesign.idleAuraCollapsedOpacity
+    }
+
+    private var idleRingOpacity: Double {
+        guard motionEnabled else { return 0 }
+        return isExpanded
+            ? PulseDesign.idleAuraRingExpandedOpacity
+            : 1
+    }
+
+    private func updateMotion() {
+        guard motionEnabled else {
+            isExpanded = false
+            return
+        }
+
+        isExpanded = false
+        withAnimation(
+            .easeInOut(duration: PulseDesign.idleAuraBreathingDuration)
+                .repeatForever(autoreverses: true)
+        ) {
+            isExpanded = true
+        }
     }
 }
