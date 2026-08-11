@@ -25,12 +25,12 @@ final class CheckInRepositoryTests: XCTestCase {
         let clock = MutableRepositoryClock(now: makeDate(day: 10, hour: 9))
         let repository = try makeRepository(clock: clock)
         let habit = try repository.primaryHabit(systemTimeZone: timeZone)
-        let record = try repository.checkIn(habit: habit)
+        let record = try repository.checkIn(habitID: habit.id)
         let originalStart = habit.startLogicalDay
         let originalCreatedAt = habit.createdAt
 
         let updated = try repository.updateIdentity(
-            habit: habit,
+            habitID: habit.id,
             identity: try HabitIdentity(
                 userName: "  每日阅读 📚  ",
                 userPurpose: "  为了保持独立思考  "
@@ -52,8 +52,8 @@ final class CheckInRepositoryTests: XCTestCase {
         let habit = try repository.primaryHabit(systemTimeZone: timeZone)
         let identity = try HabitIdentity(userName: "Daily Reading", userPurpose: nil)
 
-        let first = try repository.updateIdentity(habit: habit, identity: identity)
-        let second = try repository.updateIdentity(habit: habit, identity: identity)
+        let first = try repository.updateIdentity(habitID: habit.id, identity: identity)
+        let second = try repository.updateIdentity(habitID: habit.id, identity: identity)
 
         XCTAssertEqual(first.id, second.id)
         XCTAssertTrue(second.isIdentityConfirmed)
@@ -64,9 +64,9 @@ final class CheckInRepositoryTests: XCTestCase {
         let repository = try makeRepository(clock: clock)
         let habit = try repository.primaryHabit(systemTimeZone: timeZone)
 
-        let first = try repository.checkIn(habit: habit)
+        let first = try repository.checkIn(habitID: habit.id)
         clock.now = makeDate(day: 10, hour: 21)
-        let second = try repository.checkIn(habit: habit)
+        let second = try repository.checkIn(habitID: habit.id)
         let records = try repository.allRecords(habitID: habit.id)
 
         XCTAssertEqual(first.recordID, second.recordID)
@@ -76,18 +76,70 @@ final class CheckInRepositoryTests: XCTestCase {
         XCTAssertEqual(records.count, 1)
     }
 
+    func testSeparateContainersObserveOneSharedDiskCheckInFact() throws {
+        let directory = FileManager.default.temporaryDirectory
+            .appendingPathComponent(
+                "PulseSharedStoreTests-\(UUID().uuidString)",
+                isDirectory: true
+            )
+        try FileManager.default.createDirectory(
+            at: directory,
+            withIntermediateDirectories: true
+        )
+        defer { try? FileManager.default.removeItem(at: directory) }
+
+        let storeURL = directory.appendingPathComponent("Pulse.store")
+        let clock = MutableRepositoryClock(now: makeDate(day: 10, hour: 9))
+        let firstRepository = SwiftDataCheckInRepository(
+            container: try PersistenceController.makeContainer(
+                storeName: "PulseSharedStore",
+                storeURL: storeURL
+            ),
+            clock: clock
+        )
+        let firstHabit = try firstRepository.primaryHabit(systemTimeZone: timeZone)
+
+        let secondRepository = SwiftDataCheckInRepository(
+            container: try PersistenceController.makeContainer(
+                storeName: "PulseSharedStore",
+                storeURL: storeURL
+            ),
+            clock: clock
+        )
+        let secondHabit = try secondRepository.primaryHabit(systemTimeZone: timeZone)
+        XCTAssertEqual(secondHabit.id, firstHabit.id)
+        XCTAssertTrue(try secondRepository.allRecords(habitID: secondHabit.id).isEmpty)
+
+        let firstReceipt = try firstRepository.checkIn(habitID: firstHabit.id)
+        let secondReceipt = try secondRepository.checkIn(habitID: secondHabit.id)
+
+        let verificationRepository = SwiftDataCheckInRepository(
+            container: try PersistenceController.makeContainer(
+                storeName: "PulseSharedStore",
+                storeURL: storeURL
+            ),
+            clock: clock
+        )
+        let records = try verificationRepository.allRecords(habitID: firstHabit.id)
+
+        XCTAssertEqual(firstReceipt.disposition, .created)
+        XCTAssertEqual(secondReceipt.disposition, .alreadyPresent)
+        XCTAssertEqual(secondReceipt.recordID, firstReceipt.recordID)
+        XCTAssertEqual(records.map(\.id), [firstReceipt.recordID])
+    }
+
     func testAuthoritativeClockCreatesDifferentDaysButCannotBackfillBeforeStart() throws {
         let clock = MutableRepositoryClock(now: makeDate(day: 10, hour: 23))
         let repository = try makeRepository(clock: clock)
         let habit = try repository.primaryHabit(systemTimeZone: timeZone)
 
-        _ = try repository.checkIn(habit: habit)
+        _ = try repository.checkIn(habitID: habit.id)
         clock.now = makeDate(day: 11, hour: 0)
-        _ = try repository.checkIn(habit: habit)
+        _ = try repository.checkIn(habitID: habit.id)
         XCTAssertEqual(try repository.allRecords(habitID: habit.id).count, 2)
 
         clock.now = makeDate(day: 9, hour: 12)
-        XCTAssertThrowsError(try repository.checkIn(habit: habit)) { error in
+        XCTAssertThrowsError(try repository.checkIn(habitID: habit.id)) { error in
             XCTAssertEqual(error as? PulseError, .invalidCheckIn)
         }
         XCTAssertEqual(try repository.allRecords(habitID: habit.id).count, 2)
@@ -97,9 +149,9 @@ final class CheckInRepositoryTests: XCTestCase {
         let clock = MutableRepositoryClock(now: makeDate(day: 10, hour: 9))
         let repository = try makeRepository(clock: clock)
         let habit = try repository.primaryHabit(systemTimeZone: timeZone)
-        let first = try repository.checkIn(habit: habit)
+        let first = try repository.checkIn(habitID: habit.id)
         clock.now = makeDate(day: 11, hour: 9)
-        let second = try repository.checkIn(habit: habit)
+        let second = try repository.checkIn(habitID: habit.id)
 
         try repository.delete(recordID: first.recordID)
         let remaining = try repository.allRecords(habitID: habit.id)
@@ -111,7 +163,7 @@ final class CheckInRepositoryTests: XCTestCase {
         let clock = MutableRepositoryClock(now: makeDate(day: 10, hour: 9))
         let repository = try makeRepository(clock: clock)
         let original = try repository.primaryHabit(systemTimeZone: timeZone)
-        _ = try repository.checkIn(habit: original)
+        _ = try repository.checkIn(habitID: original.id)
 
         clock.now = makeDate(day: 11, hour: 9)
         let replacement = try repository.resetAll(systemTimeZone: timeZone)
@@ -128,8 +180,18 @@ final class CheckInRepositoryTests: XCTestCase {
         let repository = try makeRepository(clock: clock)
         let habit = try repository.primaryHabit(systemTimeZone: timeZone)
 
-        XCTAssertThrowsError(try repository.updateTimeZone(habit: habit, identifier: "Invalid/TimeZone"))
-        XCTAssertThrowsError(try repository.updateTimeZone(habit: habit, identifier: "America/Los_Angeles")) { error in
+        XCTAssertThrowsError(
+            try repository.updateTimeZone(
+                habitID: habit.id,
+                identifier: "Invalid/TimeZone"
+            )
+        )
+        XCTAssertThrowsError(
+            try repository.updateTimeZone(
+                habitID: habit.id,
+                identifier: "America/Los_Angeles"
+            )
+        ) { error in
             XCTAssertEqual(error as? PulseError, .invalidTimeZoneTransition)
         }
         XCTAssertEqual(habit.timeZoneIdentifier, timeZone.identifier)
@@ -141,18 +203,19 @@ final class CheckInRepositoryTests: XCTestCase {
         let habit = try repository.primaryHabit(systemTimeZone: timeZone)
         let originalStart = habit.startLogicalDay
 
-        try repository.updateTimeZone(habit: habit, identifier: "UTC")
+        try repository.updateTimeZone(habitID: habit.id, identifier: "UTC")
+        let updated = try repository.primaryHabit(systemTimeZone: timeZone)
 
         XCTAssertEqual(habit.startLogicalDay, originalStart)
-        XCTAssertEqual(habit.creationTimeZoneIdentifier, timeZone.identifier)
-        XCTAssertEqual(habit.timeZoneIdentifier, "UTC")
+        XCTAssertEqual(updated.creationTimeZoneIdentifier, timeZone.identifier)
+        XCTAssertEqual(updated.timeZoneIdentifier, "UTC")
     }
 
     func testImportReplacesCurrentDataWithValidatedPayload() throws {
         let clock = MutableRepositoryClock(now: makeDate(day: 10, hour: 9))
         let repository = try makeRepository(clock: clock)
         let original = try repository.primaryHabit(systemTimeZone: timeZone)
-        _ = try repository.checkIn(habit: original)
+        _ = try repository.checkIn(habitID: original.id)
         let importedHabitID = UUID()
         let importedRecordID = UUID()
         let createdAt = makeDate(day: 9, hour: 8)
@@ -188,7 +251,7 @@ final class CheckInRepositoryTests: XCTestCase {
         let clock = MutableRepositoryClock(now: makeDate(day: 10, hour: 9))
         let repository = try makeRepository(clock: clock)
         let original = try repository.primaryHabit(systemTimeZone: timeZone)
-        let originalRecord = try repository.checkIn(habit: original)
+        let originalRecord = try repository.checkIn(habitID: original.id)
         let checkedAt = makeDate(day: 9, hour: 9)
         let duplicateDay = PulseExportPayload.RecordPayload(
             id: UUID(),

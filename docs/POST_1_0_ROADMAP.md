@@ -1,6 +1,6 @@
 # 一日一印（Pulse）1.0 之后开发路线图
 
-文档版本：0.4<br>
+文档版本：0.5<br>
 状态：Proposed Execution Plan，不改变 1.0 已冻结范围  
 评审日期：2026-08-11
 
@@ -75,6 +75,8 @@
 - Home Screen 小号显示日期、今日状态和签到按钮，中号显示主承诺与七日节律；
 - 未签到交互使用只创建事实的 `Button`，不使用可以反向删除记录的 `Toggle`；
 - 交互签到必须与 App 内签到走同一业务实现；若共享存储迁移未完成，只允许打开 App，不写第二份状态。
+
+App Group、共享 store 搬迁、跨进程写入、Widget 隐私和能力准入统一执行 [WIDGET_SHARED_STORE_CONTRACT.md](./WIDGET_SHARED_STORE_CONTRACT.md)。账号审核期间先完成可进入 App 正式路径的 Repository 竞争回读和共享核心准备；没有正式 group entitlement 与 provisioning 证据前，不创建依赖 fallback 的生产 Widget target。
 
 #### C. 基础日印仪式，免费
 

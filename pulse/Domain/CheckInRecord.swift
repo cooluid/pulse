@@ -23,7 +23,7 @@ extension PulseSchemaV2 {
             timeZoneIdentifier: String
         ) {
             self.id = id
-            self.recordKey = Self.makeRecordKey(habitID: habitID, logicalDay: logicalDay)
+            self.recordKey = CheckInRecordKey.make(habitID: habitID, logicalDay: logicalDay)
             self.habitID = habitID
             self.logicalDayValue = logicalDay.storageValue
             self.checkedAt = checkedAt
@@ -37,10 +37,6 @@ extension PulseSchemaV2 {
 
         var timeZone: TimeZone? {
             TimeZone(identifier: timeZoneIdentifier)
-        }
-
-        static func makeRecordKey(habitID: UUID, logicalDay: LogicalDay) -> String {
-            "\(habitID.uuidString.lowercased()):\(logicalDay.storageValue)"
         }
     }
 }

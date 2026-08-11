@@ -1,6 +1,6 @@
 # Pulse 签到业务合同
 
-文档版本：1.2<br>
+文档版本：1.3<br>
 状态：Canonical Contract
 
 本文档是日期、签到事实和导入恢复的唯一业务规则来源。
@@ -16,7 +16,7 @@ Pulse 1.0 只有一个主签到项目。`Habit.slotKey == "primary"` 是结构�
 - 创建时区 `creationTimeZoneIdentifier`，用于证明起始日来源；
 - 当前签到时区 `timeZoneIdentifier`，只影响当前日期和后续签到。
 
-`CheckInRecord` 是签到事实的唯一来源，保存项目 ID、逻辑日、实际签到时间、写入时间，以及该记录生成时使用的时区。历史记录的逻辑日和记录时区永不随当前项目时区重写。
+`CheckInRecord` 是签到事实的唯一来源，保存项目 ID、逻辑日、实际签到时间、写入时间，以及该记录生成时使用的时区。历史记录的逻辑日和记录时区永不随当前项目时区重写。Repository 对外返回的不可变快照只是当前 store 的值投影，不具备写入能力，也不构成第二份持久化事实。
 
 不保存 `isCheckedToday`、连续天数、累计数、月历状态等派生值。
 
@@ -54,6 +54,7 @@ recordKey = lowercased(habitID) + ":" + logicalDay
 - Repository 使用自己注入的权威 Clock 计算当前日，不接受调用方传日期，因此没有补签或伪造历史日期入口。
 - 同日重复调用返回正式提交回执，明确区分 `created` 与 `alreadyPresent`；回执只携带记录 ID、逻辑日、签到时间和处置结果，不是第二份持久化事实。
 - 只有新记录持久化成功或幂等回读到当天既有正式记录后才能返回提交回执；UI 的实心落印只消费该回执或当前记录快照，不消费按钮点击本身。
+- App 与未来 Widget 同时写入时不能依赖进程内锁：若插入保存失败，Repository 必须 rollback 并按同一 `recordKey` 回读；只有读到正式记录才能返回 `alreadyPresent`，否则报告原始持久化失败。
 - 当前日早于项目起始日时拒绝签到。
 - 删除只删除明确 ID；失败时保留页面和详情，不提前关闭界面。
 - 所有写入只经过 `SwiftDataCheckInRepository`，保存失败回滚 `ModelContext`。
@@ -97,4 +98,4 @@ recordKey = lowercased(habitID) + ":" + logicalDay
 
 ## 7. 范围变更
 
-补签、多项目、非零日界线、云同步、删除审计和服务端防作弊都属于新业务规则。进入范围前必须先修改本合同、数据迁移策略和测试矩阵。
+补签、多项目、非零日界线、云同步、删除审计和服务端防作弊都属于新业务规则。进入范围前必须先修改本合同、数据迁移策略和测试矩阵。Widget 不改变本合同，只增加共享容器与跨进程消费者；其正式迁移和能力门禁以 [WIDGET_SHARED_STORE_CONTRACT.md](./WIDGET_SHARED_STORE_CONTRACT.md) 为准。

@@ -25,6 +25,7 @@
 - [1.x–3.0 产品战略与商业化规划](./docs/PRODUCT_STRATEGY_2_X.md)
 - [1.0 之后开发路线图](./docs/POST_1_0_ROADMAP.md)
 - [日印仪式：Widget、灵动岛、Apple Watch 与系统提醒合同](./docs/PULSE_RITUAL_CONTRACT.md)
+- [基础 Widget、App Group 与共享 Store 合同](./docs/WIDGET_SHARED_STORE_CONTRACT.md)
 - [视觉方向评审](./design/README.md)
 
 ## 开发原则

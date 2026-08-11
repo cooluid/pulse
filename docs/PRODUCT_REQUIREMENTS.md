@@ -1,6 +1,6 @@
 # 一日一印（Pulse）日签到产品需求
 
-文档版本：1.5<br>
+文档版本：1.6<br>
 状态：Canonical Product Contract
 适用范围：本地优先、单用户、单一主承诺日签到产品
 
@@ -168,7 +168,7 @@ MVP 的目标不是搭建任务平台，而是让以下闭环稳定成立：
 
 ### 5.3 P2：后续候选，不属于 MVP 承诺
 
-- 隐私锁和可交互的桌面/锁屏小组件；
+- 隐私锁和可交互的桌面/锁屏小组件；Widget 只能消费共享正式 store，默认不在锁屏或系统表面泄露主承诺，未完成 App Group 迁移时不可写，详细范围以 [WIDGET_SHARED_STORE_CONTRACT.md](./WIDGET_SHARED_STORE_CONTRACT.md) 为准；
 - 跨系统“呼吸、落印、年轮”仪式：签到成功后的短暂灵动岛回声、回归和事实里程碑，以及经用户开启和远程门禁验证后的留印提醒窗口；App 内基础落印已属于 P0，不在此重复；
 - 与签到事实分离的轻量回响和缺席说明，不形成补签；
 - Apple Watch 伴侣 App、表盘 complication、Smart Stack、可靠离线命令与高级节律，Shortcuts 和其他高级系统入口；

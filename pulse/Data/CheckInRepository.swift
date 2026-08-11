@@ -3,28 +3,29 @@ import SwiftData
 
 @MainActor
 protocol CheckInRepositoryProtocol: AnyObject {
-    func primaryHabit(systemTimeZone: TimeZone) throws -> Habit
-    func allRecords(habitID: UUID) throws -> [CheckInRecord]
-    func updateIdentity(habit: Habit, identity: HabitIdentity) throws -> Habit
-    func checkIn(habit: Habit) throws -> CheckInCommitReceipt
+    func primaryHabit(systemTimeZone: TimeZone) throws -> HabitSnapshot
+    func allRecords(habitID: UUID) throws -> [CheckInRecordSnapshot]
+    func updateIdentity(habitID: UUID, identity: HabitIdentity) throws -> HabitSnapshot
+    func checkIn(habitID: UUID) throws -> CheckInCommitReceipt
     func delete(recordID: UUID) throws
-    func updateTimeZone(habit: Habit, identifier: String) throws
-    func resetAll(systemTimeZone: TimeZone) throws -> Habit
-    func replaceAll(with payload: PulseExportPayload) throws -> Habit
+    func updateTimeZone(habitID: UUID, identifier: String) throws
+    func resetAll(systemTimeZone: TimeZone) throws -> HabitSnapshot
+    func replaceAll(with payload: PulseExportPayload) throws -> HabitSnapshot
 }
 
 @MainActor
 final class SwiftDataCheckInRepository: CheckInRepositoryProtocol {
-    private let context: ModelContext
+    private let container: ModelContainer
+    private var context: ModelContext
     private let clock: any PulseClock
 
     init(container: ModelContainer, clock: any PulseClock) {
-        context = ModelContext(container)
-        context.autosaveEnabled = false
+        self.container = container
+        context = Self.makeContext(container: container)
         self.clock = clock
     }
 
-    func primaryHabit(systemTimeZone: TimeZone) throws -> Habit {
+    func primaryHabit(systemTimeZone: TimeZone) throws -> HabitSnapshot {
         let slotKey = Habit.primarySlotKey
         var descriptor = FetchDescriptor<Habit>(
             predicate: #Predicate { habit in
@@ -34,7 +35,7 @@ final class SwiftDataCheckInRepository: CheckInRepositoryProtocol {
         descriptor.fetchLimit = 1
 
         if let existing = try context.fetch(descriptor).first {
-            return existing
+            return HabitSnapshot(model: existing)
         }
 
         let now = clock.now
@@ -57,36 +58,36 @@ final class SwiftDataCheckInRepository: CheckInRepositoryProtocol {
         )
         context.insert(habit)
         try saveOrRollback()
-        return habit
+        return HabitSnapshot(model: habit)
     }
 
-    func allRecords(habitID: UUID) throws -> [CheckInRecord] {
+    func allRecords(habitID: UUID) throws -> [CheckInRecordSnapshot] {
         let descriptor = FetchDescriptor<CheckInRecord>(
             predicate: #Predicate { record in
                 record.habitID == habitID
             },
             sortBy: [SortDescriptor(\CheckInRecord.checkedAt)]
         )
-        return try context.fetch(descriptor)
+        return try context.fetch(descriptor).map(CheckInRecordSnapshot.init(model:))
     }
 
-    func updateIdentity(habit: Habit, identity: HabitIdentity) throws -> Habit {
-        let persistedHabit = try requirePrimaryHabit(id: habit.id)
+    func updateIdentity(habitID: UUID, identity: HabitIdentity) throws -> HabitSnapshot {
+        let persistedHabit = try requirePrimaryHabit(id: habitID)
         guard persistedHabit.name != identity.name
                 || persistedHabit.purpose != identity.purpose
                 || !persistedHabit.isIdentityConfirmed else {
-            return persistedHabit
+            return HabitSnapshot(model: persistedHabit)
         }
 
         persistedHabit.name = identity.name
         persistedHabit.purpose = identity.purpose
         persistedHabit.isIdentityConfirmed = true
         try saveOrRollback()
-        return persistedHabit
+        return HabitSnapshot(model: persistedHabit)
     }
 
-    func checkIn(habit: Habit) throws -> CheckInCommitReceipt {
-        let persistedHabit = try requirePrimaryHabit(id: habit.id)
+    func checkIn(habitID: UUID) throws -> CheckInCommitReceipt {
+        let persistedHabit = try requirePrimaryHabit(id: habitID)
         let date = clock.now
         let day = try persistedHabit.logicalDay(at: date)
         guard let startLogicalDay = persistedHabit.startLogicalDay,
@@ -106,7 +107,39 @@ final class SwiftDataCheckInRepository: CheckInRepositoryProtocol {
             timeZoneIdentifier: persistedHabit.timeZoneIdentifier
         )
         context.insert(newRecord)
-        try saveOrRollback()
+        return try saveNewCheckInOrResolveConcurrentWriter(
+            newRecord,
+            habitID: persistedHabit.id,
+            day: day
+        )
+    }
+
+    private func saveNewCheckInOrResolveConcurrentWriter(
+        _ newRecord: CheckInRecord,
+        habitID: UUID,
+        day: LogicalDay
+    ) throws -> CheckInCommitReceipt {
+        do {
+            try context.save()
+        } catch {
+            let saveError = error
+            context.rollback()
+            context = Self.makeContext(container: container)
+
+            let concurrentRecord: CheckInRecord?
+            do {
+                concurrentRecord = try record(habitID: habitID, day: day)
+            } catch {
+                throw saveError
+            }
+            guard let concurrentRecord else {
+                throw saveError
+            }
+            return try commitReceipt(
+                for: concurrentRecord,
+                disposition: .alreadyPresent
+            )
+        }
         return try commitReceipt(for: newRecord, disposition: .created)
     }
 
@@ -126,7 +159,7 @@ final class SwiftDataCheckInRepository: CheckInRepositoryProtocol {
     }
 
     private func record(habitID: UUID, day: LogicalDay) throws -> CheckInRecord? {
-        let recordKey = CheckInRecord.makeRecordKey(habitID: habitID, logicalDay: day)
+        let recordKey = CheckInRecordKey.make(habitID: habitID, logicalDay: day)
         var descriptor = FetchDescriptor<CheckInRecord>(
             predicate: #Predicate { record in
                 record.recordKey == recordKey
@@ -149,12 +182,12 @@ final class SwiftDataCheckInRepository: CheckInRepositoryProtocol {
         try saveOrRollback()
     }
 
-    func updateTimeZone(habit: Habit, identifier: String) throws {
+    func updateTimeZone(habitID: UUID, identifier: String) throws {
         guard let timeZone = TimeZone(identifier: identifier) else {
             throw PulseError.invalidTimeZone(identifier)
         }
 
-        let persistedHabit = try requirePrimaryHabit(id: habit.id)
+        let persistedHabit = try requirePrimaryHabit(id: habitID)
         guard let startLogicalDay = persistedHabit.startLogicalDay else {
             throw PulseError.invalidRecordDate(persistedHabit.startLogicalDayValue)
         }
@@ -167,7 +200,7 @@ final class SwiftDataCheckInRepository: CheckInRepositoryProtocol {
         try saveOrRollback()
     }
 
-    func resetAll(systemTimeZone: TimeZone) throws -> Habit {
+    func resetAll(systemTimeZone: TimeZone) throws -> HabitSnapshot {
         let records = try context.fetch(FetchDescriptor<CheckInRecord>())
         let habits = try context.fetch(FetchDescriptor<Habit>())
         records.forEach(context.delete)
@@ -193,10 +226,10 @@ final class SwiftDataCheckInRepository: CheckInRepositoryProtocol {
         )
         context.insert(newHabit)
         try saveOrRollback()
-        return newHabit
+        return HabitSnapshot(model: newHabit)
     }
 
-    func replaceAll(with payload: PulseExportPayload) throws -> Habit {
+    func replaceAll(with payload: PulseExportPayload) throws -> HabitSnapshot {
         guard payload.schemaVersion == PulseDataContract.exportSchemaVersion else {
             throw PulseError.unsupportedImportVersion(payload.schemaVersion)
         }
@@ -234,7 +267,7 @@ final class SwiftDataCheckInRepository: CheckInRepositoryProtocol {
         }
 
         try saveOrRollback()
-        return importedHabit
+        return HabitSnapshot(model: importedHabit)
     }
 
     private func requirePrimaryHabit(id: UUID) throws -> Habit {
@@ -258,5 +291,11 @@ final class SwiftDataCheckInRepository: CheckInRepositoryProtocol {
             context.rollback()
             throw error
         }
+    }
+
+    private static func makeContext(container: ModelContainer) -> ModelContext {
+        let context = ModelContext(container)
+        context.autosaveEnabled = false
+        return context
     }
 }

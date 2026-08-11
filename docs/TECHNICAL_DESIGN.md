@@ -1,7 +1,7 @@
 # Pulse 技术设计
 
-文档版本：1.2<br>
-状态：Implemented
+文档版本：1.3<br>
+状态：Implemented Core；Widget Shared Store Capability-Gated
 
 ## 1. 工程基线
 
@@ -28,7 +28,7 @@ AppSettings ──→ ConfiguredRootView
 SwiftUI environment + PulseLocalization
 ```
 
-- Repository 是事实写入的唯一所有者，并持有与 AppModel 相同的 Clock。
+- Repository 是事实写入的唯一所有者，并持有与 AppModel 相同的 Clock；SwiftData managed object 不越过 Repository 边界，调用方只接收 `HabitSnapshot`、`CheckInRecordSnapshot` 和提交回执。
 - AppModel 是页面快照、操作互斥、导航复位和提醒意图顺序的唯一所有者。
 - AppSettings 是主题与应用内语言的唯一持久化所有者；根窗口直接观察它，不能依赖页面级副本。
 - View 只呈现状态与发起意图，不直接访问 SwiftData、UserDefaults 或通知中心。
@@ -39,6 +39,8 @@ SwiftUI environment + PulseLocalization
 `Habit`：`id`、唯一 `slotKey`、`name`、可选 `purpose`、`isIdentityConfirmed`、`createdAt`、稳定 `startLogicalDayValue`、创建时区、当前签到时区。
 
 `CheckInRecord`：唯一 `id`、唯一 `recordKey`、`habitID`、`logicalDayValue`、`checkedAt`、`createdAt`、记录时区。
+
+`HabitSnapshot` 与 `CheckInRecordSnapshot` 是不可变、`Sendable` 的 Repository 输出；它们复制事实值但不拥有写入能力，也不持久化为第二套模型。AppModel、Today、History 和未来 Widget 快照都不能持有 `PersistentModel` 实例。
 
 当前 SwiftData schema 为 V2。`PulseSchemaV1` 和 `PulseSchemaV2` 分别冻结各自的命名空间模型，运行时代码只通过 latest typealias 消费 V2；V1→V2 使用明确的 lightweight migration，新增字段的迁移值为 `purpose == nil`、`isIdentityConfirmed == false`。真实磁盘 fixture 必须证明项目和记录全部保留。
 
@@ -93,3 +95,11 @@ JSON 只导出 v2。导入先解码最小版本信封，再由精确的 v1/v2 �
 - `PrivacyInfo.xcprivacy` 声明不跟踪、不收集数据，并以 `CA92.1` 说明仅为 App 功能持久化设置而访问 UserDefaults。
 - 设置页直接提供公开隐私政策和产品支持入口；两者共享一份集中式 URL 定义。
 - CloudKit、分析 SDK 和远程账户不在 1.0，不保留隐藏入口或半成品实现。
+
+## 9. Widget 共享基础
+
+基础 Widget 必须建立在一个 App Group SwiftData store 和一个共享 `PulseCore` 编译目标上，不能复制 model、Repository 或签到状态。App 私有 store 到共享 store 的位置搬迁不属于 `PulseMigrationPlan` 的 schema 迁移，必须使用独立持久化 journal、值级复制、全量验证和旧源清理完成原子切换。
+
+Widget AppIntent 在独立扩展进程执行签到；进程内由各自 store actor 串行化，进程间由 SQLite 事务、`recordKey` 唯一约束和保存失败后的 rollback + 回读裁决。Timeline 只消费不可变快照，不能反向覆盖 store。
+
+账号审核完成、正式 App Group 注册、双 target entitlement 和 provisioning 证据齐备前，当前工程继续只使用 App 私有 store，不加入依赖 fallback 的 Widget target。详细身份、迁移状态机、模块边界和准入门禁以 [WIDGET_SHARED_STORE_CONTRACT.md](./WIDGET_SHARED_STORE_CONTRACT.md) 为准。

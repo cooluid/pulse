@@ -8,7 +8,7 @@ struct HistoryView: View {
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @Environment(\.locale) private var locale
-    @State private var selectedRecord: CheckInRecord?
+    @State private var selectedRecord: CheckInRecordSnapshot?
     @State private var monthTransitionDirection = -1
 
     private let columns = Array(
@@ -416,7 +416,7 @@ private struct CalendarDayCell: View {
 }
 
 private struct RecordDetailView: View {
-    let record: CheckInRecord
+    let record: CheckInRecordSnapshot
     @Bindable var model: PulseAppModel
     @Environment(\.dismiss) private var dismiss
     @Environment(\.locale) private var locale

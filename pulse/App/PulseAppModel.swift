@@ -36,13 +36,13 @@ final class PulseAppModel {
     private var reminderIntentRevision = 0
     private var reminderEnabledIntent: Bool?
     private var hasAppliedUITestReset = false
-    private var recordsByDay: [LogicalDay: CheckInRecord] = [:]
+    private var recordsByDay: [LogicalDay: CheckInRecordSnapshot] = [:]
 
     let settings: AppSettings
 
     private(set) var loadState: AppLoadState = .loading
-    private(set) var habit: Habit?
-    private(set) var records: [CheckInRecord] = []
+    private(set) var habit: HabitSnapshot?
+    private(set) var records: [CheckInRecordSnapshot] = []
     private(set) var timeZone: TimeZone?
     private(set) var today: LogicalDay?
     private(set) var habitStartDay: LogicalDay?
@@ -82,7 +82,7 @@ final class PulseAppModel {
         return today >= habitStartDay && todayRecord == nil
     }
 
-    var todayRecord: CheckInRecord? {
+    var todayRecord: CheckInRecordSnapshot? {
         guard let today else { return nil }
         return recordsByDay[today]
     }
@@ -141,7 +141,7 @@ final class PulseAppModel {
 
         await Task.yield()
         do {
-            let receipt = try repository.checkIn(habit: habit)
+            let receipt = try repository.checkIn(habitID: habit.id)
             try loadSnapshot()
             if settings.hapticsEnabled, receipt.disposition == .created {
                 hapticFeedback.notifySuccess()
@@ -161,7 +161,10 @@ final class PulseAppModel {
         defer { operation = nil }
         do {
             let identity = try HabitIdentity(userName: name, userPurpose: purpose)
-            self.habit = try repository.updateIdentity(habit: habit, identity: identity)
+            self.habit = try repository.updateIdentity(
+                habitID: habit.id,
+                identity: identity
+            )
             try loadSnapshot()
             return true
         } catch {
@@ -279,7 +282,7 @@ final class PulseAppModel {
         operation = .updateTimeZone
         defer { operation = nil }
         do {
-            try repository.updateTimeZone(habit: habit, identifier: identifier)
+            try repository.updateTimeZone(habitID: habit.id, identifier: identifier)
             try loadSnapshot()
             await enqueueReminderReconciliation().value
             scheduleDateBoundaryRefresh()
@@ -392,7 +395,7 @@ final class PulseAppModel {
         }
     }
 
-    func record(for day: LogicalDay) -> CheckInRecord? {
+    func record(for day: LogicalDay) -> CheckInRecordSnapshot? {
         recordsByDay[day]
     }
 
@@ -440,7 +443,7 @@ final class PulseAppModel {
         let fetchedRecords = try repository.allRecords(habitID: currentHabit.id)
 
         var resolvedCheckedDays = Set<LogicalDay>()
-        var resolvedRecordsByDay: [LogicalDay: CheckInRecord] = [:]
+        var resolvedRecordsByDay: [LogicalDay: CheckInRecordSnapshot] = [:]
         for record in fetchedRecords {
             guard let day = record.logicalDay,
                   let recordTimeZone = record.timeZone,
@@ -451,7 +454,7 @@ final class PulseAppModel {
                   day >= resolvedStartDay,
                   record.checkedAt >= currentHabit.createdAt,
                   record.createdAt >= record.checkedAt,
-                  record.recordKey == CheckInRecord.makeRecordKey(
+                  record.recordKey == CheckInRecordKey.make(
                     habitID: currentHabit.id,
                     logicalDay: day
                   ),
