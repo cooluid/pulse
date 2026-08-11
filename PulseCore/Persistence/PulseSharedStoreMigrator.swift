@@ -9,6 +9,11 @@ public enum PulseSharedStoreMigrationPhase: String, Codable, Equatable, Sendable
     case ready
 }
 
+public enum PulseSharedStoreMigrationMode: String, Codable, Equatable, Sendable {
+    case existingStore
+    case newInstallation
+}
+
 public enum PulseSharedStoreMigrationError: Error, Equatable, Sendable {
     case locationsMustDiffer
     case sourceStoreMissing
@@ -23,6 +28,8 @@ public enum PulseSharedStoreMigrationError: Error, Equatable, Sendable {
     case unsupportedJournalVersion(Int)
     case invalidDigest
     case persistedNotStartedPhase
+    case journalModeMismatch
+    case invalidNewInstallationSource
 }
 
 struct PulseStoreDigest: Codable, Equatable, Sendable {
@@ -49,13 +56,15 @@ struct PulseStoreDigest: Codable, Equatable, Sendable {
 }
 
 struct PulseSharedStoreMigrationJournal: Codable, Equatable, Sendable {
-    static let formatVersion = 1
+    static let formatVersion = 2
 
     let version: Int
+    let mode: PulseSharedStoreMigrationMode
     let phase: PulseSharedStoreMigrationPhase
     let factDigest: PulseStoreDigest
 
     init(
+        mode: PulseSharedStoreMigrationMode,
         phase: PulseSharedStoreMigrationPhase,
         factDigest: PulseStoreDigest
     ) throws {
@@ -63,12 +72,14 @@ struct PulseSharedStoreMigrationJournal: Codable, Equatable, Sendable {
             throw PulseSharedStoreMigrationError.persistedNotStartedPhase
         }
         version = Self.formatVersion
+        self.mode = mode
         self.phase = phase
         self.factDigest = factDigest
     }
 
     private enum CodingKeys: String, CodingKey {
         case version
+        case mode
         case phase
         case factDigest
     }
@@ -79,6 +90,7 @@ struct PulseSharedStoreMigrationJournal: Codable, Equatable, Sendable {
         guard version == Self.formatVersion else {
             throw PulseSharedStoreMigrationError.unsupportedJournalVersion(version)
         }
+        mode = try container.decode(PulseSharedStoreMigrationMode.self, forKey: .mode)
         let phase = try container.decode(
             PulseSharedStoreMigrationPhase.self,
             forKey: .phase
@@ -165,7 +177,61 @@ public final class PulseSharedStoreMigrator {
         try readJournal(at: target.migrationJournalURL)?.phase ?? .notStarted
     }
 
+    public func currentMode(
+        target: PulseStoreLocation
+    ) throws -> PulseSharedStoreMigrationMode? {
+        try readJournal(at: target.migrationJournalURL)?.mode
+    }
+
     public func migrateExistingStore(
+        source: PulseStoreLocation,
+        target: PulseStoreLocation,
+        clock: any PulseClock,
+        initialIdentity: HabitIdentity
+    ) throws {
+        try migrateStore(
+            mode: .existingStore,
+            source: source,
+            target: target,
+            clock: clock,
+            initialIdentity: initialIdentity
+        )
+    }
+
+    public func admitNewInstallation(
+        stagingSource: PulseStoreLocation,
+        target: PulseStoreLocation,
+        systemTimeZone: TimeZone,
+        clock: any PulseClock,
+        initialIdentity: HabitIdentity
+    ) throws {
+        let journal = try readJournal(at: target.migrationJournalURL)
+        if journal == nil {
+            if anyStoreArtifactExists(stagingSource) {
+                guard mainStoreExists(stagingSource) else {
+                    throw PulseSharedStoreMigrationError.invalidNewInstallationSource
+                }
+            } else {
+                try createNewInstallationSource(
+                    at: stagingSource,
+                    systemTimeZone: systemTimeZone,
+                    clock: clock,
+                    initialIdentity: initialIdentity
+                )
+            }
+        }
+
+        try migrateStore(
+            mode: .newInstallation,
+            source: stagingSource,
+            target: target,
+            clock: clock,
+            initialIdentity: initialIdentity
+        )
+    }
+
+    private func migrateStore(
+        mode: PulseSharedStoreMigrationMode,
         source: PulseStoreLocation,
         target: PulseStoreLocation,
         clock: any PulseClock,
@@ -181,7 +247,9 @@ public final class PulseSharedStoreMigrator {
 
         guard let journal else {
             guard mainStoreExists(source) else {
-                throw PulseSharedStoreMigrationError.sourceStoreMissing
+                throw mode == .existingStore
+                    ? PulseSharedStoreMigrationError.sourceStoreMissing
+                    : PulseSharedStoreMigrationError.invalidNewInstallationSource
             }
             guard !anyStoreArtifactExists(target) else {
                 throw PulseSharedStoreMigrationError.targetStoreExistsWithoutJournal
@@ -191,9 +259,12 @@ public final class PulseSharedStoreMigrator {
                 at: source,
                 clock: clock,
                 initialIdentity: initialIdentity,
-                missingHabitError: .sourceStoreHasNoPrimaryHabit
+                missingHabitError: mode == .existingStore
+                    ? .sourceStoreHasNoPrimaryHabit
+                    : .invalidNewInstallationSource
             )
             let copyingJournal = try PulseSharedStoreMigrationJournal(
+                mode: mode,
                 phase: .copying,
                 factDigest: sourceFacts.digest
             )
@@ -207,6 +278,10 @@ public final class PulseSharedStoreMigrator {
                 initialIdentity: initialIdentity
             )
             return
+        }
+
+        guard journal.mode == mode else {
+            throw PulseSharedStoreMigrationError.journalModeMismatch
         }
 
         switch journal.phase {
@@ -247,6 +322,27 @@ public final class PulseSharedStoreMigrator {
         }
     }
 
+    private func createNewInstallationSource(
+        at location: PulseStoreLocation,
+        systemTimeZone: TimeZone,
+        clock: any PulseClock,
+        initialIdentity: HabitIdentity
+    ) throws {
+        try fileOperator.createDirectory(at: location.directoryURL)
+        try autoreleasepool {
+            let container = try PersistenceController.makeContainer(
+                storeName: PulseStoreContract.storeName,
+                storeURL: location.storeURL
+            )
+            let repository = SwiftDataCheckInRepository(
+                container: container,
+                clock: clock,
+                initialIdentity: initialIdentity
+            )
+            _ = try repository.primaryHabit(systemTimeZone: systemTimeZone)
+        }
+    }
+
     private func resumeCopying(
         journal: PulseSharedStoreMigrationJournal,
         source: PulseStoreLocation,
@@ -255,13 +351,17 @@ public final class PulseSharedStoreMigrator {
         initialIdentity: HabitIdentity
     ) throws {
         guard mainStoreExists(source) else {
-            throw PulseSharedStoreMigrationError.sourceStoreMissing
+            throw journal.mode == .existingStore
+                ? PulseSharedStoreMigrationError.sourceStoreMissing
+                : PulseSharedStoreMigrationError.invalidNewInstallationSource
         }
         let sourceFacts = try readFacts(
             at: source,
             clock: clock,
             initialIdentity: initialIdentity,
-            missingHabitError: .sourceStoreHasNoPrimaryHabit
+            missingHabitError: journal.mode == .existingStore
+                ? .sourceStoreHasNoPrimaryHabit
+                : .invalidNewInstallationSource
         )
         guard sourceFacts.digest == journal.factDigest else {
             throw PulseSharedStoreMigrationError.sourceStoreChanged
@@ -282,6 +382,7 @@ public final class PulseSharedStoreMigrator {
         )
 
         let verifiedJournal = try PulseSharedStoreMigrationJournal(
+            mode: journal.mode,
             phase: .verified,
             factDigest: journal.factDigest
         )
@@ -315,6 +416,7 @@ public final class PulseSharedStoreMigrator {
         }
 
         let sourceRemovedJournal = try PulseSharedStoreMigrationJournal(
+            mode: journal.mode,
             phase: .sourceRemoved,
             factDigest: journal.factDigest
         )
@@ -347,6 +449,7 @@ public final class PulseSharedStoreMigrator {
         )
 
         let readyJournal = try PulseSharedStoreMigrationJournal(
+            mode: journal.mode,
             phase: .ready,
             factDigest: journal.factDigest
         )
@@ -364,12 +467,38 @@ public final class PulseSharedStoreMigrator {
         guard !anyStoreArtifactExists(source) else {
             throw PulseSharedStoreMigrationError.unexpectedSourceStore
         }
-        try verifyTarget(
+        try verifyReadyTarget(
             target,
-            expectedDigest: journal.factDigest,
             clock: clock,
             initialIdentity: initialIdentity
         )
+    }
+
+    /// Once ownership has switched, the target is the mutable source of truth.
+    /// The journal digest proves the migration transaction only; comparing it
+    /// after `ready` would reject every legitimate check-in or identity edit.
+    private func verifyReadyTarget(
+        _ target: PulseStoreLocation,
+        clock: any PulseClock,
+        initialIdentity: HabitIdentity
+    ) throws {
+        guard mainStoreExists(target) else {
+            throw PulseSharedStoreMigrationError.targetStoreMissing
+        }
+        try autoreleasepool {
+            let container = try PersistenceController.makeContainer(
+                storeName: PulseStoreContract.storeName,
+                storeURL: target.storeURL
+            )
+            let repository = SwiftDataCheckInRepository(
+                container: container,
+                clock: clock,
+                initialIdentity: initialIdentity
+            )
+            guard try repository.existingPrimaryHabit() != nil else {
+                throw PulseSharedStoreMigrationError.targetStoreHasNoPrimaryHabit
+            }
+        }
     }
 
     private func verifyTarget(
@@ -458,7 +587,7 @@ public final class PulseSharedStoreMigrator {
         do {
             let data = try fileOperator.readData(at: url)
             guard let object = try JSONSerialization.jsonObject(with: data) as? [String: Any],
-                  Set(object.keys) == ["version", "phase", "factDigest"] else {
+                  Set(object.keys) == ["version", "mode", "phase", "factDigest"] else {
                 throw PulseSharedStoreMigrationError.invalidJournal
             }
             return try JSONDecoder().decode(

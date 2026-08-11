@@ -1,5 +1,6 @@
 import Foundation
 import Observation
+import PulseCore
 
 enum WeekStart: Int, CaseIterable, Identifiable, Sendable {
     case sunday = 1
@@ -73,9 +74,11 @@ final class AppSettings {
         static let theme = "settings.theme"
         static let language = "settings.language"
         static let resetPending = "maintenance.resetPending"
+        static let widgetShowsHabitName = PulseWidgetContract.showsHabitNamePreferenceKey
     }
 
     @ObservationIgnored private let defaults: UserDefaults
+    @ObservationIgnored private let widgetDefaults: UserDefaults
     @ObservationIgnored private var isLoading = true
 
     var hapticsEnabled: Bool {
@@ -102,10 +105,21 @@ final class AppSettings {
         didSet { persist(StorageKey.language, value: language.rawValue) }
     }
 
+    var widgetShowsHabitName: Bool {
+        didSet {
+            guard !isLoading else { return }
+            widgetDefaults.set(widgetShowsHabitName, forKey: StorageKey.widgetShowsHabitName)
+        }
+    }
+
     var locale: Locale { language.locale }
 
-    init(defaults: UserDefaults = .standard) throws {
+    init(
+        defaults: UserDefaults = .standard,
+        widgetDefaults: UserDefaults? = nil
+    ) throws {
         self.defaults = defaults
+        self.widgetDefaults = widgetDefaults ?? defaults
         defaults.register(defaults: [
             StorageKey.hapticsEnabled: true,
             StorageKey.reminderEnabled: false,
@@ -113,6 +127,9 @@ final class AppSettings {
             StorageKey.weekStart: WeekStart.monday.rawValue,
             StorageKey.theme: AppTheme.system.rawValue,
             StorageKey.language: AppLanguage.system.rawValue
+        ])
+        self.widgetDefaults.register(defaults: [
+            StorageKey.widgetShowsHabitName: false
         ])
 
         guard let loadedReminderTime = ReminderTime(
@@ -129,6 +146,9 @@ final class AppSettings {
         weekStart = loadedWeekStart
         theme = loadedTheme
         language = loadedLanguage
+        widgetShowsHabitName = self.widgetDefaults.bool(
+            forKey: StorageKey.widgetShowsHabitName
+        )
         isLoading = false
     }
 
@@ -146,6 +166,8 @@ final class AppSettings {
         weekStart = .monday
         theme = .system
         language = .system
+        widgetShowsHabitName = false
+        widgetDefaults.removeObject(forKey: StorageKey.widgetShowsHabitName)
         isLoading = false
     }
 

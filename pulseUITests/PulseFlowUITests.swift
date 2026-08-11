@@ -148,6 +148,9 @@ final class PulseFlowUITests: XCTestCase {
         settingsButton.tap()
 
         let resetButton = app.buttons["settings.reset.button"]
+        for _ in 0..<6 where !resetButton.exists {
+            app.swipeUp()
+        }
         XCTAssertTrue(resetButton.waitForExistence(timeout: 3))
         XCTAssertTrue(app.descendants(matching: .any)["settings.data.note"].exists)
         resetButton.tap()

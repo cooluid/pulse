@@ -16,6 +16,7 @@ struct SettingsView: View {
         Form {
             commitmentSection
             reminderSection
+            widgetSection
             personalizationSection
             experienceSection
             dataSection
@@ -128,6 +129,28 @@ struct SettingsView: View {
             }
         } header: {
             Text("settings.reminder.section")
+        }
+    }
+
+    private var widgetSection: some View {
+        Section {
+            Toggle(
+                isOn: Binding(
+                    get: { model.settings.widgetShowsHabitName },
+                    set: { model.requestWidgetHabitNameVisibility($0) }
+                )
+            ) {
+                VStack(alignment: .leading, spacing: PulseDesign.spacing4) {
+                    Text("settings.widget.show_commitment")
+                    Text("settings.widget.show_commitment.footer")
+                        .font(.footnote)
+                        .foregroundStyle(PulseDesign.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+            .accessibilityIdentifier("settings.widget.show_commitment.toggle")
+        } header: {
+            Text("settings.widget.section")
         }
     }
 

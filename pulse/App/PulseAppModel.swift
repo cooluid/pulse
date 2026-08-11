@@ -31,6 +31,7 @@ final class PulseAppModel {
     private let reminderScheduler: any ReminderScheduling
     private let clock: any PulseClock
     private let hapticFeedback: any HapticFeedbackProviding
+    private let widgetTimelineReloader: any WidgetTimelineReloading
     private var dateBoundaryTask: Task<Void, Never>?
     private var reminderReconcileTask: Task<Void, Never>?
     private var reminderReconcileRevision = 0
@@ -61,13 +62,15 @@ final class PulseAppModel {
         settings: AppSettings,
         reminderScheduler: any ReminderScheduling,
         clock: any PulseClock,
-        hapticFeedback: any HapticFeedbackProviding
+        hapticFeedback: any HapticFeedbackProviding,
+        widgetTimelineReloader: any WidgetTimelineReloading = WidgetTimelineReloader()
     ) {
         self.repository = repository
         self.settings = settings
         self.reminderScheduler = reminderScheduler
         self.clock = clock
         self.hapticFeedback = hapticFeedback
+        self.widgetTimelineReloader = widgetTimelineReloader
     }
 
     var isSaving: Bool {
@@ -147,6 +150,7 @@ final class PulseAppModel {
             if settings.hapticsEnabled, receipt.disposition == .created {
                 hapticFeedback.notifySuccess()
             }
+            widgetTimelineReloader.reloadDailyImprint()
             enqueueReminderReconciliation()
             scheduleDateBoundaryRefresh()
             return receipt
@@ -167,6 +171,7 @@ final class PulseAppModel {
                 identity: identity
             )
             try loadSnapshot()
+            widgetTimelineReloader.reloadDailyImprint()
             return true
         } catch {
             present(error)
@@ -181,6 +186,7 @@ final class PulseAppModel {
         do {
             try repository.delete(recordID: recordID)
             try loadSnapshot()
+            widgetTimelineReloader.reloadDailyImprint()
             await enqueueReminderReconciliation().value
             return true
         } catch {
@@ -209,6 +215,7 @@ final class PulseAppModel {
             loadState = .ready
             navigationResetToken = UUID()
             scheduleDateBoundaryRefresh()
+            widgetTimelineReloader.reloadDailyImprint()
             return true
         } catch {
             present(error)
@@ -278,6 +285,12 @@ final class PulseAppModel {
         _ = enqueueReminderReconciliation()
     }
 
+    func requestWidgetHabitNameVisibility(_ isVisible: Bool) {
+        guard settings.widgetShowsHabitName != isVisible else { return }
+        settings.widgetShowsHabitName = isVisible
+        widgetTimelineReloader.reloadDailyImprint()
+    }
+
     func updateTimeZone(identifier: String) async -> Bool {
         guard operation == nil, let habit else { return false }
         operation = .updateTimeZone
@@ -287,6 +300,7 @@ final class PulseAppModel {
             try loadSnapshot()
             await enqueueReminderReconciliation().value
             scheduleDateBoundaryRefresh()
+            widgetTimelineReloader.reloadDailyImprint()
             return true
         } catch {
             present(error)
@@ -360,6 +374,7 @@ final class PulseAppModel {
             await enqueueReminderReconciliation().value
             navigationResetToken = UUID()
             scheduleDateBoundaryRefresh()
+            widgetTimelineReloader.reloadDailyImprint()
             return true
         } catch {
             present(error)

@@ -5,6 +5,7 @@ public enum PulseStoreContract {
     public static let storeFilename = "Pulse.store"
     public static let productDirectoryName = "Pulse"
     public static let migrationJournalFilename = "SharedStoreMigration.json"
+    public static let newInstallationStagingDirectoryName = "NewInstallationBootstrap"
 }
 
 public enum PulseStoreLocationError: Error, Equatable, Sendable {
@@ -43,6 +44,17 @@ public struct PulseStoreLocation: Equatable, Sendable {
             URL(fileURLWithPath: storeURL.path + "-wal"),
             URL(fileURLWithPath: storeURL.path + "-shm")
         ]
+    }
+
+    public var newInstallationStagingLocation: PulseStoreLocation {
+        get throws {
+            try PulseStoreLocation(
+                directoryURL: directoryURL.appendingPathComponent(
+                    PulseStoreContract.newInstallationStagingDirectoryName,
+                    isDirectory: true
+                )
+            )
+        }
     }
 }
 

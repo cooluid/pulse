@@ -1,7 +1,7 @@
 # Pulse 实现与验收状态
 
 更新时间：2026-08-11  
-当前结论：核心签到、主承诺身份与 App 内基础日印仪式的自动化工程门禁 GO；唯一静态 `PulseCore` target 已落地并由 App 正式消费，纯值边界、持久化语义校验、写入竞争回读、正式路径合同与旧私有库搬迁器基础 GO。基础 Widget / App Group 的产品与跨进程合同已完成设计评审；App Group entitlement、生产共享 store 切换、全新安装 admission、Widget extension 与真实跨进程交互仍保持 NO-GO。公开隐私/支持入口与既有开发签名 Archive 仍只作为历史工程证据。真机动态手感、iOS 17.x、完整可访问性、最终视觉、连续使用与 App Store 分发身份仍为独立 NO-GO，当前不能宣称可上线。
+当前结论：核心签到、主承诺身份、App 内基础日印与基础 Widget 的自动化工程门禁 GO。App 与 Widget 共用唯一 extension-safe `PulseCore` 和 App Group SwiftData store；journal v2 旧库迁移/新安装、纯值投影、开发签名 entitlement、系统画廊、小号/中号主屏归档与独立扩展 AppIntent 已通过。真实 iPhone/iPad、锁屏/Always-On、设备锁定、跨午夜、真实并发、iOS 17.x、完整可访问性、最终视觉、连续使用、Apple Distribution、Archive/TestFlight 与 App Store 仍是独立 NO-GO，当前不能宣称可上线。
 
 ## 当前生产实现
 
@@ -20,8 +20,11 @@
 - 领域、schema/migration、Repository、验证和导入导出合同只由 extension-safe 静态 `PulseCore` 编译；App 通过模块依赖消费，不再把同一源码编进宿主 target。Core 不依赖页面、通知、UserDefaults、触觉或宿主本地化资源。
 - Repository 在快照越过模块边界前统一验证身份规范、起始日来源、当前/创建/记录时区、recordKey、时间顺序和逻辑日唯一性；对外快照的逻辑日与时区是已验证的非可空值，损坏事实诚实失败。
 - Repository 新建签到保存失败后会 rollback、丢弃原 ModelContext 并按同一 `recordKey` 从正式 store 回读；只有查到另一写入者已经提交的记录才返回 `alreadyPresent`，其他持久化错误继续诚实失败。
-- App 私有 store 由 `PulseStoreLocator` 显式解析到与既有 SwiftData 默认位置相同的 `Application Support/Pulse.store`；文件名、产品目录名和 journal 名集中在一个合同中。共享 locator 只消费系统 App Group container，不拼沙盒根路径。
-- `PulseSharedStoreMigrator` 已实现旧私有 V1/V2 store 的值级搬迁：严格原子 journal、版本化确定性 SHA-256 事实摘要、Repository 写入、目标两次复核和源主文件/WAL/SHM 精确清理。所有中断状态可恢复；缺源、空源、源/目标漂移、删除失败、损坏 journal、符号链接同路径和 `ready` 后旧源复现均失败关闭，不创建空库、不合并、不 fallback。
+- App 与 Widget 的正式 store 只位于系统返回的 `group.co.fanr.pulse` 容器下 `Library/Application Support/Pulse/Pulse.store`。App 私有路径只作为旧版本迁移源；完成后主文件、WAL/SHM 被精确清理，不保留私有读取 fallback、双写或事实副本。
+- `PulseSharedStoreBootstrapper` 与 `PulseSharedStoreMigrator` 以 journal v2 统一旧私有 V1/V2 store 搬迁和全新安装 staging admission：模式、阶段、确定性 SHA-256 迁移摘要、Repository 值写入和精确清理都可中断恢复。迁移摘要只验证切换事务；`ready` 后共享目标是可变真源，正常签到或身份编辑不会在下次启动被旧摘要拒绝。冲突源、空源、漂移、删除失败、损坏 journal、符号链接同路径和旧源复现均失败关闭。
+- `PulseWidgetSnapshot` 只读投影今日、实际签到时间、最近七日、可选主承诺名称和项目时区下一个零点；未确认身份不产生可签到快照，读取不会创建项目。
+- `PulseWidgetsExtension` 支持 Home Screen 小号/中号和 Accessory Circular/Rectangular。未签到只提供单向 `PulseCheckInIntent`，已签到无撤销入口；迁移未完成或身份未确认显示明确“打开 App 完成设置”，读取失败不伪装为待签到。
+- Widget 名称默认隐藏，只允许 App Group UserDefaults 保存 `widget.showsHabitName` 展示偏好；Lock Screen 始终隐藏名称，“为什么重要”从不进入 Widget。App 成功签到、删除、清除、导入、时区/身份/偏好变化与 AppIntent 写入成功后请求 timeline reload。
 - 完整清除使用持久化操作日志；跨 SwiftData、UserDefaults 和通知中心中断后，下次启动幂等续做。
 - 提醒调度只消费不可变值快照；单调 revision 防止旧权限或旧任务覆盖最新用户意图，权限外撤或部分调度失败会关闭虚假启用状态并清理已提交请求。
 - 提醒计划由纯值计划器生成，从今天起滚动覆盖 60 个日历日并预留 4 个系统待处理名额；已过时刻、已签到日与 DST 不存在时间均有显式测试，超过窗口且 App 未再次打开时不承诺继续送达。
@@ -50,7 +53,9 @@
 - 删除旧整控件弹跳、持续背景场呼吸和 `repeatForever` 待签到光环；动效参数集中到一个设计合同并受两秒上限测试约束。
 - 删除编辑表单依赖点击坐标切换字段的隐式行为；键盘“下一项/完成”现在驱动明确焦点状态，避免表单重排时误触保存。
 - 删除提醒并发中的陈旧结果覆盖、跨异步边界持有可变模型和调度失败残留。
-- 删除启动代码依赖 SwiftData 隐式默认路径的假设；生产私有 store 现在走唯一 locator，但实际位置保持不变。
+- 删除启动代码依赖 SwiftData 隐式默认路径的假设；生产只走系统 App Group locator，私有路径仅作为一次性显式迁移源。
+- 删除把迁移摘要当作共享 store 永久内容校验的错误语义；摘要在所有权切换完成后不再追赶可变业务事实。
+- 删除 WidgetKit 直接归档 1024 × 1024 品牌图的路径；`PulseWidgetMark` 由同一正式蒙版自动派生为 256 × 256 并纳入生成器漂移检查。
 - 删除迁移读取借用“读取时自动创建主项目”的可能性；`existingPrimaryHabit()` 是严格只读入口，缺失事实不会被默认项目掩盖。
 - 删除重复统计扫描、历史时间使用当前时区重解释、清除过程无恢复日志等隐性一致性债务。
 - 删除固定大字号下会裁切的主操作形态、纯颜色完成状态、无条件动画和散落视觉常量。
@@ -63,18 +68,20 @@
 
 验证环境：Xcode 26.4（17E192），iOS 18.6 iPhone 16 Pro 与 iPad Pro 11-inch（M4）模拟器。部署目标仍为 iOS / iPadOS 17.0；按用户本次指示未继续下载 iOS 17.5 运行时，因此这里不把 17.x 行为标记为已验证。
 
-- 全量测试：103 / 103 通过，其中单元与集成 91，UI 12。
+- 全量测试：116 / 116 通过，其中单元与集成 104，UI 12。
 - Release iOS Simulator 构建：通过。
-- Release `iphoneos` 通用真机架构构建（关闭签名）：通过。
-- Release Xcode 静态分析：通过，无 Swift 编译器或静态分析告警。
-- 品牌资产生成器：18 项生成结果与仓库一致。
+- Release `iphoneos` 通用设备构建：App 与 Widget 在自动开发签名下通过，嵌入扩展校验通过。
+- Release `iphoneos` Xcode 静态分析：通过，无 Swift 编译器或静态分析告警。
+- 品牌资产生成器：20 项生成结果与仓库一致，其中 Widget 标记是同一开放日环蒙版的 256 × 256 派生产物。
 - String Catalog、品牌令牌 JSON 与 Asset Catalog：解析/编译通过。
 - 隐私清单 plist 校验通过并由 Xcode 复制进 App 包；生产站三条路由和分享图均返回 HTTPS 200，线上文件与本地静态构建 SHA-256 一致。
 - 十年逐日记录统计保持单一连续段；导入的跨时区起始日倒退、记录日映射错误和重复事实均失败关闭；通知权限被系统外撤后不保留虚假启用状态。
-- 单元与集成自动化覆盖主承诺规范化、Emoji/不可见控制字符、幂等编辑、事实不变、JSON v1→v2 和真实 SQLite SwiftData v1→v2 迁移；本轮新增正式私有/共享路径合同、只读主项目查找、真实 V1/V2 私有库值级搬迁、三个持久化中断点恢复、确定性摘要、精确旧源清理，以及源/目标篡改、删除失败、损坏或未知 journal、缺源/空源、符号链接同路径和 `ready` 后源复现等失败关闭门禁。UI 自动化继续覆盖首次确认、重启保持、设置编辑、清除后重入确认和无效边界；本轮以“每日签到，严于律己，坚持，改变，蜕变，积极，心态”验证长承诺从同一 `Habit` 真源投影到今日页、可选说明继续缺席、签到辅助功能状态包含承诺对象，并在编辑和重启后同步。
+- 单元与集成自动化覆盖主承诺规范化、Emoji/不可见控制字符、幂等编辑、事实不变、JSON v1→v2 和真实 SQLite SwiftData v1→v2 迁移；本轮将共享位置 journal 升为 v2，覆盖旧库/新安装两种模式、三个持久化中断点恢复、确定性迁移摘要、精确旧源/staging 清理、`ready` 后业务事实正常演进，以及源/目标篡改、删除失败、损坏或未知 journal、缺源/空源、模式冲突、符号链接同路径和旧源复现等失败关闭门禁。UI 自动化继续覆盖首次确认、重启保持、设置编辑、清除后重入确认和无效边界；新增 Widget 分组后，清除测试显式滚动到真实触发行，不依赖旧页面长度。
+- Widget 自动化覆盖七日状态、身份确认门、名称隐私、实际提交回执、DST/项目时区零点和空 store 只读；AppModel spy 证明只有成功事实/设置变化触发 timeline reload，App Group UserDefaults 测试证明 Widget 偏好不落入 App 标准设置域。
 - 本轮新增两个独立 `ModelContainer` 访问同一磁盘 store 的集成测试：两端读取同一主项目，同日调用最终只有一个 `recordKey`，后调用返回同一记录 ID 的 `alreadyPresent`。该测试证明磁盘共享与回读基础，不替代 Widget/App 两个真实进程同时抢写的真机证据。
 - `PulseCore` 独立 Debug/Release 编译、App 静态链接和 extension-safe API 检查通过；另有两个损坏持久化事实测试证明非法主承诺与错误 recordKey 不能逃出 Repository 成为部分有效快照。
-- UI 自动化同时覆盖首次签到、重启后静态实心态、历史同步、显式双向翻月、漏签非颜色语义、设置辅助功能隔离、主题与语言即时切换/跨重启保持，以及 Accessibility XXXL 主操作、连续状态与等宽底栏几何。本轮全量 103 项在 iPhone 16 Pro 通过，并在 iPad Pro 11-inch（M4）针对性复核签到与长承诺两个核心用例；几何断言证明日号、承诺提示和签到控件顺序排列且无重叠，周轨迹继续与签到控件纵向后置或水平分离。测试附件覆盖签到前、持久化后与长承诺状态。静态截图不能证明 0.62 秒时序的动态手感，该工程检查不替代真机逐帧、人工 VoiceOver、Reduce Motion 与最终视觉验收。
+- UI 自动化同时覆盖首次签到、重启后静态实心态、历史同步、显式双向翻月、漏签非颜色语义、设置辅助功能隔离、主题与语言即时切换/跨重启保持，以及 Accessibility XXXL 主操作、连续状态与等宽底栏几何。本轮全量 116 项在 iPhone 16 Pro 通过，并在 iPad Pro 11-inch（M4）实际启动 App、打开系统 Widget Gallery、添加中号 Widget 并触发独立扩展签到；小/中号随同一事实刷新为完成态。静态与模拟器证据不替代真机逐帧、人工 VoiceOver、Lock Screen/Always-On、Reduce Motion 与最终视觉验收。
+- Debug `iphoneos` 通用设备构建在自动 provisioning 下通过：App 与 Widget 分别使用正式开发 profile，实际签名 entitlement 的 application identifier 为 `6N3D8YA2FY.co.fanr.pulse` / `6N3D8YA2FY.co.fanr.pulse.widgets`，两者都包含 `group.co.fanr.pulse`。本机只有 Apple Development identity；Apple Distribution 仍未建立。
 - 用户已在当前运行界面确认本轮承诺提示与签到球间距可接受；该 `HUMAN` 证据只验收本次布局方向，不等同于完整设备矩阵、长期抗淡忘效果或发布视觉 GO。
 
 Xcode 26.4 的 `appintentsmetadataprocessor` 在未使用 AppIntents 的 target 上仍可能输出“未发现 AppIntents.framework，跳过提取”的工具告警。它不是源码或分析告警；项目没有通过全局过滤隐藏该输出，以免同时遮蔽未来真实工具告警。
@@ -97,21 +104,20 @@ Xcode 26.4 的 `appintentsmetadataprocessor` 在未使用 AppIntents 的 target 
 - 人工完成 VoiceOver、最大字号、三种主题与两种语言组合、高对比度、降低透明度、Reduce Motion、旋转和 iPad 分屏验收。
 - 在 1× 真机上逐帧检查基础日印的空心收缩、成印、回弹、周轨迹与连续数字时序；确认 0.62 秒参数没有闪烁、跳变或过度强调，并单独验证 Reduce Motion 静态等价表达。
 - 对当前生产源码重新完成最终视觉与 AppIcon Default / Dark / Tinted 验收；历史截图不能代替当前版本证据。
-- 隐私与支持页面已经公开；个人开发账号仍在审核，商店文案/截图、App Store Connect provider、分发证书/描述文件、TestFlight 与 App Store 校验按产品决策后置。当前成功的 Archive 使用开发描述文件，不是分发就绪证据。
+- 隐私与支持页面已经公开；开发者账号审核已完成，App/Widget 开发签名与 App Group 已验证。商店文案/截图、App Store Connect provider、Apple Distribution、分发描述文件、Archive、TestFlight 与 App Store 校验仍按产品决策后置；开发设备构建不是分发就绪证据。
 - 完成跨多个自然日的连续使用，确认时区变更、跨日提醒和连续统计在真实生命周期中一致。
 
 ## Widget / App Group 状态
 
-- 设计 GO：正式身份、唯一 group store、`notStarted → copying → verified → sourceRemoved → ready` 搬迁 journal、崩溃恢复、默认隐私和单向签到边界已冻结在 [Widget 共享 Store 合同](./WIDGET_SHARED_STORE_CONTRACT.md)。
-- 基础工程 GO：工程已有 `PulseCore`、`pulse`、`pulseTests`、`pulseUITests` 四个 target；App 只链接唯一 `PulseCore`，同日保存竞争具备 rollback + 正式回读语义，正式路径定位、V1/V2 值级搬迁、确定性摘要、全中断恢复、双磁盘容器与损坏事实边界测试通过。
-- 能力 NO-GO：当前仍使用路径已显式化的 App 私有 store；没有 App Group entitlement、生产共享容器切换、全新安装 admission 或 Widget extension。locator 与搬迁器存在不等于 App Group 已可用。
-- 账号门禁：正式 App Group 需要 Apple Developer Program 能力、同一 Team 下的 App/Widget ID 关联和双 provisioning profile。个人账号审核完成前不加入会破坏现有签名链的半成品 capability。
-- 真机 NO-GO：App 未运行、设备锁定、Widget 重载、App/Widget 同时签到、跨午夜、杀进程和升级搬迁均没有真实设备证据。
+- 设计 GO：小号/中号与锁屏抽象印记、同源品牌标记、系统字体/语义色、默认隐私、不可用态和单向签到边界已冻结在 [Widget 共享 Store 合同](./WIDGET_SHARED_STORE_CONTRACT.md) 与 [品牌合同](../design/BRAND_SPEC.md)。
+- 工程 GO：工程已有 `PulseCore`、`pulse`、`PulseWidgetsExtension`、`pulseTests`、`pulseUITests` 五个 target；旧库/新安装 journal v2、共享路径、纯值投影、AppIntent、timeline reload 与名称偏好均已接入且无私有 fallback。
+- Apple 开发能力 GO：通用 iOS 设备构建使用 Team `6N3D8YA2FY` 成功；App 与 Widget 分别取得开发 provisioning profile，签名 entitlement 都包含 `group.co.fanr.pulse`。这不是 Apple Distribution 或 TestFlight 证据。
+- Simulator 运行 GO：iPadOS 18.6 系统 Widget Gallery 识别“一日一印 / 每日印记”；小号与中号真实归档成功。中号点击 `PulseCheckInIntent` 时 App 未打开，扩展写入后小/中号 timeline 同步刷新为带勾完成态。五种系统占位规格归档成功，无 `imageTooLarge`。
+- 真机 NO-GO：真实 iPhone/iPad 的 group container、App 未运行、设备锁定、Lock Screen/Always-On、快速双击、App/Widget 同时签到、跨午夜、杀进程、旧版升级和卸载重装仍无设备证据。
 
 ## 下一步顺序
 
-1. 下一工程切片实现不依赖 entitlement 的纯值 `PulseWidgetSnapshot`、只读投影与跨时区 timeline 计划器；仍不创建 Widget target，也不复制事实。
-2. 对主承诺提示和 App 内基础日印完成真机逐帧、VoiceOver、Reduce Motion、长文本、浅色/深色与最终视觉验收，并继续跨自然日内部试用；这是当前实现的产品验收，不属于发布系列工作。
-3. 个人开发账号审核通过后，注册 `group.co.fanr.pulse` 与 `co.fanr.pulse.widgets`，核验双 provisioning entitlement，再一次性接入明确的新安装 admission、生产共享 store 切换、Widget target 和独立进程验收；能力就绪前不写私有 fallback。
-4. 补齐 iOS / iPadOS 17.x 行为和真机通知门禁；这些是运行质量验证，不等同于开始发布。
-5. 上述产品与运行门禁关闭后，再恢复分发签名、Archive、TestFlight、商店资料和 App Store 校验系列工作，最后做上线 GO 决策。
+1. 在真实 iPhone 与 iPad 验证共享容器、全新安装、旧版升级、App/Widget 重启持久化、锁屏隐私、App 未运行、设备锁定、跨午夜、快速双击和同日竞争。
+2. 对 App 内基础日印与基础 Widget 完成真机逐帧、VoiceOver、Reduce Motion、长文本、浅色/深色、Lock Screen/Always-On 与最终视觉验收，并继续跨自然日内部试用。
+3. 补齐 iOS / iPadOS 17.x 行为和真机通知门禁；这些是运行质量验证，不等同于开始发布。
+4. 产品与运行门禁关闭后，再处理 Apple Distribution、Archive、TestFlight、商店资料和 App Store 校验，最后做上线 GO 决策。

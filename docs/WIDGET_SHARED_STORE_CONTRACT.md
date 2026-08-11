@@ -1,7 +1,7 @@
 # Pulse 基础 Widget 与共享 Store 合同
 
-文档版本：0.3<br>
-状态：Canonical Contract；PulseCore、路径合同与旧私有库搬迁器已实现，App Group 能力与签名就绪前不得创建生产 Widget target<br>
+文档版本：0.4<br>
+状态：Canonical Implemented Contract；开发签名、共享 Store、生产 Widget target 与模拟器交互已落地，真机/分发仍独立门禁<br>
 评审日期：2026-08-11
 
 本文定义基础 Widget、App Group store 搬迁、跨进程签到和失败恢复的唯一实施边界。Widget 的视觉语言与系统表面职责以 [PULSE_RITUAL_CONTRACT.md](./PULSE_RITUAL_CONTRACT.md) 为准；签到日期、唯一性和删除语义仍只以 [DOMAIN_CONTRACT.md](./DOMAIN_CONTRACT.md) 为准。
@@ -18,7 +18,7 @@
 - 已签到状态没有撤销入口；删除仍只在 App 内二次确认；
 - 本切片不创建 Live Activity、灵动岛、Watch、Control、Shortcuts、远程服务或第二套提醒。
 
-如果共享 store 尚未正式迁移，Widget 只能显示“请先打开 Pulse 完成升级”的不可写状态并深链到 App。不能把 `isCheckedToday`、记录副本或连续天数写入 App Group UserDefaults 充当临时数据源。
+如果共享 store 尚未正式迁移或主承诺尚未确认，Widget 只能显示“打开 Pulse 完成设置”的不可写状态。不能把 `isCheckedToday`、记录副本或连续天数写入 App Group UserDefaults 充当临时数据源。
 
 ## 2. 正式身份与能力门禁
 
@@ -33,15 +33,15 @@
 
 App 与 Widget target 必须从同一个受控 build setting `PULSE_APP_GROUP_IDENTIFIER` 生成 Info 与 entitlement，不能分别硬编码。两个 target 的 `com.apple.security.application-groups` 必须包含同一个正式值。
 
-只有以下证据同时成立后，才允许把 Widget target 和 App Group entitlement 加入生产工程：
+以下 1—4 项是 Widget target 和 App Group entitlement 进入生产工程的能力门；第 5 项是公开发布前的真实设备门：
 
 1. Apple Developer Program 账号审核完成；
 2. 正式 App ID、Widget App ID 与 App Group 已在同一 Team 注册并关联；
 3. App 与 Widget 的开发 provisioning profile 都包含正式 App Group entitlement；
 4. Xcode 读取到的签名 entitlement 与工程合同一致；
-5. Simulator、真实 iPhone 和真实 iPad 都能通过系统 API取得并写入同一 group container。
+5. Simulator、真实 iPhone 和真实 iPad 都能通过系统 API 取得并写入同一 group container。
 
-账号审核期间可以实现和测试不依赖 entitlement 的共享业务代码、迁移器和纯值 Widget 快照；不能提交一个依赖私有 fallback、只能预览或无法签名的半成品 extension。
+当前 1—4 已通过：开发设备构建分别获得 `co.fanr.pulse` 与 `co.fanr.pulse.widgets` 的 profile，两个签名 entitlement 都包含 `group.co.fanr.pulse`；Simulator group container、系统画廊与跨进程 AppIntent 已通过。真实 iPhone/iPad 仍未完成第 5 项，因此不能把真机或发布状态标记为 GO。
 
 ## 3. 唯一共享 Store
 
@@ -58,9 +58,9 @@ FileManager.containerURL(forSecurityApplicationGroupIdentifier:)
 - App Group UserDefaults 只允许保存 Widget 可见性等展示偏好，不保存签到、统计、迁移后的记录副本或“最后一次成功”；
 - Timeline entry 是可丢弃、可重建的纯值快照，不能反向覆盖 store。
 
-共享数据代码已经进入独立静态 `PulseCore` target。它只包含逻辑日、模型、schema/migration、验证、Repository/command、导入导出合同与纯值快照，并开启 `APPLICATION_EXTENSION_API_ONLY`；不包含 SwiftUI 页面、Widget 布局、通知调度、触觉、UserDefaults 或本地化资源。当前 App 已只依赖这一份编译产物，未来 Widget 必须链接同一 target，不能复制源文件或建立近似 Repository。
+共享数据代码已经进入独立静态 `PulseCore` target。它只包含逻辑日、模型、schema/migration、验证、Repository/command、导入导出合同与纯值 Widget 投影，并开启 `APPLICATION_EXTENSION_API_ONLY`；不包含 SwiftUI 页面、WidgetKit 布局、通知调度、触觉、UserDefaults 或本地化资源。当前 App 与 Widget 都只依赖这一份编译产物，不能复制源文件或建立近似 Repository。
 
-`PulseStoreLocator` 是目录合同的唯一实现：现有 App 私有源显式解析为沙盒 `Application Support/Pulse.store`，共享目标只接受系统返回的 group container，再追加本节冻结的相对路径。正式 App 目前仍显式打开前者；这次路径收口不改变现有数据位置，也没有提前接入尚未具备 entitlement 的共享路径。
+`PulseStoreLocator` 是目录合同的唯一实现：旧 App 私有源显式解析为沙盒 `Application Support/Pulse.store`，共享目标只接受系统返回的 group container，再追加本节冻结的相对路径。正式 App 启动只把私有路径作为一次性迁移输入，成功后只打开共享目标；不存在私有 fallback。
 
 ## 4. 私有 Store 到 App Group 的原子搬迁
 
@@ -80,7 +80,7 @@ notStarted → copying → verified → sourceRemoved → ready
 - `sourceRemoved`：旧 store 主文件、WAL 与 SHM 已关闭并删除，目标仍需最终复核；
 - `ready`：App 与 Widget 唯一允许打开的生产 store；此状态不可回退到私有源。
 
-journal v1 只保存格式版本、阶段和 64 位小写十六进制事实摘要，不保存绝对路径、UI 状态、日期戳或第二份业务数据。`notStarted` 只由 journal 不存在表达，不允许写入文件；未知字段、未知版本、非法阶段或非法摘要全部失败关闭。事实摘要使用带版本域的长度前缀二进制编码与 SHA-256，覆盖主项目身份、确认状态、时区、起始日、记录数量、ID、派生 `recordKey` 和全部时间字段；记录先按逻辑日、签到时间、ID 确定性排序，不依赖 JSON、Locale 或展示格式。
+journal v2 只保存格式版本、模式（`existingStore` / `newInstallation`）、阶段和 64 位小写十六进制事实摘要，不保存绝对路径、UI 状态、日期戳或第二份业务数据。`notStarted` 只由 journal 不存在表达，不允许写入文件；未知字段、未知版本、非法模式、非法阶段或非法摘要全部失败关闭。事实摘要使用带版本域的长度前缀二进制编码与 SHA-256，覆盖主项目身份、确认状态、时区、起始日、记录数量、ID、派生 `recordKey` 和全部时间字段；记录先按逻辑日、签到时间、ID 确定性排序，不依赖 JSON、Locale 或展示格式。
 
 搬迁规则：
 
@@ -96,11 +96,11 @@ journal v1 只保存格式版本、阶段和 64 位小写十六进制事实摘�
 - `copying`：源仍在，删除未录用目标后重建；
 - `verified`：复核目标后继续删除源；
 - `sourceRemoved`：只允许复核目标并推进 `ready`，不能凭空创建新项目；
-- `ready`：忽略任何后来出现的私有旧文件并报告异常，不能重新合并。
+- `ready`：任何后来出现的私有旧文件都报告异常，不能重新合并；共享目标此时是可变事实真源，旧迁移摘要不再与正常签到、身份编辑后的实时内容比较，只验证目标可打开且仍有主承诺。
 
 `PulseSharedStoreMigrator.migrateExistingStore` 已实现上述旧库状态机。它在每次推进前重新打开 store 做语义校验，目标复制只通过正式 Repository 的值写入；清理只允许命中 `Pulse.store`、`Pulse.store-wal`、`Pulse.store-shm` 三个精确路径。源缺失、源没有主项目、无 journal 却已有目标、源/目标摘要漂移、删除失败或 `ready` 后源文件复现都不会触发空库、合并或 fallback。
 
-全新安装没有私有 store 时，由未来的 App 启动协调器在明确的新安装分支中创建主项目、验证并直接推进 `ready`。现有搬迁器故意不根据“找不到源文件”猜测新安装；该分支必须与正式 App Group 一次性切换共同接入和验收。Widget 先于 App 被系统加载时保持不可写升级态。
+全新安装没有私有 store 时，`PulseSharedStoreBootstrapper` 进入明确的 `.newInstallation` 模式，在共享目录内的 `NewInstallationBootstrap` staging 创建真实 store 与默认主项目，再复用同一 journal 状态机完成值级录用、验证和 staging 清理。它不会把残留 sidecar、既有无 journal 目标或模式冲突猜成新安装。Widget 先于 App 被系统加载时保持不可写设置态。
 
 ## 5. 跨进程签到命令
 
@@ -140,12 +140,12 @@ Timeline 至少覆盖当前 entry，并在下一个项目时区零点后失效�
 
 ## 8. 实施顺序
 
-1. 已完成：加固当前 Repository，保存冲突后 rollback + 按 `recordKey` 回读，并增加双 ModelContainer 磁盘测试；
-2. 已完成：提取无 UI、无宿主资源依赖、extension-safe 的静态 `PulseCore`，App 已迁移到该唯一实现；
-3. 已完成：实现可注入目录的 store locator、严格搬迁 journal、值级复制、确定性摘要、精确清理和旧库每个崩溃点测试；
-4. 下一步：先实现不依赖 entitlement 的纯值 Widget 快照、只读投影和跨时区 timeline 计划器；不创建生产 Widget target；
-5. 账号能力门禁通过后，一次性加入 App Group entitlement、明确的新安装启动分支、Widget target 和原子 store 切换，再接入 timeline 与单向签到 AppIntent；
-6. 完成 Simulator、真实 iPhone/iPad、锁屏、重启、跨午夜、并发点击和升级测试后，才把 Widget 工程状态改为 GO。
+1. 已完成：Repository 保存冲突后 rollback + 按 `recordKey` 回读，并增加双 ModelContainer 磁盘测试；
+2. 已完成：提取无 UI、无宿主资源依赖、extension-safe 的静态 `PulseCore`，App 与 Widget 已迁移到该唯一实现；
+3. 已完成：实现 locator、journal v2、旧库/新安装两种模式、值级复制、确定性摘要、精确清理和崩溃恢复测试；
+4. 已完成：实现 `PulseWidgetSnapshot`、只读投影、隐私裁决和跨项目时区 timeline 计划器；
+5. 已完成：加入双 target App Group entitlement、生产共享路径、Widget target、timeline 与单向签到 AppIntent；
+6. 已完成 Simulator 系统画廊、小号/中号主屏渲染、归档和独立扩展 AppIntent；下一步只关闭真实 iPhone/iPad、锁屏、跨午夜、并发点击和升级设备门。
 
 ## 9. 自动化与真机门禁
 
@@ -164,6 +164,6 @@ Timeline 至少覆盖当前 entry，并在下一个项目时区零点后失效�
 ## 10. 当前结论
 
 - 共享 store 与 Widget 产品/技术方向：设计 GO；
-- `PulseCore`、路径合同、旧私有库搬迁器、纯值边界、持久化语义校验和 Repository 竞争恢复：工程 GO；
-- App Group entitlement、生产启动切换、新安装 admission 和 Widget target：账号能力门禁前 NO-GO；
-- 发布与商店工作：继续后置，不因本合同启动。
+- `PulseCore`、journal v2、旧库/新安装路径、纯值投影、App Group entitlement、生产 Widget target、开发设备签名与 Simulator 独立进程交互：工程 GO；
+- 真实 iPhone/iPad、锁屏/Always-On、设备锁定、跨午夜、App/Widget 同日竞争和升级：运行 NO-GO；
+- Apple Distribution、Archive/TestFlight 与商店工作：发布 NO-GO，不因工程 GO 自动启动。

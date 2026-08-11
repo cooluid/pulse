@@ -66,6 +66,7 @@ final class PulseAppModelTests: XCTestCase {
         XCTAssertEqual(context.model.statistics.longestStreak, 1)
         XCTAssertEqual(context.model.statistics.totalCount, 1)
         XCTAssertEqual(context.haptics.successCount, 1)
+        XCTAssertEqual(context.widgetReloader.reloadCount, 1)
         await waitUntil { context.scheduler.snapshots.last?.checkedDays == context.model.checkedDays }
         XCTAssertEqual(context.scheduler.snapshots.last?.checkedDays, context.model.checkedDays)
     }
@@ -82,6 +83,7 @@ final class PulseAppModelTests: XCTestCase {
         XCTAssertNil(context.model.todayRecord)
         XCTAssertEqual(context.model.statistics, .empty)
         XCTAssertEqual(context.haptics.successCount, 0)
+        XCTAssertEqual(context.widgetReloader.reloadCount, 0)
         XCTAssertEqual(context.scheduler.snapshots.count, reminderSnapshotCount)
         XCTAssertNotNil(context.model.errorMessage)
     }
@@ -184,6 +186,17 @@ final class PulseAppModelTests: XCTestCase {
         XCTAssertTrue(context.scheduler.snapshots.last?.enabled ?? false)
     }
 
+    func testWidgetCommitmentVisibilityIsExplicitAndReloadsOncePerChange() throws {
+        let context = try makeContext()
+
+        XCTAssertFalse(context.model.settings.widgetShowsHabitName)
+        context.model.requestWidgetHabitNameVisibility(true)
+        context.model.requestWidgetHabitNameVisibility(true)
+
+        XCTAssertTrue(context.model.settings.widgetShowsHabitName)
+        XCTAssertEqual(context.widgetReloader.reloadCount, 1)
+    }
+
     func testPendingResetJournalIsRecoveredOnStart() async throws {
         let context = try makeContext()
         await context.model.start()
@@ -216,18 +229,21 @@ final class PulseAppModelTests: XCTestCase {
         let settings = try AppSettings(defaults: defaults)
         let scheduler = TestReminderScheduler(permission: notificationPermission)
         let haptics = TestHaptics()
+        let widgetReloader = TestWidgetTimelineReloader()
         let model = PulseAppModel(
             repository: repository,
             settings: settings,
             reminderScheduler: scheduler,
             clock: clock,
-            hapticFeedback: haptics
+            hapticFeedback: haptics,
+            widgetTimelineReloader: widgetReloader
         )
         return TestContext(
             model: model,
             clock: clock,
             scheduler: scheduler,
-            haptics: haptics
+            haptics: haptics,
+            widgetReloader: widgetReloader
         )
     }
 
@@ -255,6 +271,7 @@ private struct TestContext {
     let clock: MutablePulseClock
     let scheduler: TestReminderScheduler
     let haptics: TestHaptics
+    let widgetReloader: TestWidgetTimelineReloader
 }
 
 @MainActor
@@ -272,6 +289,15 @@ private final class TestHaptics: HapticFeedbackProviding {
 
     func notifySuccess() {
         successCount += 1
+    }
+}
+
+@MainActor
+private final class TestWidgetTimelineReloader: WidgetTimelineReloading {
+    private(set) var reloadCount = 0
+
+    func reloadDailyImprint() {
+        reloadCount += 1
     }
 }
 

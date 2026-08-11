@@ -2,7 +2,7 @@
 
 冻结日期：2026-08-11
 决策来源：C“脉冲场”今日页 × A“状态式底栏”主导航
-适用范围：一日一印（Pulse）1.0 iPhone / iPad 产品界面、AppIcon 与商店素材
+适用范围：一日一印（Pulse）1.0 iPhone / iPad 产品界面、基础 Widget、AppIcon 与商店素材
 完整度：品牌名称、颜色令牌、界面系统、主导航与正式 AppIcon 已冻结
 
 ## 0. 品牌名称
@@ -20,7 +20,7 @@
 
 ## 2. 唯一视觉真源
 
-所有正式颜色只在 `design/brand-tokens.json` 定义一次。`scripts/build_brand_assets.py` 从该文件生成运行时 Color Set、AccentColor、AppIcon 三种外观和 `PulseMark`；SwiftUI 只按语义名称消费生成资产。
+所有正式颜色只在 `design/brand-tokens.json` 定义一次。`scripts/build_brand_assets.py` 从该文件和唯一开放日环蒙版生成运行时 Color Set、AccentColor、AppIcon 三种外观、`PulseMark` 与 256 × 256 的 `PulseWidgetMark`；SwiftUI 只按语义名称消费生成资产。Widget 专用尺寸是同源派生输出，不是第二套手绘标记。
 
 不得在 Swift、Asset Catalog、AppIcon 脚本或设计文档中复制另一份颜色值。新增或修改颜色必须先修改品牌令牌，再重新生成并执行：
 
@@ -82,6 +82,17 @@ python3 scripts/build_brand_assets.py --check
 - 两个根 `NavigationStack` 保持各自的页面导航状态；不可见根页不得响应触控或辅助功能焦点。
 - 设置属于根页面之上的次级导航层；进入设置时隐藏主导航并释放底部安全区，返回根页面后恢复，禁止两层导航同时占据屏幕。
 
+## 5A. 基础 Widget：开放日环入口
+
+- Home Screen 小号以日期、今日短状态、开放日环/完成勾和品牌名组成；中号增加七日节律和完整状态，但不能复制 App 今日页的大面积脉冲场。
+- 待签到使用同源 `PulseWidgetMark` 与 `action`；完成使用 `grass` 实心圆、勾形和完成文案。状态必须同时有形状、图标或文字，不能只换颜色。
+- Home Screen 默认显示品牌名“一日一印 / Pulse”，不默认显示用户主承诺；用户在 App 中明确开启后才允许小号/中号显示名称。“为什么重要”永不进入基础 Widget。
+- Lock Screen 圆形与矩形始终隐藏主承诺名称，只呈现抽象印记、短状态与七日节律；使用系统 accessory 样式与 `widgetAccentable`，不得强行复制彩色品牌背景。
+- 未设置或共享 store 未 `ready` 时显示简短“打开一日一印 / Open Pulse”和诚实设置说明，不显示待签到按钮或虚假空心态；读取失败使用独立不可用状态。
+- WidgetKit 归档的位图必须使用专用小尺寸派生产物。禁止直接归档 1024 × 1024 的 AppIcon/品牌图，也禁止为规避平台限制重新手绘近似符号。
+- Widget 不播放循环呼吸或 App 内落印仪式；点击单向签到后由系统刷新为静态完成态，Reduce Motion 与普通模式语义一致。
+- 小号、中号、Accessory Circular、Accessory Rectangular 必须分别在系统 Widget Gallery 与真实表面验收；Preview、编译成功或资产尺寸检查不能代替运行证据。
+
 ## 6. 布局与组件
 
 - 基础间距只使用 4 / 8 / 12 / 16 / 20 / 24 / 32。
@@ -132,4 +143,4 @@ python3 scripts/build_brand_assets.py --check
 
 ## 10. 验收边界
 
-构建、测试、资产一致性检查和模拟器截图共同证明工程实现符合本规范；它们不能代替最终产品视觉确认。真机触控、动态字体、Reduce Motion、通知权限与发布素材仍需各自验收。
+构建、测试、资产一致性检查和模拟器截图共同证明工程实现符合本规范；它们不能代替最终产品视觉确认。真机触控、Widget 锁屏/Always-On、动态字体、VoiceOver、Reduce Motion、通知权限与发布素材仍需各自验收。

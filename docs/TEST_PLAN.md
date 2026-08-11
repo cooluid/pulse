@@ -1,6 +1,6 @@
 # Pulse 测试与验收合同
 
-文档版本：1.8<br>
+文档版本：1.9<br>
 状态：Canonical Gate
 
 ## 1. 自动化门禁
@@ -30,7 +30,9 @@
 | 日印仪式 | 提交回执区分新建/幂等；失败无成功触觉；正常时序不超过两秒；Reduce Motion 无缩放/扩散；启动已有记录不重播；代码中不存在无限循环动画 |
 | 删除/清除 | 删除只影响目标；失败不提前关闭；清除日志可在下次启动完成 |
 | 统计 | 空集合、今天/昨天、多段连续、乱序、重复、删除后重算 |
-| 迁移/导入 | 真实磁盘 SwiftData V1→V2；私有 V1/V2 store 经 Repository 值级搬到独立目标；`copying / verified / sourceRemoved` 中断恢复；确定性摘要；源/目标篡改、删除失败、损坏/未知 journal、无源/空源、无 journal 既有目标、同路径/符号链接和 `ready` 后源复现均失败关闭；单一 JSON UTType；精确 v1→v2 规范化；v2 format/schema、文件/数量上限、身份、时区、起始日来源、记录时区映射、时间顺序、ID/日期唯一 |
+| 迁移/导入 | 真实磁盘 SwiftData V1→V2；私有 V1/V2 store 经 Repository 值级搬到独立目标；全新安装经显式 staging admission；journal v2 区分 `existingStore / newInstallation`；`copying / verified / sourceRemoved` 中断恢复；迁移确定性摘要；源/目标篡改、删除失败、损坏/未知 journal、无源/空源、无 journal 既有目标、同路径/符号链接和 `ready` 后源复现均失败关闭；`ready` 后目标正常签到/编辑再启动不得被旧摘要拒绝；单一 JSON UTType；精确 v1→v2 规范化；v2 format/schema、文件/数量上限、身份、时区、起始日来源、记录时区映射、时间顺序、ID/日期唯一 |
+| Widget 投影 | 未确认身份不可生成可签到快照；最近七日状态、隐私名称裁决、实际签到时间与跨 DST/项目时区零点刷新正确；只读路径不创建项目 |
+| App Group | App/Widget 两个签名 entitlement 与 provisioning 均包含唯一正式 group；生产只打开共享 store，App 私有源与 staging 完成后无 store artifact；group URL 缺失失败关闭 |
 | 原子性 | 无效导入不删除现有数据；保存失败 rollback |
 | 提醒 | 权限拒绝与系统外撤权；旧权限结果不能覆盖新意图；快照与最新记录一致；60 日窗口、当天已过时间、已签到日、DST 不存在时间；失败关闭且无部分计划 |
 
@@ -59,6 +61,7 @@
 - 中文今日页顶端日期信息不得混入英文 `TODAY`；深浅色脉冲场装饰不得在状态栏两角形成可见边缘。
 - Accessibility XXXL 下签到控件横向扩展，页头设置入口保持可达，两个根导航等宽且完整位于屏幕内；滚动后节奏摘要完整位于固定底栏之上。
 - 测试通过 UUID store 与 `PULSE_UI_TEST_RESET` 隔离数据，通过 `PULSE_UI_TEST_NOW` 固定业务时间。
+- Widget 名称偏好默认关闭并只写 App Group UserDefaults；清除设置后恢复关闭。Lock Screen 不受该开关影响。
 
 ## 4. 独立人工门禁
 
@@ -74,6 +77,8 @@
 - AppIcon 的 Default / Dark / Tinted 与商店素材；
 - iOS / iPadOS 17.x 可用最旧运行时上的安装、启动、签到、设置与历史主流程；
 - 签名、Archive、TestFlight 和 App Store 校验；
+- Home Screen 小号/中号、Lock Screen 圆形/矩形在待签到、完成、未设置和读取失败状态下的真实系统渲染；AppIntent 不启动 App、保存成功后刷新、失败不显示完成；锁屏不泄露主承诺名称；
+- Widget 在 App 未运行、设备锁定、跨午夜、系统杀进程、快速双击、App/Widget 同日竞争、旧版升级和卸载重装下的真机行为；
 - 跨多个自然日的连续使用。
 
 ## 5. 阻断标准
@@ -84,8 +89,13 @@
 
 任何未关闭 P0 阻止工程 GO；工程 GO 也不能替代真机、通知、视觉和发布门禁。
 
-## 6. Widget 能力准入门禁
+## 6. Widget 分层门禁
 
-Widget target 加入生产工程前，必须执行 [WIDGET_SHARED_STORE_CONTRACT.md](./WIDGET_SHARED_STORE_CONTRACT.md) 第 9 节矩阵。重点包括私有 V1/V2 store 搬迁、四个中断状态恢复、group URL 缺失失败关闭、旧源清理、App/Widget 并发签到、锁屏隐私和跨项目时区零点刷新。
+Widget 已进入生产工程，仍必须按 [WIDGET_SHARED_STORE_CONTRACT.md](./WIDGET_SHARED_STORE_CONTRACT.md) 第 9 节独立判定：
 
-账号审核期间只允许把与 entitlement 无关且已经进入 App 正式路径的共享业务基础标记为工程 GO。当前 locator 与旧库搬迁器属于该范围；全新安装 admission、生产共享路径切换、Preview、未签名 extension 构建或模拟器共享目录都不能把 App Group/Widget 真机状态改为 GO。
+- **自动化工程门**：迁移、新安装、快照、隐私偏好、构建和签名 entitlement 全部通过；
+- **模拟器运行门**：系统画廊识别、小号/中号真实主屏归档、单向 AppIntent 与刷新通过；Preview 不能替代该证据；
+- **真机运行门**：App 未运行、设备锁定、跨午夜、并发、升级与系统杀进程仍必须通过；
+- **视觉/无障碍门**：深浅色、最大字号、VoiceOver、Reduce Motion、Lock Screen/Always-On 隐私独立验收。
+
+开发签名设备构建证明 Apple 后端身份与 App Group 能力可用，但不证明真实设备体验、分发签名、Archive、TestFlight 或 App Store 就绪。

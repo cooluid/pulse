@@ -1,6 +1,6 @@
 # 一日一印（Pulse）1.0 之后开发路线图
 
-文档版本：0.7<br>
+文档版本：0.8<br>
 状态：Proposed Execution Plan，不改变 1.0 已冻结范围  
 评审日期：2026-08-11
 
@@ -10,8 +10,8 @@
 
 | 阶段 | 目标 | 商业状态 | 进入下一阶段的必要证据 |
 | --- | --- | --- | --- |
-| R0：1.0 发布闭环 | 把当前免费核心真实交付 | 免费 | 1.0 全部发布门禁关闭 |
-| R1：1.1 个性与日印仪式基础 | 明确“我为什么留印”，用基础 Widget 和落印语言降低摩擦并建立系统级识别 | 免费 | 留存、Widget 可靠性与日印仪式视觉达到门槛 |
+| R0：1.0 发布闭环 | 把当前免费核心与基础 Widget 真实交付 | 免费 | 1.0 全部发布门禁关闭 |
+| R1：1.1 个性与日印仪式扩展 | 在可靠基础上验证隐私锁、有限系统仪式与反馈机制 | 免费 | 留存、隐私锁可靠性与日印仪式视觉达到门槛 |
 | W0：Watch 可行性轨 | 在 R1 统一命令与 App Group 稳定后，尽早验证配对真机、WatchConnectivity 和手腕交互 | 不收费、不进生产历史 | 待同步/已保存语义、断联恢复和跨午夜裁决通过 |
 | R2：1.2 真实上下文 | 验证缺席说明、回归力和轻量回响是否有价值 | TestFlight 免费实验 | 使用率和访谈证明高阶价值 |
 | R2.5：1.3 影像印记 | 验证签到后可选留影、媒体可靠性和标准面貌拍摄 | TestFlight 免费实验 | 使用率、零丢图和隐私理解达到门槛 |
@@ -27,7 +27,7 @@
 
 ### 2.1 范围
 
-本阶段不加入 Widget、StoreKit、CloudKit、备注、补签或多项目。
+本阶段包含已经写入 1.0 合同的免费基础 Widget；不加入 Live Activity、Watch、StoreKit、CloudKit、备注、补签或多项目。
 
 按当前发布合同完成：
 
@@ -39,6 +39,7 @@
 6. 签名 Archive、TestFlight 安装、升级与 JSON 恢复；
 7. 复核已公开隐私政策与支持页在真实网络和设备上可达，并完成 App Store Connect 链接、商店文案和截图；
 8. 跨多个自然日内部使用。
+9. 基础 Widget 在真实 iPhone/iPad 覆盖新安装、旧库升级、App 未运行、设备锁定、跨午夜、快速双击与 App/Widget 同日竞争。
 
 ### 2.2 仓库边界决策
 
@@ -67,16 +68,11 @@
 - 设置中提供正式重命名入口，变更不改写历史签到事实。
 - 今日页在日号与签到主动作之间轻量投影主承诺名称，名称只读取正式 `Habit` 真源；可选说明仍只在首次确认与设置编辑页出现。提示不得形成第二个页面标题、卡片或导航层，也不能挤压主操作和辅助功能。周轨迹后只保留居中的连续状态。
 
-个人开发账号审核期间，用户已明确授权先推进产品级功能开发。该能力因此通过 `PRODUCT_REQUIREMENTS.md`、`DOMAIN_CONTRACT.md`、`RELEASE_SCOPE_1_0.md`、迁移设计和测试矩阵受控进入首个公开版本，不再作为未落地的 1.1 候选；Widget、Live Activity 与隐私锁仍保持后续边界。
+主承诺身份与基础 Widget 已通过 `PRODUCT_REQUIREMENTS.md`、`DOMAIN_CONTRACT.md`、`RELEASE_SCOPE_1_0.md`、迁移设计和测试矩阵受控进入首个公开版本，不再作为未落地的 1.1 候选；Live Activity 与隐私锁仍保持后续边界。
 
-#### B. 基础 Widget，免费
+#### B. 基础 Widget（已受控前移至首个公开版本）
 
-- Lock Screen 圆形只显示今日空心/实心印记，矩形显示最近七日脉冲，默认不泄露主承诺文本；
-- Home Screen 小号显示日期、今日状态和签到按钮，中号显示主承诺与七日节律；
-- 未签到交互使用只创建事实的 `Button`，不使用可以反向删除记录的 `Toggle`；
-- 交互签到必须与 App 内签到走同一业务实现；若共享存储迁移未完成，只允许打开 App，不写第二份状态。
-
-App Group、共享 store 搬迁、跨进程写入、Widget 隐私和能力准入统一执行 [WIDGET_SHARED_STORE_CONTRACT.md](./WIDGET_SHARED_STORE_CONTRACT.md)。账号审核期间先完成可进入 App 正式路径的 Repository 竞争回读和共享核心准备；没有正式 group entitlement 与 provisioning 证据前，不创建依赖 fallback 的生产 Widget target。
+基础 Widget 的唯一产品、数据、隐私和验收合同已经移至 [WIDGET_SHARED_STORE_CONTRACT.md](./WIDGET_SHARED_STORE_CONTRACT.md) 与 `RELEASE_SCOPE_1_0.md`。R1 不重新定义第二套 Widget，也不把 Live Activity、Watch、Control 或高级系统入口借名塞入首版；后续改动必须先证明不会破坏共享 store、单向签到和默认隐私。
 
 #### C. 基础日印仪式，免费
 
@@ -95,9 +91,9 @@ App Group、共享 store 搬迁、跨进程写入、Widget 隐私和能力准入
 ### 3.2 技术准备
 
 - 在领域合同中增加“重命名不影响事实”的规则，再增加 Repository 写入方法与测试；
-- 为 Widget 建立 App Group store 迁移设计与中断恢复测试；
-- 已抽取 extension-safe 静态 `PulseCore`，当前 App 已只链接这一份领域、schema、Repository、验证和导入导出实现；Widget / Live Activity 后续必须消费同一模块，所有写入仍由正式 Repository / command service 所有；
-- 建立一个 Widget extension 承载 Widget 与 Live Activity 布局，但分别维护长期 timeline 和短期 ActivityKit 生命周期；
+- 维持已落地的 App Group store 迁移、中断恢复、Widget 快照与单向签到回归门禁；
+- 已抽取 extension-safe 静态 `PulseCore`，当前 App 与 Widget 已链接这一份领域、schema、Repository、验证、导入导出与 Widget 快照实现；Live Activity 后续也必须消费同一模块，所有写入仍由正式 Repository / command service 所有；
+- Live Activity 若进入后续范围，使用独立 target/lifecycle 评审，不把 ActivityKit 生命周期混入已经稳定的 Widget timeline；
 - 增加跨进程同日并发写入测试，唯一冲突必须回读现有记录并幂等成功；
 - Widget / Live Activity 刷新失败只影响展示，不反向覆盖主 store；
 - 动效参数集中定义，覆盖两秒上限、Reduce Motion、Always-On 静态表达和系统压缩呈现。

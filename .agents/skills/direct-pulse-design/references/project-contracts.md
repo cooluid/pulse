@@ -44,7 +44,7 @@
 
 1.0 正式 App 包括主承诺、今日签到、有限落印、最近七日、历史/月历/统计、设置、本地提醒、导入导出、主题、双语、Dynamic Type、VoiceOver、iPhone/iPad 与 AppIcon。
 
-以下能力即使已有设计，也不能作为 1.0 已实现体验审阅：Widget、Live Activity、灵动岛自动提醒、Apple Watch、图片/影像、里程碑、账号、云同步和多项目。审阅这些能力时使用 `DIRECTION`，并同时报告能力/工程门禁；缺少正式 target 和运行证据时不能给 `INTERFACE GO` 或 `EXPERIENCE GO`。
+以下能力即使已有设计，也不能作为 1.0 已实现体验审阅：Live Activity、灵动岛自动提醒、Apple Watch、图片/影像、里程碑、账号、云同步和多项目。基础 Widget 已进入 1.0，但仍必须分开报告设计、工程、系统表面和真机门禁；缺少正式 target 和运行证据时不能给 `INTERFACE GO` 或 `EXPERIENCE GO`。
 
 ## 实现与运行证据
 

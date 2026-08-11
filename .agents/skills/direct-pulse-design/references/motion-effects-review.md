@@ -55,7 +55,7 @@ ready → saving → contracting → imprinting → imprinted
 ## 未来系统表面
 
 - Widget 是长期可扫视状态；Live Activity 是有开始和结束的短事件；Watch 是一次短动作。不要把三者当作任意动画画布。
-- 1.0 不包含 Widget、Live Activity 或 Watch。缺少正式 target、entitlement、数据路径和真实设备证据时，只能做 `DIRECTION` 审阅。
+- 1.0 包含基础 Widget，不包含 Live Activity 或 Watch。Widget 缺少正式 target、entitlement、数据路径或系统表面证据时只能做 `DIRECTION` 审阅；模拟器证据不能替代真机、锁屏与 Always-On 验收。
 - 灵动岛背景由系统控制；不要承诺强制背景、持续动画、到点必然出现或用户必然看见。
 - Compact、Minimal、Expanded、Lock Screen 和 Always-On 必须各自可理解；不能用 Expanded 的长文案掩盖紧凑状态不可读。
 - 远程任务接受、push 回执或 Watch 本地操作都不是签到成功；系统表面仍等待权威 Repository 回执。

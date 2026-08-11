@@ -1,14 +1,14 @@
 # Pulse 技术设计
 
-文档版本：1.5<br>
-状态：Implemented App + PulseCore + Private-to-Shared Migrator；Widget Shared Store Capability-Gated
+文档版本：1.6<br>
+状态：Implemented App + PulseCore + App Group Shared Store + PulseWidgets
 
 ## 1. 工程基线
 
 - SwiftUI + SwiftData + Observation + Swift Concurrency。
 - Swift 6，严格并发检查，所有 target 警告即错误。
 - iOS / iPadOS 17.0，iPhone 与 iPad 共用产品实现。
-- 正式 target：`PulseCore`、`pulse`、`pulseTests`、`pulseUITests`。`PulseCore` 是静态 Swift framework，开启 `APPLICATION_EXTENSION_API_ONLY`，供 App 与未来 Widget 共同链接。
+- 正式 target：`PulseCore`、`pulse`、`PulseWidgetsExtension`、`pulseTests`、`pulseUITests`。`PulseCore` 是静态 Swift framework，开启 `APPLICATION_EXTENSION_API_ONLY`，由 App 与 Widget 共同链接。
 - Bundle ID：`co.fanr.pulse`。
 - 不依赖第三方运行时库；品牌资产生成器唯一 Python 依赖固定在 `requirements.txt`。
 
@@ -28,11 +28,17 @@ ReminderScheduler ──→ UserNotifications
 AppSettings ──→ ConfiguredRootView
    ↓ persisted theme and language
 SwiftUI environment + PulseLocalization
+
+App + PulseWidgetsExtension
+   ↓ same App Group URL
+PulseSharedStoreBootstrapper ──→ one Pulse.store
+   ↓ immutable projection
+PulseWidgetSnapshot ──→ Widget timeline / one-way AppIntent
 ```
 
-- `PulseCore` 只编译 `Domain / Persistence / ImportExport`；不依赖 SwiftUI、UserNotifications、UserDefaults、触觉、页面或宿主本地化资源。App 源码不再编译 Core 文件的副本。
+- `PulseCore` 只编译 `Domain / Persistence / ImportExport / Widget projection`；不依赖 SwiftUI、WidgetKit、UserNotifications、UserDefaults、触觉、页面或宿主本地化资源。App 与 Widget 源码都不再编译 Core 文件的副本。
 - Repository 是事实写入和持久化语义校验的唯一所有者，并持有与 AppModel 相同的 Clock；SwiftData managed object 不越过模块边界，调用方只接收已经验证、关键日期与时区非可空的 `HabitSnapshot`、`CheckInRecordSnapshot` 和提交回执。
-- `existingPrimaryHabit()` 是不产生默认项目的只读入口；启动迁移与未来 Widget 读取不能借用会创建数据的 `primaryHabit(systemTimeZone:)` 猜测事实。
+- `existingPrimaryHabit()` 是不产生默认项目的只读入口；启动迁移与 Widget 读取不能借用会创建数据的 `primaryHabit(systemTimeZone:)` 猜测事实。
 - AppModel 是页面快照、操作互斥、导航复位和提醒意图顺序的唯一所有者。
 - AppSettings 是主题与应用内语言的唯一持久化所有者；根窗口直接观察它，不能依赖页面级副本。
 - View 只呈现状态与发起意图，不直接访问 SwiftData、UserDefaults 或通知中心。
@@ -44,7 +50,7 @@ SwiftUI environment + PulseLocalization
 
 `CheckInRecord`：唯一 `id`、唯一 `recordKey`、`habitID`、`logicalDayValue`、`checkedAt`、`createdAt`、记录时区。
 
-`HabitSnapshot` 与 `CheckInRecordSnapshot` 是 `PulseCore` 对外公开的不可变、`Sendable` 输出；它们复制事实值但不拥有写入能力，也不持久化为第二套模型。Repository 在创建快照前统一验证身份规范、起始日来源、时区、recordKey、时间顺序和逻辑日唯一性；损坏事实不能以可空字段或静默默认值逃出 Core。AppModel、Today、History 和未来 Widget 快照都不能持有 `PersistentModel` 实例。
+`HabitSnapshot`、`CheckInRecordSnapshot` 与 `PulseWidgetSnapshot` 是 `PulseCore` 对外公开的不可变、`Sendable` 输出；它们复制事实值但不拥有写入能力，也不持久化为第二套模型。Repository 在创建快照前统一验证身份规范、起始日来源、时区、recordKey、时间顺序和逻辑日唯一性；损坏事实不能以可空字段或静默默认值逃出 Core。AppModel、Today、History 和 Widget timeline 都不能持有 `PersistentModel` 实例。
 
 当前 SwiftData schema 为 V2。`PulseSchemaV1` 和 `PulseSchemaV2` 分别冻结各自的命名空间模型，运行时代码只通过 latest typealias 消费 V2；V1→V2 使用明确的 lightweight migration，新增字段的迁移值为 `purpose == nil`、`isIdentityConfirmed == false`。真实磁盘 fixture 必须证明项目和记录全部保留。
 
@@ -94,21 +100,21 @@ JSON 只导出 v2。`PulseExportCodec` 是编码、精确版本解码与完整�
 
 ## 8. 安全与隐私
 
-- 数据仅在应用沙盒和用户主动导出的 JSON 中存在。
+- 数据仅在 App/Widget 共用的本地 App Group 容器和用户主动导出的 JSON 中存在。
 - 不记录位置、广告标识或导出内容。
 - 文件导入使用 security-scoped URL，并有 32 MiB 上限。
 - `PrivacyInfo.xcprivacy` 声明不跟踪、不收集数据，并以 `CA92.1` 说明仅为 App 功能持久化设置而访问 UserDefaults。
 - 设置页直接提供公开隐私政策和产品支持入口；两者共享一份集中式 URL 定义。
 - CloudKit、分析 SDK 和远程账户不在 1.0，不保留隐藏入口或半成品实现。
 
-## 9. Widget 共享基础
+## 9. Widget 与共享 Store
 
-基础 Widget 必须建立在一个 App Group SwiftData store 和当前已经落地的唯一 `PulseCore` 编译目标上，不能复制 model、Repository 或签到状态。App 私有 store 到共享 store 的位置搬迁不属于 `PulseMigrationPlan` 的 schema 迁移，必须使用独立持久化 journal、值级复制、全量验证和旧源清理完成原子切换。
+基础 Widget 建立在一个 App Group SwiftData store 和唯一 `PulseCore` 编译目标上，不复制 model、Repository 或签到状态。正式身份是 App `co.fanr.pulse`、Widget `co.fanr.pulse.widgets`、App Group `group.co.fanr.pulse`；group ID 由项目级 `PULSE_APP_GROUP_IDENTIFIER` 注入两个 target 的 Info 与 entitlement。开发设备构建已经取得两个独立 provisioning profile，签名 entitlement 都包含同一个正式 group。
 
-Widget AppIntent 在独立扩展进程执行签到；进程内由各自 store actor 串行化，进程间由 SQLite 事务、`recordKey` 唯一约束和保存失败后的 rollback + 回读裁决。Timeline 只消费不可变快照，不能反向覆盖 store。
+`PulseSharedStoreBootstrapper` 是 App 启动的唯一位置裁决器：存在私有旧库时走 `.existingStore`，不存在任何旧库时走显式 `.newInstallation` staging；冲突或不完整源失败关闭。两条路径共享 journal v2 和 `copying → verified → sourceRemoved → ready` 状态机。迁移阶段的 SHA-256 摘要只证明源/目标事务一致；进入 `ready` 后目标已经成为可变事实真源，重启只验证源未复现、目标存在且可读取主承诺，不能拿旧摘要拒绝正常签到或身份编辑。
 
-账号审核完成、正式 App Group 注册、双 target entitlement 和 provisioning 证据齐备前，当前工程继续只使用 App 私有 store，不加入依赖 fallback 的 Widget target。详细身份、迁移状态机、模块边界和准入门禁以 [WIDGET_SHARED_STORE_CONTRACT.md](./WIDGET_SHARED_STORE_CONTRACT.md) 为准。
+App 与 Widget 只通过系统 App Group API 解析 `Library/Application Support/Pulse/Pulse.store`。App 私有 store 只作为一次性迁移源，完成后主文件、WAL 与 SHM 被精确删除；不存在共享失败回退、双写或第二份签到状态。Widget 在 journal 未 `ready` 或身份未确认时显示明确“打开 App 完成设置”状态，不创建默认项目、不打开未录用目标、不伪装成待签到。
 
-现有 App 私有路径已经由 `PulseStoreLocator` 显式解析并传给 `PersistenceController`，与 SwiftData 既有默认 `Application Support/Pulse.store` 相同。共享目标 locator 只接受系统 App Group container，统一生成 `Library/Application Support/Pulse/Pulse.store`；group ID 仍等待能力接入时由单一 build setting 注入。
+`PulseWidgetProjector` 从正式 Repository 投影最近七日、今日记录、可选名称、生成时间与项目时区下一个零点；`PulseWidgetSnapshotReader` 不产生写入。App Group UserDefaults 只保存 `widget.showsHabitName` 展示偏好，默认关闭，Lock Screen 始终忽略名称。
 
-`PulseSharedStoreMigrator` 只处理调用方明确判定的“已有私有 store 搬迁”：先用当前 `PulseMigrationPlan` 打开 V1/V2 源库，再通过 Repository 复制规范值，使用版本化二进制事实编码和 SHA-256 比对，最后只删除精确 allowlist 中的主文件、WAL 和 SHM。严格 journal 原子推进 `copying → verified → sourceRemoved → ready`，所有恢复都重新验证当前事实；源缺失或漂移、目标漂移、journal 损坏、删除失败及 `ready` 后旧源复现均失败关闭。缺少私有源不会在该 API 中被猜成新安装。
+Widget AppIntent 在独立扩展进程执行单向签到；进程内由各自 ModelContext 串行化，进程间由 SQLite 事务、`recordKey` 唯一约束和保存失败后的 rollback + 回读裁决。App 与 AppIntent 只在事实保存并重新读取成功后请求 timeline reload；刷新失败不能反向覆盖 store。详细状态机、隐私与设备门禁以 [WIDGET_SHARED_STORE_CONTRACT.md](./WIDGET_SHARED_STORE_CONTRACT.md) 为准。

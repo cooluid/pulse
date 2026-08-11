@@ -94,6 +94,47 @@ final class AppSettingsTests: XCTestCase {
         XCTAssertEqual(reloaded.language, .system)
     }
 
+    func testWidgetPrivacyPreferenceUsesOnlyTheSharedDefaultsStore() throws {
+        let appSuite = "AppSettingsTests.App.\(UUID().uuidString)"
+        let widgetSuite = "AppSettingsTests.Widget.\(UUID().uuidString)"
+        let appDefaults = try XCTUnwrap(UserDefaults(suiteName: appSuite))
+        let widgetDefaults = try XCTUnwrap(UserDefaults(suiteName: widgetSuite))
+        defer {
+            appDefaults.removePersistentDomain(forName: appSuite)
+            widgetDefaults.removePersistentDomain(forName: widgetSuite)
+        }
+
+        let settings = try AppSettings(
+            defaults: appDefaults,
+            widgetDefaults: widgetDefaults
+        )
+        XCTAssertFalse(settings.widgetShowsHabitName)
+        settings.widgetShowsHabitName = true
+
+        XCTAssertNil(
+            appDefaults.persistentDomain(forName: appSuite)?[
+                AppSettings.StorageKey.widgetShowsHabitName
+            ]
+        )
+        XCTAssertTrue(
+            widgetDefaults.bool(forKey: AppSettings.StorageKey.widgetShowsHabitName)
+        )
+        XCTAssertTrue(
+            try AppSettings(
+                defaults: appDefaults,
+                widgetDefaults: widgetDefaults
+            ).widgetShowsHabitName
+        )
+
+        settings.reset()
+        XCTAssertFalse(settings.widgetShowsHabitName)
+        XCTAssertNil(
+            widgetDefaults.persistentDomain(forName: widgetSuite)?[
+                AppSettings.StorageKey.widgetShowsHabitName
+            ]
+        )
+    }
+
     func testInvalidPersistedReminderTimeFailsInitialization() throws {
         let suiteName = "AppSettingsTests.\(UUID().uuidString)"
         let defaults = try XCTUnwrap(UserDefaults(suiteName: suiteName))

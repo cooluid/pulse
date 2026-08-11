@@ -30,6 +30,7 @@ final class PulseSharedStoreMigratorTests: XCTestCase {
 
         let journal = try readJournal(at: fixture.target.migrationJournalURL)
         XCTAssertEqual(journal.version, PulseSharedStoreMigrationJournal.formatVersion)
+        XCTAssertEqual(journal.mode, .existingStore)
         XCTAssertEqual(journal.phase, .ready)
         XCTAssertEqual(journal.factDigest.value.count, 64)
     }
@@ -166,6 +167,23 @@ final class PulseSharedStoreMigratorTests: XCTestCase {
         XCTAssertEqual(try readFacts(at: fixture.target), expected)
     }
 
+    func testReadyAcceptsLegitimateChangesInTheAuthoritativeTargetStore() throws {
+        let fixture = try makeFixture()
+        defer { fixture.remove() }
+        _ = try createSourceFacts(at: fixture.source)
+        let migrator = PulseSharedStoreMigrator()
+        try migrate(migrator, fixture: fixture)
+
+        try mutateIdentity(at: fixture.target, name: "Changed after ownership switched")
+
+        XCTAssertNoThrow(try migrate(migrator, fixture: fixture))
+        XCTAssertEqual(try migrator.currentPhase(target: fixture.target), .ready)
+        XCTAssertEqual(
+            try readFacts(at: fixture.target).habit.name,
+            "Changed after ownership switched"
+        )
+    }
+
     func testMissingSourceDoesNotSilentlyCreateAnEmptyTarget() throws {
         let fixture = try makeFixture()
         defer { fixture.remove() }
@@ -256,7 +274,7 @@ final class PulseSharedStoreMigratorTests: XCTestCase {
         )
         let digest = String(repeating: "a", count: 64)
         let data = Data(
-            "{\"factDigest\":\"\(digest)\",\"phase\":\"copying\",\"version\":99}"
+            "{\"factDigest\":\"\(digest)\",\"mode\":\"existingStore\",\"phase\":\"copying\",\"version\":99}"
                 .utf8
         )
         try data.write(to: unsupported.target.migrationJournalURL)
@@ -282,7 +300,7 @@ final class PulseSharedStoreMigratorTests: XCTestCase {
         )
         let digest = String(repeating: "a", count: 64)
         let data = Data(
-            "{\"extra\":true,\"factDigest\":\"\(digest)\",\"phase\":\"copying\",\"version\":1}"
+            "{\"extra\":true,\"factDigest\":\"\(digest)\",\"mode\":\"existingStore\",\"phase\":\"copying\",\"version\":2}"
                 .utf8
         )
         try data.write(to: fixture.target.migrationJournalURL)
@@ -302,6 +320,7 @@ final class PulseSharedStoreMigratorTests: XCTestCase {
         }
         XCTAssertThrowsError(
             try PulseSharedStoreMigrationJournal(
+                mode: .existingStore,
                 phase: .notStarted,
                 factDigest: PulseStoreDigest(value: String(repeating: "a", count: 64))
             )

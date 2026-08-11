@@ -1,13 +1,17 @@
-import SwiftData
 import XCTest
 @testable import PulseCore
 
 final class PulseStoreLocationTests: XCTestCase {
-    func testPrivateLocationMatchesTheExistingSwiftDataDefaultStore() throws {
+    func testPrivateLocationUsesTheExplicitApplicationSupportDirectory() throws {
         let location = try PulseStoreLocator().appPrivateLocation()
-        let swiftDataURL = ModelConfiguration(PulseStoreContract.storeName).url
+        let applicationSupport = try XCTUnwrap(
+            FileManager.default.urls(
+                for: .applicationSupportDirectory,
+                in: .userDomainMask
+            ).first
+        )
 
-        XCTAssertEqual(location.storeURL, swiftDataURL)
+        XCTAssertEqual(location.directoryURL, applicationSupport.standardizedFileURL)
         XCTAssertEqual(location.storeURL.lastPathComponent, "Pulse.store")
     }
 

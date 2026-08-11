@@ -1,6 +1,6 @@
 # 一日一印（Pulse）1.0 发布范围合同
 
-文档版本：1.1
+文档版本：1.2
 状态：Canonical Release Contract
 更新时间：2026-08-11
 
@@ -16,7 +16,8 @@ Pulse 1.0 只解决一个问题：让单个用户每天可靠地记录一次签�
 - 首次确认主承诺名称、可选“为什么重要”，并可在设置中编辑；修改不影响签到事实。
 - 固定签到时区和 00:00 日界线。
 - 今日签到、当日唯一性、重复点击保护和跨日刷新。
-- App 内有限日印仪式：待签到只进行一次有限呼吸，保存成功后完成空心到实心落印，Reduce Motion 使用静态等价表达；不包含 Widget 或 Live Activity。
+- App 内有限日印仪式：待签到只进行一次有限呼吸，保存成功后完成空心到实心落印，Reduce Motion 使用静态等价表达；不包含 Live Activity。
+- 免费基础 Widget：Home Screen 小号/中号、Lock Screen 圆形/矩形；只读取同一个 App Group SwiftData store，未签到时提供单向签到 AppIntent，默认不显示主承诺名称且永不显示“为什么重要”。
 - 最近 7 天、月历历史、当前连续、最长连续和累计签到。
 - 删除单条签到记录和清除全部数据。
 - 每日本地提醒；提醒遵循签到项目固定时区，以滚动 60 个日历日的一次性计划运行并在 App 活跃时刷新。
@@ -32,7 +33,7 @@ JSON 是 1.0 唯一恢复协议。CSV 不承担恢复职责，也不进入 1.0�
 - 补签或历史空白日期编辑。
 - 登录、账号和服务器后端。
 - CloudKit 或其他自动多设备同步。
-- 桌面、锁屏小组件和 Apple Watch。
+- Live Activity、灵动岛长期占用、Apple Watch、Control 与 Shortcuts 高级入口。
 - 备注、心情、图片、积分、勋章和里程碑。
 - 社交、排行榜、好友监督和团队考勤。
 - 第三方分析、广告 SDK 和远程行为跟踪。
@@ -41,7 +42,7 @@ JSON 是 1.0 唯一恢复协议。CSV 不承担恢复职责，也不进入 1.0�
 
 ## 4. 数据与隐私承诺
 
-- 签到数据默认只保存在应用沙盒。
+- 签到数据默认只保存在 App 与 Widget 共用的本地 App Group 容器；它仍属于本机应用沙盒边界，不上传到服务器或 iCloud。
 - 用户主动导出后，导出文件的保管责任转移给用户。
 - 未启用云同步时，卸载应用会删除沙盒内数据；发布文案必须明确说明。
 - 应用不上传签到记录，不集成广告或第三方分析 SDK。
@@ -57,7 +58,8 @@ JSON 是 1.0 唯一恢复协议。CSV 不承担恢复职责，也不进入 1.0�
 | Marketing Version | `1.0` | 可作为首版候选 |
 | Build Number | `1` | 首次 TestFlight 前按发布流程递增 |
 | 最低系统版本 | iOS / iPadOS 17.0 | 已在工程统一；本轮按用户指示不下载 17.x 运行时，行为验证仍是发布门禁 |
-| Development Team | `6N3D8YA2FY` | 开发签名 Archive 已通过；App Store 分发 provider 与描述文件仍阻断 |
+| Development Team | `6N3D8YA2FY` | App 与 Widget 的开发签名设备构建及共享 App Group entitlement 已通过；Apple Distribution、Archive/TestFlight 与商店分发仍阻断 |
+| Widget 身份 | `co.fanr.pulse.widgets` / `group.co.fanr.pulse` | 两个开发描述文件均含正式 App Group；模拟器系统画廊、主屏渲染与 AppIntent 已通过，真机仍待验收 |
 | 数据策略 | 本地优先 + Pulse JSON 恢复 | 1.0 推荐方案 |
 | AppIcon | “开放日环”，草绿 Default / Dark / Tinted | 几何与生成合同已录用；当前版本待最终视觉确认 |
 | 隐私政策 | `https://fanr.co/pulse/privacy/` | 已公开，并由 App 设置页直接链接 |
@@ -71,12 +73,13 @@ Bundle ID 一旦用于正式分发，就成为安装、钥匙串、通知和后�
 只有以下条件全部满足，才能把公开发布结论改为 GO：
 
 1. 正式视觉系统与 AppIcon 通过产品验收。
-2. 真实 iPhone 以正式 Bundle ID 完成安装、签到、重启持久化、触觉和通知全流程。
-3. 真实 iPad 完成安装、持久化、横竖屏和分屏验证。
+2. 真实 iPhone 以正式 Bundle ID 完成安装、签到、重启持久化、触觉、通知与小组件全流程。
+3. 真实 iPad 完成安装、持久化、横竖屏、分屏和小组件验证。
 4. 签名 Archive、TestFlight 安装、升级和恢复流程通过。
 5. 已公开的隐私说明与支持页面持续可达，商店文案和截图完成。
 6. Bundle ID、显示名称、版本号和支持设备范围正式签字确认。（Bundle ID 与显示名称已通过）
 7. 至少完成一轮跨多个自然日的内部试用。
+8. 真实设备覆盖 Widget 首次安装、旧私有库升级、App 未运行、锁屏、跨午夜、快速双击和 App/Widget 同日竞争；任何失败都不能显示虚假完成态或产生重复记录。
 
 ## 7. 变更控制
 
