@@ -55,15 +55,34 @@ final class PulseAppModelTests: XCTestCase {
         let context = try makeContext()
         await context.model.start()
 
-        await context.model.checkIn()
-        await context.model.checkIn()
+        let first = await context.model.checkIn()
+        let second = await context.model.checkIn()
 
         XCTAssertNotNil(context.model.todayRecord)
+        XCTAssertEqual(first?.disposition, .created)
+        XCTAssertNil(second)
         XCTAssertEqual(context.model.statistics.currentStreak, 1)
         XCTAssertEqual(context.model.statistics.longestStreak, 1)
         XCTAssertEqual(context.model.statistics.totalCount, 1)
         XCTAssertEqual(context.haptics.successCount, 1)
+        await waitUntil { context.scheduler.snapshots.last?.checkedDays == context.model.checkedDays }
         XCTAssertEqual(context.scheduler.snapshots.last?.checkedDays, context.model.checkedDays)
+    }
+
+    func testRejectedCheckInReturnsNoReceiptOrSuccessFeedback() async throws {
+        let context = try makeContext()
+        await context.model.start()
+        let reminderSnapshotCount = context.scheduler.snapshots.count
+        context.clock.now = makeDate(day: 9, hour: 12)
+
+        let receipt = await context.model.checkIn()
+
+        XCTAssertNil(receipt)
+        XCTAssertNil(context.model.todayRecord)
+        XCTAssertEqual(context.model.statistics, .empty)
+        XCTAssertEqual(context.haptics.successCount, 0)
+        XCTAssertEqual(context.scheduler.snapshots.count, reminderSnapshotCount)
+        XCTAssertNotNil(context.model.errorMessage)
     }
 
     func testAdvancingClockToTomorrowPreservesYesterdayStreak() async throws {

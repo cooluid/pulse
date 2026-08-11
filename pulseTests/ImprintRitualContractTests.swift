@@ -1,0 +1,48 @@
+import Foundation
+import XCTest
+@testable import pulse
+
+@MainActor
+final class ImprintRitualContractTests: XCTestCase {
+    func testFiniteMotionDurationsStayWithinTwoSecondContract() {
+        XCTAssertGreaterThan(PulseDesign.idleAuraBreathDuration, 0)
+        XCTAssertLessThanOrEqual(PulseDesign.idleAuraBreathDuration, 2)
+        XCTAssertGreaterThan(PulseDesign.imprintCompletionDuration, 0)
+        XCTAssertLessThanOrEqual(PulseDesign.imprintCompletionDuration, 2)
+        XCTAssertLessThanOrEqual(PulseDesign.imprintReducedMotionFadeDuration, 2)
+    }
+
+    func testOnlyCommittedPresentationPhasesUseTheSolidGlyph() {
+        XCTAssertFalse(ImprintRitualPhase.ready.usesSolidGlyph)
+        XCTAssertFalse(ImprintRitualPhase.saving.usesSolidGlyph)
+        XCTAssertFalse(ImprintRitualPhase.contracting.usesSolidGlyph)
+        XCTAssertTrue(ImprintRitualPhase.imprinting.usesSolidGlyph)
+        XCTAssertTrue(ImprintRitualPhase.imprinted.usesSolidGlyph)
+    }
+
+    func testProductionSourceContainsNoUnboundedRepeatForeverMotion() throws {
+        let repositoryRoot = URL(fileURLWithPath: #filePath)
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+        let appSource = repositoryRoot.appending(path: "pulse", directoryHint: .isDirectory)
+        let enumerator = try XCTUnwrap(
+            FileManager.default.enumerator(
+                at: appSource,
+                includingPropertiesForKeys: nil
+            )
+        )
+
+        var offenders: [String] = []
+        for case let fileURL as URL in enumerator where fileURL.pathExtension == "swift" {
+            let source = try String(contentsOf: fileURL, encoding: .utf8)
+            if source.contains(".repeatForever(") {
+                offenders.append(fileURL.path.replacingOccurrences(
+                    of: repositoryRoot.path + "/",
+                    with: ""
+                ))
+            }
+        }
+
+        XCTAssertEqual(offenders, [], "Unbounded production motion found in: \(offenders)")
+    }
+}

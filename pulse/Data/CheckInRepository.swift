@@ -6,7 +6,7 @@ protocol CheckInRepositoryProtocol: AnyObject {
     func primaryHabit(systemTimeZone: TimeZone) throws -> Habit
     func allRecords(habitID: UUID) throws -> [CheckInRecord]
     func updateIdentity(habit: Habit, identity: HabitIdentity) throws -> Habit
-    func checkIn(habit: Habit) throws -> CheckInRecord
+    func checkIn(habit: Habit) throws -> CheckInCommitReceipt
     func delete(recordID: UUID) throws
     func updateTimeZone(habit: Habit, identifier: String) throws
     func resetAll(systemTimeZone: TimeZone) throws -> Habit
@@ -85,7 +85,7 @@ final class SwiftDataCheckInRepository: CheckInRepositoryProtocol {
         return persistedHabit
     }
 
-    func checkIn(habit: Habit) throws -> CheckInRecord {
+    func checkIn(habit: Habit) throws -> CheckInCommitReceipt {
         let persistedHabit = try requirePrimaryHabit(id: habit.id)
         let date = clock.now
         let day = try persistedHabit.logicalDay(at: date)
@@ -95,7 +95,7 @@ final class SwiftDataCheckInRepository: CheckInRepositoryProtocol {
         }
 
         if let existing = try record(habitID: persistedHabit.id, day: day) {
-            return existing
+            return try commitReceipt(for: existing, disposition: .alreadyPresent)
         }
 
         let newRecord = CheckInRecord(
@@ -107,7 +107,22 @@ final class SwiftDataCheckInRepository: CheckInRepositoryProtocol {
         )
         context.insert(newRecord)
         try saveOrRollback()
-        return newRecord
+        return try commitReceipt(for: newRecord, disposition: .created)
+    }
+
+    private func commitReceipt(
+        for record: CheckInRecord,
+        disposition: CheckInCommitDisposition
+    ) throws -> CheckInCommitReceipt {
+        guard let logicalDay = record.logicalDay else {
+            throw PulseError.invalidRecordDate(record.logicalDayValue)
+        }
+        return CheckInCommitReceipt(
+            recordID: record.id,
+            logicalDay: logicalDay,
+            checkedAt: record.checkedAt,
+            disposition: disposition
+        )
     }
 
     private func record(habitID: UUID, day: LogicalDay) throws -> CheckInRecord? {

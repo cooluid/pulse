@@ -1,7 +1,7 @@
 # 一日一印（Pulse）系统仪式产品与交互合同
 
-文档版本：0.2<br>
-状态：Proposed Product Contract，不改变 1.0 已冻结范围<br>
+文档版本：0.3<br>
+状态：Canonical Ritual Semantics；当前只将 4.1 的 App 内基础落印纳入首个公开版本，其余能力仍受路线图阶段门禁约束<br>
 评审日期：2026-08-11
 
 本文是 Pulse 在 Widget、Live Activity、灵动岛、锁屏、StandBy、Apple Watch、Control、Action Button 和提醒通道上的产品语义权威。它定义“什么时候出现、表达什么、如何结束、什么可以收费”；签到日期、唯一性、删除和时区仍只以 [DOMAIN_CONTRACT.md](./DOMAIN_CONTRACT.md) 为准，版本顺序只以 [POST_1_0_ROADMAP.md](./POST_1_0_ROADMAP.md) 为准。
@@ -128,6 +128,16 @@ fallbackChannel = none | localNotification
 - Reduce Motion 使用淡入和形状替换，不使用位移、缩放或连续呼吸；
 - Always-On 直接显示最终静态状态；
 - 正常完成后几秒内结束，若启用今日影像则转入影像窗口。
+
+首个公开版本当前只实现 App 内基础落印，不创建 ActivityKit 实例：
+
+- `ready`：静态空心印记；今日页成为当前页时最多播放一次有限呼吸，不能持续循环；
+- `saving`：只显示中性写入反馈，不能出现实心印记、成功触觉或完成时间；
+- `contracting → imprinting → imprinted`：仅由 Repository 的正式提交回执触发，先收缩空心印记，再形成实心印记并停在静态完成态；
+- `failed`：恢复 `ready`，保留可重试入口并显示真实错误，不播放成功动效或触觉；
+- 已签到状态在启动、回前台或重建 View 时直接显示静态 `imprinted`，不得重播一次用户并未刚刚完成的仪式。
+
+App 内页面只保存短暂的呈现阶段和动画进度，不持久化 `activityState`，也不把呈现阶段作为签到事实。一次正常落印总时长不得超过两秒；Reduce Motion 只做短淡入与形状替换，不做缩放、回弹或扩散。
 
 ### 4.2 留印提醒窗口
 

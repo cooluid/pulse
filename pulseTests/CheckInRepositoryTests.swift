@@ -43,7 +43,7 @@ final class CheckInRepositoryTests: XCTestCase {
         XCTAssertTrue(updated.isIdentityConfirmed)
         XCTAssertEqual(updated.createdAt, originalCreatedAt)
         XCTAssertEqual(updated.startLogicalDay, originalStart)
-        XCTAssertEqual(try repository.allRecords(habitID: habit.id).map(\.id), [record.id])
+        XCTAssertEqual(try repository.allRecords(habitID: habit.id).map(\.id), [record.recordID])
     }
 
     func testIdentityUpdateIsIdempotent() throws {
@@ -69,9 +69,10 @@ final class CheckInRepositoryTests: XCTestCase {
         let second = try repository.checkIn(habit: habit)
         let records = try repository.allRecords(habitID: habit.id)
 
-        XCTAssertEqual(first.id, second.id)
+        XCTAssertEqual(first.recordID, second.recordID)
         XCTAssertEqual(first.checkedAt, makeDate(day: 10, hour: 9))
-        XCTAssertEqual(first.timeZoneIdentifier, timeZone.identifier)
+        XCTAssertEqual(first.disposition, .created)
+        XCTAssertEqual(second.disposition, .alreadyPresent)
         XCTAssertEqual(records.count, 1)
     }
 
@@ -100,10 +101,10 @@ final class CheckInRepositoryTests: XCTestCase {
         clock.now = makeDate(day: 11, hour: 9)
         let second = try repository.checkIn(habit: habit)
 
-        try repository.delete(recordID: first.id)
+        try repository.delete(recordID: first.recordID)
         let remaining = try repository.allRecords(habitID: habit.id)
 
-        XCTAssertEqual(remaining.map(\.id), [second.id])
+        XCTAssertEqual(remaining.map(\.id), [second.recordID])
     }
 
     func testResetCreatesANewEmptyPrimaryHabitAtAuthoritativeNow() throws {
@@ -213,7 +214,10 @@ final class CheckInRepositoryTests: XCTestCase {
 
         XCTAssertThrowsError(try repository.replaceAll(with: payload))
         XCTAssertEqual(try repository.primaryHabit(systemTimeZone: timeZone).id, original.id)
-        XCTAssertEqual(try repository.allRecords(habitID: original.id).map(\.id), [originalRecord.id])
+        XCTAssertEqual(
+            try repository.allRecords(habitID: original.id).map(\.id),
+            [originalRecord.recordID]
+        )
     }
 
     func testImportRejectsLogicalDayThatDoesNotMatchRecordTimeZone() throws {

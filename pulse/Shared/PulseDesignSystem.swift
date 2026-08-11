@@ -44,7 +44,6 @@ enum PulseDesign {
     static let weekRailWidth: CGFloat = 244
     static let weekRailDotDiameter: CGFloat = 13
     static let checkInDiameter: CGFloat = 152
-    static let checkInMarkInset: CGFloat = 20
     static let checkInInnerHalo: CGFloat = 18
     static let checkInOuterHalo: CGFloat = 36
 
@@ -79,9 +78,6 @@ enum PulseDesign {
     static let fieldFadeEndRatio = 0.72
     static let regularWidthFieldFadeStartRatio = 0.66
     static let regularWidthFieldFadeEndRatio = 0.86
-    static let fieldExpandedScale = 1.045
-    static let fieldCollapsedScale = 0.965
-
     static let navigationShadowOpacity = 0.12
     static let navigationShadowRadius: CGFloat = 30
     static let navigationShadowY: CGFloat = 10
@@ -91,7 +87,6 @@ enum PulseDesign {
     static let actionShadowRadius: CGFloat = 30
     static let actionShadowY: CGFloat = 12
     static let actionBorderOpacity = 0.55
-    static let actionRingOpacity = 0.62
     static let outerHaloOpacity = 0.07
     static let innerHaloOpacity = 0.12
     static let idleAuraRingOpacity = 0.22
@@ -100,17 +95,16 @@ enum PulseDesign {
     static let completionRippleOpacity = 0.44
     static let fieldOutlineOpacity = 0.56
     static let fieldBandOpacity = 0.09
-    static let fieldCollapsedOpacity = 0.72
     static let deemphasizedCalendarOpacity = 0.62
 
-    static let fieldBreathingDuration = 5.2
-    static let idleAuraBreathingDuration = 3.4
+    static let idleAuraBreathHalfDuration = 0.7
     static let savingAnimationDuration = 0.18
     static let savingIndicatorDelay = 0.25
-    static let completionAnimationDuration = 0.42
-    static let completionRippleDuration = 0.58
-    static let completionPopDuration = 0.16
-    static let completionSettleDuration = 0.3
+    static let imprintContractionDuration = 0.16
+    static let imprintFormationDuration = 0.24
+    static let imprintSettleDuration = 0.22
+    static let imprintReducedMotionFadeDuration = 0.18
+    static let completionRippleDuration = 0.46
     static let completionSettleDamping = 0.72
     static let completionSecondaryDelay = 0.14
     static let completionSecondaryDuration = 0.28
@@ -120,10 +114,16 @@ enum PulseDesign {
     static let monthTransitionDuration = 0.2
     static let completionRippleStartScale: CGFloat = 0.92
     static let completionRippleEndScale: CGFloat = 1.55
-    static let completionControlInitialScale: CGFloat = 0.94
-    static let completionControlOvershootScale: CGFloat = 1.045
+    static let imprintGlyphSize: CGFloat = 24
+    static let imprintGlyphLineWidth: CGFloat = 2
+    static let imprintDotScale: CGFloat = 0.08
+    static let imprintOvershootScale: CGFloat = 1.12
     static let idleAuraCollapsedScale: CGFloat = 0.96
     static let idleAuraExpandedScale: CGFloat = 1.06
+
+    static let imprintCompletionDuration =
+        imprintContractionDuration + imprintFormationDuration + imprintSettleDuration
+    static let idleAuraBreathDuration = idleAuraBreathHalfDuration * 2
 }
 
 struct PulseScreenBackground: View {
@@ -134,12 +134,7 @@ struct PulseScreenBackground: View {
 }
 
 struct PulseFieldBackground: View {
-    let isActive: Bool
-
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
-    @Environment(\.scenePhase) private var scenePhase
-    @State private var isExpanded = false
 
     var body: some View {
         GeometryReader { proxy in
@@ -192,18 +187,6 @@ struct PulseFieldBackground: View {
                 x: proxy.size.width / 2,
                 y: proxy.size.height * verticalPositionRatio
             )
-            .scaleEffect(
-                motionEnabled
-                    ? (isExpanded
-                        ? PulseDesign.fieldExpandedScale
-                        : PulseDesign.fieldCollapsedScale)
-                    : 1
-            )
-            .opacity(
-                motionEnabled
-                    ? (isExpanded ? 1 : PulseDesign.fieldCollapsedOpacity)
-                    : 1
-            )
         }
         .mask {
             LinearGradient(
@@ -230,29 +213,6 @@ struct PulseFieldBackground: View {
         .ignoresSafeArea()
         .allowsHitTesting(false)
         .accessibilityHidden(true)
-        .onAppear(perform: updateMotion)
-        .onChange(of: isActive) { _, _ in updateMotion() }
-        .onChange(of: reduceMotion) { _, _ in updateMotion() }
-        .onChange(of: scenePhase) { _, _ in updateMotion() }
-    }
-
-    private func updateMotion() {
-        guard motionEnabled else {
-            isExpanded = false
-            return
-        }
-
-        isExpanded = false
-        withAnimation(
-            .easeInOut(duration: PulseDesign.fieldBreathingDuration)
-                .repeatForever(autoreverses: true)
-        ) {
-            isExpanded = true
-        }
-    }
-
-    private var motionEnabled: Bool {
-        isActive && !reduceMotion && scenePhase == .active
     }
 }
 

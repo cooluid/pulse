@@ -128,27 +128,30 @@ final class PulseAppModel {
         await reload(reconcileReminders: true)
     }
 
-    func checkIn() async {
+    @discardableResult
+    func checkIn() async -> CheckInCommitReceipt? {
         guard operation == nil,
               todayRecord == nil,
               let habit,
               let today,
               let habitStartDay,
-              today >= habitStartDay else { return }
+              today >= habitStartDay else { return nil }
         operation = .checkIn
         defer { operation = nil }
 
         await Task.yield()
         do {
-            _ = try repository.checkIn(habit: habit)
+            let receipt = try repository.checkIn(habit: habit)
             try loadSnapshot()
-            if settings.hapticsEnabled {
+            if settings.hapticsEnabled, receipt.disposition == .created {
                 hapticFeedback.notifySuccess()
             }
-            await enqueueReminderReconciliation().value
+            enqueueReminderReconciliation()
             scheduleDateBoundaryRefresh()
+            return receipt
         } catch {
             present(error)
+            return nil
         }
     }
 

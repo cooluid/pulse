@@ -11,16 +11,16 @@ struct TodayView: View {
     @Environment(\.locale) private var locale
     @ScaledMetric(relativeTo: .largeTitle) private var dayNumberSize = PulseDesign.dayNumberBaseSize
     @State private var showsSavingIndicator = false
-    @State private var isAwaitingCheckInCompletion = false
+    @State private var imprintRitualPhase: ImprintRitualPhase = .ready
     @State private var completionAnimationSequence = 0
-    @State private var completionControlScale: CGFloat = 1
+    @State private var imprintGlyphScale: CGFloat = 1
     @State private var completionRippleVisible = false
     @State private var completionRippleExpanded = false
 
     var body: some View {
         ZStack {
             PulseScreenBackground()
-            PulseFieldBackground(isActive: isActive)
+            PulseFieldBackground()
 
             VStack(spacing: 0) {
                 PulseAppHeader(source: .today)
@@ -220,11 +220,17 @@ struct TodayView: View {
             : PulseDesign.actionForeground
 
         return Button {
-            isAwaitingCheckInCompletion = true
+            imprintRitualPhase = .saving
             Task {
-                await model.checkIn()
-                if model.todayRecord == nil {
-                    isAwaitingCheckInCompletion = false
+                guard let receipt = await model.checkIn() else {
+                    synchronizeRitualState(isChecked: model.todayRecord != nil)
+                    return
+                }
+                switch receipt.disposition {
+                case .created:
+                    completionAnimationSequence += 1
+                case .alreadyPresent:
+                    resetRitualPresentation(phase: .imprinted)
                 }
             }
         } label: {
@@ -258,21 +264,6 @@ struct TodayView: View {
                             color: PulseDesign.shadow.opacity(PulseDesign.actionShadowOpacity),
                             radius: PulseDesign.actionShadowRadius,
                             y: PulseDesign.actionShadowY
-                        )
-
-                    Circle()
-                        .trim(from: isChecked ? 0 : 0.08, to: isChecked ? 1 : 0.94)
-                        .stroke(
-                            controlForeground.opacity(PulseDesign.actionRingOpacity),
-                            lineWidth: PulseDesign.thinLineWidth
-                        )
-                        .rotationEffect(.degrees(isChecked ? 378 : 18))
-                        .padding(PulseDesign.checkInMarkInset)
-                        .animation(
-                            reduceMotion
-                                ? nil
-                                : .easeOut(duration: PulseDesign.completionAnimationDuration),
-                            value: isChecked
                         )
 
                     checkInStatusContent(foreground: controlForeground)
@@ -309,20 +300,27 @@ struct TodayView: View {
         .disabled(isChecked || !model.canCheckInToday)
         .accessibilityIdentifier("today.checkin.button")
         .scaleEffect(model.isSaving && !reduceMotion ? 0.97 : 1)
-        .scaleEffect(completionControlScale)
         .animation(
             reduceMotion ? nil : .easeInOut(duration: PulseDesign.savingAnimationDuration),
             value: model.isSaving
         )
-        .animation(completionAnimation, value: isChecked)
+        .onAppear {
+            synchronizeRitualState(isChecked: isChecked)
+        }
         .onChange(of: isChecked) { wasChecked, isNowChecked in
-            guard !wasChecked, isNowChecked, isAwaitingCheckInCompletion else { return }
-            isAwaitingCheckInCompletion = false
-            completionAnimationSequence += 1
+            if !isNowChecked {
+                resetRitualPresentation(phase: .ready)
+            } else if !wasChecked, imprintRitualPhase != .saving {
+                resetRitualPresentation(phase: .imprinted)
+            }
         }
         .onChange(of: reduceMotion) { _, shouldReduceMotion in
             if shouldReduceMotion {
-                resetCompletionMotion()
+                if isChecked, imprintRitualPhase != .imprinted {
+                    completionAnimationSequence += 1
+                } else {
+                    resetRitualPresentation(phase: isChecked ? .imprinted : .ready)
+                }
             }
         }
         .task(id: completionAnimationSequence) {
@@ -352,28 +350,45 @@ struct TodayView: View {
 
     @ViewBuilder
     private func checkInStatusContent(foreground: Color) -> some View {
-        if model.isSaving && showsSavingIndicator {
-            ProgressView()
-                .controlSize(.large)
-                .tint(foreground)
-                .transition(.opacity)
+        if imprintRitualPhase == .contracting || imprintRitualPhase == .imprinting {
+            PulseImprintGlyph(
+                isSolid: imprintRitualPhase.usesSolidGlyph,
+                foreground: foreground
+            )
+            .scaleEffect(imprintGlyphScale)
+        } else if imprintRitualPhase == .saving {
+            if model.isSaving && showsSavingIndicator {
+                ProgressView()
+                    .controlSize(.large)
+                    .tint(foreground)
+                    .transition(.opacity)
+            } else {
+                pendingCheckInStatusContent(foreground: foreground)
+            }
         } else if let completedCheckInText {
             VStack(spacing: PulseDesign.spacing4) {
-                Image(systemName: "checkmark")
-                    .font(.system(.title, design: .default, weight: .medium))
+                PulseImprintGlyph(isSolid: true, foreground: foreground)
 
                 Text(completedCheckInText)
                     .font(.headline.bold())
             }
             .foregroundStyle(foreground)
             .multilineTextAlignment(.center)
-            .transition(.scale(scale: 0.88).combined(with: .opacity))
+            .transition(.opacity)
         } else {
+            pendingCheckInStatusContent(foreground: foreground)
+        }
+    }
+
+    private func pendingCheckInStatusContent(foreground: Color) -> some View {
+        VStack(spacing: PulseDesign.spacing8) {
+            PulseImprintGlyph(isSolid: false, foreground: foreground)
+
             Text("today.check_in")
                 .font(.headline.bold())
-                .foregroundStyle(foreground)
-                .transition(.opacity)
         }
+        .foregroundStyle(foreground)
+        .transition(.opacity)
     }
 
     private var completedCheckInText: String? {
@@ -476,12 +491,6 @@ struct TodayView: View {
         .accessibilityElement(children: .combine)
     }
 
-    private var completionAnimation: Animation? {
-        reduceMotion
-            ? nil
-            : .easeOut(duration: PulseDesign.completionAnimationDuration)
-    }
-
     private var completionSecondaryAnimation: Animation? {
         reduceMotion
             ? nil
@@ -490,51 +499,80 @@ struct TodayView: View {
     }
 
     private func runCompletionMotion() async {
-        guard completionAnimationSequence > 0, !reduceMotion else {
-            resetCompletionMotion()
+        guard completionAnimationSequence > 0 else { return }
+        guard model.todayRecord != nil else {
+            resetRitualPresentation(phase: .ready)
+            return
+        }
+        guard !reduceMotion else {
+            resetRitualPresentation(phase: .imprinting)
+            withAnimation(.easeOut(duration: PulseDesign.imprintReducedMotionFadeDuration)) {
+                imprintRitualPhase = .imprinted
+            }
             return
         }
 
-        resetCompletionMotion(
-            controlScale: PulseDesign.completionControlInitialScale,
-            rippleVisible: true
-        )
+        resetRitualPresentation(phase: .contracting)
         await Task.yield()
 
+        withAnimation(.easeIn(duration: PulseDesign.imprintContractionDuration)) {
+            imprintGlyphScale = PulseDesign.imprintDotScale
+        }
+
+        do {
+            try await Task.sleep(for: .seconds(PulseDesign.imprintContractionDuration))
+        } catch {
+            synchronizeRitualState(isChecked: model.todayRecord != nil)
+            return
+        }
+
+        imprintRitualPhase = .imprinting
+        completionRippleVisible = true
+        completionRippleExpanded = false
         withAnimation(.easeOut(duration: PulseDesign.completionRippleDuration)) {
             completionRippleExpanded = true
             completionRippleVisible = false
         }
-        withAnimation(.easeOut(duration: PulseDesign.completionPopDuration)) {
-            completionControlScale = PulseDesign.completionControlOvershootScale
+        withAnimation(.easeOut(duration: PulseDesign.imprintFormationDuration)) {
+            imprintGlyphScale = PulseDesign.imprintOvershootScale
         }
 
         do {
-            try await Task.sleep(for: .seconds(PulseDesign.completionPopDuration))
+            try await Task.sleep(for: .seconds(PulseDesign.imprintFormationDuration))
         } catch {
-            resetCompletionMotion()
+            synchronizeRitualState(isChecked: model.todayRecord != nil)
             return
         }
 
         withAnimation(
             .spring(
-                response: PulseDesign.completionSettleDuration,
+                response: PulseDesign.imprintSettleDuration,
                 dampingFraction: PulseDesign.completionSettleDamping
             )
         ) {
-            completionControlScale = 1
+            imprintGlyphScale = 1
         }
+
+        do {
+            try await Task.sleep(for: .seconds(PulseDesign.imprintSettleDuration))
+        } catch {
+            synchronizeRitualState(isChecked: model.todayRecord != nil)
+            return
+        }
+        resetRitualPresentation(phase: .imprinted)
     }
 
-    private func resetCompletionMotion(
-        controlScale: CGFloat = 1,
-        rippleVisible: Bool = false
-    ) {
+    private func synchronizeRitualState(isChecked: Bool) {
+        resetRitualPresentation(phase: isChecked ? .imprinted : .ready)
+    }
+
+    private func resetRitualPresentation(phase: ImprintRitualPhase) {
         var transaction = Transaction()
         transaction.disablesAnimations = true
         withTransaction(transaction) {
-            completionControlScale = controlScale
-            completionRippleVisible = rippleVisible
+            imprintRitualPhase = phase
+            imprintGlyphScale = 1
+            completionRippleVisible = false
             completionRippleExpanded = false
         }
     }
@@ -562,6 +600,29 @@ struct TodayView: View {
         )
     }
 
+}
+
+private struct PulseImprintGlyph: View {
+    let isSolid: Bool
+    let foreground: Color
+
+    var body: some View {
+        Circle()
+            .fill(isSolid ? foreground : .clear)
+            .overlay {
+                Circle()
+                    .stroke(
+                        foreground,
+                        lineWidth: PulseDesign.imprintGlyphLineWidth
+                    )
+                    .opacity(isSolid ? 0 : 1)
+            }
+            .frame(
+                width: PulseDesign.imprintGlyphSize,
+                height: PulseDesign.imprintGlyphSize
+            )
+            .accessibilityHidden(true)
+    }
 }
 
 private struct PulseCheckInButtonStyle: ButtonStyle {
@@ -614,10 +675,9 @@ private struct PulseCheckInIdleAura: View {
                     height: PulseDesign.checkInDiameter + PulseDesign.checkInInnerHalo * 2
                 )
         }
-        .onAppear(perform: updateMotion)
-        .onChange(of: isBreathing) { _, _ in updateMotion() }
-        .onChange(of: reduceMotion) { _, _ in updateMotion() }
-        .onChange(of: scenePhase) { _, _ in updateMotion() }
+        .task(id: motionEnabled) {
+            await runFiniteBreath()
+        }
     }
 
     private var motionEnabled: Bool {
@@ -643,18 +703,35 @@ private struct PulseCheckInIdleAura: View {
             : 1
     }
 
-    private func updateMotion() {
+    private func runFiniteBreath() async {
         guard motionEnabled else {
-            isExpanded = false
+            resetMotion()
             return
         }
 
-        isExpanded = false
-        withAnimation(
-            .easeInOut(duration: PulseDesign.idleAuraBreathingDuration)
-                .repeatForever(autoreverses: true)
-        ) {
+        resetMotion()
+        await Task.yield()
+        withAnimation(.easeInOut(duration: PulseDesign.idleAuraBreathHalfDuration)) {
             isExpanded = true
+        }
+
+        do {
+            try await Task.sleep(for: .seconds(PulseDesign.idleAuraBreathHalfDuration))
+        } catch {
+            resetMotion()
+            return
+        }
+
+        withAnimation(.easeInOut(duration: PulseDesign.idleAuraBreathHalfDuration)) {
+            isExpanded = false
+        }
+    }
+
+    private func resetMotion() {
+        var transaction = Transaction()
+        transaction.disablesAnimations = true
+        withTransaction(transaction) {
+            isExpanded = false
         }
     }
 }

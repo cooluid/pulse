@@ -2,7 +2,6 @@ import SwiftUI
 
 struct HistoryView: View {
     @Bindable var model: PulseAppModel
-    let isActive: Bool
     let primaryNavigationClearance: CGFloat
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -20,7 +19,7 @@ struct HistoryView: View {
     var body: some View {
         ZStack {
             PulseScreenBackground()
-            PulseFieldBackground(isActive: isActive)
+            PulseFieldBackground()
 
             VStack(spacing: 0) {
                 PulseAppHeader(source: .history)

@@ -1,6 +1,6 @@
 # Pulse 技术设计
 
-文档版本：1.1<br>
+文档版本：1.2<br>
 状态：Implemented
 
 ## 1. 工程基线
@@ -52,6 +52,8 @@ JSON 只导出 v2。导入先解码最小版本信封，再由精确的 v1/v2 �
 - 全量清除用持久化操作日志跨启动恢复，避免数据库已清空但设置/通知未清的假成功。
 - 导入先限制文件大小，再解码和完整验证，最后由 Repository 单次替换。
 - 主承诺输入由 `HabitIdentity` 统一规范化与验证；View 不直接修改 `Habit`。Repository 只在值变化或首次确认时保存，保存失败统一 rollback。
+- Repository 的签到命令返回不可持久化的 `CheckInCommitReceipt`，明确标记新建或幂等命中；AppModel 在刷新正式快照后才把回执交给页面，并只为新建事实触发一次成功触觉。
+- 今日页的日印状态机只拥有 `ready / saving / contracting / imprinting / imprinted` 短暂呈现状态。启动时从 `todayRecord` 投影为静态状态，失败回到 `ready`；不把动画阶段写入 SwiftData 或 UserDefaults。
 
 ## 5. 提醒一致性
 
@@ -80,7 +82,8 @@ JSON 只导出 v2。导入先解码最小版本信封，再由精确的 v1/v2 �
 - JSON 生成物按字节检查；PNG 按解码后的 mode、尺寸和像素检查，隔离压缩器版本差异。
 - 所有布局、透明度和动效常量集中于 `PulseDesign`。
 - 正文使用 Dynamic Type；104 pt 日号用 `@ScaledMetric`。Accessibility 字号下，固定圆形主动作切换为可扩展胶囊。
-- Reduce Motion 关闭脉冲呼吸和按压/保存缩放。
+- 待签到光环只在今日页成为当前页时进行一次有限呼吸；背景场保持静态，不存在 `repeatForever` 动画。
+- 正常落印总时长不超过两秒；Reduce Motion 关闭呼吸、收缩、回弹和扩散，只保留短淡入与静态形状替换。
 
 ## 8. 安全与隐私
 

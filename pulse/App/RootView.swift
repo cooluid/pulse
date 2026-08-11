@@ -103,7 +103,6 @@ struct RootView: View {
             NavigationStack(path: $historyPath) {
                 HistoryView(
                     model: model,
-                    isActive: selectedSection == .history && historyPath.isEmpty,
                     primaryNavigationClearance: primaryNavigationHeight
                 )
                     .accessibilityHidden(!historyPath.isEmpty)
