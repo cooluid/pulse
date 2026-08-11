@@ -1732,13 +1732,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "TODAY / %@ / %@"
+            "value" : "%@ / %@"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "TODAY / %@ / %@"
+            "value" : "%@ / %@"
           }
         }
       }
@@ -1791,50 +1791,36 @@
         }
       }
     },
-    "today.rhythm_label" : {
+    "today.rhythm.start_today" : {
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "CURRENT RHYTHM"
+            "value" : "Start today"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "CURRENT RHYTHM"
+            "value" : "从今天开始"
           }
         }
       }
     },
-    "today.streak_encouragement" : {
+    "today.rhythm.streak_format" : {
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Keep your rhythm, without comparison"
+            "value" : "%lld-day streak"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "保持自己的节奏，不与别人比较"
-          }
-        }
-      }
-    },
-    "unit.days" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "days"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "天"
+            "value" : "连续 %lld 天"
           }
         }
       }

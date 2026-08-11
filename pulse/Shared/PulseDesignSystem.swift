@@ -74,6 +74,7 @@ enum PulseDesign {
     static let regularWidthFieldHeightRatio = 0.82
     static let regularWidthFieldRingInset: CGFloat = 96
     static let regularWidthFieldVerticalPositionRatio = 0.46
+    static let fieldFadeInEndRatio = 0.08
     static let fieldFadeStartRatio = 0.52
     static let fieldFadeEndRatio = 0.72
     static let regularWidthFieldFadeStartRatio = 0.66
@@ -191,7 +192,8 @@ struct PulseFieldBackground: View {
         .mask {
             LinearGradient(
                 stops: [
-                    .init(color: .black, location: 0),
+                    .init(color: .clear, location: 0),
+                    .init(color: .black, location: PulseDesign.fieldFadeInEndRatio),
                     .init(
                         color: .black,
                         location: horizontalSizeClass == .regular

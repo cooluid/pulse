@@ -68,7 +68,7 @@ struct TodayView: View {
 
                 VStack(spacing: 0) {
                     weekRail
-                    streakBand
+                    rhythmStatus
                         .padding(.top, PulseDesign.spacing32)
                 }
                 .frame(maxWidth: .infinity)
@@ -85,7 +85,7 @@ struct TodayView: View {
                     )
                 weekRail
                     .padding(.top, PulseDesign.checkInOuterHalo + PulseDesign.spacing12)
-                streakBand
+                rhythmStatus
                     .padding(.top, PulseDesign.spacing24)
             }
             .padding(.bottom, PulseDesign.spacing24)
@@ -412,84 +412,34 @@ struct TodayView: View {
         return Text("today.accessibility.check_in")
     }
 
-    private var streakBand: some View {
-        Group {
-            if dynamicTypeSize.isAccessibilitySize {
-                VStack(alignment: .leading, spacing: PulseDesign.spacing16) {
-                    rhythmCommitment
-                    streakCount
-                        .frame(maxWidth: .infinity, alignment: .trailing)
-                }
-            } else {
-                HStack(alignment: .bottom, spacing: PulseDesign.spacing16) {
-                    rhythmCommitment
-                    Spacer(minLength: PulseDesign.spacing16)
-                    streakCount
-                }
-            }
+    private var rhythmStatus: some View {
+        Text(rhythmStatusText)
+            .font(.footnote.weight(.medium))
+            .monospacedDigit()
+            .foregroundStyle(PulseDesign.secondary)
+            .fixedSize(horizontal: false, vertical: true)
+            .frame(maxWidth: .infinity, alignment: .center)
+            .multilineTextAlignment(.center)
+            .contentTransition(
+                .numericText(value: Double(model.statistics.currentStreak))
+            )
+            .animation(
+                completionSecondaryAnimation,
+                value: model.statistics.currentStreak
+            )
+            .accessibilityIdentifier("today.rhythm.status")
+    }
+
+    private var rhythmStatusText: String {
+        guard model.statistics.currentStreak > 0 else {
+            return PulseLocalization.string("today.rhythm.start_today", locale: locale)
         }
-        .padding(.horizontal, PulseDesign.spacing16)
-        .padding(.vertical, PulseDesign.spacing16)
-        .overlay {
-            Capsule()
-                .stroke(PulseDesign.separator, lineWidth: PulseDesign.thinLineWidth)
-        }
-        .animation(
-            completionSecondaryAnimation,
-            value: model.statistics.currentStreak
+
+        return String(
+            format: PulseLocalization.string("today.rhythm.streak_format", locale: locale),
+            locale: locale,
+            arguments: [Int64(model.statistics.currentStreak)]
         )
-        .accessibilityElement(children: .contain)
-        .accessibilityIdentifier("today.streak.band")
-    }
-
-    private var rhythmCommitment: some View {
-        VStack(alignment: .leading, spacing: PulseDesign.spacing4) {
-            Text("today.rhythm_label")
-                .font(.system(.caption2, design: .default, weight: .bold))
-                .textCase(.uppercase)
-                .foregroundStyle(PulseDesign.ink)
-
-            if let habit = model.habit {
-                Text(habit.name)
-                    .font(.headline.weight(.semibold))
-                    .foregroundStyle(PulseDesign.ink)
-                    .fixedSize(horizontal: false, vertical: true)
-                    .accessibilityIdentifier("today.commitment.name")
-
-                if let purpose = habit.purpose {
-                    Text(purpose)
-                        .font(.footnote)
-                        .foregroundStyle(PulseDesign.secondary)
-                        .fixedSize(horizontal: false, vertical: true)
-                        .accessibilityIdentifier("today.commitment.purpose")
-                }
-            }
-
-            Text("today.streak_encouragement")
-                .font(.caption)
-                .foregroundStyle(PulseDesign.secondary)
-                .fixedSize(horizontal: false, vertical: true)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .accessibilityElement(children: .contain)
-        .accessibilityIdentifier("today.rhythm.commitment")
-    }
-
-    private var streakCount: some View {
-        HStack(alignment: .firstTextBaseline, spacing: PulseDesign.spacing4) {
-            Text(model.statistics.currentStreak, format: .number)
-                .font(.title.bold())
-                .monospacedDigit()
-                .foregroundStyle(PulseDesign.ink)
-                .contentTransition(
-                    .numericText(value: Double(model.statistics.currentStreak))
-                )
-
-            Text("unit.days")
-                .font(.footnote.bold())
-                .foregroundStyle(PulseDesign.ink)
-        }
-        .accessibilityElement(children: .combine)
     }
 
     private var completionSecondaryAnimation: Animation? {

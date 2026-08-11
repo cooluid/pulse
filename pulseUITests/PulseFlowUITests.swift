@@ -34,11 +34,12 @@ final class PulseFlowUITests: XCTestCase {
 
         let weekRail = app.otherElements["today.week.rail"]
         XCTAssertTrue(weekRail.waitForExistence(timeout: 3))
-        XCTAssertGreaterThanOrEqual(weekRail.frame.minY, checkInButton.frame.maxY)
+        assertWeekRailDoesNotOverlapCheckIn()
         assertWeekRailGeometry()
-        assertRemovedTodayCopyIsAbsent()
+        assertObsoleteTodayDesignIsAbsent()
         assertHeroGeometry()
-        assertCommitmentLivesInRhythmBand()
+        assertRhythmStatusFollowsWeekRail()
+        assertRhythmStatus(equals: "从今天开始")
 
         let pendingAttachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
         pendingAttachment.name = "Today before check-in"
@@ -49,10 +50,11 @@ final class PulseFlowUITests: XCTestCase {
 
         XCTAssertFalse(checkInButton.isEnabled)
         XCTAssertTrue(checkInButton.label.contains("已签到"))
+        assertRhythmStatus(equals: "连续 1 天")
         assertWeekRailGeometry()
-        assertRemovedTodayCopyIsAbsent()
+        assertObsoleteTodayDesignIsAbsent()
         assertHeroGeometry()
-        assertCommitmentLivesInRhythmBand()
+        assertRhythmStatusFollowsWeekRail()
 
         app.terminate()
         app.launchEnvironment.removeValue(forKey: "PULSE_UI_TEST_RESET")
@@ -62,9 +64,10 @@ final class PulseFlowUITests: XCTestCase {
         XCTAssertTrue(persistedCheckInButton.waitForExistence(timeout: 5))
         XCTAssertFalse(persistedCheckInButton.isEnabled)
         XCTAssertTrue(persistedCheckInButton.label.contains("已签到"))
-        assertRemovedTodayCopyIsAbsent()
+        assertRhythmStatus(equals: "连续 1 天")
+        assertObsoleteTodayDesignIsAbsent()
         assertHeroGeometry()
-        assertCommitmentLivesInRhythmBand()
+        assertRhythmStatusFollowsWeekRail()
 
         let todayAttachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
         todayAttachment.name = "Today after persisted check-in"
@@ -106,7 +109,7 @@ final class PulseFlowUITests: XCTestCase {
         XCTAssertFalse(app.buttons["primary.navigation.history"].exists)
         XCTAssertFalse(app.staticTexts["today.day.number"].exists)
         XCTAssertFalse(app.otherElements["today.week.rail"].exists)
-        XCTAssertFalse(app.otherElements["today.streak.band"].exists)
+        XCTAssertFalse(app.otherElements["today.rhythm.summary"].exists)
 
         let settingsAttachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
         settingsAttachment.name = "Settings without primary navigation"
@@ -264,12 +267,12 @@ final class PulseFlowUITests: XCTestCase {
         XCTAssertLessThanOrEqual(todayNavigation.frame.maxY, app.frame.maxY)
         XCTAssertLessThanOrEqual(historyNavigation.frame.maxY, app.frame.maxY)
 
-        let streakBand = app.descendants(matching: .any)["today.streak.band"]
-        XCTAssertTrue(streakBand.exists)
+        let rhythmStatus = app.staticTexts["today.rhythm.status"]
+        XCTAssertTrue(rhythmStatus.exists)
         checkInButton.swipeUp()
         app.swipeUp()
-        XCTAssertTrue(streakBand.isHittable)
-        XCTAssertLessThanOrEqual(streakBand.frame.maxY, todayNavigation.frame.minY)
+        XCTAssertTrue(rhythmStatus.isHittable)
+        XCTAssertLessThanOrEqual(rhythmStatus.frame.maxY, todayNavigation.frame.minY)
     }
 
     func testHistoryExposesBidirectionalMonthNavigation() throws {
@@ -344,28 +347,40 @@ final class PulseFlowUITests: XCTestCase {
         XCTAssertTrue(purposeField.exists)
         XCTAssertTrue(saveButton.isEnabled)
 
-        nameField.tap()
-        nameField.typeText(" · 阅读")
+        let longCommitment = "每日签到，严于律己，坚持，改变，蜕变，积极，心态"
+        replaceText(in: nameField, with: longCommitment)
         nameField.typeText(XCUIKeyboardKey.return.rawValue)
         XCTAssertTrue(purposeField.waitForExistence(timeout: 3))
         purposeField.typeText("保持思考")
         purposeField.typeText(XCUIKeyboardKey.return.rawValue)
         saveButton.tap()
 
-        let commitmentName = app.staticTexts["today.commitment.name"]
-        let commitmentPurpose = app.staticTexts["today.commitment.purpose"]
-        XCTAssertTrue(commitmentName.waitForExistence(timeout: 5))
-        XCTAssertTrue(commitmentName.label.contains("阅读"))
-        XCTAssertTrue(commitmentPurpose.label.contains("保持思考"))
+        XCTAssertTrue(app.buttons["today.checkin.button"].waitForExistence(timeout: 5))
+        XCTAssertFalse(app.staticTexts["today.commitment.name"].exists)
+        XCTAssertFalse(app.staticTexts["today.commitment.purpose"].exists)
+        assertRhythmStatusFollowsWeekRail()
+
+        let longCommitmentAttachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
+        longCommitmentAttachment.name = "Today with long commitment kept out of root"
+        longCommitmentAttachment.lifetime = .keepAlways
+        add(longCommitmentAttachment)
 
         app.terminate()
         app.launchEnvironment.removeValue(forKey: "PULSE_UI_TEST_RESET")
         app.launch()
 
-        XCTAssertTrue(app.staticTexts["today.commitment.name"].waitForExistence(timeout: 5))
-        XCTAssertTrue(app.staticTexts["today.commitment.name"].label.contains("阅读"))
-        XCTAssertTrue(app.staticTexts["today.commitment.purpose"].label.contains("保持思考"))
+        XCTAssertTrue(app.buttons["today.checkin.button"].waitForExistence(timeout: 5))
+        XCTAssertFalse(app.staticTexts["today.commitment.name"].exists)
+        XCTAssertFalse(app.staticTexts["today.commitment.purpose"].exists)
         XCTAssertFalse(app.buttons["commitment.save.button"].exists)
+        assertRhythmStatusFollowsWeekRail()
+
+        openCommitmentEditorFromToday()
+        XCTAssertEqual(
+            app.textFields["commitment.name.field"].value as? String,
+            longCommitment
+        )
+        XCTAssertEqual(app.textFields["commitment.purpose.field"].value as? String, "保持思考")
     }
 
     func testCommitmentRejectsBlankAndOversizedNameAtTheUIBoundary() throws {
@@ -415,19 +430,40 @@ final class PulseFlowUITests: XCTestCase {
 
         let settingsNavigationBar = app.navigationBars["设置"]
         XCTAssertTrue(settingsNavigationBar.waitForExistence(timeout: 3))
+
+        commitmentLink.tap()
+        XCTAssertTrue(app.textFields["commitment.name.field"].waitForExistence(timeout: 3))
+        XCTAssertTrue(
+            (app.textFields["commitment.name.field"].value as? String)?.contains("深度工作")
+                == true
+        )
+        XCTAssertEqual(
+            app.textFields["commitment.purpose.field"].value as? String,
+            "把注意力留给重要的事"
+        )
+        app.navigationBars.buttons.firstMatch.tap()
+
+        XCTAssertTrue(settingsNavigationBar.waitForExistence(timeout: 3))
         settingsNavigationBar.buttons.firstMatch.tap()
 
-        XCTAssertTrue(app.staticTexts["today.commitment.name"].waitForExistence(timeout: 3))
-        XCTAssertTrue(app.staticTexts["today.commitment.name"].label.contains("深度工作"))
-        XCTAssertTrue(app.staticTexts["today.commitment.purpose"].label.contains("注意力"))
+        XCTAssertFalse(app.staticTexts["today.commitment.name"].exists)
+        XCTAssertFalse(app.staticTexts["today.commitment.purpose"].exists)
+        assertRhythmStatusFollowsWeekRail()
         XCTAssertFalse(app.buttons["today.checkin.button"].isEnabled)
     }
 
-    private func assertRemovedTodayCopyIsAbsent() {
+    private func assertObsoleteTodayDesignIsAbsent() {
         XCTAssertFalse(app.staticTexts["给今天留下一枚印记"].exists)
         XCTAssertFalse(app.staticTexts["今天已留下一枚印记"].exists)
         XCTAssertFalse(app.staticTexts["写入本机后完成"].exists)
         XCTAssertFalse(app.staticTexts["还没有留下今天的印"].exists)
+        XCTAssertFalse(app.staticTexts["CURRENT RHYTHM"].exists)
+        XCTAssertFalse(app.staticTexts["保持自己的节奏，不与别人比较"].exists)
+        XCTAssertFalse(app.staticTexts["today.commitment.name"].exists)
+        XCTAssertFalse(app.staticTexts["today.commitment.purpose"].exists)
+        XCTAssertFalse(app.descendants(matching: .any)["today.streak.band"].exists)
+        XCTAssertFalse(app.descendants(matching: .any)["today.rhythm.commitment"].exists)
+        XCTAssertFalse(app.descendants(matching: .any)["today.rhythm.summary"].exists)
         XCTAssertEqual(
             app.staticTexts.matching(
                 NSPredicate(format: "label CONTAINS %@", "写入本机")
@@ -455,22 +491,56 @@ final class PulseFlowUITests: XCTestCase {
         XCTAssertEqual(today.frame.maxY, previousDay.frame.maxY, accuracy: 1)
     }
 
+    private func assertWeekRailDoesNotOverlapCheckIn() {
+        let weekRail = app.otherElements["today.week.rail"]
+        let checkInButton = app.buttons["today.checkin.button"]
+        XCTAssertTrue(weekRail.exists)
+        XCTAssertTrue(checkInButton.exists)
+
+        let isVerticallyAfter = weekRail.frame.minY >= checkInButton.frame.maxY
+        let isHorizontallySeparate = weekRail.frame.maxX <= checkInButton.frame.minX
+            || weekRail.frame.minX >= checkInButton.frame.maxX
+        XCTAssertTrue(
+            isVerticallyAfter || isHorizontallySeparate,
+            "The week rail must follow or sit beside the check-in control without overlap."
+        )
+    }
+
     private func assertHeroGeometry() {
         let dayNumber = app.staticTexts["today.day.number"]
         let kicker = app.staticTexts["today.hero.kicker"]
         XCTAssertTrue(dayNumber.exists)
         XCTAssertTrue(kicker.exists)
         XCTAssertTrue(kicker.label.contains("星期"))
-        XCTAssertEqual(dayNumber.frame.midX, app.frame.midX, accuracy: 1)
+        XCTAssertEqual(dayNumber.frame.midX, kicker.frame.midX, accuracy: 1)
         XCTAssertLessThan(kicker.frame.maxY, dayNumber.frame.minY)
     }
 
-    private func assertCommitmentLivesInRhythmBand() {
-        let commitmentName = app.staticTexts["today.commitment.name"]
-        let rhythmBand = app.descendants(matching: .any)["today.streak.band"]
-        XCTAssertTrue(commitmentName.exists)
-        XCTAssertTrue(rhythmBand.exists)
-        XCTAssertGreaterThanOrEqual(commitmentName.frame.minY, rhythmBand.frame.minY)
-        XCTAssertLessThanOrEqual(commitmentName.frame.maxY, rhythmBand.frame.maxY)
+    private func assertRhythmStatusFollowsWeekRail() {
+        let weekRail = app.otherElements["today.week.rail"]
+        let rhythmStatus = app.staticTexts["today.rhythm.status"]
+        XCTAssertTrue(weekRail.exists)
+        XCTAssertTrue(rhythmStatus.exists)
+        XCTAssertEqual(rhythmStatus.frame.midX, weekRail.frame.midX, accuracy: 1)
+        XCTAssertGreaterThanOrEqual(rhythmStatus.frame.minY, weekRail.frame.maxY)
+    }
+
+    private func assertRhythmStatus(equals expectedStatus: String) {
+        let rhythmStatus = app.staticTexts["today.rhythm.status"]
+        XCTAssertTrue(rhythmStatus.waitForExistence(timeout: 3))
+        let expectedLabel = NSPredicate(format: "label == %@", expectedStatus)
+        expectation(for: expectedLabel, evaluatedWith: rhythmStatus)
+        waitForExpectations(timeout: 3)
+    }
+
+    private func openCommitmentEditorFromToday() {
+        let settingsButton = app.buttons["settings.navigation.open.today"]
+        XCTAssertTrue(settingsButton.waitForExistence(timeout: 3))
+        settingsButton.tap()
+
+        let commitmentLink = app.descendants(matching: .any)["settings.commitment.link"]
+        XCTAssertTrue(commitmentLink.waitForExistence(timeout: 3))
+        commitmentLink.tap()
+        XCTAssertTrue(app.textFields["commitment.purpose.field"].waitForExistence(timeout: 3))
     }
 }
