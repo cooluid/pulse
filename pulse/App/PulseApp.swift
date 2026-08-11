@@ -11,6 +11,7 @@ private enum PulseBootstrap {
     private struct RuntimeStore {
         let name: String
         let inMemory: Bool
+        let url: URL?
     }
 
     case ready(PulseAppModel)
@@ -25,10 +26,11 @@ private enum PulseBootstrap {
     static func build() -> PulseBootstrap {
         do {
             let clock = runtimeClock()
-            let store = runtimeStore()
+            let store = try runtimeStore()
             let container = try PersistenceController.makeContainer(
                 inMemory: store.inMemory,
-                storeName: store.name
+                storeName: store.name,
+                storeURL: store.url
             )
             let initialIdentity = try HabitIdentity(
                 userName: PulseLocalization.string(
@@ -74,19 +76,27 @@ private enum PulseBootstrap {
         return SystemPulseClock()
     }
 
-    private static func runtimeStore() -> RuntimeStore {
+    private static func runtimeStore() throws -> RuntimeStore {
 #if DEBUG
         if let value = ProcessInfo.processInfo.environment["PULSE_UI_TEST_STORE_ID"] {
             guard let identifier = UUID(uuidString: value) else {
                 preconditionFailure("PULSE_UI_TEST_STORE_ID must be a UUID.")
             }
-            return RuntimeStore(name: "PulseUITest-\(identifier.uuidString)", inMemory: false)
+            return RuntimeStore(
+                name: "PulseUITest-\(identifier.uuidString)",
+                inMemory: false,
+                url: nil
+            )
         }
         if ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil {
-            return RuntimeStore(name: "PulseUnitTests", inMemory: true)
+            return RuntimeStore(name: "PulseUnitTests", inMemory: true, url: nil)
         }
 #endif
-        return RuntimeStore(name: "Pulse", inMemory: false)
+        return RuntimeStore(
+            name: PulseStoreContract.storeName,
+            inMemory: false,
+            url: try PulseStoreLocator().appPrivateLocation().storeURL
+        )
     }
 }
 

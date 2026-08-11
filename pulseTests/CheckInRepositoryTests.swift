@@ -7,6 +7,18 @@ import XCTest
 final class CheckInRepositoryTests: XCTestCase {
     private let timeZone = TimeZone(identifier: "Asia/Shanghai")!
 
+    func testExistingPrimaryHabitIsAReadOnlyLookup() throws {
+        let repository = try makeRepository(
+            clock: MutableRepositoryClock(now: makeDate(day: 10, hour: 12))
+        )
+
+        XCTAssertNil(try repository.existingPrimaryHabit())
+        XCTAssertNil(try repository.existingPrimaryHabit())
+
+        let created = try repository.primaryHabit(systemTimeZone: timeZone)
+        XCTAssertEqual(try repository.existingPrimaryHabit(), created)
+    }
+
     func testPrimaryHabitIsCreatedOnlyOnce() throws {
         let clock = MutableRepositoryClock(now: makeDate(day: 10, hour: 12))
         let repository = try makeRepository(clock: clock)

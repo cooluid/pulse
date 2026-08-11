@@ -1,6 +1,6 @@
 # Pulse 测试与验收合同
 
-文档版本：1.4<br>
+文档版本：1.5<br>
 状态：Canonical Gate
 
 ## 1. 自动化门禁
@@ -30,7 +30,7 @@
 | 日印仪式 | 提交回执区分新建/幂等；失败无成功触觉；正常时序不超过两秒；Reduce Motion 无缩放/扩散；启动已有记录不重播；代码中不存在无限循环动画 |
 | 删除/清除 | 删除只影响目标；失败不提前关闭；清除日志可在下次启动完成 |
 | 统计 | 空集合、今天/昨天、多段连续、乱序、重复、删除后重算 |
-| 迁移/导入 | 真实磁盘 SwiftData V1→V2；单一 JSON UTType；精确 v1→v2 规范化；v2 format/schema、文件/数量上限、身份、时区、起始日来源、记录时区映射、时间顺序、ID/日期唯一 |
+| 迁移/导入 | 真实磁盘 SwiftData V1→V2；私有 V1/V2 store 经 Repository 值级搬到独立目标；`copying / verified / sourceRemoved` 中断恢复；确定性摘要；源/目标篡改、删除失败、损坏/未知 journal、无源/空源、无 journal 既有目标、同路径/符号链接和 `ready` 后源复现均失败关闭；单一 JSON UTType；精确 v1→v2 规范化；v2 format/schema、文件/数量上限、身份、时区、起始日来源、记录时区映射、时间顺序、ID/日期唯一 |
 | 原子性 | 无效导入不删除现有数据；保存失败 rollback |
 | 提醒 | 权限拒绝与系统外撤权；旧权限结果不能覆盖新意图；快照与最新记录一致；60 日窗口、当天已过时间、已签到日、DST 不存在时间；失败关闭且无部分计划 |
 
@@ -84,4 +84,4 @@
 
 Widget target 加入生产工程前，必须执行 [WIDGET_SHARED_STORE_CONTRACT.md](./WIDGET_SHARED_STORE_CONTRACT.md) 第 9 节矩阵。重点包括私有 V1/V2 store 搬迁、四个中断状态恢复、group URL 缺失失败关闭、旧源清理、App/Widget 并发签到、锁屏隐私和跨项目时区零点刷新。
 
-账号审核期间只允许把与 entitlement 无关且已经进入 App 正式路径的共享业务基础标记为工程 GO。Preview、未签名 extension 构建或模拟器共享目录不能把 App Group/Widget 真机状态改为 GO。
+账号审核期间只允许把与 entitlement 无关且已经进入 App 正式路径的共享业务基础标记为工程 GO。当前 locator 与旧库搬迁器属于该范围；全新安装 admission、生产共享路径切换、Preview、未签名 extension 构建或模拟器共享目录都不能把 App Group/Widget 真机状态改为 GO。

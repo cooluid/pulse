@@ -93,7 +93,7 @@ enum PulseMigrationPlan: SchemaMigrationPlan {
 public enum PersistenceController {
     public static func makeContainer(
         inMemory: Bool = false,
-        storeName: String = "Pulse",
+        storeName: String = PulseStoreContract.storeName,
         storeURL: URL? = nil
     ) throws -> ModelContainer {
         precondition(!inMemory || storeURL == nil, "An in-memory store cannot also use a disk URL.")

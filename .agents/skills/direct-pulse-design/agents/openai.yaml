@@ -1,0 +1,4 @@
+interface:
+  display_name: "Pulse 美术设计总监"
+  short_description: "审阅 Pulse 视觉、动效、特效与 UI/UX，给出证据化问题和可执行建议"
+  default_prompt: "Use $direct-pulse-design to review the current Pulse experience and give prioritized, evidence-based design findings."

@@ -3,6 +3,7 @@ import SwiftData
 
 @MainActor
 public protocol CheckInRepositoryProtocol: AnyObject {
+    func existingPrimaryHabit() throws -> HabitSnapshot?
     func primaryHabit(systemTimeZone: TimeZone) throws -> HabitSnapshot
     func allRecords(habitID: UUID) throws -> [CheckInRecordSnapshot]
     func updateIdentity(habitID: UUID, identity: HabitIdentity) throws -> HabitSnapshot
@@ -31,7 +32,7 @@ public final class SwiftDataCheckInRepository: CheckInRepositoryProtocol {
         self.initialIdentity = initialIdentity
     }
 
-    public func primaryHabit(systemTimeZone: TimeZone) throws -> HabitSnapshot {
+    public func existingPrimaryHabit() throws -> HabitSnapshot? {
         let slotKey = Habit.primarySlotKey
         var descriptor = FetchDescriptor<Habit>(
             predicate: #Predicate { habit in
@@ -39,9 +40,12 @@ public final class SwiftDataCheckInRepository: CheckInRepositoryProtocol {
             }
         )
         descriptor.fetchLimit = 1
+        return try context.fetch(descriptor).first.map(validatedHabitSnapshot)
+    }
 
-        if let existing = try context.fetch(descriptor).first {
-            return try validatedHabitSnapshot(existing)
+    public func primaryHabit(systemTimeZone: TimeZone) throws -> HabitSnapshot {
+        if let existing = try existingPrimaryHabit() {
+            return existing
         }
 
         let now = clock.now
