@@ -285,12 +285,6 @@ final class PulseAppModel {
         _ = enqueueReminderReconciliation()
     }
 
-    func requestWidgetHabitNameVisibility(_ isVisible: Bool) {
-        guard settings.widgetShowsHabitName != isVisible else { return }
-        settings.widgetShowsHabitName = isVisible
-        widgetTimelineReloader.reloadDailyImprint()
-    }
-
     func updateTimeZone(identifier: String) async -> Bool {
         guard operation == nil, let habit else { return false }
         operation = .updateTimeZone

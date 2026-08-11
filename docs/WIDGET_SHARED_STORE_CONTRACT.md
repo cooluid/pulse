@@ -1,7 +1,7 @@
 # Pulse 基础 Widget 与共享 Store 合同
 
-文档版本：0.5<br>
-状态：Canonical Implemented Contract；开发签名、共享 Store、生产 Widget target、模拟器与用户真机基础交互已落地，未记录的版本/压力矩阵及分发仍是独立门禁<br>
+文档版本：0.7<br>
+状态：Canonical Implemented Contract；开发签名、共享 Store、生产 Widget target 与基础交互已落地；2026-08-11 的 Widget 视觉重设计已获得当前 Simulator 证据，仍待绑定新界面的真机人工验收<br>
 评审日期：2026-08-11
 
 本文定义基础 Widget、App Group store 搬迁、跨进程签到和失败恢复的唯一实施边界。Widget 的视觉语言与系统表面职责以 [PULSE_RITUAL_CONTRACT.md](./PULSE_RITUAL_CONTRACT.md) 为准；签到日期、唯一性和删除语义仍只以 [DOMAIN_CONTRACT.md](./DOMAIN_CONTRACT.md) 为准。
@@ -11,9 +11,9 @@
 首批 Widget 是免费核心入口，不是第二个应用，也不新增业务事实：
 
 - Lock Screen 圆形：只显示今日空心或实心印记；
-- Lock Screen 矩形：显示最近七日脉冲，默认不显示主承诺文字；
-- Home Screen 小号：显示日期、今日状态和单向“签到”按钮；
-- Home Screen 中号：显示今日状态与七日节律；只有用户在 App 内明确开启“在 Widget 显示主承诺”后才展示名称，说明文字始终不进入首批 Widget；
+- Lock Screen 矩形：显示最近七日方块节律，不显示主承诺文字；
+- Home Screen 小号/中号：顶部固定显示放大的品牌标记、粗体“印记”和日/月日期，其下显示收紧轨道槽的七日方块节律，中部显示当前主承诺名称，底部显示带单色 `☹︎ / ☺︎` 的粗体“待守护/已守护”状态与单向签到入口；
+- Home Screen 名称直接读取唯一 `Habit` 真源，不建立展示偏好；Lock Screen、StandBy 与 Always-On 不显示名称，任何 Widget 都不显示可选说明；
 - 未签到操作使用 `Button`，不能使用可能反向删除事实的 `Toggle`；
 - 已签到状态没有撤销入口；删除仍只在 App 内二次确认；
 - 本切片不创建 Live Activity、灵动岛、Watch、Control、Shortcuts、远程服务或第二套提醒。
@@ -41,7 +41,7 @@ App 与 Widget target 必须从同一个受控 build setting `PULSE_APP_GROUP_ID
 4. Xcode 读取到的签名 entitlement 与工程合同一致；
 5. Simulator、真实 iPhone 和真实 iPad 都能通过系统 API 取得并写入同一 group container。
 
-当前 1—4 已通过：开发设备构建分别获得 `co.fanr.pulse` 与 `co.fanr.pulse.widgets` 的 profile，两个签名 entitlement 都包含 `group.co.fanr.pulse`；Simulator group container、系统画廊与跨进程 AppIntent 已通过。2026-08-11，用户确认在真实 iPhone/iPad 完成全新安装、旧数据升级、杀进程重启、跨时区与 Widget 交互且未发现问题，因此第 5 项在当前受测真机上获得 `HUMAN GO`；该确认没有提供设备型号或 OS 版本，也不等于发布压力矩阵与分发门禁已经通过。
+当前 1—4 已通过：开发设备构建分别获得 `co.fanr.pulse` 与 `co.fanr.pulse.widgets` 的 profile，两个签名 entitlement 都包含 `group.co.fanr.pulse`；Simulator group container、系统画廊与跨进程 AppIntent 已通过。2026-08-11，用户确认在真实 iPhone/iPad 完成全新安装、旧数据升级、杀进程重启、跨时区与 Widget 交互且未发现问题，因此第 5 项的共享数据路径在当时受测真机上获得 `HUMAN GO`。同日后续视觉重设计不改变该存储路径，但旧界面的人工作视觉结论不能转移给新界面；该确认也没有提供设备型号或 OS 版本，不等于发布压力矩阵与分发门禁已经通过。
 
 ## 3. 唯一共享 Store
 
@@ -55,7 +55,7 @@ FileManager.containerURL(forSecurityApplicationGroupIdentifier:)
 - group container URL 必须由系统 API 返回，不能拼接沙盒根路径；iOS 返回 `nil` 时视为 entitlement 或安装配置错误；
 - `Pulse.store` 使用当前 `PulseMigrationPlan` 和同一组 SwiftData model；
 - App 私有旧 store 在切换完成后不再打开，也不能保留为读取 fallback；
-- App Group UserDefaults 只允许保存 Widget 可见性等展示偏好，不保存签到、统计、迁移后的记录副本或“最后一次成功”；
+- 首批 Widget 不建立 App Group UserDefaults 展示偏好；App Group 内只保留正式共享 store 与其迁移事务文件，不保存签到投影、统计副本或“最后一次成功”；
 - Timeline entry 是可丢弃、可重建的纯值快照，不能反向覆盖 store。
 
 共享数据代码已经进入独立静态 `PulseCore` target。它只包含逻辑日、模型、schema/migration、验证、Repository/command、导入导出合同与纯值 Widget 投影，并开启 `APPLICATION_EXTENSION_API_ONLY`；不包含 SwiftUI 页面、WidgetKit 布局、通知调度、触觉、UserDefaults 或本地化资源。当前 App 与 Widget 都只依赖这一份编译产物，不能复制源文件或建立近似 Repository。
@@ -121,19 +121,20 @@ Widget 不能调用删除、清除、导入、修改时区或编辑主承诺。A
 
 Widget provider 每次从正式 store 读取并生成不可变 `PulseWidgetSnapshot`：
 
+- 当前规范化主承诺名称；
 - 当前逻辑日；
 - 今日是否存在正式记录以及实际签到时间；
 - 最近七日的逻辑日与状态；
-- 经展示偏好裁决后的可选主承诺名称；
 - 快照生成时间和下一个逻辑日边界。
 
 Timeline 至少覆盖当前 entry，并在下一个项目时区零点后失效。App 签到、删除、导入、清除、时区或主承诺变化后请求刷新相关 timeline；AppIntent 完成写入后等待写入落盘再返回。刷新请求失败只允许形成旧快照或明确不可用态，不能写第二份事实修正界面。
 
 ## 7. 隐私、可访问性与失败表达
 
-- Lock Screen、StandBy 和 Always-On 默认只显示抽象印记和最小日期状态；
-- 主承诺名称默认不进入系统表面，用户必须在 App 内明确开启；“为什么重要”不进入首批 Widget；
-- Widget 使用非纯颜色空心/实心语义、系统字体和语义动态颜色；
+- Lock Screen、StandBy 和 Always-On 只显示抽象印记和最小日期状态，不渲染主承诺名称；
+- Home Screen 固定显示用户已确认的主承诺名称，任何 Widget 都不显示“为什么重要”；名称不写入 UserDefaults 或第二份投影真源；
+- Widget 使用非纯颜色空心/实心方块、状态文字、主题自适应单色表情、系统字体和语义动态颜色；
+- Home Screen 全彩模式消费品牌浅/深色 Color Set；着色、透明外观、Lock Screen、StandBy 与 Always-On 读取系统 `widgetRenderingMode`，由系统移除容器背景并提供 Liquid Glass / vibrant 表现，产品不自绘毛玻璃或承诺任意壁纸透视；
 - Reduce Motion 直接显示静态最终状态；
 - group container 不可用、迁移未完成、store 打不开或快照损坏时显示明确不可用/升级态，不把“读取失败”伪装成“今日未签到”；
 - 锁定设备上的按钮遵循系统认证，不绕过设备锁。
@@ -143,9 +144,9 @@ Timeline 至少覆盖当前 entry，并在下一个项目时区零点后失效�
 1. 已完成：Repository 保存冲突后 rollback + 按 `recordKey` 回读，并增加双 ModelContainer 磁盘测试；
 2. 已完成：提取无 UI、无宿主资源依赖、extension-safe 的静态 `PulseCore`，App 与 Widget 已迁移到该唯一实现；
 3. 已完成：实现 locator、journal v2、旧库/新安装两种模式、值级复制、确定性摘要、精确清理和崩溃恢复测试；
-4. 已完成：实现 `PulseWidgetSnapshot`、只读投影、隐私裁决和跨项目时区 timeline 计划器；
+4. 已完成：实现携带规范化主承诺名称的 `PulseWidgetSnapshot`、只读投影、按表面渲染的隐私裁决和跨项目时区 timeline 计划器；
 5. 已完成：加入双 target App Group entitlement、生产共享路径、Widget target、timeline 与单向签到 AppIntent；
-6. 已完成 Simulator 系统画廊、小号/中号主屏渲染、归档和独立扩展 AppIntent；用户已完成人工真机基础交互、升级/重启、跨时区以及主屏幕/锁屏/Always-On 验收，下一步只补未记录的 OS 版本、快速双击、App/Widget 同日竞争和异常恢复矩阵。
+6. 已完成 Simulator 系统画廊、小号/中号主屏渲染、归档和独立扩展 AppIntent；2026-08-11 最新四层版在 iOS 26.5 Simulator 系统图库验证小号/中号的主承诺标题与底部锚定，在主屏验证小号“待守护 ☹︎”→“已守护 ☺︎”、深色和透明外观。旧版界面的真机视觉验收不继承，下一步补新界面的真机人工验收，以及未记录的 OS 版本、快速双击、App/Widget 同日竞争和异常恢复矩阵。
 
 ## 9. 自动化与真机门禁
 
@@ -157,7 +158,7 @@ Timeline 至少覆盖当前 entry，并在下一个项目时区零点后失效�
 - 两个独立 ModelContainer 同日写入最终只有一个 recordKey，回执为一次 `created`、其余 `alreadyPresent`；
 - Widget 未迁移时不可写，失败时不显示实心态；
 - Timeline 跨项目时区零点刷新，七日状态与 App 一致；
-- 主承诺默认隐藏、显式开启后显示，说明永不进入首批 Widget。
+- Home Screen 从正式快照显示规范化主承诺名称且身份编辑后刷新；Lock Screen 不渲染名称，任何 Widget 都不显示说明或建立展示偏好。
 
 真实设备还必须覆盖 App 未运行、设备锁定、Widget 重载、快速双击、App/Widget 同时签到、系统杀进程、升级后首次启动和卸载重装。未签名构建、Preview 或模拟器单进程测试不能替代这些证据。
 
@@ -165,6 +166,6 @@ Timeline 至少覆盖当前 entry，并在下一个项目时区零点后失效�
 
 - 共享 store 与 Widget 产品/技术方向：设计 GO；
 - `PulseCore`、journal v2、旧库/新安装路径、纯值投影、App Group entitlement、生产 Widget target、开发设备签名与 Simulator 独立进程交互：工程 GO；
-- 真实 iPhone/iPad 的全新安装、旧数据升级、杀进程重启、跨时区、Widget 基础交互，以及主屏幕/锁屏/Always-On、深浅模式、最大动态字体、VoiceOver、Reduce Motion 和隐私理解：用户人工运行/体验 GO；
+- 真实 iPhone/iPad 的全新安装、旧数据升级、杀进程重启、跨时区与 Widget 基础数据交互：用户历史人工运行 GO；2026-08-11 重设计后的主屏幕/锁屏/Always-On、深浅/透明模式、最大动态字体、VoiceOver、Reduce Motion 与隐私表达仍需重新人工验收；
 - 未记录的设备型号与 OS 版本，以及 App 未运行、快速双击、App/Widget 同日竞争、卸载重装等逐项压力矩阵：发布前运行 NO-GO；
 - Apple Distribution、Archive/TestFlight 与商店工作：发布 NO-GO，不因工程 GO 自动启动。

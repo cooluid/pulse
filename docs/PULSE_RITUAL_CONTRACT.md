@@ -85,9 +85,8 @@ preparing → aligning → blending → encoding → completed / failed / cancel
 首批免费范围：
 
 - Lock Screen 圆形：只显示今日空心/实心印记；
-- Lock Screen 矩形：最近七日脉冲，默认不显示主承诺文本；
-- Home Screen 小号：日期、今日状态和签到按钮；
-- Home Screen 中号：今日状态、主承诺和七日节律。
+- Lock Screen 矩形：最近七日方块节律，不显示主承诺文本；
+- Home Screen 小号/中号：放大的品牌“印记”、日/月日期、七日方块节律、当前主承诺名称、带克制单色表情的今日守护状态和签到按钮；正式关闭系统默认内容边距，以 4/12/4pt 安全边距排列并把状态带锚定到底边。
 
 Widget 的未签到操作使用 `Button`，不使用可以反向切换的 `Toggle`。签到可从系统入口创建，但删除仍只在 App 内二次确认。设备锁定时交互遵循系统认证，不绕过锁屏。
 
@@ -229,7 +228,7 @@ Pulse 最低版本仍包含 iOS / iPadOS 17.0；Apple 在 17.1 及更早系统�
 ### 6.3 可见隐私
 
 - Lock Screen、Always-On、StandBy、CarPlay、Mac 菜单栏和 Watch Smart Stack 默认只显示抽象印记和最小状态；
-- 主承诺名称、连续天数、往年今日和照片分别提供显式可见性选择；
+- 连续天数、往年今日和照片分别提供显式可见性选择；主承诺名称只进入 Home Screen 基础 Widget，Lock Screen、Always-On、StandBy 等表面不渲染；可选说明不进入任何 Widget；
 - 面貌照片默认永不进入 Live Activity；
 - 隐私锁保护 App 内容，但不能被误认为已经自动保护所有系统表面；
 - 无敏感信息时仍使用系统的隐私脱敏能力并完成锁定设备实测。

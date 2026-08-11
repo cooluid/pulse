@@ -2,7 +2,6 @@ import Foundation
 
 public enum PulseWidgetContract {
     public static let kind = "PulseDailyImprint"
-    public static let showsHabitNamePreferenceKey = "widget.showsHabitName"
 }
 
 public enum PulseWidgetDayState: String, Codable, Equatable, Sendable {
@@ -26,10 +25,10 @@ public struct PulseWidgetDaySnapshot: Codable, Equatable, Identifiable, Sendable
 
 public struct PulseWidgetSnapshot: Codable, Equatable, Sendable {
     public let habitID: UUID
+    public let habitName: String
     public let today: LogicalDay
     public let checkedAt: Date?
     public let recentDays: [PulseWidgetDaySnapshot]
-    public let visibleHabitName: String?
     public let generatedAt: Date
     public let nextDayBoundary: Date
 
@@ -37,10 +36,10 @@ public struct PulseWidgetSnapshot: Codable, Equatable, Sendable {
 
     public init(
         habitID: UUID,
+        habitName: String,
         today: LogicalDay,
         checkedAt: Date?,
         recentDays: [PulseWidgetDaySnapshot],
-        visibleHabitName: String?,
         generatedAt: Date,
         nextDayBoundary: Date
     ) {
@@ -48,10 +47,10 @@ public struct PulseWidgetSnapshot: Codable, Equatable, Sendable {
         precondition(recentDays.last?.day == today, "Widget snapshot must end on today.")
         precondition(nextDayBoundary > generatedAt, "Widget refresh boundary must be in the future.")
         self.habitID = habitID
+        self.habitName = habitName
         self.today = today
         self.checkedAt = checkedAt
         self.recentDays = recentDays
-        self.visibleHabitName = visibleHabitName
         self.generatedAt = generatedAt
         self.nextDayBoundary = nextDayBoundary
     }
@@ -78,8 +77,7 @@ public enum PulseWidgetProjector {
     public static func makeTimelinePlan(
         habit: HabitSnapshot,
         records: [CheckInRecordSnapshot],
-        at date: Date,
-        showsHabitName: Bool
+        at date: Date
     ) throws -> PulseWidgetTimelinePlan {
         guard habit.isIdentityConfirmed else {
             throw PulseWidgetProjectionError.identityNotConfirmed
@@ -119,12 +117,10 @@ public enum PulseWidgetProjector {
 
         let snapshot = PulseWidgetSnapshot(
             habitID: habit.id,
+            habitName: habit.name,
             today: today,
             checkedAt: recordsByDay[today]?.checkedAt,
             recentDays: recentDays,
-            visibleHabitName: showsHabitName && habit.isIdentityConfirmed
-                ? habit.name
-                : nil,
             generatedAt: date,
             nextDayBoundary: nextDayBoundary
         )
@@ -136,16 +132,14 @@ public enum PulseWidgetProjector {
 public enum PulseWidgetSnapshotReader {
     public static func readTimelinePlan(
         repository: any CheckInRepositoryProtocol,
-        at date: Date,
-        showsHabitName: Bool
+        at date: Date
     ) throws -> PulseWidgetTimelinePlan? {
         guard let habit = try repository.existingPrimaryHabit() else { return nil }
         let records = try repository.allRecords(habitID: habit.id)
         return try PulseWidgetProjector.makeTimelinePlan(
             habit: habit,
             records: records,
-            at: date,
-            showsHabitName: showsHabitName
+            at: date
         )
     }
 }

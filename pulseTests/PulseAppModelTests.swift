@@ -37,6 +37,7 @@ final class PulseAppModelTests: XCTestCase {
         XCTAssertTrue(context.model.habit?.isIdentityConfirmed ?? false)
         XCTAssertEqual(context.model.todayRecord?.id, recordID)
         XCTAssertEqual(context.model.statistics.totalCount, 1)
+        XCTAssertEqual(context.widgetReloader.reloadCount, 2)
     }
 
     func testInvalidIdentityDoesNotMutateHabit() async throws {
@@ -184,17 +185,6 @@ final class PulseAppModelTests: XCTestCase {
         XCTAssertEqual(context.model.settings.language, .english)
         XCTAssertEqual(context.scheduler.snapshots.last?.localeIdentifier, "en")
         XCTAssertTrue(context.scheduler.snapshots.last?.enabled ?? false)
-    }
-
-    func testWidgetCommitmentVisibilityIsExplicitAndReloadsOncePerChange() throws {
-        let context = try makeContext()
-
-        XCTAssertFalse(context.model.settings.widgetShowsHabitName)
-        context.model.requestWidgetHabitNameVisibility(true)
-        context.model.requestWidgetHabitNameVisibility(true)
-
-        XCTAssertTrue(context.model.settings.widgetShowsHabitName)
-        XCTAssertEqual(context.widgetReloader.reloadCount, 1)
     }
 
     func testPendingResetJournalIsRecoveredOnStart() async throws {

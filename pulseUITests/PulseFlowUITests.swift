@@ -155,7 +155,9 @@ final class PulseFlowUITests: XCTestCase {
         XCTAssertTrue(app.descendants(matching: .any)["settings.data.note"].exists)
         resetButton.tap()
 
-        let confirmButton = app.buttons["settings.reset.confirm.button"]
+        let confirmButton = app.buttons
+            .matching(identifier: "settings.reset.confirm.button")
+            .firstMatch
         XCTAssertTrue(confirmButton.waitForExistence(timeout: 3))
         confirmButton.tap()
 

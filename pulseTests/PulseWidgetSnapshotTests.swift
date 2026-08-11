@@ -4,7 +4,7 @@ import XCTest
 
 @MainActor
 final class PulseWidgetSnapshotTests: XCTestCase {
-    func testProjectionBuildsSevenValidatedDaysAndHidesIdentityByDefault() throws {
+    func testProjectionBuildsSevenValidatedDays() throws {
         let timeZone = try XCTUnwrap(TimeZone(identifier: "Asia/Shanghai"))
         let clock = MutableWidgetClock(now: makeDate(2026, 8, 9, 8, timeZone: timeZone))
         let repository = try makeRepository(clock: clock)
@@ -19,12 +19,12 @@ final class PulseWidgetSnapshotTests: XCTestCase {
         let plan = try XCTUnwrap(
             PulseWidgetSnapshotReader.readTimelinePlan(
                 repository: repository,
-                at: clock.now,
-                showsHabitName: false
+                at: clock.now
             )
         )
 
         XCTAssertEqual(plan.snapshot.recentDays.count, 7)
+        XCTAssertEqual(plan.snapshot.habitName, "每天走路")
         XCTAssertEqual(plan.snapshot.recentDays.first?.day.storageValue, "2026-08-05")
         XCTAssertEqual(plan.snapshot.recentDays.last?.day.storageValue, "2026-08-11")
         XCTAssertEqual(
@@ -32,14 +32,13 @@ final class PulseWidgetSnapshotTests: XCTestCase {
             [.beforeHabit, .beforeHabit, .beforeHabit, .beforeHabit, .checked, .missed, .todayPending]
         )
         XCTAssertFalse(plan.snapshot.isCheckedToday)
-        XCTAssertNil(plan.snapshot.visibleHabitName)
         XCTAssertEqual(
             plan.refreshAfter,
             makeDate(2026, 8, 12, 0, timeZone: timeZone)
         )
     }
 
-    func testProjectionShowsConfirmedHabitNameAndTodayReceipt() throws {
+    func testProjectionIncludesTodayReceipt() throws {
         let timeZone = try XCTUnwrap(TimeZone(identifier: "Asia/Shanghai"))
         let now = makeDate(2026, 8, 11, 7, timeZone: timeZone)
         let clock = MutableWidgetClock(now: now)
@@ -54,13 +53,12 @@ final class PulseWidgetSnapshotTests: XCTestCase {
         let plan = try XCTUnwrap(
             PulseWidgetSnapshotReader.readTimelinePlan(
                 repository: repository,
-                at: now,
-                showsHabitName: true
+                at: now
             )
         )
 
-        XCTAssertEqual(plan.snapshot.visibleHabitName, "写一页")
         XCTAssertEqual(plan.snapshot.checkedAt, receipt.checkedAt)
+        XCTAssertEqual(plan.snapshot.habitName, "写一页")
         XCTAssertTrue(plan.snapshot.isCheckedToday)
         XCTAssertEqual(plan.snapshot.recentDays.last?.state, .checked)
     }
@@ -74,8 +72,7 @@ final class PulseWidgetSnapshotTests: XCTestCase {
         XCTAssertThrowsError(
             try PulseWidgetSnapshotReader.readTimelinePlan(
                 repository: repository,
-                at: now,
-                showsHabitName: true
+                at: now
             )
         ) { error in
             XCTAssertEqual(
@@ -98,8 +95,7 @@ final class PulseWidgetSnapshotTests: XCTestCase {
         let plan = try XCTUnwrap(
             PulseWidgetSnapshotReader.readTimelinePlan(
                 repository: repository,
-                at: now,
-                showsHabitName: false
+                at: now
             )
         )
 
@@ -118,8 +114,7 @@ final class PulseWidgetSnapshotTests: XCTestCase {
         XCTAssertNil(
             try PulseWidgetSnapshotReader.readTimelinePlan(
                 repository: repository,
-                at: now,
-                showsHabitName: true
+                at: now
             )
         )
         XCTAssertNil(try repository.existingPrimaryHabit())

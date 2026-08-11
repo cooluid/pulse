@@ -26,6 +26,8 @@ struct PulseDailyImprintWidget: Widget {
             .accessoryCircular,
             .accessoryRectangular
         ])
+        .contentMarginsDisabled()
+        .containerBackgroundRemovable(true)
     }
 }
 
@@ -96,10 +98,7 @@ private enum PulseWidgetRuntime {
             )
             guard let plan = try PulseWidgetSnapshotReader.readTimelinePlan(
                 repository: repository,
-                at: date,
-                showsHabitName: context.defaults.bool(
-                    forKey: PulseWidgetContract.showsHabitNamePreferenceKey
-                )
+                at: date
             ) else {
                 throw RuntimeError.missingPrimaryHabit
             }
@@ -148,12 +147,8 @@ private enum PulseWidgetRuntime {
             throw RuntimeError.missingAppGroupIdentifier
         }
         let location = try PulseStoreLocator().appGroupLocation(identifier: identifier)
-        guard let defaults = UserDefaults(suiteName: identifier) else {
-            throw RuntimeError.missingAppGroupIdentifier
-        }
         return RuntimeContext(
             location: location,
-            defaults: defaults,
             migrator: PulseSharedStoreMigrator()
         )
     }
@@ -174,7 +169,6 @@ private enum PulseWidgetRuntime {
 
     private struct RuntimeContext {
         let location: PulseStoreLocation
-        let defaults: UserDefaults
         let migrator: PulseSharedStoreMigrator
     }
 }
@@ -195,6 +189,8 @@ struct PulseCheckInIntent: AppIntent {
 private struct PulseWidgetView: View {
     let entry: PulseWidgetEntry
     @Environment(\.widgetFamily) private var family
+    @Environment(\.widgetRenderingMode) private var renderingMode
+    @Environment(\.widgetContentMargins) private var widgetContentMargins
 
     var body: some View {
         Group {
@@ -215,6 +211,7 @@ private struct PulseWidgetView: View {
                 )
             }
         }
+        .padding(contentInsets)
         .containerBackground(for: .widget) {
             PulseWidgetDesign.background
         }
@@ -239,65 +236,133 @@ private struct PulseWidgetView: View {
     }
 
     private func systemSmall(_ snapshot: PulseWidgetSnapshot) -> some View {
-        VStack(spacing: PulseWidgetDesign.homeBandSpacing) {
-            HStack(alignment: .firstTextBaseline, spacing: PulseWidgetDesign.spacing8) {
-                Text(snapshot.visibleHabitName ?? String(localized: "widget.brand.name"))
-                    .font(.caption2.weight(.semibold))
-                    .foregroundStyle(PulseWidgetDesign.secondary)
-                    .lineLimit(1)
-                    .minimumScaleFactor(PulseWidgetDesign.identityMinimumScale)
-
-                Spacer(minLength: PulseWidgetDesign.spacing4)
-
-                Text(snapshot.today.day, format: .number)
-                    .font(.system(
-                        size: PulseWidgetDesign.smallDayNumberSize,
-                        weight: .bold,
-                        design: .default
-                    ))
-                    .foregroundStyle(PulseWidgetDesign.ink)
-                    .monospacedDigit()
-                    .lineLimit(1)
-                    .minimumScaleFactor(PulseWidgetDesign.dayNumberMinimumScale)
-            }
-            .frame(height: PulseWidgetDesign.smallHeaderHeight, alignment: .top)
+        VStack(spacing: 0) {
+            homeHeader(snapshot, usesMediumMetrics: false)
 
             weekRail(snapshot.recentDays)
+                .padding(.top, PulseWidgetDesign.homeBandSpacing)
 
-            homeStatusBand(snapshot, usesCompactCopy: true)
+            homeCommitmentTitle(snapshot, usesMediumMetrics: false)
+
+            homeStatusBand(snapshot, usesCompactFont: true)
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
     }
 
     private func systemMedium(_ snapshot: PulseWidgetSnapshot) -> some View {
-        VStack(spacing: PulseWidgetDesign.homeBandSpacing) {
-            HStack(alignment: .firstTextBaseline, spacing: PulseWidgetDesign.spacing16) {
-                Text(snapshot.visibleHabitName ?? String(localized: "widget.brand.name"))
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(PulseWidgetDesign.secondary)
-                    .lineLimit(1)
-                    .minimumScaleFactor(PulseWidgetDesign.identityMinimumScale)
+        VStack(spacing: 0) {
+            homeHeader(snapshot, usesMediumMetrics: true)
 
-                Spacer(minLength: PulseWidgetDesign.spacing8)
+            weekRail(snapshot.recentDays)
+                .padding(.top, PulseWidgetDesign.homeBandSpacing)
 
-                Text(snapshot.today.day, format: .number)
+            homeCommitmentTitle(snapshot, usesMediumMetrics: true)
+
+            homeStatusBand(snapshot, usesCompactFont: false)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+    }
+
+    private func homeHeader(
+        _ snapshot: PulseWidgetSnapshot,
+        usesMediumMetrics: Bool
+    ) -> some View {
+        HStack(alignment: .center, spacing: 0) {
+            HStack(spacing: PulseWidgetDesign.brandSpacing) {
+                Image("PulseWidgetMark")
+                    .resizable()
+                    .renderingMode(.template)
+                    .scaledToFit()
+                    .foregroundStyle(brandAccent)
+                    .frame(
+                        width: usesMediumMetrics
+                            ? PulseWidgetDesign.mediumBrandMarkSide
+                            : PulseWidgetDesign.smallBrandMarkSide,
+                        height: usesMediumMetrics
+                            ? PulseWidgetDesign.mediumBrandMarkSide
+                            : PulseWidgetDesign.smallBrandMarkSide
+                    )
+                    .widgetAccentable()
+                    .accessibilityHidden(true)
+
+                Text("widget.brand.imprint")
                     .font(.system(
-                        size: PulseWidgetDesign.mediumDayNumberSize,
+                        size: usesMediumMetrics
+                            ? PulseWidgetDesign.mediumBrandTextSize
+                            : PulseWidgetDesign.smallBrandTextSize,
                         weight: .bold,
                         design: .default
                     ))
-                    .foregroundStyle(PulseWidgetDesign.ink)
-                    .monospacedDigit()
+                    .foregroundStyle(primaryForeground)
                     .lineLimit(1)
-                    .minimumScaleFactor(PulseWidgetDesign.dayNumberMinimumScale)
+                    .minimumScaleFactor(PulseWidgetDesign.brandMinimumScale)
+                    .allowsTightening(true)
             }
-            .frame(height: PulseWidgetDesign.mediumHeaderHeight, alignment: .top)
+            .layoutPriority(1)
 
-            weekRail(snapshot.recentDays)
+            Spacer(minLength: usesMediumMetrics
+                ? PulseWidgetDesign.spacing8
+                : PulseWidgetDesign.spacing4)
 
-            homeStatusBand(snapshot, usesCompactCopy: false)
+            HStack(alignment: .firstTextBaseline, spacing: 0) {
+                Text(snapshot.today.day, format: .number)
+                    .font(.system(
+                        size: usesMediumMetrics
+                            ? PulseWidgetDesign.mediumDayNumberSize
+                            : PulseWidgetDesign.smallDayNumberSize,
+                        weight: .bold,
+                        design: .default
+                    ))
+                Text("/")
+                    .font(.system(
+                        size: usesMediumMetrics
+                            ? PulseWidgetDesign.mediumMonthNumberSize
+                            : PulseWidgetDesign.smallMonthNumberSize,
+                        weight: .semibold,
+                        design: .default
+                    ))
+                Text(snapshot.today.month, format: .number)
+                    .font(.system(
+                        size: usesMediumMetrics
+                            ? PulseWidgetDesign.mediumMonthNumberSize
+                            : PulseWidgetDesign.smallMonthNumberSize,
+                        weight: .semibold,
+                        design: .default
+                    ))
+            }
+            .foregroundStyle(primaryForeground)
+            .monospacedDigit()
+            .lineLimit(1)
+            .minimumScaleFactor(PulseWidgetDesign.dateMinimumScale)
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel(Text(verbatim: "\(snapshot.today.day)/\(snapshot.today.month)"))
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .frame(
+            height: usesMediumMetrics
+                ? PulseWidgetDesign.mediumHomeHeaderHeight
+                : PulseWidgetDesign.smallHomeHeaderHeight,
+            alignment: .top
+        )
+    }
+
+    private func homeCommitmentTitle(
+        _ snapshot: PulseWidgetSnapshot,
+        usesMediumMetrics: Bool
+    ) -> some View {
+        Text(verbatim: snapshot.habitName)
+            .font(.system(
+                size: usesMediumMetrics
+                    ? PulseWidgetDesign.mediumCommitmentTextSize
+                    : PulseWidgetDesign.smallCommitmentTextSize,
+                weight: .bold,
+                design: .default
+            ))
+            .foregroundStyle(primaryForeground)
+            .multilineTextAlignment(.center)
+            .lineLimit(PulseWidgetDesign.commitmentLineLimit)
+            .truncationMode(.tail)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
+            .accessibilityLabel(Text(verbatim: snapshot.habitName))
     }
 
     private func accessoryRectangular(_ snapshot: PulseWidgetSnapshot) -> some View {
@@ -332,15 +397,15 @@ private struct PulseWidgetView: View {
     @ViewBuilder
     private func homeStatusBand(
         _ snapshot: PulseWidgetSnapshot,
-        usesCompactCopy: Bool
+        usesCompactFont: Bool
     ) -> some View {
         if snapshot.isCheckedToday {
-            homeStatusBandContent(snapshot, usesCompactCopy: usesCompactCopy)
+            homeStatusBandContent(snapshot, usesCompactFont: usesCompactFont)
                 .accessibilityElement(children: .ignore)
                 .accessibilityLabel("widget.accessibility.checked")
         } else {
             Button(intent: PulseCheckInIntent()) {
-                homeStatusBandContent(snapshot, usesCompactCopy: usesCompactCopy)
+                homeStatusBandContent(snapshot, usesCompactFont: usesCompactFont)
             }
             .buttonStyle(.plain)
             .accessibilityLabel("widget.action.check_in")
@@ -350,25 +415,37 @@ private struct PulseWidgetView: View {
 
     private func homeStatusBandContent(
         _ snapshot: PulseWidgetSnapshot,
-        usesCompactCopy: Bool
+        usesCompactFont: Bool
     ) -> some View {
-        HStack(spacing: PulseWidgetDesign.spacing8) {
-            Text(homeStatusKey(snapshot, usesCompactCopy: usesCompactCopy))
-                .font((usesCompactCopy ? Font.caption : Font.subheadline).weight(.semibold))
-                .foregroundStyle(PulseWidgetDesign.ink)
+        HStack(spacing: PulseWidgetDesign.spacing4) {
+            Text(homeStatusKey(snapshot))
+                .font(.system(
+                    size: usesCompactFont
+                        ? PulseWidgetDesign.smallStatusTextSize
+                        : PulseWidgetDesign.mediumStatusTextSize,
+                    weight: .bold,
+                    design: .default
+                ))
+                .foregroundStyle(statusForeground(isChecked: snapshot.isCheckedToday))
                 .lineLimit(1)
                 .minimumScaleFactor(PulseWidgetDesign.statusMinimumScale)
 
-            Spacer(minLength: PulseWidgetDesign.spacing4)
+            Spacer(minLength: 0)
 
-            PulseWidgetImprintMark(
-                isChecked: snapshot.isCheckedToday,
-                usesAccessoryStyle: false
-            )
-            .frame(
-                width: PulseWidgetDesign.homeStatusImprintDiameter,
-                height: PulseWidgetDesign.homeStatusImprintDiameter
-            )
+            Text(verbatim: snapshot.isCheckedToday ? "☺︎" : "☹︎")
+                .font(.system(
+                    size: usesCompactFont
+                        ? PulseWidgetDesign.smallStatusFaceSize
+                        : PulseWidgetDesign.mediumStatusFaceSize,
+                    weight: .semibold,
+                    design: .default
+                ))
+                .foregroundStyle(statusForeground(isChecked: snapshot.isCheckedToday))
+                .frame(
+                    width: PulseWidgetDesign.statusFaceFrameSide,
+                    height: PulseWidgetDesign.statusFaceFrameSide
+                )
+                .accessibilityHidden(true)
         }
         .padding(.horizontal, PulseWidgetDesign.statusHorizontalPadding)
         .frame(maxWidth: .infinity, minHeight: PulseWidgetDesign.homeStatusHeight)
@@ -377,21 +454,16 @@ private struct PulseWidgetView: View {
                 cornerRadius: PulseWidgetDesign.statusCornerRadius,
                 style: .continuous
             )
-            .fill(PulseWidgetDesign.surface)
+            .fill(statusBackground(isChecked: snapshot.isCheckedToday))
         }
         .contentShape(Rectangle())
+        .widgetAccentable(snapshot.isCheckedToday)
     }
 
-    private func homeStatusKey(
-        _ snapshot: PulseWidgetSnapshot,
-        usesCompactCopy: Bool
-    ) -> LocalizedStringKey {
-        if snapshot.isCheckedToday {
-            return usesCompactCopy
-                ? "widget.state.checked.short"
-                : "widget.state.checked"
-        }
-        return "widget.action.check_in"
+    private func homeStatusKey(_ snapshot: PulseWidgetSnapshot) -> LocalizedStringKey {
+        snapshot.isCheckedToday
+            ? "widget.state.checked.short"
+            : "widget.state.pending.short"
     }
 
     @ViewBuilder
@@ -403,7 +475,8 @@ private struct PulseWidgetView: View {
         if snapshot.isCheckedToday {
             PulseWidgetImprintMark(
                 isChecked: true,
-                usesAccessoryStyle: usesAccessoryStyle
+                usesAccessoryStyle: usesAccessoryStyle,
+                isOnCompletedSurface: false
             )
             .frame(width: diameter, height: diameter)
             .accessibilityLabel("widget.accessibility.checked")
@@ -411,7 +484,8 @@ private struct PulseWidgetView: View {
             Button(intent: PulseCheckInIntent()) {
                 PulseWidgetImprintMark(
                     isChecked: false,
-                    usesAccessoryStyle: usesAccessoryStyle
+                    usesAccessoryStyle: usesAccessoryStyle,
+                    isOnCompletedSurface: false
                 )
             }
             .buttonStyle(.plain)
@@ -437,64 +511,57 @@ private struct PulseWidgetView: View {
                 ? PulseWidgetDesign.accessoryRailHeight
                 : PulseWidgetDesign.homeRailHeight
         )
-        .background(alignment: .bottom) {
-            Capsule()
-                .fill(usesAccessoryStyle
-                    ? Color.primary.opacity(PulseWidgetDesign.accessoryRailBaselineOpacity)
-                    : PulseWidgetDesign.separator)
-                .frame(height: PulseWidgetDesign.thinLineWidth)
-                .accessibilityHidden(true)
-        }
     }
 
     private func weekRailMark(
         _ item: PulseWidgetDaySnapshot,
         usesAccessoryStyle: Bool
     ) -> some View {
-        let height = railMarkHeight(
+        let side = railMarkSide(
             item.state,
             usesAccessoryStyle: usesAccessoryStyle
         )
         let railHeight = usesAccessoryStyle
             ? PulseWidgetDesign.accessoryRailHeight
             : PulseWidgetDesign.homeRailHeight
-        let markWidth = usesAccessoryStyle
-            ? PulseWidgetDesign.accessoryRailMarkWidth
-            : PulseWidgetDesign.homeRailMarkWidth
+        let cornerRadius = usesAccessoryStyle
+            ? PulseWidgetDesign.accessoryBlockCornerRadius
+            : PulseWidgetDesign.homeBlockCornerRadius
 
-        return Capsule()
+        return RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
             .fill(railMarkFill(item.state, usesAccessoryStyle: usesAccessoryStyle))
             .overlay {
                 if let stroke = railMarkStroke(
                     item.state,
                     usesAccessoryStyle: usesAccessoryStyle
                 ) {
-                    Capsule()
+                    RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
                         .stroke(stroke, lineWidth: PulseWidgetDesign.railStrokeWidth)
                 }
             }
-            .frame(width: markWidth, height: height)
+            .frame(width: side, height: side)
             .frame(
                 width: PulseWidgetDesign.railMarkSlotWidth,
                 height: railHeight,
-                alignment: .bottom
+                alignment: .center
             )
+            .widgetAccentable(item.state == .checked || item.state == .todayPending)
             .accessibilityLabel(dayAccessibilityLabel(item))
     }
 
-    private func railMarkHeight(
+    private func railMarkSide(
         _ state: PulseWidgetDayState,
         usesAccessoryStyle: Bool
     ) -> CGFloat {
-        let isTall = state == .checked || state == .todayPending
+        let isPrimary = state == .checked || state == .todayPending
         if usesAccessoryStyle {
-            return isTall
-                ? PulseWidgetDesign.accessoryRailTallHeight
-                : PulseWidgetDesign.accessoryRailShortHeight
+            return isPrimary
+                ? PulseWidgetDesign.accessoryRailLargeSide
+                : PulseWidgetDesign.accessoryRailSmallSide
         }
-        return isTall
-            ? PulseWidgetDesign.homeRailTallHeight
-            : PulseWidgetDesign.homeRailShortHeight
+        return isPrimary
+            ? PulseWidgetDesign.homeRailLargeSide
+            : PulseWidgetDesign.homeRailSmallSide
     }
 
     private func railMarkFill(
@@ -513,9 +580,11 @@ private struct PulseWidgetView: View {
         }
         return switch state {
         case .checked:
-            PulseWidgetDesign.grass
+            usesFullColorPalette ? PulseWidgetDesign.grass : .primary
         case .missed:
-            PulseWidgetDesign.secondary.opacity(PulseWidgetDesign.homeMissedOpacity)
+            usesFullColorPalette
+                ? PulseWidgetDesign.secondary.opacity(PulseWidgetDesign.homeMissedOpacity)
+                : Color.primary.opacity(PulseWidgetDesign.adaptiveMissedOpacity)
         case .beforeHabit, .todayPending:
             .clear
         }
@@ -529,9 +598,13 @@ private struct PulseWidgetView: View {
         case .beforeHabit:
             usesAccessoryStyle
                 ? Color.primary.opacity(PulseWidgetDesign.accessoryBeforeHabitOpacity)
-                : PulseWidgetDesign.secondary.opacity(PulseWidgetDesign.homeBeforeHabitOpacity)
+                : (usesFullColorPalette
+                    ? PulseWidgetDesign.secondary.opacity(PulseWidgetDesign.homeBeforeHabitOpacity)
+                    : Color.primary.opacity(PulseWidgetDesign.adaptiveBeforeHabitOpacity))
         case .todayPending:
-            usesAccessoryStyle ? Color.primary : PulseWidgetDesign.action
+            usesAccessoryStyle || !usesFullColorPalette
+                ? Color.primary
+                : PulseWidgetDesign.action
         case .checked, .missed:
             nil
         }
@@ -560,19 +633,66 @@ private struct PulseWidgetView: View {
             if family != .accessoryCircular {
                 Text(message)
                     .font(.caption)
-                    .foregroundStyle(PulseWidgetDesign.secondary)
+                    .foregroundStyle(secondaryForeground)
             }
         }
         .foregroundStyle(family == .accessoryCircular
             ? Color.primary
-            : PulseWidgetDesign.ink)
-        .padding(family == .accessoryCircular ? 0 : PulseWidgetDesign.spacing16)
+            : primaryForeground)
+        .frame(
+            maxWidth: .infinity,
+            maxHeight: .infinity,
+            alignment: family == .accessoryCircular ? .center : .leading
+        )
+    }
+
+    private var usesFullColorPalette: Bool {
+        renderingMode == .fullColor
+    }
+
+    private var contentInsets: EdgeInsets {
+        switch family {
+        case .systemSmall, .systemMedium:
+            PulseWidgetDesign.homeContentInsets
+        default:
+            widgetContentMargins
+        }
+    }
+
+    private var primaryForeground: Color {
+        usesFullColorPalette ? PulseWidgetDesign.ink : .primary
+    }
+
+    private var secondaryForeground: Color {
+        usesFullColorPalette ? PulseWidgetDesign.secondary : .secondary
+    }
+
+    private var brandAccent: Color {
+        usesFullColorPalette ? PulseWidgetDesign.action : .primary
+    }
+
+    private func statusBackground(isChecked: Bool) -> Color {
+        if usesFullColorPalette {
+            return isChecked ? PulseWidgetDesign.grass : PulseWidgetDesign.surface
+        }
+        return Color.primary.opacity(isChecked
+            ? PulseWidgetDesign.adaptiveCompletedSurfaceOpacity
+            : PulseWidgetDesign.adaptivePendingSurfaceOpacity)
+    }
+
+    private func statusForeground(isChecked: Bool) -> Color {
+        if usesFullColorPalette {
+            return isChecked ? PulseWidgetDesign.grassForeground : PulseWidgetDesign.ink
+        }
+        return .primary
     }
 }
 
 private struct PulseWidgetImprintMark: View {
     let isChecked: Bool
     let usesAccessoryStyle: Bool
+    let isOnCompletedSurface: Bool
+    @Environment(\.widgetRenderingMode) private var renderingMode
 
     var body: some View {
         GeometryReader { proxy in
@@ -587,36 +707,41 @@ private struct PulseWidgetImprintMark: View {
                     .padding(side * PulseWidgetDesign.imprintRingInsetRatio)
 
                 if isChecked {
-                    Circle()
-                        .fill(completedColor)
-                        .frame(
-                            width: side * PulseWidgetDesign.imprintCoreScale,
-                            height: side * PulseWidgetDesign.imprintCoreScale
-                        )
-                    Image(systemName: "checkmark")
-                        .font(.system(
-                            size: side * PulseWidgetDesign.imprintGlyphScale,
-                            weight: .bold
-                        ))
-                        .foregroundStyle(completedForeground)
+                    ZStack {
+                        Circle()
+                            .fill(completedColor)
+                        Image(systemName: "checkmark")
+                            .font(.system(
+                                size: side * PulseWidgetDesign.imprintGlyphScale,
+                                weight: .bold
+                            ))
+                            .foregroundStyle(.black)
+                            .blendMode(.destinationOut)
+                    }
+                    .compositingGroup()
+                    .frame(
+                        width: side * PulseWidgetDesign.imprintCoreScale,
+                        height: side * PulseWidgetDesign.imprintCoreScale
+                    )
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
-        .widgetAccentable(usesAccessoryStyle)
+        .widgetAccentable()
         .accessibilityHidden(true)
     }
 
     private var completedColor: Color {
-        usesAccessoryStyle ? .primary : PulseWidgetDesign.grass
-    }
-
-    private var completedForeground: Color {
-        usesAccessoryStyle ? .black : PulseWidgetDesign.grassForeground
+        guard renderingMode == .fullColor, !usesAccessoryStyle else { return .primary }
+        return isOnCompletedSurface
+            ? PulseWidgetDesign.grassForeground
+            : PulseWidgetDesign.grass
     }
 
     private var pendingColor: Color {
-        usesAccessoryStyle ? .primary : PulseWidgetDesign.action
+        renderingMode == .fullColor && !usesAccessoryStyle
+            ? PulseWidgetDesign.action
+            : .primary
     }
 }
 
@@ -632,13 +757,13 @@ private enum PulseWidgetDesign {
 
     static let spacing4: CGFloat = 4
     static let spacing8: CGFloat = 8
-    static let spacing16: CGFloat = 16
 
-    static let smallDayNumberSize: CGFloat = 34
-    static let mediumDayNumberSize: CGFloat = 38
+    static let smallDayNumberSize: CGFloat = 26
+    static let mediumDayNumberSize: CGFloat = 28
+    static let smallMonthNumberSize: CGFloat = 13
+    static let mediumMonthNumberSize: CGFloat = 14
     static let accessoryDayNumberSize: CGFloat = 28
-    static let dayNumberMinimumScale: CGFloat = 0.88
-    static let identityMinimumScale: CGFloat = 0.72
+    static let dateMinimumScale: CGFloat = 0.78
 
     static let accessoryCircularImprintDiameter: CGFloat = 50
     static let accessoryRectangularImprintDiameter: CGFloat = 44
@@ -648,29 +773,45 @@ private enum PulseWidgetDesign {
     static let statusMinimumScale: CGFloat = 0.78
 
     static let homeBandSpacing: CGFloat = 4
-    static let smallHeaderHeight: CGFloat = 36
-    static let mediumHeaderHeight: CGFloat = 40
-    static let homeStatusHeight: CGFloat = 44
-    static let homeStatusImprintDiameter: CGFloat = 30
-    static let statusHorizontalPadding: CGFloat = 10
-    static let statusCornerRadius: CGFloat = 11
+    static let homeContentInsets = EdgeInsets(top: 4, leading: 12, bottom: 4, trailing: 12)
+    static let smallHomeHeaderHeight: CGFloat = 31
+    static let mediumHomeHeaderHeight: CGFloat = 34
+    static let smallBrandMarkSide: CGFloat = 24
+    static let mediumBrandMarkSide: CGFloat = 28
+    static let smallBrandTextSize: CGFloat = 16
+    static let mediumBrandTextSize: CGFloat = 19
+    static let brandSpacing: CGFloat = 4
+    static let brandMinimumScale: CGFloat = 0.75
+    static let smallCommitmentTextSize: CGFloat = 17
+    static let mediumCommitmentTextSize: CGFloat = 20
+    static let commitmentLineLimit = 2
+    static let homeStatusHeight: CGFloat = 48
+    static let smallStatusTextSize: CGFloat = 15
+    static let mediumStatusTextSize: CGFloat = 17
+    static let smallStatusFaceSize: CGFloat = 26
+    static let mediumStatusFaceSize: CGFloat = 28
+    static let statusFaceFrameSide: CGFloat = 28
+    static let statusHorizontalPadding: CGFloat = 8
+    static let statusCornerRadius: CGFloat = 8
 
-    static let homeRailMarkWidth: CGFloat = 8
-    static let accessoryRailMarkWidth: CGFloat = 5
-    static let railMarkSlotWidth: CGFloat = 5
-    static let homeRailHeight: CGFloat = 34
-    static let homeRailTallHeight: CGFloat = 32
-    static let homeRailShortHeight: CGFloat = 13
-    static let accessoryRailHeight: CGFloat = 11
-    static let accessoryRailTallHeight: CGFloat = 11
-    static let accessoryRailShortHeight: CGFloat = 5
-    static let railStrokeWidth: CGFloat = 1.25
-    static let thinLineWidth: CGFloat = 1
+    static let railMarkSlotWidth: CGFloat = 14
+    static let homeRailHeight: CGFloat = 20
+    static let homeRailLargeSide: CGFloat = 14
+    static let homeRailSmallSide: CGFloat = 9
+    static let accessoryRailHeight: CGFloat = 10
+    static let accessoryRailLargeSide: CGFloat = 8
+    static let accessoryRailSmallSide: CGFloat = 5
+    static let homeBlockCornerRadius: CGFloat = 2.5
+    static let accessoryBlockCornerRadius: CGFloat = 1.5
+    static let railStrokeWidth: CGFloat = 1.5
     static let homeMissedOpacity = 0.38
     static let homeBeforeHabitOpacity = 0.58
     static let accessoryMissedOpacity = 0.42
     static let accessoryBeforeHabitOpacity = 0.56
-    static let accessoryRailBaselineOpacity = 0.3
+    static let adaptiveMissedOpacity = 0.34
+    static let adaptiveBeforeHabitOpacity = 0.52
+    static let adaptiveCompletedSurfaceOpacity = 0.22
+    static let adaptivePendingSurfaceOpacity = 0.10
 }
 
 private extension PulseWidgetSnapshot {
@@ -684,10 +825,10 @@ private extension PulseWidgetSnapshot {
         }
         return PulseWidgetSnapshot(
             habitID: UUID(uuidString: "00000000-0000-0000-0000-000000000001")!,
+            habitName: String(localized: "widget.placeholder.commitment"),
             today: today,
             checkedAt: nil,
             recentDays: days,
-            visibleHabitName: nil,
             generatedAt: Date(timeIntervalSince1970: 1_754_860_800),
             nextDayBoundary: Date(timeIntervalSince1970: 1_754_947_200)
         )

@@ -115,6 +115,6 @@ JSON 只导出 v2。`PulseExportCodec` 是编码、精确版本解码与完整�
 
 App 与 Widget 只通过系统 App Group API 解析 `Library/Application Support/Pulse/Pulse.store`。App 私有 store 只作为一次性迁移源，完成后主文件、WAL 与 SHM 被精确删除；不存在共享失败回退、双写或第二份签到状态。Widget 在 journal 未 `ready` 或身份未确认时显示明确“打开 App 完成设置”状态，不创建默认项目、不打开未录用目标、不伪装成待签到。
 
-`PulseWidgetProjector` 从正式 Repository 投影最近七日、今日记录、可选名称、生成时间与项目时区下一个零点；`PulseWidgetSnapshotReader` 不产生写入。App Group UserDefaults 只保存 `widget.showsHabitName` 展示偏好，默认关闭，Lock Screen 始终忽略名称。
+`PulseWidgetProjector` 从正式 Repository 投影规范化主承诺名称、最近七日、今日记录、生成时间与项目时区下一个零点；`PulseWidgetSnapshotReader` 不产生写入。Home Screen 直接消费该名称，Lock Screen / StandBy / Always-On 不渲染名称，任何 Widget 都不携带“为什么重要”、不建立展示偏好或 App Group UserDefaults 副通道。
 
 Widget AppIntent 在独立扩展进程执行单向签到；进程内由各自 ModelContext 串行化，进程间由 SQLite 事务、`recordKey` 唯一约束和保存失败后的 rollback + 回读裁决。App 与 AppIntent 只在事实保存并重新读取成功后请求 timeline reload；刷新失败不能反向覆盖 store。详细状态机、隐私与设备门禁以 [WIDGET_SHARED_STORE_CONTRACT.md](./WIDGET_SHARED_STORE_CONTRACT.md) 为准。

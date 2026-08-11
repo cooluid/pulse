@@ -7,10 +7,6 @@ private enum StartupFailure: Equatable {
     case settings
 }
 
-private enum RuntimeConfigurationError: Error {
-    case appGroupDefaultsUnavailable
-}
-
 private enum PulseBootstrap {
     private struct RuntimeStore {
         let name: String
@@ -51,12 +47,7 @@ private enum PulseBootstrap {
                 clock: clock,
                 initialIdentity: initialIdentity
             )
-            guard let widgetDefaults = UserDefaults(
-                suiteName: PulseRuntimeIdentity.appGroupIdentifier
-            ) else {
-                throw RuntimeConfigurationError.appGroupDefaultsUnavailable
-            }
-            let settings = try AppSettings(widgetDefaults: widgetDefaults)
+            let settings = try AppSettings()
             let model = PulseAppModel(
                 repository: repository,
                 settings: settings,

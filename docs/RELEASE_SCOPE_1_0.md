@@ -17,7 +17,7 @@ Pulse 1.0 只解决一个问题：让单个用户每天可靠地记录一次签�
 - 固定签到时区和 00:00 日界线。
 - 今日签到、当日唯一性、重复点击保护和跨日刷新。
 - App 内有限日印仪式：待签到只进行一次有限呼吸，保存成功后完成空心到实心落印，Reduce Motion 使用静态等价表达；不包含 Live Activity。
-- 免费基础 Widget：Home Screen 小号/中号、Lock Screen 圆形/矩形；只读取同一个 App Group SwiftData store，未签到时提供单向签到 AppIntent，默认不显示主承诺名称且永不显示“为什么重要”。
+- 免费基础 Widget：Home Screen 小号/中号、Lock Screen 圆形/矩形；只读取同一个 App Group SwiftData store，未签到时提供单向签到 AppIntent；Home Screen 显示当前主承诺名称，Lock Screen 只显示品牌“印记”和抽象状态，任何 Widget 都不显示“为什么重要”。
 - 最近 7 天、月历历史、当前连续、最长连续和累计签到。
 - 删除单条签到记录和清除全部数据。
 - 每日本地提醒；提醒遵循签到项目固定时区，以滚动 60 个日历日的一次性计划运行并在 App 活跃时刷新。
