@@ -187,6 +187,18 @@ final class PulseAppModelTests: XCTestCase {
         XCTAssertTrue(context.scheduler.snapshots.last?.enabled ?? false)
     }
 
+    func testChangingWidgetStylePersistsAndReloadsTimelineOnce() throws {
+        let context = try makeContext()
+
+        context.model.requestWidgetStyle(.oversizedRing)
+
+        XCTAssertEqual(context.model.settings.widgetStyle, .oversizedRing)
+        XCTAssertEqual(context.widgetReloader.reloadCount, 1)
+
+        context.model.requestWidgetStyle(.oversizedRing)
+        XCTAssertEqual(context.widgetReloader.reloadCount, 1)
+    }
+
     func testPendingResetJournalIsRecoveredOnStart() async throws {
         let context = try makeContext()
         await context.model.start()

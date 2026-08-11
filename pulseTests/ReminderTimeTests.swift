@@ -63,6 +63,31 @@ final class AppSettingsTests: XCTestCase {
         XCTAssertEqual(reloaded.locale.identifier, "en")
     }
 
+    func testWidgetStyleDefaultsToFaultFieldAndPersistsEveryOfficialStyle() throws {
+        let suiteName = "AppSettingsTests.WidgetStyle.\(UUID().uuidString)"
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: suiteName))
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+
+        let settings = try AppSettings(defaults: defaults)
+        XCTAssertEqual(settings.widgetStyle, .faultField)
+
+        for style in PulseWidgetStyle.allCases {
+            settings.widgetStyle = style
+            XCTAssertEqual(try AppSettings(defaults: defaults).widgetStyle, style)
+        }
+    }
+
+    func testInvalidPersistedWidgetStyleFailsInitialization() throws {
+        let suiteName = "AppSettingsTests.WidgetStyle.Invalid.\(UUID().uuidString)"
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: suiteName))
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+        defaults.set("legacy-card", forKey: PulseWidgetStylePreferences.storageKey)
+
+        XCTAssertThrowsError(try AppSettings(defaults: defaults)) { error in
+            XCTAssertEqual(error as? PulseAppError, .invalidSettings)
+        }
+    }
+
     func testInvalidPersistedThemeOrLanguageFailsInitialization() throws {
         let invalidThemeSuite = "AppSettingsTests.Theme.\(UUID().uuidString)"
         let invalidThemeDefaults = try XCTUnwrap(UserDefaults(suiteName: invalidThemeSuite))
@@ -84,14 +109,17 @@ final class AppSettingsTests: XCTestCase {
         let settings = try AppSettings(defaults: defaults)
         settings.theme = .light
         settings.language = .simplifiedChinese
+        settings.widgetStyle = .tearOffCalendar
 
         settings.reset()
 
         XCTAssertEqual(settings.theme, .system)
         XCTAssertEqual(settings.language, .system)
+        XCTAssertEqual(settings.widgetStyle, .faultField)
         let reloaded = try AppSettings(defaults: defaults)
         XCTAssertEqual(reloaded.theme, .system)
         XCTAssertEqual(reloaded.language, .system)
+        XCTAssertEqual(reloaded.widgetStyle, .faultField)
     }
 
     func testInvalidPersistedReminderTimeFailsInitialization() throws {

@@ -217,6 +217,53 @@ final class PulseFlowUITests: XCTestCase {
         XCTAssertTrue(persistedThemePicker.label.contains("Dark"))
     }
 
+    func testAllWidgetStylesAreSelectableAndPersistAcrossRelaunch() throws {
+        configureApp()
+        launchAndConfirmDefaultCommitment()
+
+        let settingsButton = app.buttons["settings.navigation.open.today"]
+        XCTAssertTrue(settingsButton.waitForExistence(timeout: 5))
+        settingsButton.tap()
+
+        let stylePicker = app.descendants(matching: .any)["settings.widget.style.picker"]
+        for _ in 0..<4 where !stylePicker.exists {
+            app.swipeUp()
+        }
+        XCTAssertTrue(stylePicker.waitForExistence(timeout: 3))
+        stylePicker.tap()
+
+        let styleNames = ["断层双色", "越界巨环", "承诺宣言", "错版撕页"]
+        for styleName in styleNames {
+            let option = app.descendants(matching: .any)
+                .matching(NSPredicate(format: "label == %@", styleName))
+                .firstMatch
+            XCTAssertTrue(option.waitForExistence(timeout: 3))
+        }
+
+        app.descendants(matching: .any)
+            .matching(NSPredicate(format: "label == %@", "错版撕页"))
+            .firstMatch
+            .tap()
+        XCTAssertTrue(stylePicker.label.contains("错版撕页"))
+
+        app.terminate()
+        app.launchEnvironment.removeValue(forKey: "PULSE_UI_TEST_RESET")
+        app.launch()
+
+        let persistedSettingsButton = app.buttons["settings.navigation.open.today"]
+        XCTAssertTrue(persistedSettingsButton.waitForExistence(timeout: 5))
+        persistedSettingsButton.tap()
+
+        let persistedStylePicker = app.descendants(matching: .any)[
+            "settings.widget.style.picker"
+        ]
+        for _ in 0..<4 where !persistedStylePicker.exists {
+            app.swipeUp()
+        }
+        XCTAssertTrue(persistedStylePicker.waitForExistence(timeout: 3))
+        XCTAssertTrue(persistedStylePicker.label.contains("错版撕页"))
+    }
+
     func testRecordDetailUsesSheetDismissalAndSourceAnchoredDeleteConfirmation() throws {
         configureApp()
         launchAndConfirmDefaultCommitment()

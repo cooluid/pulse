@@ -4,6 +4,64 @@ public enum PulseWidgetContract {
     public static let kind = "PulseDailyImprint"
 }
 
+public enum PulseWidgetStyle: String, CaseIterable, Codable, Identifiable, Sendable {
+    case faultField
+    case oversizedRing
+    case commitmentManifesto
+    case tearOffCalendar
+
+    public var id: String { rawValue }
+}
+
+public enum PulseWidgetStylePreferenceError: Error, Equatable {
+    case invalidAppGroupIdentifier
+    case unavailableSuite
+    case invalidStoredStyle(String)
+}
+
+public struct PulseWidgetStylePreferences {
+    public static let defaultStyle = PulseWidgetStyle.faultField
+    public static let storageKey = "widget.style"
+
+    private let defaults: UserDefaults
+
+    public init(defaults: UserDefaults) {
+        self.defaults = defaults
+    }
+
+    public init(appGroupIdentifier: String) throws {
+        guard appGroupIdentifier.hasPrefix("group."),
+              !appGroupIdentifier.contains("$(") else {
+            throw PulseWidgetStylePreferenceError.invalidAppGroupIdentifier
+        }
+        guard let defaults = UserDefaults(suiteName: appGroupIdentifier) else {
+            throw PulseWidgetStylePreferenceError.unavailableSuite
+        }
+        self.defaults = defaults
+    }
+
+    public func load() throws -> PulseWidgetStyle {
+        guard let storedValue = defaults.object(forKey: Self.storageKey) else {
+            return Self.defaultStyle
+        }
+        guard let rawValue = storedValue as? String,
+              let style = PulseWidgetStyle(rawValue: rawValue) else {
+            throw PulseWidgetStylePreferenceError.invalidStoredStyle(
+                String(describing: storedValue)
+            )
+        }
+        return style
+    }
+
+    public func save(_ style: PulseWidgetStyle) {
+        defaults.set(style.rawValue, forKey: Self.storageKey)
+    }
+
+    public func reset() {
+        defaults.removeObject(forKey: Self.storageKey)
+    }
+}
+
 public enum PulseWidgetDayState: String, Codable, Equatable, Sendable {
     case beforeHabit
     case checked

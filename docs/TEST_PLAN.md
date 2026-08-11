@@ -32,6 +32,7 @@
 | 统计 | 空集合、今天/昨天、多段连续、乱序、重复、删除后重算 |
 | 迁移/导入 | 真实磁盘 SwiftData V1→V2；私有 V1/V2 store 经 Repository 值级搬到独立目标；全新安装经显式 staging admission；journal v2 区分 `existingStore / newInstallation`；`copying / verified / sourceRemoved` 中断恢复；迁移确定性摘要；源/目标篡改、删除失败、损坏/未知 journal、无源/空源、无 journal 既有目标、同路径/符号链接和 `ready` 后源复现均失败关闭；`ready` 后目标正常签到/编辑再启动不得被旧摘要拒绝；单一 JSON UTType；精确 v1→v2 规范化；v2 format/schema、文件/数量上限、身份、时区、起始日来源、记录时区映射、时间顺序、ID/日期唯一 |
 | Widget 投影 | 未确认身份不可生成可签到快照；最近七日状态、隐私名称裁决、实际签到时间与跨 DST/项目时区零点刷新正确；只读路径不创建项目 |
+| Widget 样式偏好 | 四个正式 raw value 往返、缺省为 `faultField`、未知值失败关闭；设置切换只请求一次 timeline reload，不写入任何签到事实 |
 | App Group | App/Widget 两个签名 entitlement 与 provisioning 均包含唯一正式 group；生产只打开共享 store，App 私有源与 staging 完成后无 store artifact；group URL 缺失失败关闭 |
 | 原子性 | 无效导入不删除现有数据；保存失败 rollback |
 | 提醒 | 权限拒绝与系统外撤权；旧权限结果不能覆盖新意图；快照与最新记录一致；60 日窗口、当天已过时间、已签到日、DST 不存在时间；失败关闭且无部分计划 |
@@ -61,10 +62,10 @@
 - 中文今日页顶端日期信息不得混入英文 `TODAY`；深浅色脉冲场装饰不得在状态栏两角形成可见边缘。
 - Accessibility XXXL 下签到控件横向扩展，页头设置入口保持可达，两个根导航等宽且完整位于屏幕内；滚动后节奏摘要完整位于固定底栏之上。
 - 测试通过 UUID store 与 `PULSE_UI_TEST_RESET` 隔离数据，通过 `PULSE_UI_TEST_NOW` 固定业务时间。
-- Widget 快照必须投影规范化主承诺名称且不携带可选说明；设置与字符串不得保留展示偏好。Home Screen 显示名称，Lock Screen / StandBy / Always-On 不渲染名称，身份编辑成功后必须请求 timeline reload。
-- Widget A“裂环日签”在小号/中号必须形成紧凑四层结构：顶部左侧为开放日环 + 放大粗体“印记 / Imprint”，右侧为主日号/小月份；其下为全宽七日方块；中部为最多两行的放大粗体主承诺名称；底部为锚定底边的守护状态带。Home Screen 必须验证关闭系统默认边距后的 4/12/4pt 安全边距，Accessory 仍使用系统边距；不得使用负偏移顶进圆角蒙版。
-- Widget 七日方块在 `beforeHabit / checked / missed / todayPending` 四种状态下保留等分全宽结构；今天待守护必须是强调色空心方块，新项目不得因项目开始前节点透明而只剩一个孤立今天标记。日期 `1 / 10 / 11 / 31` 与月份 `1 / 8 / 10 / 12` 必须检查裁切；English 与简体中文必须分别检查层级。待守护状态带沿用浅表面，已守护必须为草绿背景；AppIntent 命中区至少 44pt，完成态同形但不可触发撤销。
-- Widget 分别验证 `fullColor / accented / vibrant`、浅色/深色、iOS 26 Clear Liquid Glass、降低透明度和 Always-On；透明外观必须来自系统移除容器背景，不接受自绘模糊或 `Color.clear` 截图冒充。
+- Widget 快照必须投影规范化主承诺名称且不携带可选说明；设置只保留类型化 `widget.style` 构图偏好。Home Screen 显示名称，Lock Screen / StandBy / Always-On 不渲染名称，身份编辑或样式切换成功后必须请求 timeline reload。
+- 四种样式都必须在小号/中号消费完整日/月、七日事实、主承诺、今日状态与同一个单向签到入口；可见品牌和文字状态按原型取舍，不能恢复通用顶栏。断层双色按用户在原型后的明确修订把七日圆点固定左下，裂环缺口朝向右侧状态色场并在待签到/完成、全彩/系统着色下维持可见；越界巨环只有一个从左侧裁切的主环，承诺宣言以主承诺为第一读，错版撕页包含 18% 状态顶带、超大日号和竖排月份。中号必须使用独立比例，不得把小号拉宽。
+- 七日节律在 `beforeHabit / checked / missed / todayPending` 四种状态下分别保持小空心 / 大实心 / 小低强调实心 / 大强调空心；圆点与方块都不得透明到消失。相邻节点必须由低强调实线连接，连接线不得穿过空心节点、压过状态边框或制造分页控件暗示。日期 `1 / 10 / 11 / 31`、月份 `1 / 8 / 10 / 12`、80 字名称、English 与简体中文必须检查裁切和层级；AppIntent 命中区至少 44pt，完成态静态且不可撤销。
+- Home Screen 验证边到边背景和 12pt 文字安全区，只有装饰性巨环允许受控越界；Accessory 仍使用系统 `widgetContentMargins`。四式分别验证 `fullColor / accented / vibrant`、浅色/深色、iOS 26 Clear Liquid Glass 与降低透明度；透明外观必须来自系统移除容器背景，不接受自绘模糊或 `Color.clear` 截图冒充。
 
 ## 4. 独立人工门禁
 
@@ -80,7 +81,7 @@
 - AppIcon 的 Default / Dark / Tinted 与商店素材；
 - iOS / iPadOS 17.x 可用最旧运行时上的安装、启动、签到、设置与历史主流程；
 - 签名、Archive、TestFlight 和 App Store 校验；
-- Home Screen 小号/中号、Lock Screen 圆形/矩形在待守护、已守护、未设置和读取失败状态下的真实系统渲染；A“裂环日签”的开放环持续存在、日/月层级、七日方块、主承诺标题和底部状态带必须在 1× Home Screen 成立；AppIntent 不启动 App、保存成功后刷新、失败不显示完成；Lock Screen、StandBy 与 Always-On 不渲染主承诺名称，任何系统表面都不泄露可选说明；
+- Home Screen 四种小号/中号、Lock Screen 圆形/矩形在待签到、已签到、未设置、偏好损坏和读取失败状态下的真实系统渲染；断层双色左下圆点、越界巨环受控裁切、承诺宣言长标题、错版撕页日期层级必须在 1× Home Screen 成立；AppIntent 不启动 App、保存成功后刷新、失败不显示完成；Lock Screen、StandBy 与 Always-On 不渲染主承诺名称或 Home Screen 样式，任何系统表面都不泄露可选说明；
 - Widget 在 App 未运行、设备锁定、跨午夜、系统杀进程、快速双击、App/Widget 同日竞争、旧版升级和卸载重装下的真机行为；
 - 跨多个自然日的连续使用。
 

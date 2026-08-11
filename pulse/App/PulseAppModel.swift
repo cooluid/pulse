@@ -285,6 +285,12 @@ final class PulseAppModel {
         _ = enqueueReminderReconciliation()
     }
 
+    func requestWidgetStyle(_ style: PulseWidgetStyle) {
+        guard settings.widgetStyle != style else { return }
+        settings.widgetStyle = style
+        widgetTimelineReloader.reloadDailyImprint()
+    }
+
     func updateTimeZone(identifier: String) async -> Bool {
         guard operation == nil, let habit else { return false }
         operation = .updateTimeZone

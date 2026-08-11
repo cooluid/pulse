@@ -2,3 +2,6 @@
 xcuserdata/
 *.xcuserstate
 DerivedData/
+/.derivedData/
+/.playwright-cli/
+/output/

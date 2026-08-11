@@ -176,7 +176,7 @@ MVP 的目标不是搭建任务平台，而是让以下闭环稳定成立：
 - 一周起始日设置。
 - 更完整的错误恢复和空状态说明。
 - App 图标、启动体验和正式发布素材。
-- 免费基础 Widget：Home Screen 小号/中号显示当前主承诺名称、最近七日投影与单向签到 AppIntent，Lock Screen 圆形/矩形只显示抽象状态；App/Widget 只使用同一个 App Group store，不保存签到状态副本。
+- 免费基础 Widget：Home Screen 小号/中号可在“断层双色 / 越界巨环 / 承诺宣言 / 错版撕页”四种构图间切换，均显示当前主承诺名称、最近七日投影与单向签到 AppIntent；Lock Screen 圆形/矩形只显示抽象状态。App/Widget 只使用同一个 App Group store；`widget.style` 只保存构图，不保存签到状态副本。
 
 ### 5.3 P2：后续候选，不属于 MVP 承诺
 

@@ -36,7 +36,7 @@ PulseSharedStoreBootstrapper ──→ one Pulse.store
 PulseWidgetSnapshot ──→ Widget timeline / one-way AppIntent
 ```
 
-- `PulseCore` 只编译 `Domain / Persistence / ImportExport / Widget projection`；不依赖 SwiftUI、WidgetKit、UserNotifications、UserDefaults、触觉、页面或宿主本地化资源。App 与 Widget 源码都不再编译 Core 文件的副本。
+- `PulseCore` 只编译 `Domain / Persistence / ImportExport / Widget projection` 与类型化 `PulseWidgetStylePreferences`；不依赖 SwiftUI、WidgetKit、UserNotifications、触觉、页面或宿主本地化资源。唯一 UserDefaults 消费只读写不含业务事实的 `widget.style`，App 与 Widget 源码都不再复制 Core 文件或偏好键。
 - Repository 是事实写入和持久化语义校验的唯一所有者，并持有与 AppModel 相同的 Clock；SwiftData managed object 不越过模块边界，调用方只接收已经验证、关键日期与时区非可空的 `HabitSnapshot`、`CheckInRecordSnapshot` 和提交回执。
 - `existingPrimaryHabit()` 是不产生默认项目的只读入口；启动迁移与 Widget 读取不能借用会创建数据的 `primaryHabit(systemTimeZone:)` 猜测事实。
 - AppModel 是页面快照、操作互斥、导航复位和提醒意图顺序的唯一所有者。
@@ -115,6 +115,6 @@ JSON 只导出 v2。`PulseExportCodec` 是编码、精确版本解码与完整�
 
 App 与 Widget 只通过系统 App Group API 解析 `Library/Application Support/Pulse/Pulse.store`。App 私有 store 只作为一次性迁移源，完成后主文件、WAL 与 SHM 被精确删除；不存在共享失败回退、双写或第二份签到状态。Widget 在 journal 未 `ready` 或身份未确认时显示明确“打开 App 完成设置”状态，不创建默认项目、不打开未录用目标、不伪装成待签到。
 
-`PulseWidgetProjector` 从正式 Repository 投影规范化主承诺名称、最近七日、今日记录、生成时间与项目时区下一个零点；`PulseWidgetSnapshotReader` 不产生写入。Home Screen 直接消费该名称，Lock Screen / StandBy / Always-On 不渲染名称，任何 Widget 都不携带“为什么重要”、不建立展示偏好或 App Group UserDefaults 副通道。
+`PulseWidgetProjector` 从正式 Repository 投影规范化主承诺名称、最近七日、今日记录、生成时间与项目时区下一个零点；`PulseWidgetSnapshotReader` 不产生写入。Home Screen 直接消费该名称，Lock Screen / StandBy / Always-On 不渲染名称，任何 Widget 都不携带“为什么重要”。`PulseWidgetStylePreferences` 在 App Group UserDefaults 只保存 `faultField / oversizedRing / commitmentManifesto / tearOffCalendar` 四值之一，缺省为 `faultField`、未知值失败关闭；它不保存名称、日期、签到或统计，也不能反向覆盖 store。
 
 Widget AppIntent 在独立扩展进程执行单向签到；进程内由各自 ModelContext 串行化，进程间由 SQLite 事务、`recordKey` 唯一约束和保存失败后的 rollback + 回读裁决。App 与 AppIntent 只在事实保存并重新读取成功后请求 timeline reload；刷新失败不能反向覆盖 store。详细状态机、隐私与设备门禁以 [WIDGET_SHARED_STORE_CONTRACT.md](./WIDGET_SHARED_STORE_CONTRACT.md) 为准。

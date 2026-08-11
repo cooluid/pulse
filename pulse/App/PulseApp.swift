@@ -47,7 +47,11 @@ private enum PulseBootstrap {
                 clock: clock,
                 initialIdentity: initialIdentity
             )
-            let settings = try AppSettings()
+            let settings = try AppSettings(
+                widgetStylePreferences: try PulseWidgetStylePreferences(
+                    appGroupIdentifier: PulseRuntimeIdentity.appGroupIdentifier
+                )
+            )
             let model = PulseAppModel(
                 repository: repository,
                 settings: settings,
@@ -63,6 +67,16 @@ private enum PulseBootstrap {
             logger.fault("Failed to initialize the persistent store: \(error.localizedDescription, privacy: .private)")
             return .failed(.persistence)
         }
+    }
+
+    @MainActor
+    static func resetSettings() {
+        let widgetStylePreferences = try? PulseWidgetStylePreferences(
+            appGroupIdentifier: PulseRuntimeIdentity.appGroupIdentifier
+        )
+        AppSettings.clearStoredValues(
+            widgetStylePreferences: widgetStylePreferences
+        )
     }
 
     @MainActor
@@ -133,7 +147,7 @@ struct PulseApp: App {
                     failure: failure,
                     retry: { bootstrap = PulseBootstrap.build() },
                     resetSettings: {
-                        AppSettings.clearStoredValues()
+                        PulseBootstrap.resetSettings()
                         bootstrap = PulseBootstrap.build()
                     }
                 )

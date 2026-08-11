@@ -1,9 +1,6 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
-    "/" : {
-
-    },
     "%@, %@" : {
       "localizations" : {
         "en" : {
@@ -19,13 +16,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Guarded today"
+            "value" : "Today is imprinted"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "今天已守护"
+            "value" : "今天已经留下印记"
           }
         }
       }
@@ -35,13 +32,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Guard today"
+            "value" : "Leave today's imprint"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "守护今天"
+            "value" : "留下今天的印记"
           }
         }
       }
@@ -51,13 +48,45 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Guards today. This cannot be undone from the widget."
+            "value" : "Leaves today's imprint. This cannot be undone from the widget."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "守护今天；小组件中不能撤销。"
+            "value" : "留下今天的印记；小组件中不能撤销。"
+          }
+        }
+      }
+    },
+    "widget.action.check_in.short" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Imprint"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "留印"
+          }
+        }
+      }
+    },
+    "widget.brand.daily_imprint" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Daily Imprint"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "一日一印"
           }
         }
       }
@@ -110,6 +139,23 @@
         }
       }
     },
+    "widget.date.month_label" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "MONTH"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "月"
+          }
+        }
+      }
+    },
     "widget.day.before_habit" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -133,13 +179,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Guarded"
+            "value" : "Imprinted"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "已守护"
+            "value" : "已留印"
           }
         }
       }
@@ -167,13 +213,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Today, to guard"
+            "value" : "Today, still open"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "今天待守护"
+            "value" : "今天还空着"
           }
         }
       }
@@ -199,13 +245,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Guard Today"
+            "value" : "Leave Today's Imprint"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "守护今天"
+            "value" : "留下今天"
           }
         }
       }
@@ -226,18 +272,34 @@
         }
       }
     },
-    "widget.state.checked.short" : {
+    "widget.state.checked.editorial" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Guarded"
+            "value" : "Today imprinted"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "已守护"
+            "value" : "今日已印"
+          }
+        }
+      }
+    },
+    "widget.state.checked.short" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Imprinted"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已留印"
           }
         }
       }
@@ -279,13 +341,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "To guard"
+            "value" : "Still open"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "待守护"
+            "value" : "今天还空着"
           }
         }
       }

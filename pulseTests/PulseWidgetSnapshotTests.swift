@@ -4,6 +4,39 @@ import XCTest
 
 @MainActor
 final class PulseWidgetSnapshotTests: XCTestCase {
+    func testStylePreferenceDefaultsPersistsAndResets() throws {
+        let suiteName = "PulseWidgetStylePreferences.\(UUID().uuidString)"
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: suiteName))
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+        let preferences = PulseWidgetStylePreferences(defaults: defaults)
+
+        XCTAssertEqual(try preferences.load(), .faultField)
+
+        for style in PulseWidgetStyle.allCases {
+            preferences.save(style)
+            XCTAssertEqual(try preferences.load(), style)
+        }
+
+        preferences.reset()
+        XCTAssertEqual(try preferences.load(), .faultField)
+    }
+
+    func testStylePreferenceRejectsUnknownStoredValue() throws {
+        let suiteName = "PulseWidgetStylePreferences.Invalid.\(UUID().uuidString)"
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: suiteName))
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+        defaults.set("legacy-card", forKey: PulseWidgetStylePreferences.storageKey)
+
+        XCTAssertThrowsError(
+            try PulseWidgetStylePreferences(defaults: defaults).load()
+        ) { error in
+            XCTAssertEqual(
+                error as? PulseWidgetStylePreferenceError,
+                .invalidStoredStyle("legacy-card")
+            )
+        }
+    }
+
     func testProjectionBuildsSevenValidatedDays() throws {
         let timeZone = try XCTUnwrap(TimeZone(identifier: "Asia/Shanghai"))
         let clock = MutableWidgetClock(now: makeDate(2026, 8, 9, 8, timeZone: timeZone))

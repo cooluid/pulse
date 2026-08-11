@@ -17,6 +17,7 @@ struct SettingsView: View {
             commitmentSection
             reminderSection
             personalizationSection
+            widgetSection
             experienceSection
             dataSection
             aboutSection
@@ -128,6 +129,36 @@ struct SettingsView: View {
             }
         } header: {
             Text("settings.reminder.section")
+        }
+    }
+
+    private var widgetSection: some View {
+        Section {
+            Picker(
+                "settings.widget.style",
+                selection: Binding(
+                    get: { model.settings.widgetStyle },
+                    set: { model.requestWidgetStyle($0) }
+                )
+            ) {
+                ForEach(PulseWidgetStyle.allCases) { style in
+                    Text(style.localizedName(locale: locale)).tag(style)
+                }
+            }
+            .accessibilityIdentifier("settings.widget.style.picker")
+            .id("settings.widget.style.\(locale.identifier)")
+
+            Label {
+                Text("settings.widget.footer")
+                    .fixedSize(horizontal: false, vertical: true)
+            } icon: {
+                Image(systemName: "square.grid.2x2")
+            }
+            .font(.footnote)
+            .foregroundStyle(PulseDesign.secondary)
+            .accessibilityIdentifier("settings.widget.style.note")
+        } header: {
+            Text("settings.widget.section")
         }
     }
 
