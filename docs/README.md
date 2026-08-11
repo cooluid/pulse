@@ -13,7 +13,8 @@
 | [TEST_PLAN.md](./TEST_PLAN.md) | 定义自动化、手工、设备与发布前验证 | 开发、测试 |
 | [IMPLEMENTATION_STATUS.md](./IMPLEMENTATION_STATUS.md) | 记录当前实现范围、验证证据和发布门槛 | 全员 |
 | [PRODUCT_STRATEGY_2_X.md](./PRODUCT_STRATEGY_2_X.md) | 提出 1.0 之后的定位、功能组合、收费边界与验证门槛，不改变 1.0 冻结范围 | 产品、设计、商业、开发 |
-| [POST_1_0_ROADMAP.md](./POST_1_0_ROADMAP.md) | 将后续战略拆成发布、留存、Plus、同步、Watch 与个性智能阶段 | 产品、开发、测试、发布负责人 |
+| [POST_1_0_ROADMAP.md](./POST_1_0_ROADMAP.md) | 将后续战略拆成带证据门禁的发布、实验、Plus、影像、系统入口与智能阶段 | 产品、开发、测试、发布负责人 |
+| [PULSE_RITUAL_CONTRACT.md](./PULSE_RITUAL_CONTRACT.md) | 定义 Widget、Live Activity、灵动岛、锁屏、系统动效和提醒通道的统一产品语义 | 产品、设计、开发、测试 |
 
 ## 优先级定义
 
@@ -44,5 +45,6 @@
 
 - 签到规则发生变化时，先修改 `DOMAIN_CONTRACT.md`，再改实现和测试。
 - 产品范围发生变化时，先修改 `PRODUCT_REQUIREMENTS.md` 与 `RELEASE_SCOPE_1_0.md`。
+- Widget、Live Activity、灵动岛或提醒通道语义变化时，先修改 `PULSE_RITUAL_CONTRACT.md`，再映射路线图、实现和测试。
 - 不在多个文档复制完整算法；其他文档通过链接引用业务规则。
 - 完成一项任务时，必须同时满足对应自动化测试和手工验收，不以“能编译”代替完成。

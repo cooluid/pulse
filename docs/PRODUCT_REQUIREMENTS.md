@@ -1,6 +1,6 @@
 # 一日一印（Pulse）日签到产品需求
 
-文档版本：1.1<br>
+文档版本：1.2<br>
 状态：Canonical Product Contract
 适用范围：本地优先、单用户、单日签到 MVP
 
@@ -149,7 +149,8 @@ MVP 使用两个主页面，设置从今日页工具栏进入。
 
 ### 5.3 P2：后续候选，不属于 MVP 承诺
 
-- 主承诺命名、为什么重要、隐私锁和桌面/锁屏小组件；
+- 主承诺命名、为什么重要、隐私锁和可交互的桌面/锁屏小组件；
+- “呼吸、落印、年轮”系统仪式：签到成功后的短暂灵动岛回声、回归和事实里程碑，以及经用户开启和远程门禁验证后的留印提醒窗口；
 - 与签到事实分离的轻量回响和缺席说明，不形成补签；
 - Apple Watch、Shortcuts 和高级系统入口；
 - 通过冲突原型门禁后的私密多设备同步；
@@ -158,7 +159,7 @@ MVP 使用两个主页面，设置从今日页工具栏进入。
 - 节律、印期、持续回响、长期档案等 Pulse Plus 能力；
 - 微信提醒仅作为官方资格轨候选：主体、类目、模板、用户授权和真实发送全部通过后，才评估为本地提醒之外的可选通道。
 
-后续候选的 GO / HOLD / NO-GO、免费与收费边界、数据合同和阶段门禁以 [PRODUCT_STRATEGY_2_X.md](./PRODUCT_STRATEGY_2_X.md) 与 [POST_1_0_ROADMAP.md](./POST_1_0_ROADMAP.md) 为准。多个并行项目继续 `HOLD`；补签、连续冻结、AI 面龄和非官方微信个人号自动化为 `NO-GO`。
+后续候选的 GO / HOLD / NO-GO、免费与收费边界、数据合同和阶段门禁以 [PRODUCT_STRATEGY_2_X.md](./PRODUCT_STRATEGY_2_X.md) 与 [POST_1_0_ROADMAP.md](./POST_1_0_ROADMAP.md) 为准；Widget、Live Activity、灵动岛和提醒通道语义以 [PULSE_RITUAL_CONTRACT.md](./PULSE_RITUAL_CONTRACT.md) 为准。多个并行项目继续 `HOLD`；补签、连续冻结、AI 面龄、全天常驻未签到灵动岛和非官方微信个人号自动化为 `NO-GO`。
 
 ### 5.4 明确不在 MVP 范围
 
