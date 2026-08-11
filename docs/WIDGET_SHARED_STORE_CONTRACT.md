@@ -1,7 +1,7 @@
 # Pulse 基础 Widget 与共享 Store 合同
 
-文档版本：0.4<br>
-状态：Canonical Implemented Contract；开发签名、共享 Store、生产 Widget target 与模拟器交互已落地，真机/分发仍独立门禁<br>
+文档版本：0.5<br>
+状态：Canonical Implemented Contract；开发签名、共享 Store、生产 Widget target、模拟器与用户真机基础交互已落地，未记录的版本/压力矩阵及分发仍是独立门禁<br>
 评审日期：2026-08-11
 
 本文定义基础 Widget、App Group store 搬迁、跨进程签到和失败恢复的唯一实施边界。Widget 的视觉语言与系统表面职责以 [PULSE_RITUAL_CONTRACT.md](./PULSE_RITUAL_CONTRACT.md) 为准；签到日期、唯一性和删除语义仍只以 [DOMAIN_CONTRACT.md](./DOMAIN_CONTRACT.md) 为准。
@@ -41,7 +41,7 @@ App 与 Widget target 必须从同一个受控 build setting `PULSE_APP_GROUP_ID
 4. Xcode 读取到的签名 entitlement 与工程合同一致；
 5. Simulator、真实 iPhone 和真实 iPad 都能通过系统 API 取得并写入同一 group container。
 
-当前 1—4 已通过：开发设备构建分别获得 `co.fanr.pulse` 与 `co.fanr.pulse.widgets` 的 profile，两个签名 entitlement 都包含 `group.co.fanr.pulse`；Simulator group container、系统画廊与跨进程 AppIntent 已通过。真实 iPhone/iPad 仍未完成第 5 项，因此不能把真机或发布状态标记为 GO。
+当前 1—4 已通过：开发设备构建分别获得 `co.fanr.pulse` 与 `co.fanr.pulse.widgets` 的 profile，两个签名 entitlement 都包含 `group.co.fanr.pulse`；Simulator group container、系统画廊与跨进程 AppIntent 已通过。2026-08-11，用户确认在真实 iPhone/iPad 完成全新安装、旧数据升级、杀进程重启、跨时区与 Widget 交互且未发现问题，因此第 5 项在当前受测真机上获得 `HUMAN GO`；该确认没有提供设备型号或 OS 版本，也不等于发布压力矩阵与分发门禁已经通过。
 
 ## 3. 唯一共享 Store
 
@@ -145,7 +145,7 @@ Timeline 至少覆盖当前 entry，并在下一个项目时区零点后失效�
 3. 已完成：实现 locator、journal v2、旧库/新安装两种模式、值级复制、确定性摘要、精确清理和崩溃恢复测试；
 4. 已完成：实现 `PulseWidgetSnapshot`、只读投影、隐私裁决和跨项目时区 timeline 计划器；
 5. 已完成：加入双 target App Group entitlement、生产共享路径、Widget target、timeline 与单向签到 AppIntent；
-6. 已完成 Simulator 系统画廊、小号/中号主屏渲染、归档和独立扩展 AppIntent；下一步只关闭真实 iPhone/iPad、锁屏、跨午夜、并发点击和升级设备门。
+6. 已完成 Simulator 系统画廊、小号/中号主屏渲染、归档和独立扩展 AppIntent；用户已完成人工真机基础交互、升级/重启、跨时区以及主屏幕/锁屏/Always-On 验收，下一步只补未记录的 OS 版本、快速双击、App/Widget 同日竞争和异常恢复矩阵。
 
 ## 9. 自动化与真机门禁
 
@@ -165,5 +165,6 @@ Timeline 至少覆盖当前 entry，并在下一个项目时区零点后失效�
 
 - 共享 store 与 Widget 产品/技术方向：设计 GO；
 - `PulseCore`、journal v2、旧库/新安装路径、纯值投影、App Group entitlement、生产 Widget target、开发设备签名与 Simulator 独立进程交互：工程 GO；
-- 真实 iPhone/iPad、锁屏/Always-On、设备锁定、跨午夜、App/Widget 同日竞争和升级：运行 NO-GO；
+- 真实 iPhone/iPad 的全新安装、旧数据升级、杀进程重启、跨时区、Widget 基础交互，以及主屏幕/锁屏/Always-On、深浅模式、最大动态字体、VoiceOver、Reduce Motion 和隐私理解：用户人工运行/体验 GO；
+- 未记录的设备型号与 OS 版本，以及 App 未运行、快速双击、App/Widget 同日竞争、卸载重装等逐项压力矩阵：发布前运行 NO-GO；
 - Apple Distribution、Archive/TestFlight 与商店工作：发布 NO-GO，不因工程 GO 自动启动。

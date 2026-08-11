@@ -1,6 +1,6 @@
 # 一日一印（Pulse）1.0 发布范围合同
 
-文档版本：1.2
+文档版本：1.3
 状态：Canonical Release Contract
 更新时间：2026-08-11
 
@@ -59,14 +59,16 @@ JSON 是 1.0 唯一恢复协议。CSV 不承担恢复职责，也不进入 1.0�
 | Build Number | `1` | 首次 TestFlight 前按发布流程递增 |
 | 最低系统版本 | iOS / iPadOS 17.0 | 已在工程统一；本轮按用户指示不下载 17.x 运行时，行为验证仍是发布门禁 |
 | Development Team | `6N3D8YA2FY` | App 与 Widget 的开发签名设备构建及共享 App Group entitlement 已通过；Apple Distribution、Archive/TestFlight 与商店分发仍阻断 |
-| Widget 身份 | `co.fanr.pulse.widgets` / `group.co.fanr.pulse` | 两个开发描述文件均含正式 App Group；模拟器系统画廊、主屏渲染与 AppIntent 已通过，真机仍待验收 |
+| Widget 身份 | `co.fanr.pulse.widgets` / `group.co.fanr.pulse` | 两个开发描述文件均含正式 App Group；模拟器证据已通过，用户也已在真实 iPhone/iPad 确认主屏幕、锁屏、Always-On、升级/重启、跨时区与 Widget 交互未发现问题；未记录的 OS/压力矩阵仍独立 |
 | 数据策略 | 本地优先 + Pulse JSON 恢复 | 1.0 推荐方案 |
 | AppIcon | “开放日环”，草绿 Default / Dark / Tinted | 几何与生成合同已录用；当前版本待最终视觉确认 |
 | 隐私政策 | `https://fanr.co/pulse/privacy/` | 已公开，并由 App 设置页直接链接 |
 | 产品支持 | `https://fanr.co/pulse/support/` | 已公开，联系邮箱为 `400822@163.com` |
-| 真实设备 | iPhone / iPad 核心真机矩阵 | 当前证据只以 `IMPLEMENTATION_STATUS.md` 为准 |
+| 真实设备 | iPhone / iPad 核心真机矩阵 | 2026-08-11 用户人工验收覆盖全新安装、旧数据升级、杀进程重启、跨时区、Widget、可访问性与多日使用；设备型号、OS 版本和未明确枚举的压力路径仍以 `IMPLEMENTATION_STATUS.md` 为准 |
 
 Bundle ID 一旦用于正式分发，就成为安装、钥匙串、通知和后续升级身份的一部分，不能把临时字符串带入发布后再随意更换。
+
+本次用户人工验收属于正式 `HUMAN` 证据，可以关闭其明确覆盖的真机、界面、体验和多日使用门禁；它不自动证明未记录的 iOS / iPadOS 17.x、精确并发/异常矩阵、Apple Distribution、Archive/TestFlight 或商店分发已经通过。
 
 ## 6. 1.0 发布门禁
 
