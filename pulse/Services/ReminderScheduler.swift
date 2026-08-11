@@ -16,6 +16,71 @@ struct ReminderScheduleSnapshot: Sendable {
     let now: Date
 }
 
+enum ReminderSchedulePolicy {
+    static let maximumPendingRequests = 64
+    static let reservedPendingRequests = 4
+    static let schedulingWindowDays = maximumPendingRequests - reservedPendingRequests
+}
+
+struct PlannedReminder: Equatable, Sendable {
+    let day: LogicalDay
+    let deliveryDate: Date
+    let triggerComponents: DateComponents
+}
+
+enum ReminderSchedulePlanner {
+    static func makePlan(for snapshot: ReminderScheduleSnapshot) throws -> [PlannedReminder] {
+        guard snapshot.enabled else { return [] }
+        guard let timeZone = TimeZone(identifier: snapshot.timeZoneIdentifier) else {
+            throw PulseError.invalidTimeZone(snapshot.timeZoneIdentifier)
+        }
+
+        let today = LogicalDay.resolve(at: snapshot.now, timeZone: timeZone)
+        let calendar = Calendar.pulseGregorian(timeZone: timeZone)
+        var plan: [PlannedReminder] = []
+        plan.reserveCapacity(ReminderSchedulePolicy.schedulingWindowDays)
+
+        for offset in 0..<ReminderSchedulePolicy.schedulingWindowDays {
+            let day = today.addingDays(offset, timeZone: timeZone)
+            guard !snapshot.checkedDays.contains(day) else { continue }
+
+            let dayStart = day.startDate(timeZone: timeZone)
+            let requestedTime = DateComponents(
+                hour: snapshot.time.hour,
+                minute: snapshot.time.minute,
+                second: 0
+            )
+            guard let deliveryDate = calendar.nextDate(
+                after: dayStart.addingTimeInterval(-1),
+                matching: requestedTime,
+                matchingPolicy: .nextTimePreservingSmallerComponents,
+                repeatedTimePolicy: .first,
+                direction: .forward
+            ),
+            LogicalDay.resolve(at: deliveryDate, timeZone: timeZone) == day,
+            deliveryDate > snapshot.now else {
+                continue
+            }
+
+            var triggerComponents = calendar.dateComponents(
+                [.year, .month, .day, .hour, .minute],
+                from: deliveryDate
+            )
+            triggerComponents.calendar = calendar
+            triggerComponents.timeZone = timeZone
+            plan.append(
+                PlannedReminder(
+                    day: day,
+                    deliveryDate: deliveryDate,
+                    triggerComponents: triggerComponents
+                )
+            )
+        }
+
+        return plan
+    }
+}
+
 @MainActor
 protocol ReminderScheduling: AnyObject {
     func permissionState() async -> NotificationPermissionState
@@ -26,10 +91,6 @@ protocol ReminderScheduling: AnyObject {
 
 @MainActor
 final class ReminderScheduler: ReminderScheduling {
-    private enum Configuration {
-        static let schedulingWindowDays = 30
-    }
-
     private let center: UNUserNotificationCenter
 
     init(center: UNUserNotificationCenter = .current()) {
@@ -61,32 +122,11 @@ final class ReminderScheduler: ReminderScheduling {
             throw PulseError.notificationPermissionDenied
         }
 
-        guard let timeZone = TimeZone(identifier: snapshot.timeZoneIdentifier) else {
-            throw PulseError.invalidTimeZone(snapshot.timeZoneIdentifier)
-        }
-        let today = LogicalDay.resolve(at: snapshot.now, timeZone: timeZone)
-        let calendar = Calendar.pulseGregorian(timeZone: timeZone)
         let locale = Locale(identifier: snapshot.localeIdentifier)
 
         do {
-            for offset in 0..<Configuration.schedulingWindowDays {
+            for reminder in try ReminderSchedulePlanner.makePlan(for: snapshot) {
                 try Task.checkCancellation()
-                let day = today.addingDays(offset, timeZone: timeZone)
-                guard !snapshot.checkedDays.contains(day) else { continue }
-
-                var components = DateComponents()
-                components.calendar = calendar
-                components.timeZone = timeZone
-                components.year = day.year
-                components.month = day.month
-                components.day = day.day
-                components.hour = snapshot.time.hour
-                components.minute = snapshot.time.minute
-
-                guard let deliveryDate = calendar.date(from: components),
-                      deliveryDate > snapshot.now else {
-                    continue
-                }
 
                 let content = UNMutableNotificationContent()
                 content.title = PulseLocalization.string("notification.title", locale: locale)
@@ -94,9 +134,12 @@ final class ReminderScheduler: ReminderScheduling {
                 content.sound = .default
 
                 let request = UNNotificationRequest(
-                    identifier: PulseRuntimeIdentity.reminderRequestPrefix + day.storageValue,
+                    identifier: PulseRuntimeIdentity.reminderRequestPrefix + reminder.day.storageValue,
                     content: content,
-                    trigger: UNCalendarNotificationTrigger(dateMatching: components, repeats: false)
+                    trigger: UNCalendarNotificationTrigger(
+                        dateMatching: reminder.triggerComponents,
+                        repeats: false
+                    )
                 )
                 try await center.add(request)
             }

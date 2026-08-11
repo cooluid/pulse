@@ -105,6 +105,23 @@ final class PulseFlowUITests: XCTestCase {
         XCTAssertTrue(app.buttons["primary.navigation.history"].exists)
     }
 
+    func testSettingsExposesPrivacyAndSupportLinks() throws {
+        configureApp()
+        app.launch()
+
+        let settingsButton = app.buttons["settings.navigation.open.today"]
+        XCTAssertTrue(settingsButton.waitForExistence(timeout: 5))
+        settingsButton.tap()
+
+        let privacyLink = app.descendants(matching: .any)["settings.privacy_policy.link"]
+        for _ in 0..<4 where !privacyLink.exists {
+            app.swipeUp()
+        }
+
+        XCTAssertTrue(privacyLink.waitForExistence(timeout: 3))
+        XCTAssertTrue(app.descendants(matching: .any)["settings.support.link"].exists)
+    }
+
     func testResetConfirmationIsPresentedFromTheResetRow() throws {
         configureApp()
         app.launch()

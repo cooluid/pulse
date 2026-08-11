@@ -12,6 +12,8 @@
 | [TECHNICAL_DESIGN.md](./TECHNICAL_DESIGN.md) | 定义架构、数据模型、服务边界和失败处理 | 开发、评审 |
 | [TEST_PLAN.md](./TEST_PLAN.md) | 定义自动化、手工、设备与发布前验证 | 开发、测试 |
 | [IMPLEMENTATION_STATUS.md](./IMPLEMENTATION_STATUS.md) | 记录当前实现范围、验证证据和发布门槛 | 全员 |
+| [PRODUCT_STRATEGY_2_X.md](./PRODUCT_STRATEGY_2_X.md) | 提出 1.0 之后的定位、功能组合、收费边界与验证门槛，不改变 1.0 冻结范围 | 产品、设计、商业、开发 |
+| [POST_1_0_ROADMAP.md](./POST_1_0_ROADMAP.md) | 将后续战略拆成发布、留存、Plus、同步、Watch 与个性智能阶段 | 产品、开发、测试、发布负责人 |
 
 ## 优先级定义
 
@@ -32,9 +34,9 @@
 
 功能范围已在 `RELEASE_SCOPE_1_0.md` 冻结。以下发布身份与验收项必须在对外发布前关闭：
 
-1. 当前最低系统版本已经统一为 17.0，是否符合最终市场策略。
+1. 当前最低系统版本统一为 17.0；发布前必须完成 17.x 可用最旧运行时与对应真机覆盖，不能只验证最新系统。
 2. 1.0 已选择本地优先与 JSON 恢复；发布文案必须明确卸载数据边界，CloudKit 不进入 1.0。
-3. App 的正式版本号、隐私说明和商店文案；Bundle ID 与中英文显示名称已经冻结。
+3. App 的正式版本号、商店文案与截图；Bundle ID、中英文显示名称、隐私说明和支持入口已经冻结。
 
 生产设计合同位于 [`design`](../design/README.md)。当前唯一方向是“草野脉冲”系统；界面、AccentColor、品牌标记与 AppIcon 由同一品牌令牌生成，最终界面与商店素材仍需独立验收。
 

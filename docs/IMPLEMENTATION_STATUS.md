@@ -1,7 +1,7 @@
 # Pulse 实现与验收状态
 
 更新时间：2026-08-11  
-当前结论：核心工程完成 clean-break 收口，自动化工程门禁 GO；真机通知、完整可访问性、最终视觉、签名分发与连续使用仍为独立 NO-GO，当前不能宣称可上线。
+当前结论：核心工程完成 clean-break 收口，自动化工程门禁 GO；公开隐私/支持入口与开发签名 Archive 已完成。真机通知、iOS 17.x 行为、完整可访问性、最终视觉、App Store 分发身份与连续使用仍为独立 NO-GO，当前不能宣称可上线。
 
 ## 当前生产实现
 
@@ -14,6 +14,7 @@
 - 签到、删除、导入、清除和时区变更由单一操作状态串行化，失败不会提前关闭界面或报告成功。
 - 完整清除使用持久化操作日志；跨 SwiftData、UserDefaults 和通知中心中断后，下次启动幂等续做。
 - 提醒调度只消费不可变值快照；单调 revision 防止旧权限或旧任务覆盖最新用户意图，权限外撤或部分调度失败会关闭虚假启用状态并清理已提交请求。
+- 提醒计划由纯值计划器生成，从今天起滚动覆盖 60 个日历日并预留 4 个系统待处理名额；已过时刻、已签到日与 DST 不存在时间均有显式测试，超过窗口且 App 未再次打开时不承诺继续送达。
 - 主题模式以 `AppSettings` 为唯一持久化状态，支持跟随系统、浅色、深色并由根窗口即时应用；应用语言支持跟随系统、English、简体中文。
 - 语言切换同时覆盖 SwiftUI 文案、日期/星期/时间、时区名称、错误与辅助功能标签，并以 Locale 快照重新排期通知；代码生成字符串显式选择语言资源包，不依赖进程级系统语言猜测。
 - UI 采用语义字体、Dynamic Type、Reduce Motion、VoiceOver 状态文本，以及签到勾选、漏签减号和今天边框等非纯颜色日历标记；Accessibility 最大字号下主操作改为可扩展胶囊。
@@ -22,6 +23,7 @@
 - 签到成功先完成主印，再更新周轨迹和连续数字；快速本地写入不闪现加载器，Reduce Motion 下移除位移、缩放和呼吸。
 - 历史月份提供可见按钮、滑动和辅助功能动作的单一状态入口，日历按方向切换；宽屏统计区保持固有高度。
 - Swift 6 严格并发与警告即错误应用于 App、单元测试和 UI 测试配置。
+- `PrivacyInfo.xcprivacy` 声明 UserDefaults 的 `CA92.1` 必要原因以及不跟踪、不收集；设置页直接链接 `https://fanr.co/pulse/privacy/` 与 `https://fanr.co/pulse/support/`，支持邮箱为 `400822@163.com`。
 
 详细规则以 [领域合同](./DOMAIN_CONTRACT.md)、[技术设计](./TECHNICAL_DESIGN.md) 和 [品牌合同](../design/BRAND_SPEC.md) 为准，本文件不复制算法或视觉像素参数。
 
@@ -40,19 +42,20 @@
 
 ## 自动化证据
 
-验证环境：Xcode 26.6（17F113），iOS 26.5 iPhone 17 Pro 模拟器。
+验证环境：Xcode 26.4（17E192），iOS 18.6 iPhone 16 Pro 模拟器。部署目标仍为 iOS / iPadOS 17.0；按用户本次指示未继续下载 iOS 17.5 运行时，因此这里不把 17.x 行为标记为已验证。
 
-- 全量测试：52 / 52 通过，其中单元与集成 44，UI 8。
+- 全量测试：59 / 59 通过，其中单元与集成 50，UI 9。
 - Release iOS Simulator 构建：通过。
 - Release `iphoneos` 通用真机架构构建（关闭签名）：通过。
 - Release Xcode 静态分析：通过，无 Swift 编译器或静态分析告警。
 - 品牌资产生成器：18 项生成结果与仓库一致。
 - String Catalog、品牌令牌 JSON 与 Asset Catalog：解析/编译通过。
+- 隐私清单 plist 校验通过并由 Xcode 复制进 App 包；生产站三条路由和分享图均返回 HTTPS 200，线上文件与本地静态构建 SHA-256 一致。
 - 十年逐日记录统计保持单一连续段；导入的跨时区起始日倒退、记录日映射错误和重复事实均失败关闭；通知权限被系统外撤后不保留虚假启用状态。
 - UI 自动化覆盖首次签到、终止重启持久化、历史同步、显式双向翻月、漏签非颜色语义、设置辅助功能隔离、主题与语言即时切换/跨重启保持，以及 Accessibility XXXL 主操作与等宽底栏几何。
 - 当前生产构建已在 iPhone 17 Pro 与 iPad Pro 11-inch 模拟器复核浅色、深色、Accessibility XXXL、iPad 竖横屏、签到完成态和历史构图；该证据不替代真机、VoiceOver 与 Reduce Motion 人工验收。
 
-Xcode 26.6 的 `appintentsmetadataprocessor` 在未使用 AppIntents 的 target 上仍输出“未发现 AppIntents.framework，跳过提取”的工具告警。它不是源码或分析告警；项目没有通过全局过滤隐藏该输出，以免同时遮蔽未来真实工具告警。
+Xcode 26.4 的 `appintentsmetadataprocessor` 在未使用 AppIntents 的 target 上仍可能输出“未发现 AppIntents.framework，跳过提取”的工具告警。它不是源码或分析告警；项目没有通过全局过滤隐藏该输出，以免同时遮蔽未来真实工具告警。
 
 ## Clean-break 影响
 
@@ -62,16 +65,16 @@ Xcode 26.6 的 `appintentsmetadataprocessor` 在未使用 AppIntents 的 target 
 
 ## 尚未关闭的发布门禁
 
-- 使用正式 Bundle ID `co.fanr.pulse` 在真实 iPhone 与 iPad 上安装，验证全新沙盒、签到、重启持久化、删除和完整清除。
+- 使用正式 Bundle ID `co.fanr.pulse` 在真实 iPhone 与 iPad 上安装，验证全新沙盒、签到、重启持久化、删除和完整清除；覆盖 iOS / iPadOS 17.x 设备或运行时。
 - 在真机验证通知首次授权、拒绝后恢复、按时到达、签到后取消、改时无旧请求，以及系统重启后的行为。
 - 人工完成 VoiceOver、最大字号、三种主题与两种语言组合、高对比度、降低透明度、Reduce Motion、旋转和 iPad 分屏验收。
 - 对当前生产源码重新完成最终视觉与 AppIcon Default / Dark / Tinted 验收；历史截图不能代替当前版本证据。
-- 完成隐私说明、支持页面、商店文案与截图，执行签名 Archive、TestFlight 安装和 App Store 校验。
+- 隐私与支持页面已经公开；仍需完成商店文案与截图，并解决 App Store Connect provider、分发证书/描述文件后执行 TestFlight 安装和 App Store 校验。当前成功的 Archive 使用开发描述文件，不是分发就绪证据。
 - 完成跨多个自然日的连续使用，确认时区变更、跨日提醒和连续统计在真实生命周期中一致。
 
 ## 下一步顺序
 
-1. 用正式发布身份完成真机数据与通知门禁。
+1. 解决 App Store Connect provider 与分发签名身份，用正式发布身份完成真机数据与通知门禁，并补齐 iOS 17.x 覆盖。
 2. 对当前构建完成可访问性和最终视觉验收。
 3. 完成 Archive、TestFlight、商店资料和 App Store 校验。
 4. 进行跨自然日内部试用；关闭问题后再做上线 GO 决策。

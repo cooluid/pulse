@@ -268,6 +268,15 @@ struct SettingsView: View {
                 "settings.storage",
                 value: PulseLocalization.string("settings.storage.local", locale: locale)
             )
+            Link(destination: PulseExternalLinks.privacyPolicy) {
+                Label("settings.privacy_policy", systemImage: "hand.raised")
+            }
+            .accessibilityIdentifier("settings.privacy_policy.link")
+
+            Link(destination: PulseExternalLinks.support) {
+                Label("settings.support", systemImage: "questionmark.circle")
+            }
+            .accessibilityIdentifier("settings.support.link")
         }
     }
 
