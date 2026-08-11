@@ -39,7 +39,8 @@ enum PulseDesign {
     static let todayHeroMinimumHeight: CGFloat = 270
     static let dayNumberBaseSize: CGFloat = 104
     static let dayNumberAccessibilityMaximumSize: CGFloat = 144
-    static let checkInHeroOverlap: CGFloat = -42
+    static let todayCommitmentMaximumWidth: CGFloat = 360
+    static let checkInHeroSpacing: CGFloat = spacing12
     static let accessibilityActionMinimumHeight: CGFloat = 72
     static let weekRailWidth: CGFloat = 244
     static let weekRailDotDiameter: CGFloat = 13

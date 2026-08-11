@@ -356,12 +356,16 @@ final class PulseFlowUITests: XCTestCase {
         saveButton.tap()
 
         XCTAssertTrue(app.buttons["today.checkin.button"].waitForExistence(timeout: 5))
-        XCTAssertFalse(app.staticTexts["today.commitment.name"].exists)
+        let commitmentCue = app.descendants(matching: .any)["today.commitment.name"]
+        XCTAssertTrue(commitmentCue.waitForExistence(timeout: 3))
+        XCTAssertTrue(commitmentCue.label.contains(longCommitment))
+        XCTAssertTrue(app.buttons["today.checkin.button"].label.contains(longCommitment))
         XCTAssertFalse(app.staticTexts["today.commitment.purpose"].exists)
+        assertHeroGeometry()
         assertRhythmStatusFollowsWeekRail()
 
         let longCommitmentAttachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
-        longCommitmentAttachment.name = "Today with long commitment kept out of root"
+        longCommitmentAttachment.name = "Today with long commitment cue"
         longCommitmentAttachment.lifetime = .keepAlways
         add(longCommitmentAttachment)
 
@@ -370,9 +374,11 @@ final class PulseFlowUITests: XCTestCase {
         app.launch()
 
         XCTAssertTrue(app.buttons["today.checkin.button"].waitForExistence(timeout: 5))
-        XCTAssertFalse(app.staticTexts["today.commitment.name"].exists)
+        XCTAssertTrue(commitmentCue.waitForExistence(timeout: 3))
+        XCTAssertTrue(commitmentCue.label.contains(longCommitment))
         XCTAssertFalse(app.staticTexts["today.commitment.purpose"].exists)
         XCTAssertFalse(app.buttons["commitment.save.button"].exists)
+        assertHeroGeometry()
         assertRhythmStatusFollowsWeekRail()
 
         openCommitmentEditorFromToday()
@@ -446,8 +452,11 @@ final class PulseFlowUITests: XCTestCase {
         XCTAssertTrue(settingsNavigationBar.waitForExistence(timeout: 3))
         settingsNavigationBar.buttons.firstMatch.tap()
 
-        XCTAssertFalse(app.staticTexts["today.commitment.name"].exists)
+        let commitmentCue = app.descendants(matching: .any)["today.commitment.name"]
+        XCTAssertTrue(commitmentCue.waitForExistence(timeout: 3))
+        XCTAssertTrue(commitmentCue.label.contains("深度工作"))
         XCTAssertFalse(app.staticTexts["today.commitment.purpose"].exists)
+        assertHeroGeometry()
         assertRhythmStatusFollowsWeekRail()
         XCTAssertFalse(app.buttons["today.checkin.button"].isEnabled)
     }
@@ -459,7 +468,6 @@ final class PulseFlowUITests: XCTestCase {
         XCTAssertFalse(app.staticTexts["还没有留下今天的印"].exists)
         XCTAssertFalse(app.staticTexts["CURRENT RHYTHM"].exists)
         XCTAssertFalse(app.staticTexts["保持自己的节奏，不与别人比较"].exists)
-        XCTAssertFalse(app.staticTexts["today.commitment.name"].exists)
         XCTAssertFalse(app.staticTexts["today.commitment.purpose"].exists)
         XCTAssertFalse(app.descendants(matching: .any)["today.streak.band"].exists)
         XCTAssertFalse(app.descendants(matching: .any)["today.rhythm.commitment"].exists)
@@ -509,11 +517,18 @@ final class PulseFlowUITests: XCTestCase {
     private func assertHeroGeometry() {
         let dayNumber = app.staticTexts["today.day.number"]
         let kicker = app.staticTexts["today.hero.kicker"]
+        let commitmentCue = app.descendants(matching: .any)["today.commitment.name"]
+        let checkInButton = app.buttons["today.checkin.button"]
         XCTAssertTrue(dayNumber.exists)
         XCTAssertTrue(kicker.exists)
+        XCTAssertTrue(commitmentCue.waitForExistence(timeout: 3))
+        XCTAssertTrue(checkInButton.exists)
         XCTAssertTrue(kicker.label.contains("星期"))
         XCTAssertEqual(dayNumber.frame.midX, kicker.frame.midX, accuracy: 1)
+        XCTAssertEqual(dayNumber.frame.midX, commitmentCue.frame.midX, accuracy: 1)
         XCTAssertLessThan(kicker.frame.maxY, dayNumber.frame.minY)
+        XCTAssertLessThanOrEqual(dayNumber.frame.maxY, commitmentCue.frame.minY)
+        XCTAssertLessThanOrEqual(commitmentCue.frame.maxY, checkInButton.frame.minY)
     }
 
     private func assertRhythmStatusFollowsWeekRail() {

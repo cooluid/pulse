@@ -62,7 +62,7 @@ struct TodayView: View {
                 VStack(spacing: 0) {
                     dayHero
                     checkInControl
-                        .padding(.top, PulseDesign.checkInHeroOverlap)
+                        .padding(.top, PulseDesign.checkInHeroSpacing)
                 }
                 .frame(maxWidth: .infinity)
 
@@ -77,12 +77,7 @@ struct TodayView: View {
             VStack(spacing: 0) {
                 dayHero
                 checkInControl
-                    .padding(
-                        .top,
-                        dynamicTypeSize.isAccessibilitySize
-                            ? PulseDesign.spacing12
-                            : PulseDesign.checkInHeroOverlap
-                    )
+                    .padding(.top, PulseDesign.checkInHeroSpacing)
                 weekRail
                     .padding(.top, PulseDesign.checkInOuterHalo + PulseDesign.spacing12)
                 rhythmStatus
@@ -125,6 +120,11 @@ struct TodayView: View {
 
                 dayNumber(today)
                     .padding(.top, PulseDesign.spacing12)
+
+                if let commitmentName = model.habit?.name {
+                    commitmentCue(commitmentName)
+                        .padding(.top, PulseDesign.spacing16)
+                }
             }
         }
         .frame(maxWidth: .infinity)
@@ -142,6 +142,33 @@ struct TodayView: View {
             .fixedSize(horizontal: true, vertical: false)
             .foregroundStyle(PulseDesign.ink)
             .accessibilityIdentifier("today.day.number")
+    }
+
+    private func commitmentCue(_ name: String) -> some View {
+        VStack(spacing: PulseDesign.spacing4) {
+            Text("today.commitment.cue")
+                .font(.caption.weight(.medium))
+                .foregroundStyle(PulseDesign.secondary)
+
+            Text(name)
+                .font(.headline.weight(.semibold))
+                .foregroundStyle(PulseDesign.ink)
+                .lineLimit(dynamicTypeSize.isAccessibilitySize ? nil : 2)
+                .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .frame(maxWidth: PulseDesign.todayCommitmentMaximumWidth)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(
+            String(
+                format: PulseLocalization.string(
+                    "today.commitment.accessibility_format",
+                    locale: locale
+                ),
+                name
+            )
+        )
+        .accessibilityIdentifier("today.commitment.name")
     }
 
     private var resolvedDayNumberSize: CGFloat {
@@ -403,13 +430,29 @@ struct TodayView: View {
     }
 
     private var checkInAccessibilityLabel: Text {
+        let state: String
         if let completedCheckInText {
-            return Text(completedCheckInText)
+            state = completedCheckInText
+        } else if model.todayRecord != nil {
+            state = PulseLocalization.string("today.accessibility.checked", locale: locale)
+        } else {
+            state = PulseLocalization.string("today.accessibility.check_in", locale: locale)
         }
-        if model.todayRecord != nil {
-            return Text("today.accessibility.checked")
+
+        guard let commitmentName = model.habit?.name else {
+            return Text(state)
         }
-        return Text("today.accessibility.check_in")
+
+        return Text(
+            String(
+                format: PulseLocalization.string(
+                    "today.accessibility.commitment_state_format",
+                    locale: locale
+                ),
+                commitmentName,
+                state
+            )
+        )
     }
 
     private var rhythmStatus: some View {

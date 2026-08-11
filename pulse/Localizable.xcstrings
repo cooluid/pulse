@@ -1645,6 +1645,7 @@
       }
     },
     "today.accessibility.check_in" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1661,6 +1662,7 @@
       }
     },
     "today.accessibility.checked" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1672,6 +1674,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "今日已签到"
+          }
+        }
+      }
+    },
+    "today.accessibility.commitment_state_format" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Main commitment: %1$@. %2$@"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "主承诺：%1$@。%2$@"
           }
         }
       }
@@ -1722,6 +1741,39 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@已签到"
+          }
+        }
+      }
+    },
+    "today.commitment.accessibility_format" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Main commitment: %@"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "主承诺：%@"
+          }
+        }
+      }
+    },
+    "today.commitment.cue" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Today’s Commitment"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "今天守住"
           }
         }
       }
