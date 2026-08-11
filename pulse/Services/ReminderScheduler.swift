@@ -1,4 +1,5 @@
 import Foundation
+import PulseCore
 import UserNotifications
 
 enum NotificationPermissionState: Equatable, Sendable {
@@ -32,7 +33,7 @@ enum ReminderSchedulePlanner {
     static func makePlan(for snapshot: ReminderScheduleSnapshot) throws -> [PlannedReminder] {
         guard snapshot.enabled else { return [] }
         guard let timeZone = TimeZone(identifier: snapshot.timeZoneIdentifier) else {
-            throw PulseError.invalidTimeZone(snapshot.timeZoneIdentifier)
+            throw PulseCoreError.invalidTimeZone(snapshot.timeZoneIdentifier)
         }
 
         let today = LogicalDay.resolve(at: snapshot.now, timeZone: timeZone)
@@ -119,7 +120,7 @@ final class ReminderScheduler: ReminderScheduling {
         await removePendingPulseNotifications()
         guard snapshot.enabled else { return }
         guard await permissionState() == .authorized else {
-            throw PulseError.notificationPermissionDenied
+            throw PulseAppError.notificationPermissionDenied
         }
 
         let locale = Locale(identifier: snapshot.localeIdentifier)

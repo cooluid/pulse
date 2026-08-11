@@ -574,6 +574,7 @@
       }
     },
     "habit.default_name" : {
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {

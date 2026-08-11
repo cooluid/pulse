@@ -1,5 +1,6 @@
 import Foundation
 import Observation
+import PulseCore
 
 enum AppLoadState: Equatable {
     case loading
@@ -243,7 +244,7 @@ final class PulseAppModel {
                     settings.setReminderEnabled(false)
                     notificationPermission = .denied
                     reminderEnabledIntent = nil
-                    throw PulseError.notificationPermissionDenied
+                    throw PulseAppError.notificationPermissionDenied
                 }
 
                 settings.setReminderEnabled(true)
@@ -294,10 +295,10 @@ final class PulseAppModel {
     }
 
     func makeExportDocument() throws -> PulseExportDocument {
-        guard let habit,
-              let startLogicalDay = habit.startLogicalDay else {
-            throw PulseError.exportUnavailable
+        guard let habit else {
+            throw PulseCoreError.exportUnavailable
         }
+        let startLogicalDay = habit.startLogicalDay
         let payload = PulseExportPayload(
             format: PulseDataContract.formatIdentifier,
             schemaVersion: PulseDataContract.exportSchemaVersion,
@@ -315,7 +316,7 @@ final class PulseAppModel {
             records: records.map {
                 .init(
                     id: $0.id,
-                    logicalDay: $0.logicalDayValue,
+                    logicalDay: $0.logicalDay.storageValue,
                     checkedAt: $0.checkedAt,
                     createdAt: $0.createdAt,
                     timeZoneIdentifier: $0.timeZoneIdentifier
@@ -335,16 +336,15 @@ final class PulseAppModel {
 
         let fileSize = try url.resourceValues(forKeys: [.fileSizeKey]).fileSize
         guard let fileSize, fileSize <= PulseDataContract.maximumImportBytes else {
-            throw PulseError.invalidImport
+            throw PulseCoreError.invalidImport
         }
         let data = try Data(contentsOf: url, options: [.mappedIfSafe])
         let payload: PulseExportPayload
         do {
             payload = try PulseExportDocument.decode(data)
         } catch {
-            throw PulseError.invalidImport
+            throw PulseCoreError.invalidImport
         }
-        _ = try PulseDataValidator.validate(payload)
         return payload
     }
 
@@ -421,48 +421,15 @@ final class PulseAppModel {
         let currentHabit = try repository.primaryHabit(
             systemTimeZone: .autoupdatingCurrent
         )
-        let resolvedTimeZone = try currentHabit.resolvedTimeZone()
-        let resolvedToday = try currentHabit.logicalDay(at: referenceNow)
-        let identity: HabitIdentity
-        do {
-            identity = try HabitIdentity(
-                storedName: currentHabit.name,
-                storedPurpose: currentHabit.purpose
-            )
-        } catch {
-            throw PulseError.invalidHabitIdentity
-        }
-        guard let resolvedStartDay = currentHabit.startLogicalDay,
-              let creationTimeZone = TimeZone(identifier: currentHabit.creationTimeZoneIdentifier),
-              LogicalDay.resolve(at: currentHabit.createdAt, timeZone: creationTimeZone)
-                == resolvedStartDay,
-              identity.name == currentHabit.name,
-              identity.purpose == currentHabit.purpose else {
-            throw PulseError.invalidRecordDate(currentHabit.startLogicalDayValue)
-        }
+        let resolvedTimeZone = currentHabit.timeZone
+        let resolvedToday = currentHabit.logicalDay(at: referenceNow)
+        let resolvedStartDay = currentHabit.startLogicalDay
         let fetchedRecords = try repository.allRecords(habitID: currentHabit.id)
 
-        var resolvedCheckedDays = Set<LogicalDay>()
-        var resolvedRecordsByDay: [LogicalDay: CheckInRecordSnapshot] = [:]
-        for record in fetchedRecords {
-            guard let day = record.logicalDay,
-                  let recordTimeZone = record.timeZone,
-                  LogicalDay.resolve(
-                    at: record.checkedAt,
-                    timeZone: recordTimeZone
-                  ) == day,
-                  day >= resolvedStartDay,
-                  record.checkedAt >= currentHabit.createdAt,
-                  record.createdAt >= record.checkedAt,
-                  record.recordKey == CheckInRecordKey.make(
-                    habitID: currentHabit.id,
-                    logicalDay: day
-                  ),
-                  resolvedCheckedDays.insert(day).inserted,
-                  resolvedRecordsByDay.updateValue(record, forKey: day) == nil else {
-                throw PulseError.invalidRecordDate(record.logicalDayValue)
-            }
-        }
+        let resolvedRecordsByDay = Dictionary(
+            uniqueKeysWithValues: fetchedRecords.map { ($0.logicalDay, $0) }
+        )
+        let resolvedCheckedDays = Set(resolvedRecordsByDay.keys)
 
         habit = currentHabit
         records = fetchedRecords
@@ -556,11 +523,15 @@ final class PulseAppModel {
     }
 
     private func present(_ error: Error) {
-        if let pulseError = error as? PulseError {
-            errorMessage = pulseError.localizedMessage(locale: settings.locale)
+        if let message = PulseErrorPresentation.localizedMessage(
+            for: error,
+            locale: settings.locale
+        ) {
+            errorMessage = message
             return
         }
         errorMessage = (error as? LocalizedError)?.errorDescription
             ?? PulseLocalization.string("error.generic", locale: settings.locale)
     }
+
 }

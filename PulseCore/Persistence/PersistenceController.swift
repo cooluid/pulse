@@ -90,8 +90,8 @@ enum PulseMigrationPlan: SchemaMigrationPlan {
     )
 }
 
-enum PersistenceController {
-    static func makeContainer(
+public enum PersistenceController {
+    public static func makeContainer(
         inMemory: Bool = false,
         storeName: String = "Pulse",
         storeURL: URL? = nil

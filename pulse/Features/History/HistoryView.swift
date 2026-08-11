@@ -1,4 +1,5 @@
 import SwiftUI
+import PulseCore
 
 struct HistoryView: View {
     @Bindable var model: PulseAppModel
@@ -430,27 +431,29 @@ private struct RecordDetailView: View {
                 PulseBrandMark(size: PulseDesign.recordDetailBrandMarkSize)
 
                 VStack(spacing: PulseDesign.spacing8) {
-                    if let day = record.logicalDay, let timeZone = record.timeZone {
-                        Text(PulseFormatting.fullDate(day, timeZone: timeZone, locale: locale))
-                            .font(.title3.bold())
-                            .foregroundStyle(PulseDesign.ink)
-                    }
-                    if let timeZone = record.timeZone {
-                        Text(
-                            String(
-                                format: PulseLocalization.string(
-                                    "history.checked_at",
-                                    locale: locale
-                                ),
-                                PulseFormatting.time(
-                                    record.checkedAt,
-                                    timeZone: timeZone,
-                                    locale: locale
-                                )
+                    Text(
+                        PulseFormatting.fullDate(
+                            record.logicalDay,
+                            timeZone: record.timeZone,
+                            locale: locale
+                        )
+                    )
+                        .font(.title3.bold())
+                        .foregroundStyle(PulseDesign.ink)
+                    Text(
+                        String(
+                            format: PulseLocalization.string(
+                                "history.checked_at",
+                                locale: locale
+                            ),
+                            PulseFormatting.time(
+                                record.checkedAt,
+                                timeZone: record.timeZone,
+                                locale: locale
                             )
                         )
-                        .foregroundStyle(PulseDesign.secondary)
-                    }
+                    )
+                    .foregroundStyle(PulseDesign.secondary)
                 }
 
                 deleteButton

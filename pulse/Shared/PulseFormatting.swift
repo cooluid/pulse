@@ -1,4 +1,5 @@
 import Foundation
+import PulseCore
 
 enum PulseFormatting {
     static func fullDate(_ day: LogicalDay, timeZone: TimeZone, locale: Locale) -> String {

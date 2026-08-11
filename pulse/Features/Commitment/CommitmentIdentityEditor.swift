@@ -1,4 +1,5 @@
 import SwiftUI
+import PulseCore
 
 enum CommitmentIdentityEditorMode {
     case onboarding

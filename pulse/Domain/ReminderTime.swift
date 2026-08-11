@@ -1,4 +1,5 @@
 import Foundation
+import PulseCore
 
 struct ReminderTime: Equatable, Sendable {
     static let standard = ReminderTime(validatedMinutesFromMidnight: 20 * 60)

@@ -1,4 +1,5 @@
 import XCTest
+@testable import PulseCore
 @testable import pulse
 
 final class HabitIdentityTests: XCTestCase {
@@ -31,12 +32,12 @@ final class HabitIdentityTests: XCTestCase {
         XCTAssertThrowsError(
             try HabitIdentity(storedName: " Daily ", storedPurpose: nil)
         ) { error in
-            XCTAssertEqual(error as? PulseError, .invalidHabitIdentity)
+            XCTAssertEqual(error as? PulseCoreError, .invalidHabitIdentity)
         }
         XCTAssertThrowsError(
             try HabitIdentity(storedName: "Daily", storedPurpose: " Why ")
         ) { error in
-            XCTAssertEqual(error as? PulseError, .invalidHabitIdentity)
+            XCTAssertEqual(error as? PulseCoreError, .invalidHabitIdentity)
         }
     }
 

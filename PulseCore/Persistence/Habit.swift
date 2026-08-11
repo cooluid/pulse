@@ -46,7 +46,7 @@ extension PulseSchemaV2 {
 
         func resolvedTimeZone() throws -> TimeZone {
             guard let timeZone = TimeZone(identifier: timeZoneIdentifier) else {
-                throw PulseError.invalidTimeZone(timeZoneIdentifier)
+                throw PulseCoreError.invalidTimeZone(timeZoneIdentifier)
             }
             return timeZone
         }

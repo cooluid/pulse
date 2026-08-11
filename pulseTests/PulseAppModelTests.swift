@@ -1,4 +1,5 @@
 import XCTest
+@testable import PulseCore
 @testable import pulse
 
 @MainActor
@@ -206,7 +207,8 @@ final class PulseAppModelTests: XCTestCase {
         let clock = MutablePulseClock(now: makeDate(day: 10, hour: 12))
         let repository = SwiftDataCheckInRepository(
             container: try PersistenceController.makeContainer(inMemory: true),
-            clock: clock
+            clock: clock,
+            initialIdentity: try HabitIdentity(userName: "Test Habit", userPurpose: nil)
         )
         let suiteName = "PulseAppModelTests.\(UUID().uuidString)"
         let defaults = UserDefaults(suiteName: suiteName)!
@@ -311,7 +313,7 @@ private final class TestReminderScheduler: ReminderScheduling {
     func reconcile(_ snapshot: ReminderScheduleSnapshot) async throws {
         snapshots.append(snapshot)
         if snapshot.enabled && permission != .authorized {
-            throw PulseError.notificationPermissionDenied
+            throw PulseAppError.notificationPermissionDenied
         }
     }
 

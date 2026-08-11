@@ -1,24 +1,26 @@
 # Pulse 技术设计
 
-文档版本：1.3<br>
-状态：Implemented Core；Widget Shared Store Capability-Gated
+文档版本：1.4<br>
+状态：Implemented App + PulseCore；Widget Shared Store Capability-Gated
 
 ## 1. 工程基线
 
 - SwiftUI + SwiftData + Observation + Swift Concurrency。
 - Swift 6，严格并发检查，所有 target 警告即错误。
 - iOS / iPadOS 17.0，iPhone 与 iPad 共用产品实现。
-- App / 单元测试 / UI 测试 target：`pulse`、`pulseTests`、`pulseUITests`。
+- 正式 target：`PulseCore`、`pulse`、`pulseTests`、`pulseUITests`。`PulseCore` 是静态 Swift framework，开启 `APPLICATION_EXTENSION_API_ONLY`，供 App 与未来 Widget 共同链接。
 - Bundle ID：`co.fanr.pulse`。
 - 不依赖第三方运行时库；品牌资产生成器唯一 Python 依赖固定在 `requirements.txt`。
 
 ## 2. 所有权链
 
 ```text
-PulseClock
-   ↓ authoritative now
-SwiftDataCheckInRepository ──→ Habit identity + CheckInRecord
-   ↓ validated snapshot
+PulseCore
+├── PulseClock ──→ authoritative now
+├── SwiftDataCheckInRepository ──→ Habit + CheckInRecord
+├── PulseExportCodec ──→ one decode / validation path
+└── validated immutable snapshots
+                 ↓ module boundary
 PulseAppModel ──→ Today / History / Settings
    ↓ value snapshot
 ReminderScheduler ──→ UserNotifications
@@ -28,7 +30,8 @@ AppSettings ──→ ConfiguredRootView
 SwiftUI environment + PulseLocalization
 ```
 
-- Repository 是事实写入的唯一所有者，并持有与 AppModel 相同的 Clock；SwiftData managed object 不越过 Repository 边界，调用方只接收 `HabitSnapshot`、`CheckInRecordSnapshot` 和提交回执。
+- `PulseCore` 只编译 `Domain / Persistence / ImportExport`；不依赖 SwiftUI、UserNotifications、UserDefaults、触觉、页面或宿主本地化资源。App 源码不再编译 Core 文件的副本。
+- Repository 是事实写入和持久化语义校验的唯一所有者，并持有与 AppModel 相同的 Clock；SwiftData managed object 不越过模块边界，调用方只接收已经验证、关键日期与时区非可空的 `HabitSnapshot`、`CheckInRecordSnapshot` 和提交回执。
 - AppModel 是页面快照、操作互斥、导航复位和提醒意图顺序的唯一所有者。
 - AppSettings 是主题与应用内语言的唯一持久化所有者；根窗口直接观察它，不能依赖页面级副本。
 - View 只呈现状态与发起意图，不直接访问 SwiftData、UserDefaults 或通知中心。
@@ -40,17 +43,18 @@ SwiftUI environment + PulseLocalization
 
 `CheckInRecord`：唯一 `id`、唯一 `recordKey`、`habitID`、`logicalDayValue`、`checkedAt`、`createdAt`、记录时区。
 
-`HabitSnapshot` 与 `CheckInRecordSnapshot` 是不可变、`Sendable` 的 Repository 输出；它们复制事实值但不拥有写入能力，也不持久化为第二套模型。AppModel、Today、History 和未来 Widget 快照都不能持有 `PersistentModel` 实例。
+`HabitSnapshot` 与 `CheckInRecordSnapshot` 是 `PulseCore` 对外公开的不可变、`Sendable` 输出；它们复制事实值但不拥有写入能力，也不持久化为第二套模型。Repository 在创建快照前统一验证身份规范、起始日来源、时区、recordKey、时间顺序和逻辑日唯一性；损坏事实不能以可空字段或静默默认值逃出 Core。AppModel、Today、History 和未来 Widget 快照都不能持有 `PersistentModel` 实例。
 
 当前 SwiftData schema 为 V2。`PulseSchemaV1` 和 `PulseSchemaV2` 分别冻结各自的命名空间模型，运行时代码只通过 latest typealias 消费 V2；V1→V2 使用明确的 lightweight migration，新增字段的迁移值为 `purpose == nil`、`isIdentityConfirmed == false`。真实磁盘 fixture 必须证明项目和记录全部保留。
 
-JSON 只导出 v2。导入先解码最小版本信封，再由精确的 v1/v2 解码器生成唯一的 v2 内存负载；验证和 Repository 不保留双版本分支。
+JSON 只导出 v2。`PulseExportCodec` 是编码、精确版本解码与完整语义验证的唯一公开入口；v1 只在内存中升级为 v2。App 的 `PulseExportDocument` 只是 FileDocument 适配器，不再拥有第二套 codec 或 validator。
 
 ## 4. 操作与失败语义
 
 - `AppOperation` 串行化身份更新、签到、删除、清除、导入和时区更新，防止 UI 并发写入。
 - Repository 在 `save()` 失败时 rollback；View 只在成功返回后关闭详情或选择器。
 - 启动分别识别持久化失败和设置损坏：前者只允许重试，避免诱导删数据；后者可以只重置设置，明确保留签到事实。
+- `PulseCoreError` 只表达领域、持久化和导入导出错误；设置与通知错误属于宿主 `PulseAppError`。用户文案由 App 的单一错误呈现器按当前应用 Locale 映射，Core 不反向读取宿主资源。
 - 全量清除用持久化操作日志跨启动恢复，避免数据库已清空但设置/通知未清的假成功。
 - 导入先限制文件大小，再解码和完整验证，最后由 Repository 单次替换。
 - 主承诺输入由 `HabitIdentity` 统一规范化与验证；View 不直接修改 `Habit`。Repository 只在值变化或首次确认时保存，保存失败统一 rollback。
@@ -98,7 +102,7 @@ JSON 只导出 v2。导入先解码最小版本信封，再由精确的 v1/v2 �
 
 ## 9. Widget 共享基础
 
-基础 Widget 必须建立在一个 App Group SwiftData store 和一个共享 `PulseCore` 编译目标上，不能复制 model、Repository 或签到状态。App 私有 store 到共享 store 的位置搬迁不属于 `PulseMigrationPlan` 的 schema 迁移，必须使用独立持久化 journal、值级复制、全量验证和旧源清理完成原子切换。
+基础 Widget 必须建立在一个 App Group SwiftData store 和当前已经落地的唯一 `PulseCore` 编译目标上，不能复制 model、Repository 或签到状态。App 私有 store 到共享 store 的位置搬迁不属于 `PulseMigrationPlan` 的 schema 迁移，必须使用独立持久化 journal、值级复制、全量验证和旧源清理完成原子切换。
 
 Widget AppIntent 在独立扩展进程执行签到；进程内由各自 store actor 串行化，进程间由 SQLite 事务、`recordKey` 唯一约束和保存失败后的 rollback + 回读裁决。Timeline 只消费不可变快照，不能反向覆盖 store。
 

@@ -1,7 +1,7 @@
 # Pulse 基础 Widget 与共享 Store 合同
 
-文档版本：0.1<br>
-状态：Canonical Pre-Implementation Contract；App Group 能力与签名就绪前不得创建生产 Widget target<br>
+文档版本：0.2<br>
+状态：Canonical Contract；PulseCore 前置阶段已实现，App Group 能力与签名就绪前不得创建生产 Widget target<br>
 评审日期：2026-08-11
 
 本文定义基础 Widget、App Group store 搬迁、跨进程签到和失败恢复的唯一实施边界。Widget 的视觉语言与系统表面职责以 [PULSE_RITUAL_CONTRACT.md](./PULSE_RITUAL_CONTRACT.md) 为准；签到日期、唯一性和删除语义仍只以 [DOMAIN_CONTRACT.md](./DOMAIN_CONTRACT.md) 为准。
@@ -58,7 +58,7 @@ FileManager.containerURL(forSecurityApplicationGroupIdentifier:)
 - App Group UserDefaults 只允许保存 Widget 可见性等展示偏好，不保存签到、统计、迁移后的记录副本或“最后一次成功”；
 - Timeline entry 是可丢弃、可重建的纯值快照，不能反向覆盖 store。
 
-共享数据代码进入独立的 `PulseCore` target。它只包含逻辑日、模型、schema/migration、验证、Repository/command 与纯值快照，不包含 SwiftUI 页面、Widget 布局、通知调度、触觉或本地化资源。App 与 Widget 都依赖这一份编译产物，不能用复制源文件或两个近似 Repository 维持一致。
+共享数据代码已经进入独立静态 `PulseCore` target。它只包含逻辑日、模型、schema/migration、验证、Repository/command、导入导出合同与纯值快照，并开启 `APPLICATION_EXTENSION_API_ONLY`；不包含 SwiftUI 页面、Widget 布局、通知调度、触觉、UserDefaults 或本地化资源。当前 App 已只依赖这一份编译产物，未来 Widget 必须链接同一 target，不能复制源文件或建立近似 Repository。
 
 ## 4. 私有 Store 到 App Group 的原子搬迁
 
@@ -134,9 +134,9 @@ Timeline 至少覆盖当前 entry，并在下一个项目时区零点后失效�
 
 ## 8. 实施顺序
 
-1. 加固当前 Repository：保存冲突后 rollback + 按 `recordKey` 回读；增加双 ModelContainer 磁盘测试；
-2. 提取无 UI、无资源依赖的 `PulseCore`，App 先迁移到该唯一实现并保持全部测试通过；
-3. 实现可注入目录的 store locator、搬迁 journal、复制/校验/清理和每个崩溃点测试；
+1. 已完成：加固当前 Repository，保存冲突后 rollback + 按 `recordKey` 回读，并增加双 ModelContainer 磁盘测试；
+2. 已完成：提取无 UI、无宿主资源依赖、extension-safe 的静态 `PulseCore`，App 已迁移到该唯一实现；
+3. 下一步：实现可注入目录的 store locator、搬迁 journal、复制/校验/清理和每个崩溃点测试；
 4. 账号能力门禁通过后，一次性加入 App Group entitlement、Widget target 和原子 store 切换；
 5. 实现只读 timeline，再实现单向签到 AppIntent；
 6. 完成 Simulator、真实 iPhone/iPad、锁屏、重启、跨午夜、并发点击和升级测试后，才把 Widget 工程状态改为 GO。
@@ -158,6 +158,6 @@ Timeline 至少覆盖当前 entry，并在下一个项目时区零点后失效�
 ## 10. 当前结论
 
 - 共享 store 与 Widget 产品/技术方向：设计 GO；
-- 当前 Repository 的跨进程竞争恢复：可立即实现；
+- `PulseCore`、纯值边界、持久化语义校验和 Repository 竞争恢复：工程 GO；
 - App Group entitlement、正式 store 搬迁和 Widget target：账号能力门禁前 NO-GO；
 - 发布与商店工作：继续后置，不因本合同启动。

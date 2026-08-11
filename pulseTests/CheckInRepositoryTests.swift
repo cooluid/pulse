@@ -1,5 +1,6 @@
 import SwiftData
 import XCTest
+@testable import PulseCore
 @testable import pulse
 
 @MainActor
@@ -95,7 +96,8 @@ final class CheckInRepositoryTests: XCTestCase {
                 storeName: "PulseSharedStore",
                 storeURL: storeURL
             ),
-            clock: clock
+            clock: clock,
+            initialIdentity: try makeInitialIdentity()
         )
         let firstHabit = try firstRepository.primaryHabit(systemTimeZone: timeZone)
 
@@ -104,7 +106,8 @@ final class CheckInRepositoryTests: XCTestCase {
                 storeName: "PulseSharedStore",
                 storeURL: storeURL
             ),
-            clock: clock
+            clock: clock,
+            initialIdentity: try makeInitialIdentity()
         )
         let secondHabit = try secondRepository.primaryHabit(systemTimeZone: timeZone)
         XCTAssertEqual(secondHabit.id, firstHabit.id)
@@ -118,7 +121,8 @@ final class CheckInRepositoryTests: XCTestCase {
                 storeName: "PulseSharedStore",
                 storeURL: storeURL
             ),
-            clock: clock
+            clock: clock,
+            initialIdentity: try makeInitialIdentity()
         )
         let records = try verificationRepository.allRecords(habitID: firstHabit.id)
 
@@ -140,7 +144,7 @@ final class CheckInRepositoryTests: XCTestCase {
 
         clock.now = makeDate(day: 9, hour: 12)
         XCTAssertThrowsError(try repository.checkIn(habitID: habit.id)) { error in
-            XCTAssertEqual(error as? PulseError, .invalidCheckIn)
+            XCTAssertEqual(error as? PulseCoreError, .invalidCheckIn)
         }
         XCTAssertEqual(try repository.allRecords(habitID: habit.id).count, 2)
     }
@@ -192,7 +196,7 @@ final class CheckInRepositoryTests: XCTestCase {
                 identifier: "America/Los_Angeles"
             )
         ) { error in
-            XCTAssertEqual(error as? PulseError, .invalidTimeZoneTransition)
+            XCTAssertEqual(error as? PulseCoreError, .invalidTimeZoneTransition)
         }
         XCTAssertEqual(habit.timeZoneIdentifier, timeZone.identifier)
     }
@@ -243,7 +247,7 @@ final class CheckInRepositoryTests: XCTestCase {
         XCTAssertEqual(imported.purpose, "A reason")
         XCTAssertTrue(imported.isIdentityConfirmed)
         XCTAssertEqual(records.map(\.id), [importedRecordID])
-        XCTAssertEqual(records.first?.logicalDayValue, "2026-08-09")
+        XCTAssertEqual(records.first?.logicalDay.storageValue, "2026-08-09")
         XCTAssertEqual(records.first?.timeZoneIdentifier, timeZone.identifier)
     }
 
@@ -303,7 +307,63 @@ final class CheckInRepositoryTests: XCTestCase {
         )
 
         XCTAssertThrowsError(try repository.replaceAll(with: payload)) { error in
-            XCTAssertEqual(error as? PulseError, .invalidImport)
+            XCTAssertEqual(error as? PulseCoreError, .invalidImport)
+        }
+    }
+
+    func testCorruptedHabitCannotEscapeRepositoryAsAValueSnapshot() throws {
+        let clock = MutableRepositoryClock(now: makeDate(day: 10, hour: 9))
+        let container = try PersistenceController.makeContainer(inMemory: true)
+        let repository = try makeRepository(container: container, clock: clock)
+        let original = try repository.primaryHabit(systemTimeZone: timeZone)
+
+        let mutationContext = ModelContext(container)
+        mutationContext.autosaveEnabled = false
+        let storedHabit = try XCTUnwrap(mutationContext.fetch(FetchDescriptor<Habit>()).first)
+        XCTAssertEqual(storedHabit.id, original.id)
+        storedHabit.name = " Corrupted "
+        try mutationContext.save()
+
+        let validatingRepository = try makeRepository(container: container, clock: clock)
+        XCTAssertThrowsError(
+            try validatingRepository.primaryHabit(systemTimeZone: timeZone)
+        ) { error in
+            XCTAssertEqual(error as? PulseCoreError, .invalidHabitIdentity)
+        }
+    }
+
+    func testCorruptedRecordCannotEscapeRepositoryAsAValueSnapshot() throws {
+        let clock = MutableRepositoryClock(now: makeDate(day: 10, hour: 9))
+        let container = try PersistenceController.makeContainer(inMemory: true)
+        let repository = try makeRepository(container: container, clock: clock)
+        let habit = try repository.primaryHabit(systemTimeZone: timeZone)
+        let receipt = try repository.checkIn(habitID: habit.id)
+
+        let mutationContext = ModelContext(container)
+        mutationContext.autosaveEnabled = false
+        let storedRecord = try XCTUnwrap(
+            mutationContext.fetch(FetchDescriptor<CheckInRecord>()).first
+        )
+        XCTAssertEqual(storedRecord.id, receipt.recordID)
+        storedRecord.recordKey = "corrupted-record-key"
+        try mutationContext.save()
+
+        let validatingRepository = try makeRepository(container: container, clock: clock)
+        XCTAssertThrowsError(
+            try validatingRepository.checkIn(habitID: habit.id)
+        ) { error in
+            XCTAssertEqual(
+                error as? PulseCoreError,
+                .invalidRecordDate(storedRecord.logicalDayValue)
+            )
+        }
+        XCTAssertThrowsError(
+            try validatingRepository.allRecords(habitID: habit.id)
+        ) { error in
+            XCTAssertEqual(
+                error as? PulseCoreError,
+                .invalidRecordDate(storedRecord.logicalDayValue)
+            )
         }
     }
 
@@ -335,10 +395,25 @@ final class CheckInRepositoryTests: XCTestCase {
     }
 
     private func makeRepository(clock: MutableRepositoryClock) throws -> SwiftDataCheckInRepository {
-        SwiftDataCheckInRepository(
-            container: try PersistenceController.makeContainer(inMemory: true),
+        try makeRepository(
+            container: PersistenceController.makeContainer(inMemory: true),
             clock: clock
         )
+    }
+
+    private func makeRepository(
+        container: ModelContainer,
+        clock: MutableRepositoryClock
+    ) throws -> SwiftDataCheckInRepository {
+        SwiftDataCheckInRepository(
+            container: container,
+            clock: clock,
+            initialIdentity: try makeInitialIdentity()
+        )
+    }
+
+    private func makeInitialIdentity() throws -> HabitIdentity {
+        try HabitIdentity(userName: "Test Habit", userPurpose: nil)
     }
 
     private func makeDate(day: Int, hour: Int) -> Date {

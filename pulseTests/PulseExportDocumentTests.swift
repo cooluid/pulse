@@ -1,5 +1,6 @@
 import XCTest
 import UniformTypeIdentifiers
+@testable import PulseCore
 @testable import pulse
 
 final class PulseExportDocumentTests: XCTestCase {
@@ -19,7 +20,7 @@ final class PulseExportDocumentTests: XCTestCase {
         XCTAssertEqual(PulseExportDocument.writableContentTypes, [.json])
     }
 
-    func testJSONRoundTripPreservesCompleteV1Contract() throws {
+    func testJSONRoundTripPreservesCompleteV2Contract() throws {
         let habitID = UUID()
         let recordID = UUID()
         let date = Date(timeIntervalSince1970: 1_786_320_000)
@@ -82,7 +83,7 @@ final class PulseExportDocumentTests: XCTestCase {
         XCTAssertEqual(upgraded.habit.name, "Daily")
         XCTAssertNil(upgraded.habit.purpose)
         XCTAssertFalse(upgraded.habit.isIdentityConfirmed)
-        XCTAssertNoThrow(try PulseDataValidator.validate(upgraded))
+        XCTAssertNoThrow(try PulseExportCodec.encode(upgraded))
     }
 
     func testUnsupportedJSONVersionIsRejectedWithoutGuessing() {
@@ -91,7 +92,7 @@ final class PulseExportDocumentTests: XCTestCase {
         )
 
         XCTAssertThrowsError(try PulseExportDocument.decode(data)) { error in
-            XCTAssertEqual(error as? PulseError, .unsupportedImportVersion(99))
+            XCTAssertEqual(error as? PulseCoreError, .unsupportedImportVersion(99))
         }
     }
 
@@ -115,8 +116,12 @@ final class PulseExportDocumentTests: XCTestCase {
             records: []
         )
 
-        XCTAssertThrowsError(try PulseDataValidator.validate(payload)) { error in
-            XCTAssertEqual(error as? PulseError, .invalidImport)
+        let encoder = JSONEncoder()
+        encoder.dateEncodingStrategy = .iso8601
+        let hostileData = try encoder.encode(payload)
+
+        XCTAssertThrowsError(try PulseExportCodec.decode(hostileData)) { error in
+            XCTAssertEqual(error as? PulseCoreError, .invalidImport)
         }
     }
 }

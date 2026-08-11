@@ -1,13 +1,13 @@
 import Foundation
 
-struct HabitIdentity: Equatable, Sendable {
-    static let maximumNameLength = 80
-    static let maximumPurposeLength = 160
+public struct HabitIdentity: Equatable, Sendable {
+    public static let maximumNameLength = 80
+    public static let maximumPurposeLength = 160
 
-    let name: String
-    let purpose: String?
+    public let name: String
+    public let purpose: String?
 
-    init(userName: String, userPurpose: String?) throws {
+    public init(userName: String, userPurpose: String?) throws {
         let normalizedName = Self.normalize(userName)
         let normalizedPurpose = userPurpose.map(Self.normalize)
         try self.init(
@@ -24,7 +24,7 @@ struct HabitIdentity: Equatable, Sendable {
               !normalizedName.isEmpty,
               normalizedName.count <= Self.maximumNameLength,
               !Self.containsDisallowedScalars(normalizedName) else {
-            throw PulseError.invalidHabitIdentity
+            throw PulseCoreError.invalidHabitIdentity
         }
 
         if let storedPurpose {
@@ -32,7 +32,7 @@ struct HabitIdentity: Equatable, Sendable {
                   !storedPurpose.isEmpty,
                   storedPurpose.count <= Self.maximumPurposeLength,
                   !Self.containsDisallowedScalars(storedPurpose) else {
-                throw PulseError.invalidHabitIdentity
+                throw PulseCoreError.invalidHabitIdentity
             }
         }
 

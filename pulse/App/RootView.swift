@@ -1,4 +1,5 @@
 import SwiftUI
+import PulseCore
 
 struct RootView: View {
     @Bindable var model: PulseAppModel

@@ -1,5 +1,6 @@
 import SwiftUI
 import UniformTypeIdentifiers
+import PulseCore
 
 struct SettingsView: View {
     @Bindable var model: PulseAppModel

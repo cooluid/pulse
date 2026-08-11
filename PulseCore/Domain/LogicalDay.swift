@@ -1,17 +1,17 @@
 import Foundation
 
-struct LogicalDay: Hashable, Codable, Comparable, Identifiable, Sendable {
-    let year: Int
-    let month: Int
-    let day: Int
+public struct LogicalDay: Hashable, Codable, Comparable, Identifiable, Sendable {
+    public let year: Int
+    public let month: Int
+    public let day: Int
 
-    var id: String { storageValue }
+    public var id: String { storageValue }
 
-    var storageValue: String {
+    public var storageValue: String {
         String(format: "%04d-%02d-%02d", year, month, day)
     }
 
-    init(year: Int, month: Int, day: Int) {
+    public init(year: Int, month: Int, day: Int) {
         precondition(
             Self.isValid(year: year, month: month, day: day),
             "LogicalDay requires valid Gregorian date components."
@@ -21,7 +21,7 @@ struct LogicalDay: Hashable, Codable, Comparable, Identifiable, Sendable {
         self.day = day
     }
 
-    init?(storageValue: String) {
+    public init?(storageValue: String) {
         let components = storageValue.split(separator: "-", omittingEmptySubsequences: false)
         guard components.count == 3,
               let year = Int(components[0]),
@@ -37,11 +37,11 @@ struct LogicalDay: Hashable, Codable, Comparable, Identifiable, Sendable {
         self.init(year: year, month: month, day: day)
     }
 
-    static func < (lhs: LogicalDay, rhs: LogicalDay) -> Bool {
+    public static func < (lhs: LogicalDay, rhs: LogicalDay) -> Bool {
         (lhs.year, lhs.month, lhs.day) < (rhs.year, rhs.month, rhs.day)
     }
 
-    static func resolve(
+    public static func resolve(
         at date: Date,
         timeZone: TimeZone
     ) -> LogicalDay {
@@ -60,7 +60,7 @@ struct LogicalDay: Hashable, Codable, Comparable, Identifiable, Sendable {
         )
     }
 
-    func addingDays(_ value: Int, timeZone: TimeZone) -> LogicalDay {
+    public func addingDays(_ value: Int, timeZone: TimeZone) -> LogicalDay {
         let calendar = Calendar.pulseGregorian(timeZone: timeZone)
         let baseDate = calendar.date(from: DateComponents(year: year, month: month, day: day))!
         let result = calendar.date(byAdding: .day, value: value, to: baseDate)!
@@ -68,20 +68,20 @@ struct LogicalDay: Hashable, Codable, Comparable, Identifiable, Sendable {
         return LogicalDay(year: components.year!, month: components.month!, day: components.day!)
     }
 
-    func startDate(timeZone: TimeZone) -> Date {
+    public func startDate(timeZone: TimeZone) -> Date {
         date(timeZone: timeZone)
     }
 
-    func date(timeZone: TimeZone) -> Date {
+    public func date(timeZone: TimeZone) -> Date {
         Calendar.pulseGregorian(timeZone: timeZone)
             .date(from: DateComponents(year: year, month: month, day: day))!
     }
 
-    func firstDayOfMonth() -> LogicalDay {
+    public func firstDayOfMonth() -> LogicalDay {
         LogicalDay(year: year, month: month, day: 1)
     }
 
-    func addingMonths(_ value: Int, timeZone: TimeZone) -> LogicalDay {
+    public func addingMonths(_ value: Int, timeZone: TimeZone) -> LogicalDay {
         let calendar = Calendar.pulseGregorian(timeZone: timeZone)
         let baseDate = calendar.date(from: DateComponents(year: year, month: month, day: 1))!
         let result = calendar.date(byAdding: .month, value: value, to: baseDate)!
@@ -89,7 +89,7 @@ struct LogicalDay: Hashable, Codable, Comparable, Identifiable, Sendable {
         return LogicalDay(year: components.year!, month: components.month!, day: 1)
     }
 
-    func daysInMonth(timeZone: TimeZone) -> Int {
+    public func daysInMonth(timeZone: TimeZone) -> Int {
         let calendar = Calendar.pulseGregorian(timeZone: timeZone)
         let date = calendar.date(from: DateComponents(year: year, month: month, day: 1))!
         return calendar.range(of: .day, in: .month, for: date)!.count
@@ -107,7 +107,7 @@ struct LogicalDay: Hashable, Codable, Comparable, Identifiable, Sendable {
 }
 
 extension Calendar {
-    static func pulseGregorian(timeZone: TimeZone) -> Calendar {
+    public static func pulseGregorian(timeZone: TimeZone) -> Calendar {
         var calendar = Calendar(identifier: .gregorian)
         calendar.locale = Locale(identifier: "en_US_POSIX")
         calendar.timeZone = timeZone

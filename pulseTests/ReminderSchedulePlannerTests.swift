@@ -1,4 +1,5 @@
 import XCTest
+@testable import PulseCore
 @testable import pulse
 
 final class ReminderSchedulePlannerTests: XCTestCase {
@@ -15,7 +16,7 @@ final class ReminderSchedulePlannerTests: XCTestCase {
         let snapshot = makeSnapshot(timeZoneIdentifier: "invalid")
 
         XCTAssertThrowsError(try ReminderSchedulePlanner.makePlan(for: snapshot)) { error in
-            guard case PulseError.invalidTimeZone("invalid") = error else {
+            guard case PulseCoreError.invalidTimeZone("invalid") = error else {
                 return XCTFail("Expected invalidTimeZone, got \(error)")
             }
         }

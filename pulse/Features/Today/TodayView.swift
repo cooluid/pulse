@@ -1,4 +1,5 @@
 import SwiftUI
+import PulseCore
 
 struct TodayView: View {
     @Bindable var model: PulseAppModel
@@ -392,12 +393,12 @@ struct TodayView: View {
     }
 
     private var completedCheckInText: String? {
-        guard let record = model.todayRecord, let timeZone = record.timeZone else {
+        guard let record = model.todayRecord else {
             return nil
         }
         return String(
             format: PulseLocalization.string("today.checked_with_time", locale: locale),
-            PulseFormatting.time(record.checkedAt, timeZone: timeZone, locale: locale)
+            PulseFormatting.time(record.checkedAt, timeZone: record.timeZone, locale: locale)
         )
     }
 

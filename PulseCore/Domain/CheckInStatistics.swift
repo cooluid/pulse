@@ -1,13 +1,19 @@
 import Foundation
 
-struct CheckInStatistics: Equatable, Sendable {
-    let currentStreak: Int
-    let longestStreak: Int
-    let totalCount: Int
+public struct CheckInStatistics: Equatable, Sendable {
+    public let currentStreak: Int
+    public let longestStreak: Int
+    public let totalCount: Int
 
-    static let empty = CheckInStatistics(currentStreak: 0, longestStreak: 0, totalCount: 0)
+    public static let empty = CheckInStatistics(currentStreak: 0, longestStreak: 0, totalCount: 0)
 
-    static func calculate(
+    public init(currentStreak: Int, longestStreak: Int, totalCount: Int) {
+        self.currentStreak = currentStreak
+        self.longestStreak = longestStreak
+        self.totalCount = totalCount
+    }
+
+    public static func calculate(
         checkedDays: Set<LogicalDay>,
         today: LogicalDay,
         timeZone: TimeZone
@@ -50,7 +56,7 @@ struct CheckInStatistics: Equatable, Sendable {
     }
 }
 
-enum CalendarDayStatus: Equatable, Sendable {
+public enum CalendarDayStatus: Equatable, Sendable {
     case beforeHabit
     case checked
     case missed
@@ -58,15 +64,20 @@ enum CalendarDayStatus: Equatable, Sendable {
     case future
 }
 
-struct CalendarDayItem: Identifiable, Equatable, Sendable {
-    let day: LogicalDay
-    let status: CalendarDayStatus
+public struct CalendarDayItem: Identifiable, Equatable, Sendable {
+    public let day: LogicalDay
+    public let status: CalendarDayStatus
 
-    var id: LogicalDay { day }
+    public var id: LogicalDay { day }
+
+    public init(day: LogicalDay, status: CalendarDayStatus) {
+        self.day = day
+        self.status = status
+    }
 }
 
-enum CheckInCalendar {
-    static func status(
+public enum CheckInCalendar {
+    public static func status(
         for day: LogicalDay,
         habitStartDay: LogicalDay,
         today: LogicalDay,
@@ -79,4 +90,3 @@ enum CheckInCalendar {
         return .missed
     }
 }
-

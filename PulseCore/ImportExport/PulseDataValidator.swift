@@ -26,7 +26,7 @@ enum PulseDataValidator {
               LogicalDay.resolve(at: payload.exportedAt, timeZone: currentTimeZone)
                 >= startLogicalDay,
               payload.habit.createdAt <= payload.exportedAt else {
-            throw PulseError.invalidImport
+            throw PulseCoreError.invalidImport
         }
 
         let identity: HabitIdentity
@@ -36,7 +36,7 @@ enum PulseDataValidator {
                 storedPurpose: payload.habit.purpose
             )
         } catch {
-            throw PulseError.invalidImport
+            throw PulseCoreError.invalidImport
         }
 
         var logicalDays = Set<LogicalDay>()
@@ -54,7 +54,7 @@ enum PulseDataValidator {
                   record.createdAt <= payload.exportedAt,
                   logicalDays.insert(logicalDay).inserted,
                   recordIDs.insert(record.id).inserted else {
-                throw PulseError.invalidImport
+                throw PulseCoreError.invalidImport
             }
             return .init(payload: record, logicalDay: logicalDay)
         }

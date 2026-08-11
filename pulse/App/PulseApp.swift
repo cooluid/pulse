@@ -1,5 +1,6 @@
 import SwiftUI
 import OSLog
+import PulseCore
 
 private enum StartupFailure: Equatable {
     case persistence
@@ -29,7 +30,18 @@ private enum PulseBootstrap {
                 inMemory: store.inMemory,
                 storeName: store.name
             )
-            let repository = SwiftDataCheckInRepository(container: container, clock: clock)
+            let initialIdentity = try HabitIdentity(
+                userName: PulseLocalization.string(
+                    "habit.default_name",
+                    locale: .autoupdatingCurrent
+                ),
+                userPurpose: nil
+            )
+            let repository = SwiftDataCheckInRepository(
+                container: container,
+                clock: clock,
+                initialIdentity: initialIdentity
+            )
             let settings = try AppSettings()
             let model = PulseAppModel(
                 repository: repository,
@@ -39,7 +51,7 @@ private enum PulseBootstrap {
                 hapticFeedback: HapticFeedback()
             )
             return .ready(model)
-        } catch PulseError.invalidSettings {
+        } catch PulseAppError.invalidSettings {
             logger.error("Failed to load application settings.")
             return .failed(.settings)
         } catch {

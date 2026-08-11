@@ -6,6 +6,11 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		E0C00000000000000000000E /* PulseCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E0C000000000000000000001 /* PulseCore.framework */; };
+		E0C00000000000000000000F /* PulseCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E0C000000000000000000001 /* PulseCore.framework */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		C0D00000000000000000000A /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -21,12 +26,27 @@
 			remoteGlobalIDString = B9538A813029A88800432B53;
 			remoteInfo = pulse;
 		};
+		E0C00000000000000000000A /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = B9538A7A3029A88800432B53 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = E0C000000000000000000006;
+			remoteInfo = PulseCore;
+		};
+		E0C00000000000000000000C /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = B9538A7A3029A88800432B53 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = E0C000000000000000000006;
+			remoteInfo = PulseCore;
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
 		B9538A823029A88800432B53 /* pulse.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = pulse.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		C0D000000000000000000001 /* pulseTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = pulseTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		D0D000000000000000000001 /* pulseUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = pulseUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		E0C000000000000000000001 /* PulseCore.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = PulseCore.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -45,6 +65,11 @@
 			path = pulseUITests;
 			sourceTree = "<group>";
 		};
+		E0C000000000000000000002 /* PulseCore */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = PulseCore;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -52,6 +77,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E0C00000000000000000000E /* PulseCore.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -59,10 +85,18 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E0C00000000000000000000F /* PulseCore.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		D0D000000000000000000003 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E0C000000000000000000003 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -76,6 +110,7 @@
 			isa = PBXGroup;
 			children = (
 				B9538A843029A88800432B53 /* pulse */,
+				E0C000000000000000000002 /* PulseCore */,
 				C0D000000000000000000002 /* pulseTests */,
 				D0D000000000000000000002 /* pulseUITests */,
 				B9538A833029A88800432B53 /* Products */,
@@ -87,6 +122,7 @@
 			isa = PBXGroup;
 			children = (
 				B9538A823029A88800432B53 /* pulse.app */,
+				E0C000000000000000000001 /* PulseCore.framework */,
 				C0D000000000000000000001 /* pulseTests.xctest */,
 				D0D000000000000000000001 /* pulseUITests.xctest */,
 			);
@@ -114,6 +150,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				E0C00000000000000000000B /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				B9538A843029A88800432B53 /* pulse */,
@@ -137,6 +174,7 @@
 			);
 			dependencies = (
 				C0D00000000000000000000B /* PBXTargetDependency */,
+				E0C00000000000000000000D /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				C0D000000000000000000002 /* pulseTests */,
@@ -171,6 +209,27 @@
 			productReference = D0D000000000000000000001 /* pulseUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
 		};
+		E0C000000000000000000006 /* PulseCore */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = E0C000000000000000000007 /* Build configuration list for PBXNativeTarget "PulseCore" */;
+			buildPhases = (
+				E0C000000000000000000004 /* Sources */,
+				E0C000000000000000000003 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				E0C000000000000000000002 /* PulseCore */,
+			);
+			name = PulseCore;
+			packageProductDependencies = (
+			);
+			productName = PulseCore;
+			productReference = E0C000000000000000000001 /* PulseCore.framework */;
+			productType = "com.apple.product-type.framework";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -192,6 +251,9 @@
 						CreatedOnToolsVersion = 26.4;
 						TestTargetID = B9538A813029A88800432B53;
 					};
+					E0C000000000000000000006 = {
+						CreatedOnToolsVersion = 26.4;
+					};
 				};
 			};
 			buildConfigurationList = B9538A7D3029A88800432B53 /* Build configuration list for PBXProject "pulse" */;
@@ -210,6 +272,7 @@
 			projectRoot = "";
 			targets = (
 				B9538A813029A88800432B53 /* pulse */,
+				E0C000000000000000000006 /* PulseCore */,
 				C0D000000000000000000006 /* pulseTests */,
 				D0D000000000000000000006 /* pulseUITests */,
 			);
@@ -262,6 +325,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		E0C000000000000000000004 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -274,6 +344,16 @@
 			isa = PBXTargetDependency;
 			target = B9538A813029A88800432B53 /* pulse */;
 			targetProxy = D0D00000000000000000000A /* PBXContainerItemProxy */;
+		};
+		E0C00000000000000000000B /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = E0C000000000000000000006 /* PulseCore */;
+			targetProxy = E0C00000000000000000000A /* PBXContainerItemProxy */;
+		};
+		E0C00000000000000000000D /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = E0C000000000000000000006 /* PulseCore */;
+			targetProxy = E0C00000000000000000000C /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -547,6 +627,48 @@
 			};
 			name = Release;
 		};
+		E0C000000000000000000008 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGNING_ALLOWED = NO;
+				DEFINES_MODULE = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MACH_O_TYPE = staticlib;
+				PRODUCT_BUNDLE_IDENTIFIER = co.fanr.pulse.core;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_TREAT_WARNINGS_AS_ERRORS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		E0C000000000000000000009 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGNING_ALLOWED = NO;
+				DEFINES_MODULE = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MACH_O_TYPE = staticlib;
+				PRODUCT_BUNDLE_IDENTIFIER = co.fanr.pulse.core;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_TREAT_WARNINGS_AS_ERRORS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -582,6 +704,15 @@
 			buildConfigurations = (
 				D0D000000000000000000008 /* Debug */,
 				D0D000000000000000000009 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		E0C000000000000000000007 /* Build configuration list for PBXNativeTarget "PulseCore" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				E0C000000000000000000008 /* Debug */,
+				E0C000000000000000000009 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

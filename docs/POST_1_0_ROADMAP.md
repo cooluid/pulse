@@ -1,6 +1,6 @@
 # 一日一印（Pulse）1.0 之后开发路线图
 
-文档版本：0.5<br>
+文档版本：0.6<br>
 状态：Proposed Execution Plan，不改变 1.0 已冻结范围  
 评审日期：2026-08-11
 
@@ -96,7 +96,7 @@ App Group、共享 store 搬迁、跨进程写入、Widget 隐私和能力准入
 
 - 在领域合同中增加“重命名不影响事实”的规则，再增加 Repository 写入方法与测试；
 - 为 Widget 建立 App Group store 迁移设计与中断恢复测试；
-- 抽取 App / Widget / Live Activity 可共同编译的业务模块，所有写入仍由正式 Repository / command service 所有；
+- 已抽取 extension-safe 静态 `PulseCore`，当前 App 已只链接这一份领域、schema、Repository、验证和导入导出实现；Widget / Live Activity 后续必须消费同一模块，所有写入仍由正式 Repository / command service 所有；
 - 建立一个 Widget extension 承载 Widget 与 Live Activity 布局，但分别维护长期 timeline 和短期 ActivityKit 生命周期；
 - 增加跨进程同日并发写入测试，唯一冲突必须回读现有记录并幂等成功；
 - Widget / Live Activity 刷新失败只影响展示，不反向覆盖主 store；

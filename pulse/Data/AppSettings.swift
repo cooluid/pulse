@@ -120,7 +120,7 @@ final class AppSettings {
         ), let loadedWeekStart = WeekStart(rawValue: defaults.integer(forKey: StorageKey.weekStart)),
         let loadedTheme = AppTheme(rawValue: defaults.string(forKey: StorageKey.theme) ?? ""),
         let loadedLanguage = AppLanguage(rawValue: defaults.string(forKey: StorageKey.language) ?? "") else {
-            throw PulseError.invalidSettings
+            throw PulseAppError.invalidSettings
         }
 
         hapticsEnabled = defaults.bool(forKey: StorageKey.hapticsEnabled)
