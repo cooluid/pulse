@@ -59,6 +59,22 @@
         }
       }
     },
+    "widget.brand.name" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pulse"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "一日一印"
+          }
+        }
+      }
+    },
     "widget.configuration.description" : {
       "localizations" : {
         "en" : {
@@ -192,6 +208,7 @@
       }
     },
     "widget.privacy.private_commitment" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -272,6 +289,7 @@
       }
     },
     "widget.state.pending" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
