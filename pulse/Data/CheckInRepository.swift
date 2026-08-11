@@ -5,6 +5,7 @@ import SwiftData
 protocol CheckInRepositoryProtocol: AnyObject {
     func primaryHabit(systemTimeZone: TimeZone) throws -> Habit
     func allRecords(habitID: UUID) throws -> [CheckInRecord]
+    func updateIdentity(habit: Habit, identity: HabitIdentity) throws -> Habit
     func checkIn(habit: Habit) throws -> CheckInRecord
     func delete(recordID: UUID) throws
     func updateTimeZone(habit: Habit, identifier: String) throws
@@ -41,8 +42,14 @@ final class SwiftDataCheckInRepository: CheckInRepositoryProtocol {
             at: now,
             timeZone: systemTimeZone
         )
+        let identity = try HabitIdentity(
+            userName: String(localized: "habit.default_name"),
+            userPurpose: nil
+        )
         let habit = Habit(
-            name: String(localized: "habit.default_name"),
+            name: identity.name,
+            purpose: identity.purpose,
+            isIdentityConfirmed: false,
             createdAt: now,
             startLogicalDay: startLogicalDay,
             creationTimeZoneIdentifier: systemTimeZone.identifier,
@@ -61,6 +68,21 @@ final class SwiftDataCheckInRepository: CheckInRepositoryProtocol {
             sortBy: [SortDescriptor(\CheckInRecord.checkedAt)]
         )
         return try context.fetch(descriptor)
+    }
+
+    func updateIdentity(habit: Habit, identity: HabitIdentity) throws -> Habit {
+        let persistedHabit = try requirePrimaryHabit(id: habit.id)
+        guard persistedHabit.name != identity.name
+                || persistedHabit.purpose != identity.purpose
+                || !persistedHabit.isIdentityConfirmed else {
+            return persistedHabit
+        }
+
+        persistedHabit.name = identity.name
+        persistedHabit.purpose = identity.purpose
+        persistedHabit.isIdentityConfirmed = true
+        try saveOrRollback()
+        return persistedHabit
     }
 
     func checkIn(habit: Habit) throws -> CheckInRecord {
@@ -141,8 +163,14 @@ final class SwiftDataCheckInRepository: CheckInRepositoryProtocol {
             at: now,
             timeZone: systemTimeZone
         )
+        let identity = try HabitIdentity(
+            userName: String(localized: "habit.default_name"),
+            userPurpose: nil
+        )
         let newHabit = Habit(
-            name: String(localized: "habit.default_name"),
+            name: identity.name,
+            purpose: identity.purpose,
+            isIdentityConfirmed: false,
             createdAt: now,
             startLogicalDay: startLogicalDay,
             creationTimeZoneIdentifier: systemTimeZone.identifier,
@@ -166,7 +194,9 @@ final class SwiftDataCheckInRepository: CheckInRepositoryProtocol {
 
         let importedHabit = Habit(
             id: payload.habit.id,
-            name: payload.habit.name,
+            name: validated.identity.name,
+            purpose: validated.identity.purpose,
+            isIdentityConfirmed: payload.habit.isIdentityConfirmed,
             createdAt: payload.habit.createdAt,
             startLogicalDay: validated.startLogicalDay,
             creationTimeZoneIdentifier: payload.habit.creationTimeZoneIdentifier,

@@ -14,6 +14,41 @@ final class PulseAppModelTests: XCTestCase {
         XCTAssertNil(context.model.todayRecord)
         XCTAssertEqual(context.model.statistics, .empty)
         XCTAssertEqual(context.scheduler.snapshots.last?.enabled, false)
+        XCTAssertFalse(context.model.habit?.isIdentityConfirmed ?? true)
+    }
+
+    func testIdentityUpdateRefreshesSnapshotWithoutChangingFacts() async throws {
+        let context = try makeContext()
+        await context.model.start()
+        await context.model.checkIn()
+        let habitID = context.model.habit?.id
+        let recordID = context.model.todayRecord?.id
+
+        let didUpdate = await context.model.updateHabitIdentity(
+            name: "  Daily Reading  ",
+            purpose: "  Stay curious  "
+        )
+
+        XCTAssertTrue(didUpdate)
+        XCTAssertEqual(context.model.habit?.id, habitID)
+        XCTAssertEqual(context.model.habit?.name, "Daily Reading")
+        XCTAssertEqual(context.model.habit?.purpose, "Stay curious")
+        XCTAssertTrue(context.model.habit?.isIdentityConfirmed ?? false)
+        XCTAssertEqual(context.model.todayRecord?.id, recordID)
+        XCTAssertEqual(context.model.statistics.totalCount, 1)
+    }
+
+    func testInvalidIdentityDoesNotMutateHabit() async throws {
+        let context = try makeContext()
+        await context.model.start()
+        let originalName = context.model.habit?.name
+
+        let didUpdate = await context.model.updateHabitIdentity(name: "  ", purpose: nil)
+
+        XCTAssertFalse(didUpdate)
+        XCTAssertEqual(context.model.habit?.name, originalName)
+        XCTAssertFalse(context.model.habit?.isIdentityConfirmed ?? true)
+        XCTAssertNotNil(context.model.errorMessage)
     }
 
     func testCheckInUpdatesAllDerivedStateAndHapticsOnce() async throws {
@@ -143,6 +178,7 @@ final class PulseAppModelTests: XCTestCase {
         XCTAssertTrue(context.model.records.isEmpty)
         XCTAssertFalse(context.model.settings.isResetPending)
         XCTAssertEqual(context.scheduler.removeAllCount, 1)
+        XCTAssertFalse(context.model.habit?.isIdentityConfirmed ?? true)
     }
 
     private func makeContext(

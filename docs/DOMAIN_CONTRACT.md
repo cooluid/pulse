@@ -1,6 +1,6 @@
 # Pulse 签到业务合同
 
-文档版本：1.0  
+文档版本：1.1<br>
 状态：Canonical Contract
 
 本文档是日期、签到事实和导入恢复的唯一业务规则来源。
@@ -11,7 +11,7 @@ Pulse 1.0 只有一个主签到项目。`Habit.slotKey == "primary"` 是结构�
 
 `Habit` 保存：
 
-- 稳定 ID、名称和绝对创建时间 `createdAt`；
+- 稳定 ID、名称、可选的主承诺说明、身份确认状态和绝对创建时间 `createdAt`；
 - 创建当时计算并永久保存的 `startLogicalDay`；
 - 创建时区 `creationTimeZoneIdentifier`，用于证明起始日来源；
 - 当前签到时区 `timeZoneIdentifier`，只影响当前日期和后续签到。
@@ -19,6 +19,18 @@ Pulse 1.0 只有一个主签到项目。`Habit.slotKey == "primary"` 是结构�
 `CheckInRecord` 是签到事实的唯一来源，保存项目 ID、逻辑日、实际签到时间、写入时间，以及该记录生成时使用的时区。历史记录的逻辑日和记录时区永不随当前项目时区重写。
 
 不保存 `isCheckedToday`、连续天数、累计数、月历状态等派生值。
+
+### 1.1 主承诺身份
+
+Pulse 只有一个 `primary` 主承诺。名称、说明和确认状态属于该 `Habit`，不得在 `UserDefaults`、页面状态或通知配置中保存第二份。
+
+- 名称经首尾空白规范化后必须包含 1...80 个 Swift `Character`；拒绝控制字符、换行和不可见格式控制符，但允许 Emoji 序列与语言连接所需的 ZWJ/ZWNJ。
+- “为什么重要”为可选单句说明；空白输入规范化为 `nil`，非空时最多 160 个 `Character`，字符安全规则与名称一致。
+- UI 输入在提交时执行一次确定性首尾空白规范化；持久化模型和导入文件必须已经是规范形式，不允许读取时静默修补。
+- 首次创建、完整清除和 v1 数据迁移后的主承诺均为未确认；确认成功后才能进入主界面。
+- 首次确认和后续编辑只调用 Repository 的同一个身份更新命令。保存成功后才更新页面；失败时回滚并保留输入。
+- 修改名称或说明不得改变 `Habit.id`、`slotKey`、`createdAt`、`startLogicalDay`、时区或任何 `CheckInRecord`，也不得触发补签或重算历史事实。
+- 1.0 的本地通知保持通用隐私文案，不把主承诺名称或说明复制进通知请求。
 
 ## 2. 逻辑日与时区
 
@@ -60,13 +72,13 @@ recordKey = lowercased(habitID) + ":" + logicalDay
 
 跨 SwiftData、UserDefaults 和通知中心无法形成单一数据库事务，因此开始前写入持久化的 `maintenance.resetPending` 操作日志。任一步骤中断时，下次启动会幂等地完成清除；只有全部完成后才删除日志并向 UI 报告成功。
 
-## 6. JSON v1 恢复合同
+## 6. JSON v2 恢复合同
 
 恢复文件必须同时满足：
 
-- `format == "co.fanr.pulse.export"` 且 `schemaVersion == 1`；
+- `format == "co.fanr.pulse.export"` 且正式导出 `schemaVersion == 2`；
 - 文件不超过 32 MiB，记录不超过 50,000 条；
-- 项目名称非空、无首尾空白且不超过 80 个字符；
+- 项目名称、可选说明和身份确认状态满足第 1.1 节；
 - 当前时区和创建时区都有效；
 - `startLogicalDay` 必须等于 `createdAt` 在创建时区下的日期；
 - `exportedAt` 在当前时区下的日期不得早于项目起始日；
@@ -76,9 +88,11 @@ recordKey = lowercased(habitID) + ":" + logicalDay
 
 完整验证成功后才全量替换；任一校验或保存失败都不修改现有事实。导入不覆盖设备偏好，完成后重新协调提醒。
 
+当前仓库已经形成明确的 JSON v1 合同。v2 导入器先读取最小 `format/schemaVersion` 信封，只对版本 1 或 2 选择精确解码器：v1 在内存中一次性规范化为 v2，说明为 `nil`、身份为未确认，然后统一进入 v2 校验和 Repository 替换路径。除此之外不猜字段、不尝试多解码器碰运气、不持久化双版本模型，也不把 v1 作为新的导出格式。
+
 文件选择器只消费 `PulseExportDocument.readableContentTypes` 声明的 JSON 类型，并通过安全作用域读取文件提供器 URL。App 必须声明 `LSSupportsOpeningDocumentsInPlace`，确保 iCloud Drive 等文件提供器可交付原文件；扩展名与提供器元数据只负责筛选，内容、格式标识和 schema 校验才是导入权威边界。
 
-未上线阶段的旧开发数据库与旧 JSON 不是发布合同，不提供自动迁移、猜测字段或静默兜底。首个公开版本发布后，任何 schema 变化都必须新增显式迁移与旧版本 fixture，不能再使用清洁断代。
+缺少正式格式标识的更早开发 JSON 不是发布合同，继续明确拒绝。SwiftData V1 和 JSON v1 已经是当前仓库的受控基线，因此必须通过显式 V1→V2 迁移与 fixture 保留；“尚未上线”不再作为删除现有测试数据的理由。后续任何 schema 变化都必须新增显式迁移与上一版本 fixture，不能再次清洁断代。
 
 ## 7. 范围变更
 

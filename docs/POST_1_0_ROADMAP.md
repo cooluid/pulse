@@ -1,6 +1,6 @@
 # 一日一印（Pulse）1.0 之后开发路线图
 
-文档版本：0.3<br>
+文档版本：0.4<br>
 状态：Proposed Execution Plan，不改变 1.0 已冻结范围  
 评审日期：2026-08-11
 
@@ -12,12 +12,13 @@
 | --- | --- | --- | --- |
 | R0：1.0 发布闭环 | 把当前免费核心真实交付 | 免费 | 1.0 全部发布门禁关闭 |
 | R1：1.1 个性与日印仪式基础 | 明确“我为什么留印”，用基础 Widget 和落印语言降低摩擦并建立系统级识别 | 免费 | 留存、Widget 可靠性与日印仪式视觉达到门槛 |
+| W0：Watch 可行性轨 | 在 R1 统一命令与 App Group 稳定后，尽早验证配对真机、WatchConnectivity 和手腕交互 | 不收费、不进生产历史 | 待同步/已保存语义、断联恢复和跨午夜裁决通过 |
 | R2：1.2 真实上下文 | 验证缺席说明、回归力和轻量回响是否有价值 | TestFlight 免费实验 | 使用率和访谈证明高阶价值 |
 | R2.5：1.3 影像印记 | 验证签到后可选留影、媒体可靠性和标准面貌拍摄 | TestFlight 免费实验 | 使用率、零丢图和隐私理解达到门槛 |
 | R3：2.0 Pulse Plus | 上线节律、印期、持续回响、私密同步与远程留印窗口原型 | 年付 + 永久版 | 购买、同步、ActivityKit 调度和退出语义达标 |
 | R4：2.1 岁月流影 | 把合格面貌照片生成按真实时间平滑融合的长期影片 | Plus；既有媒体保持可读 | 真人逐帧视觉验收和付费价值通过 |
 | WX0：微信资格轨 | 验证主体、类目、模板、授权与真实发送，不承诺版本 | 不收费、不宣传 | 五项官方资格证据全部通过才进入实现 |
-| R5：2.2 随身入口 | Watch、高级 Widget / Control、Shortcuts | Plus | 跨设备使用率证明维护价值 |
+| R5：2.2 随身入口 | 伴侣型 Watch App、complication / Smart Stack、高级 Widget / Control、Shortcuts | 基础 Watch 免费，高级节律 Plus | 真机可靠性与跨设备使用率证明维护价值 |
 | R6：3.0 个性智能 | 用户自选观察维度和本地模式解释 | Plus 实验 | 解释正确、可关闭、隐私边界通过 |
 
 任何阶段都不得绕过前一阶段的证据门禁。路线图不是发布日期承诺。
@@ -55,16 +56,18 @@
 - 没有 P0/P1 数据、通知、无障碍或签名问题；
 - 已建立真实版本的升级基线 fixture，后续 schema 变化不再 clean-break。
 
-## 3. R1：1.1 个性与日印仪式基础
+## 3. R1：个性与日印仪式基础
 
 ### 3.1 产品范围
 
-#### A. 主承诺身份，免费
+#### A. 主承诺身份，免费（已受控前移至首个公开版本）
 
 - 首次启动先让用户确认主承诺名称，不强迫选择模板；默认值仍可一键继续。
 - 可选填写一句“为什么重要”，不参与统计，不上传。
 - 设置中提供正式重命名入口，变更不改写历史签到事实。
-- 今日页用主承诺名称强化“这一枚是为了什么”，不能让标题挤压主操作和辅助功能。
+- 今日页把主承诺名称与可选说明放入“保持自己的节奏，不与别人比较”的节奏区，强化“这一枚是为了什么”；不得把承诺作为日期与签到之前的第二个页面标题，也不能挤压主操作和辅助功能。
+
+个人开发账号审核期间，用户已明确授权先推进产品级功能开发。该能力因此通过 `PRODUCT_REQUIREMENTS.md`、`DOMAIN_CONTRACT.md`、`RELEASE_SCOPE_1_0.md`、迁移设计和测试矩阵受控进入首个公开版本，不再作为未落地的 1.1 候选；Widget、Live Activity 与隐私锁仍保持后续边界。
 
 #### B. 基础 Widget，免费
 
@@ -334,15 +337,46 @@ Plus 不能只包含主题和统计图。首发至少同时具备：
 
 ## 9. R5：2.2 随身入口
 
-### 9.1 Apple Watch
+### 9.1 W0：Watch 可行性门禁
 
-- 今日状态、主承诺、签到与最近节律；
-- complication / Smart Stack 只显示最小私密信息；
-- Watch 离线签到使用稳定操作 ID，回连后幂等合并；
-- Watch 与 iPhone 同时签到不重复、不报假失败；
-- 触觉、Always-On、Dynamic Type 与电量影响单独验收。
+R1 的统一签到命令与 App Group 迁移稳定后即可提前启动 W0，不必等到 R5；但 W0 不进入生产历史，正式 Watch 发布仍须通过 R5 门禁。候选基线为 watchOS 10：
 
-### 9.2 高级 Widget、Control 与 Shortcuts
+- 验证 Watch App、WidgetKit complication、Smart Stack，以及 watchOS 11 及以后 iPhone Live Activity 在 Watch 上的真实布局；
+- 验证即时消息、latest application context 与保证排队的后台用户信息，不把模拟器结果当作连接可靠性证据；
+- 记录 iPhone/Watch 前后台、强退、重启、断联、飞行模式、蓝牙/Wi-Fi 切换与重新配对结果；
+- 在 `DOMAIN_CONTRACT.md` 冻结延迟命令跨午夜、项目时区变化和旧项目 revision 的裁决语义；
+- 确定 Watch 本机 snapshot/outbox、Widget extension App Group、Bundle ID、签名、隐私和最低版本矩阵；
+- W0 不创建第二份业务 store，不把原型命令写入生产签到历史。
+
+### 9.2 Watch v1 免费基础
+
+- Watch App 今日页：抽象印记、可隐藏主承诺、今日状态、一个大签到按钮和最近七日脉冲；
+- 免费 complication：圆形空心/实心印记、矩形今日状态或七日脉冲；
+- 免费 Smart Stack：今日状态和一个签到动作；系统决定实际相关性排序，不承诺到点必然置顶；
+- watchOS 11 及以后把 iPhone `DailyImprintActivity` 复用到 Watch Smart Stack，并提供必要的 Watch 专用紧凑布局，不复制第二条 Watch Live Activity；watchOS 10 明确回退普通 Smart Stack Widget；
+- 今日影像只提示回到 iPhone 拍摄，Watch 不展示面孔、不声称能远程打开 iPhone 相机；
+- 基础 Watch App、基础 complication、Smart Stack 与可靠签到不能因为维护成本被放入 Plus。
+
+### 9.3 Watch 命令、离线与确认
+
+- iPhone 正式 store 仍是唯一真源；Watch 只保存可重建快照和 durable command outbox；
+- Watch 点击后创建稳定 `operationID` 的 `WatchCheckInCommand`，不直接创建 `CheckInRecord`；
+- 可达时用即时消息加速，不可达或超时时用后台排队传输；两者携带同一命令并进入同一 iPhone command service；
+- latest application context 只同步今日状态等最新快照，不能承担可能被覆盖的动作；
+- UI 必须明确区分 `正在确认`、`已记录，等待同步`、`今天已落印` 和 `未保存`；等待同步不得使用成功勾号、实心印记或成功触觉；
+- iPhone 回执携带操作 ID、正式逻辑日、记录时间/标识和结果；只有回执确认新建或幂等命中后才清除 outbox；
+- Watch 与 iPhone、Widget、Live Activity 同时签到，以及命令重复、迟到和乱序，最终仍只有一条正式记录；
+- Watch 不提供补签日期、删除或修改签到时间。
+
+### 9.4 Watch Plus 高阶价值
+
+- 28/90/365 日节律、回归力、个人印期、年轮与往年今日抽象回看；
+- 用户可分别决定主承诺、连续天数和长期节律是否进入表盘或 Smart Stack；
+- 不按表盘家族、尺寸或颜色重复收费，不出售“Watch 皮肤包”；
+- Plus 到期后基础 Watch 签到保持可用，既有签到事实和快照可继续读取；
+- 先证明基础 Watch 每周使用与可靠性，再建设复杂表盘矩阵，不能把低采用率解释成付费墙问题。
+
+### 9.5 高级 Widget、Control 与 Shortcuts
 
 - 免费基础 Widget 保持；Plus 增加 28/90/365 日节律、回归力、印期、年轮、往年今日和显式隐私配置，不按 Widget 尺寸收费；
 - Control Center / Action Button 操作必须复用同一签到命令；
@@ -350,9 +384,14 @@ Plus 不能只包含主题和统计图。首发至少同时具备：
 - Shortcuts 默认动作只读取今日状态或签到，不提供补签日期参数；
 - Widget、Control、Action Button、Shortcuts、Watch 和 Live Activity 的动作语言、敏感信息、通道仲裁与状态解释以 [PULSE_RITUAL_CONTRACT.md](./PULSE_RITUAL_CONTRACT.md) 为准。
 
-### 9.3 继续门槛
+### 9.6 继续门槛
 
-- Plus 活跃用户中至少 20% 每周使用 Watch 或高级 Widget；
+- 至少 30 名配对真机用户完成 14 天测试，零重复记录、错误成功、静默错日和同义重复提醒；
+- Watch 已启用用户中至少 30% 每周使用基础 Watch App、complication 或 Smart Stack；
+- Plus 活跃用户中至少 20% 每周使用 Watch 高级节律或高级 Widget，才继续扩展付费表面；
+- 后台排队传输、即时回执与离线恢复在真实配对设备通过，且 `pendingSync` 被用户正确理解；
+- complication、Smart Stack、Watch App，以及 watchOS 11+ 的 Live Activity 布局，在 Always-On、Dynamic Type、VoiceOver、Reduce Motion 和锁定隐私下完成视觉验收；
+- 14 天电量观察不出现高频刷新、持续动画或连接轮询导致的异常消耗；
 - 若平台入口使用率低于维护成本，保留基础能力，不继续扩展复杂表盘与自动化矩阵。
 
 ## 10. R6：3.0 个性智能
@@ -414,9 +453,9 @@ Plus 不能只包含主题和统计图。首发至少同时具备：
 
 ### 里程碑 B：1.1 设计合同
 
-- 在编码前新增主承诺命名、隐私锁、Widget/App Group 迁移和基础日印仪式的产品、领域、技术和测试设计；
-- 产物：更新后的 PRD、领域合同、`PULSE_RITUAL_CONTRACT.md`、迁移设计、测试矩阵、Widget 线框和两秒落印动效稿；
-- 决策：是否进入 1.1 实现。
+- 主承诺身份已受控前移并完成产品、领域、技术、迁移和测试合同；本里程碑只设计剩余的隐私锁、Widget/App Group 迁移和基础日印仪式，不重复建身份模型。
+- 产物：更新后的 `PULSE_RITUAL_CONTRACT.md`、App Group 迁移设计、测试矩阵、Widget 线框和两秒落印动效稿；
+- 决策：开发账号与能力配置可用后，剩余 1.1 能力是否进入实现。
 
 ### 里程碑 C：14 天留存实验
 

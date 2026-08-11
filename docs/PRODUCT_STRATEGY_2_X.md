@@ -1,6 +1,6 @@
 # 一日一印（Pulse）1.x–3.0 产品战略与商业化规划
 
-文档版本：0.3<br>
+文档版本：0.4<br>
 状态：Proposed Strategy，不改变 1.0 已冻结发布范围  
 评审日期：2026-08-11
 
@@ -92,7 +92,7 @@ flowchart LR
 - `CheckInRecord` 是历史和统计的唯一事实源，不持久化连续天数等派生状态。
 - `recordKey`、SwiftData 唯一约束和 Repository 幂等写入共同保护同日唯一性。
 - 项目创建时区、当前签到时区和记录发生时区分开保存，历史不会随设备时区漂移。
-- JSON v1 有格式标识、大小与数量上限、时间顺序和来源校验，失败前不删除现有事实。
+- JSON v2 有格式标识、大小与数量上限、身份、时间顺序和来源校验，失败前不删除现有事实；正式 v1 只经精确解码后一次性规范化到 v2。
 - 所有写入集中在 `SwiftDataCheckInRepository`，AppModel 串行化操作，提醒使用快照与 revision 防止陈旧结果回写。
 - 品牌、双语、动态字体、Reduce Motion、iPhone/iPad 布局和错误状态已经进入正式实现。
 
@@ -100,7 +100,7 @@ flowchart LR
 
 ### 4.2 当前产品缺口
 
-- 用户还不能清楚表达“我每天为什么签到”。`Habit.name` 存在，但没有形成首启确认、重命名和承诺说明的完整体验。
+- 主承诺首启确认、可选说明、设置编辑和今日页消费已形成单一持久化真源；当前缺口是真机、最大字号、VoiceOver 和实际使用中的产品验收，不是再建第二条身份链路。
 - 现有统计只回答累计与连续，没有回答“最近是否稳定”“中断后多久回来”“哪个阶段更适合我”。
 - 记录只有完成事实，没有可选的轻量上下文，也没有真实的缺席说明。
 - 没有 Widget、Watch、同步和付费权益基础设施。
@@ -144,6 +144,7 @@ flowchart LR
 - 所有已有数据的阅读和再次导出；
 - 主承诺命名与一句“为什么重要”；
 - 基础 Home / Lock Screen Widget；
+- 若 Watch 阶段通过真机门禁并进入生产：基础 Watch App、表盘印记、Smart Stack 和可靠签到；
 - App 内落印动效、用户签到后的短暂系统落印回声，以及回归和事实里程碑变体；
 - 基础缺席说明：说明事实，但不把缺席改成完成；
 - 一张带最小品牌署名、默认不暴露私密内容的基础分享卡。
@@ -161,7 +162,7 @@ flowchart LR
 | 每周/月度回响 | 由本机数据生成可编辑回顾：发生了什么、何时最稳、如何回来 | 每周、每月持续产生价值，支撑年费 | P0 Plus |
 | 高级档案与分享 | 年轮、阶段海报、无私密内容模式、高分辨率/PDF 导出 | 个性表达与自然传播，不需要社区后台 | P1 Plus |
 | 私密自动同步 | iPhone/iPad 后台同步、冲突可解释、离线可写、可关闭 | 持续维护价值；JSON 仍保留为免费逃生口 | P1 Plus |
-| Apple Watch | 今日状态、并发安全签到、并发症/Widget、离线后协调 | 高价值便利入口，需要持续系统适配 | P1 Plus |
+| Apple Watch 高级节律 | 28/90/365 日节律、回归力、印期、年轮和往年今日抽象回看 | 长期数据持续产生新理解；基础 Watch 入口仍免费 | P1 Plus |
 | 高级 Widget / Control | 节律、阶段进度、外观与交互配置 | 个性与便利，但基础入口必须免费 | P1 Plus |
 | 自定义观察维度 | 用户选择少量维度，如精力、专注或场景，并获得本地模式分析 | 个性化来自用户自己的数据，不依赖通用 AI | P2 Plus |
 | 岁月流影 | 将合格的单人面貌照片本地对齐、网格形变、渐变融合，并按真实日期生成长期影片 | 使用时间越长越有价值，形成 Pulse 独有的个人档案与导出能力 | P1 Plus，先通过影像实验 |
@@ -200,7 +201,7 @@ flowchart LR
 
 ### 6.5 日印仪式产品合同
 
-Widget、Live Activity、灵动岛、锁屏、StandBy、Control、Action Button 与提醒通道共同遵循 [PULSE_RITUAL_CONTRACT.md](./PULSE_RITUAL_CONTRACT.md)。它们不是新的签到真源，而是同一签到事实的系统级入口与反馈。
+Widget、Live Activity、灵动岛、锁屏、StandBy、Apple Watch、Control、Action Button 与提醒通道共同遵循 [PULSE_RITUAL_CONTRACT.md](./PULSE_RITUAL_CONTRACT.md)。它们不是新的签到真源，而是同一签到事实的系统级入口与反馈。
 
 日印仪式以“呼吸、落印、年轮”为唯一动作语言：基础 Widget、签到成功后的两秒落印、回归与事实里程碑免费；影像进入生产后，签到成功可转入一次短暂拍照窗口。提醒时间自动 push-to-start 的留印窗口必须由用户主动开启，每个逻辑日最多一次，并与本地通知、微信提醒只选一个主通道。全天常驻未签到、重复触达、照片默认上锁屏和成功先于持久化均为 `NO-GO`。
 
@@ -386,6 +387,19 @@ Widget 扩展需要跨进程读取或写入数据，不能把 `isCheckedToday` �
 - 灵动岛自动提醒需要 ActivityKit push-to-start、APNs 和最小后端；没有证据链时只使用免费本地通知，不能以定时器或后台任务假装可靠自动启动。
 - 每日触发上限、提醒主通道、回退、关闭后不重启、签到后取消、照片邀请和渲染生命周期只以 [PULSE_RITUAL_CONTRACT.md](./PULSE_RITUAL_CONTRACT.md) 为准。
 
+### 10.8 Apple Watch
+
+- 首发只做 iPhone 伴侣型 Watch App；独立蜂窝运行、手表端完整历史和第二套云同步暂缓；
+- iPhone 正式 store 是唯一签到真源。Watch 只保留最新展示快照和 durable command outbox，不能维护第二份 `CheckInRecord` 数据库；
+- Watch 签到先创建稳定 `operationID` 的命令；即时消息只是快速路径，后台排队传输是失联路径，两者进入同一 iPhone command service；
+- `pendingSync` 与 `committed` 必须使用不同图形、文案和触觉；只有 iPhone Repository 成功或幂等命中后才显示实心落印；
+- latest application context 只传最新读取快照，不能承载可能被覆盖的签到动作；
+- 跨午夜、时区快照过期和迟到命令进入实现前，必须先在 `DOMAIN_CONTRACT.md` 冻结“当时动作何时可算当天签到”的语义；
+- Watch 不建立第二套每日提醒。通知路由、Smart Stack、iPhone Live Activity 和未来微信通道继续服从唯一 `ReminderPolicy`；
+- watchOS 10 提供 Watch App、complication 与普通 Smart Stack Widget；iPhone Live Activity 自动进入 Watch Smart Stack 仅在 watchOS 11 及以后提供，不能对旧系统伪承诺；
+- 基础 Watch App、complication、Smart Stack 和可靠签到免费；Plus 只出售高级节律、印期和长期档案视图；
+- 所有后台传输、并发、断联与恢复必须在真实配对设备验证，模拟器不能作为发布证据。完整状态和门禁以 [PULSE_RITUAL_CONTRACT.md](./PULSE_RITUAL_CONTRACT.md) 为准。
+
 ## 11. 继续投资的停止条件
 
 发生以下任一情况，应暂停扩展而不是继续堆功能：
@@ -397,7 +411,8 @@ Widget 扩展需要跨进程读取或写入数据，不能把 `isCheckedToday` �
 - 同步原型无法给出可理解的冲突与恢复语义；
 - 高阶功能迫使产品引入与隐私承诺矛盾的默认远程处理；
 - 面貌融合只能靠远程生成或长期无法通过真人逐帧视觉验收；
-- 微信主体、类目或模板不允许日常提醒，或真实发送显示投诉、退订和过期提醒不可控。
+- 微信主体、类目或模板不允许日常提醒，或真实发送显示投诉、退订和过期提醒不可控；
+- Watch 无法区分待同步与已保存、跨午夜会静默错日、产生重复提醒或只能以模拟器证明可靠性。
 
 ## 12. 外部规则与商业参考
 
@@ -407,6 +422,8 @@ Widget 扩展需要跨进程读取或写入数据，不能把 `isCheckedToday` �
 - App Store 定价点与跨店面价格生成：[Set a price](https://developer.apple.com/help/app-store-connect/manage-app-pricing/set-a-price)
 - 小型开发者 15% 佣金资格：[App Store Small Business Program](https://developer.apple.com/app-store/small-business-program/)
 - Widget 交互依赖 App Intents / WidgetKit：[Widgets, Live Activities, and controls](https://developer.apple.com/documentation/appintents/widgets-and-live-activities)
+- Watch App、complication、Smart Stack 与简短交互边界：[watchOS apps](https://developer.apple.com/documentation/watchos-apps/)
+- iPhone 与 Watch 的即时、最新快照和保证排队传输：[Transferring data with Watch Connectivity](https://developer.apple.com/documentation/watchconnectivity/transferring-data-with-watch-connectivity)
 - Apple Vision 本地自拍与面部关键点分析：[Analyzing a selfie and visualizing its content](https://developer.apple.com/documentation/vision/analyzing-a-selfie-and-visualizing-its-content)
 - 相机权限只在用户主动进入拍摄时请求：[Requesting authorization to capture and save media](https://developer.apple.com/documentation/avfoundation/requesting-authorization-to-capture-and-save-media)
 - App Store 照片、视频和敏感信息申报边界：[App privacy details](https://developer.apple.com/app-store/app-privacy-details/)

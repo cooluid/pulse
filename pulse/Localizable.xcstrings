@@ -1,6 +1,16 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "%lld/%lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld/%2$lld"
+          }
+        }
+      }
+    },
     "accessibility.date_status_format" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -167,6 +177,199 @@
         }
       }
     },
+    "commitment.fields.footer" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You can change these later without changing any check-in history."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "以后可以随时修改，不会改变任何签到历史。"
+          }
+        }
+      }
+    },
+    "commitment.name.placeholder" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "My commitment"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "我的主承诺"
+          }
+        }
+      }
+    },
+    "commitment.navigation_title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Main Commitment"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "主承诺"
+          }
+        }
+      }
+    },
+    "commitment.onboarding.continue" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Begin"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "开始留下印记"
+          }
+        }
+      }
+    },
+    "commitment.onboarding.message" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose the one commitment you want to honor each day. The default is ready if you want to begin immediately."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "确认你每天想守住的一件事。如果现在就想开始，可以直接使用默认名称。"
+          }
+        }
+      }
+    },
+    "commitment.onboarding.navigation_title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your Commitment"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "确认主承诺"
+          }
+        }
+      }
+    },
+    "commitment.onboarding.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "One meaningful commitment."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "为一件重要的事，留下一枚印记。"
+          }
+        }
+      }
+    },
+    "commitment.privacy_note" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your commitment stays on this device and in exports you create. It is not included in notification text."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "主承诺只保存在本机和你主动创建的导出文件中，不会出现在通知文案里。"
+          }
+        }
+      }
+    },
+    "commitment.purpose.not_set" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No reason added"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "尚未填写为什么重要"
+          }
+        }
+      }
+    },
+    "commitment.purpose.placeholder" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Why it matters (optional)"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "为什么重要（可选）"
+          }
+        }
+      }
+    },
+    "commitment.save" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Save Commitment"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "保存主承诺"
+          }
+        }
+      }
+    },
+    "commitment.section" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Main Commitment"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "主承诺"
+          }
+        }
+      }
+    },
     "error.check_in_invalid" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -214,6 +417,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "操作未完成，请重试。"
+          }
+        }
+      }
+    },
+    "error.habit_identity" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enter a valid commitment name and keep the optional reason within the displayed limit."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "请输入有效的主承诺名称，并让可选说明保持在显示的字数范围内。"
           }
         }
       }
@@ -645,38 +865,6 @@
         }
       }
     },
-    "settings.privacy_policy" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Privacy Policy"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "隐私政策"
-          }
-        }
-      }
-    },
-    "settings.support" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Product Support"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "产品支持"
-          }
-        }
-      }
-    },
     "settings.data.footer" : {
       "localizations" : {
         "en" : {
@@ -937,6 +1125,22 @@
         }
       }
     },
+    "settings.privacy_policy" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Privacy Policy"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "隐私政策"
+          }
+        }
+      }
+    },
     "settings.reminder.footer" : {
       "localizations" : {
         "en" : {
@@ -1110,6 +1314,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "本机存储"
+          }
+        }
+      }
+    },
+    "settings.support" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Product Support"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "产品支持"
           }
         }
       }

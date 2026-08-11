@@ -17,6 +17,46 @@ final class CheckInRepositoryTests: XCTestCase {
         XCTAssertEqual(first.startLogicalDay, LogicalDay(year: 2026, month: 8, day: 10))
         XCTAssertEqual(first.creationTimeZoneIdentifier, timeZone.identifier)
         XCTAssertEqual(first.timeZoneIdentifier, timeZone.identifier)
+        XCTAssertNil(first.purpose)
+        XCTAssertFalse(first.isIdentityConfirmed)
+    }
+
+    func testIdentityUpdatePreservesHabitAndCheckInFacts() throws {
+        let clock = MutableRepositoryClock(now: makeDate(day: 10, hour: 9))
+        let repository = try makeRepository(clock: clock)
+        let habit = try repository.primaryHabit(systemTimeZone: timeZone)
+        let record = try repository.checkIn(habit: habit)
+        let originalStart = habit.startLogicalDay
+        let originalCreatedAt = habit.createdAt
+
+        let updated = try repository.updateIdentity(
+            habit: habit,
+            identity: try HabitIdentity(
+                userName: "  每日阅读 📚  ",
+                userPurpose: "  为了保持独立思考  "
+            )
+        )
+
+        XCTAssertEqual(updated.id, habit.id)
+        XCTAssertEqual(updated.name, "每日阅读 📚")
+        XCTAssertEqual(updated.purpose, "为了保持独立思考")
+        XCTAssertTrue(updated.isIdentityConfirmed)
+        XCTAssertEqual(updated.createdAt, originalCreatedAt)
+        XCTAssertEqual(updated.startLogicalDay, originalStart)
+        XCTAssertEqual(try repository.allRecords(habitID: habit.id).map(\.id), [record.id])
+    }
+
+    func testIdentityUpdateIsIdempotent() throws {
+        let clock = MutableRepositoryClock(now: makeDate(day: 10, hour: 9))
+        let repository = try makeRepository(clock: clock)
+        let habit = try repository.primaryHabit(systemTimeZone: timeZone)
+        let identity = try HabitIdentity(userName: "Daily Reading", userPurpose: nil)
+
+        let first = try repository.updateIdentity(habit: habit, identity: identity)
+        let second = try repository.updateIdentity(habit: habit, identity: identity)
+
+        XCTAssertEqual(first.id, second.id)
+        XCTAssertTrue(second.isIdentityConfirmed)
     }
 
     func testCheckInIsIdempotentForSameLogicalDay() throws {
@@ -79,6 +119,7 @@ final class CheckInRepositoryTests: XCTestCase {
         XCTAssertEqual(replacement.startLogicalDay, LogicalDay(year: 2026, month: 8, day: 11))
         XCTAssertTrue(try repository.allRecords(habitID: replacement.id).isEmpty)
         XCTAssertEqual(try repository.primaryHabit(systemTimeZone: timeZone).id, replacement.id)
+        XCTAssertFalse(replacement.isIdentityConfirmed)
     }
 
     func testTimeZoneUpdateRejectsInvalidOrPreStartTransition() throws {
@@ -135,6 +176,8 @@ final class CheckInRepositoryTests: XCTestCase {
 
         XCTAssertEqual(imported.id, importedHabitID)
         XCTAssertEqual(imported.name, "Imported")
+        XCTAssertEqual(imported.purpose, "A reason")
+        XCTAssertTrue(imported.isIdentityConfirmed)
         XCTAssertEqual(records.map(\.id), [importedRecordID])
         XCTAssertEqual(records.first?.logicalDayValue, "2026-08-09")
         XCTAssertEqual(records.first?.timeZoneIdentifier, timeZone.identifier)
@@ -210,6 +253,8 @@ final class CheckInRepositoryTests: XCTestCase {
             habit: .init(
                 id: habitID,
                 name: "Imported",
+                purpose: "A reason",
+                isIdentityConfirmed: true,
                 createdAt: createdAt,
                 startLogicalDay: LogicalDay.resolve(
                     at: createdAt,

@@ -18,7 +18,14 @@ struct RootView: View {
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                     .background(PulseScreenBackground())
             case .ready:
-                primaryInterface
+                if model.habit?.isIdentityConfirmed == true {
+                    primaryInterface
+                } else {
+                    NavigationStack {
+                        CommitmentIdentityEditor(model: model, mode: .onboarding)
+                    }
+                    .id(model.habit?.id)
+                }
             case .failed:
                 ContentUnavailableView {
                     Label("load.failure.title", systemImage: "exclamationmark.triangle")

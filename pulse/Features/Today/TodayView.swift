@@ -397,32 +397,19 @@ struct TodayView: View {
     }
 
     private var streakBand: some View {
-        HStack(alignment: .bottom, spacing: PulseDesign.spacing16) {
-            VStack(alignment: .leading, spacing: PulseDesign.spacing4) {
-                Text("today.rhythm_label")
-                    .font(.system(.caption2, design: .default, weight: .bold))
-                    .textCase(.uppercase)
-                    .foregroundStyle(PulseDesign.ink)
-
-                Text("today.streak_encouragement")
-                    .font(.footnote)
-                    .foregroundStyle(PulseDesign.secondary)
-            }
-
-            Spacer(minLength: PulseDesign.spacing16)
-
-            HStack(alignment: .firstTextBaseline, spacing: PulseDesign.spacing4) {
-                Text(model.statistics.currentStreak, format: .number)
-                    .font(.title.bold())
-                    .monospacedDigit()
-                    .foregroundStyle(PulseDesign.ink)
-                    .contentTransition(
-                        .numericText(value: Double(model.statistics.currentStreak))
-                    )
-
-                Text("unit.days")
-                    .font(.footnote.bold())
-                    .foregroundStyle(PulseDesign.ink)
+        Group {
+            if dynamicTypeSize.isAccessibilitySize {
+                VStack(alignment: .leading, spacing: PulseDesign.spacing16) {
+                    rhythmCommitment
+                    streakCount
+                        .frame(maxWidth: .infinity, alignment: .trailing)
+                }
+            } else {
+                HStack(alignment: .bottom, spacing: PulseDesign.spacing16) {
+                    rhythmCommitment
+                    Spacer(minLength: PulseDesign.spacing16)
+                    streakCount
+                }
             }
         }
         .padding(.horizontal, PulseDesign.spacing16)
@@ -435,8 +422,58 @@ struct TodayView: View {
             completionSecondaryAnimation,
             value: model.statistics.currentStreak
         )
-        .accessibilityElement(children: .combine)
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier("today.streak.band")
+    }
+
+    private var rhythmCommitment: some View {
+        VStack(alignment: .leading, spacing: PulseDesign.spacing4) {
+            Text("today.rhythm_label")
+                .font(.system(.caption2, design: .default, weight: .bold))
+                .textCase(.uppercase)
+                .foregroundStyle(PulseDesign.ink)
+
+            if let habit = model.habit {
+                Text(habit.name)
+                    .font(.headline.weight(.semibold))
+                    .foregroundStyle(PulseDesign.ink)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .accessibilityIdentifier("today.commitment.name")
+
+                if let purpose = habit.purpose {
+                    Text(purpose)
+                        .font(.footnote)
+                        .foregroundStyle(PulseDesign.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .accessibilityIdentifier("today.commitment.purpose")
+                }
+            }
+
+            Text("today.streak_encouragement")
+                .font(.caption)
+                .foregroundStyle(PulseDesign.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .accessibilityElement(children: .contain)
+        .accessibilityIdentifier("today.rhythm.commitment")
+    }
+
+    private var streakCount: some View {
+        HStack(alignment: .firstTextBaseline, spacing: PulseDesign.spacing4) {
+            Text(model.statistics.currentStreak, format: .number)
+                .font(.title.bold())
+                .monospacedDigit()
+                .foregroundStyle(PulseDesign.ink)
+                .contentTransition(
+                    .numericText(value: Double(model.statistics.currentStreak))
+                )
+
+            Text("unit.days")
+                .font(.footnote.bold())
+                .foregroundStyle(PulseDesign.ink)
+        }
+        .accessibilityElement(children: .combine)
     }
 
     private var completionAnimation: Animation? {

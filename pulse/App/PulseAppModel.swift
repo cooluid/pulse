@@ -8,6 +8,7 @@ enum AppLoadState: Equatable {
 }
 
 enum AppOperation: Equatable {
+    case updateHabitIdentity
     case checkIn
     case deleteRecord
     case resetData
@@ -151,6 +152,21 @@ final class PulseAppModel {
         }
     }
 
+    func updateHabitIdentity(name: String, purpose: String?) async -> Bool {
+        guard operation == nil, let habit else { return false }
+        operation = .updateHabitIdentity
+        defer { operation = nil }
+        do {
+            let identity = try HabitIdentity(userName: name, userPurpose: purpose)
+            self.habit = try repository.updateIdentity(habit: habit, identity: identity)
+            try loadSnapshot()
+            return true
+        } catch {
+            present(error)
+            return false
+        }
+    }
+
     func delete(recordID: UUID) async -> Bool {
         guard operation == nil else { return false }
         operation = .deleteRecord
@@ -283,6 +299,8 @@ final class PulseAppModel {
             habit: .init(
                 id: habit.id,
                 name: habit.name,
+                purpose: habit.purpose,
+                isIdentityConfirmed: habit.isIdentityConfirmed,
                 createdAt: habit.createdAt,
                 startLogicalDay: startLogicalDay.storageValue,
                 creationTimeZoneIdentifier: habit.creationTimeZoneIdentifier,
@@ -319,9 +337,6 @@ final class PulseAppModel {
             payload = try PulseExportDocument.decode(data)
         } catch {
             throw PulseError.invalidImport
-        }
-        guard payload.schemaVersion == PulseDataContract.exportSchemaVersion else {
-            throw PulseError.unsupportedImportVersion(payload.schemaVersion)
         }
         _ = try PulseDataValidator.validate(payload)
         return payload
@@ -402,14 +417,21 @@ final class PulseAppModel {
         )
         let resolvedTimeZone = try currentHabit.resolvedTimeZone()
         let resolvedToday = try currentHabit.logicalDay(at: referenceNow)
-        let normalizedName = currentHabit.name.trimmingCharacters(in: .whitespacesAndNewlines)
+        let identity: HabitIdentity
+        do {
+            identity = try HabitIdentity(
+                storedName: currentHabit.name,
+                storedPurpose: currentHabit.purpose
+            )
+        } catch {
+            throw PulseError.invalidHabitIdentity
+        }
         guard let resolvedStartDay = currentHabit.startLogicalDay,
               let creationTimeZone = TimeZone(identifier: currentHabit.creationTimeZoneIdentifier),
               LogicalDay.resolve(at: currentHabit.createdAt, timeZone: creationTimeZone)
                 == resolvedStartDay,
-              normalizedName == currentHabit.name,
-              !normalizedName.isEmpty,
-              normalizedName.count <= PulseDataContract.maximumHabitNameLength else {
+              identity.name == currentHabit.name,
+              identity.purpose == currentHabit.purpose else {
             throw PulseError.invalidRecordDate(currentHabit.startLogicalDayValue)
         }
         let fetchedRecords = try repository.allRecords(habitID: currentHabit.id)

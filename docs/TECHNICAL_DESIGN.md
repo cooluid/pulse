@@ -1,6 +1,6 @@
 # Pulse 技术设计
 
-文档版本：1.0  
+文档版本：1.1<br>
 状态：Implemented
 
 ## 1. 工程基线
@@ -17,7 +17,7 @@
 ```text
 PulseClock
    ↓ authoritative now
-SwiftDataCheckInRepository ──→ Habit + CheckInRecord
+SwiftDataCheckInRepository ──→ Habit identity + CheckInRecord
    ↓ validated snapshot
 PulseAppModel ──→ Today / History / Settings
    ↓ value snapshot
@@ -36,19 +36,22 @@ SwiftUI environment + PulseLocalization
 
 ## 3. 持久化模型
 
-`Habit`：`id`、唯一 `slotKey`、`name`、`createdAt`、稳定 `startLogicalDayValue`、创建时区、当前签到时区。
+`Habit`：`id`、唯一 `slotKey`、`name`、可选 `purpose`、`isIdentityConfirmed`、`createdAt`、稳定 `startLogicalDayValue`、创建时区、当前签到时区。
 
 `CheckInRecord`：唯一 `id`、唯一 `recordKey`、`habitID`、`logicalDayValue`、`checkedAt`、`createdAt`、记录时区。
 
-当前 SwiftData 发布 schema 为 V1。由于产品尚未公开发布，本次模型清洁断代不携带旧开发 schema；首个公开版本之后必须走显式迁移。
+当前 SwiftData schema 为 V2。`PulseSchemaV1` 和 `PulseSchemaV2` 分别冻结各自的命名空间模型，运行时代码只通过 latest typealias 消费 V2；V1→V2 使用明确的 lightweight migration，新增字段的迁移值为 `purpose == nil`、`isIdentityConfirmed == false`。真实磁盘 fixture 必须证明项目和记录全部保留。
+
+JSON 只导出 v2。导入先解码最小版本信封，再由精确的 v1/v2 解码器生成唯一的 v2 内存负载；验证和 Repository 不保留双版本分支。
 
 ## 4. 操作与失败语义
 
-- `AppOperation` 串行化签到、删除、清除、导入和时区更新，防止 UI 并发写入。
+- `AppOperation` 串行化身份更新、签到、删除、清除、导入和时区更新，防止 UI 并发写入。
 - Repository 在 `save()` 失败时 rollback；View 只在成功返回后关闭详情或选择器。
 - 启动分别识别持久化失败和设置损坏：前者只允许重试，避免诱导删数据；后者可以只重置设置，明确保留签到事实。
 - 全量清除用持久化操作日志跨启动恢复，避免数据库已清空但设置/通知未清的假成功。
 - 导入先限制文件大小，再解码和完整验证，最后由 Repository 单次替换。
+- 主承诺输入由 `HabitIdentity` 统一规范化与验证；View 不直接修改 `Habit`。Repository 只在值变化或首次确认时保存，保存失败统一 rollback。
 
 ## 5. 提醒一致性
 
@@ -64,6 +67,7 @@ SwiftUI environment + PulseLocalization
 
 - 领域与数据写入不直接调用 `Date.now`，统一注入 `PulseClock`。
 - Debug UI 测试通过 `PULSE_UI_TEST_NOW` 注入 ISO-8601 固定时间，并用 UUID 命名的独立磁盘 store 验证跨重启持久化；单元测试宿主使用内存 store。无效测试配置直接触发前置条件失败。
+- 首次确认状态保存在 `Habit`，与清除和导入一起迁移；不使用 `UserDefaults` onboarding 标志，不从默认名称猜测状态。
 - 存储日期使用 `LogicalDay` 固定格式，展示才使用本地化 formatter。
 - 历史签到时间使用记录自己的时区；当前日期与后续签到使用项目当前时区。
 - 主题提供跟随系统、浅色、深色三种模式；语言提供跟随系统、English、简体中文三种模式。

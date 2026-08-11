@@ -1,10 +1,10 @@
 # 一日一印（Pulse）系统仪式产品与交互合同
 
-文档版本：0.1<br>
+文档版本：0.2<br>
 状态：Proposed Product Contract，不改变 1.0 已冻结范围<br>
 评审日期：2026-08-11
 
-本文是 Pulse 在 Widget、Live Activity、灵动岛、锁屏、StandBy、Control、Action Button 和提醒通道上的产品语义权威。它定义“什么时候出现、表达什么、如何结束、什么可以收费”；签到日期、唯一性、删除和时区仍只以 [DOMAIN_CONTRACT.md](./DOMAIN_CONTRACT.md) 为准，版本顺序只以 [POST_1_0_ROADMAP.md](./POST_1_0_ROADMAP.md) 为准。
+本文是 Pulse 在 Widget、Live Activity、灵动岛、锁屏、StandBy、Apple Watch、Control、Action Button 和提醒通道上的产品语义权威。它定义“什么时候出现、表达什么、如何结束、什么可以收费”；签到日期、唯一性、删除和时区仍只以 [DOMAIN_CONTRACT.md](./DOMAIN_CONTRACT.md) 为准，版本顺序只以 [POST_1_0_ROADMAP.md](./POST_1_0_ROADMAP.md) 为准。
 
 ## 1. 产品结论
 
@@ -23,6 +23,8 @@ Pulse 不把系统表面当作更多通知位，而把它们组织成一套有�
 | 场景 | 结论 | 原因 |
 | --- | --- | --- |
 | 基础 Home / Lock Screen Widget | GO，免费 | 最适合“今日状态 + 一步签到”，降低核心摩擦 |
+| Apple Watch 今日状态、表盘印记与可靠签到 | GO，免费基础能力 | 手腕最适合扫一眼和一次短动作，不能把核心便利本身锁进 Plus |
+| Apple Watch 高级节律与长期档案 | GO，Plus 候选 | 28/90/365 日节律、印期与年轮会随数据持续产生新价值 |
 | 签到成功的系统落印动效 | GO，免费 | 形成 Pulse 的品牌签名，但不替代 App 内反馈 |
 | 签到后的今日影像窗口 | GO，影像实验通过后免费 | 把“完成今天”自然延伸为“留下今天” |
 | 提醒时间自动出现的留印窗口 | 条件 GO | 必须用户主动开启，并有 ActivityKit push-to-start 与服务端证据 |
@@ -184,6 +186,7 @@ Compact 显示实际进度，如 `◐ 63%`；Expanded 显示当前阶段、照�
 - 正常日印仪式不超过 30 分钟，不利用 ActivityKit 的八小时上限做全天常驻；
 - 渲染 Activity 只在用户主动创建导出任务后启动，结束、失败和取消都必须收口文件与状态；
 - 系统可能压缩、隐藏或调整灵动岛呈现，任何业务完成都不能依赖用户看见动画。
+- iPhone 与 Apple Watch 对同一提醒只触达一次；不在 Watch 再建立一套独立每日通知计划来争夺注意力；
 
 自动在提醒时间启动 Live Activity 不能依赖现有本地通知调度器。正式方案需要用户主动授权、ActivityKit push-to-start token、APNs 和最小后端调度；没有这条证据链时只允许本地通知，或由用户点击通知后进入 App 再启动仪式。
 
@@ -256,13 +259,124 @@ Pulse Plus 候选：
 - 正式多通道提醒和一致回退；
 - 高级节律、印期、年轮和往年今日 Widget；
 - 岁月流影高级渲染及其真实进度 Activity；
+- Apple Watch 上的 28/90/365 日节律、回归力、印期、年轮和往年今日抽象回看；
 - 将来经用户需求验证的专注印刻 Live Activity。
 
-收费对象是持续调度、个性策略、长期档案和高级生成价值，不是“解锁灵动岛皮肤”。权益到期不删除签到、照片、影片或报告，也不阻断免费本地提醒与基础 Widget。
+收费对象是持续调度、个性策略、长期档案和高级生成价值，不是“解锁灵动岛或 Watch 皮肤”。权益到期不删除签到、照片、影片或报告，也不阻断免费本地提醒、基础 Widget 与基础 Watch 签到。
 
-## 9. 验收与停止条件
+## 9. Apple Watch 子系统
 
-### 9.1 工程门禁
+### 9.1 产品角色与首发边界
+
+Apple Watch 不是缩小版 iPhone，也不是第二套签到应用。它只承担“扫一眼今天、完成一个动作、收到克制确认”，完整历史、删除、时区修改、照片管理、导出与付费管理仍回到 iPhone。
+
+R5 首发采用 **iPhone 伴侣型 Watch App**，候选最低版本为 watchOS 10，以 WidgetKit complication 和 Smart Stack 为基础；iPhone Live Activity 自动进入 Watch Smart Stack 仅属于 watchOS 11 及以后能力。独立 Watch App、蜂窝网络独立同步和手表端完整历史暂缓；这些能力会引入账户、CloudKit、冲突和删除的新合同，不能假装只是多加一个 target。正式最低版本还要结合目标用户设备占比和真机矩阵冻结。
+
+永久免费首发面：
+
+- Watch App 今日页：抽象印记、主承诺（默认可隐藏）、今日状态、一个大签到按钮和最近七日脉冲；
+- 表盘复杂功能（complication）：圆形空心/实心印记、矩形今日状态或七日脉冲；
+- Smart Stack：今日状态和一个可执行的签到动作；
+- watchOS 11 及以后：iPhone `DailyImprintActivity` 在 Watch Smart Stack 的系统呈现，以及必要的 Watch 专用紧凑布局；
+- 提交中、待同步、已落印、失败的诚实状态与触觉区分。
+
+Plus 只增加 28/90/365 日节律、回归力、印期、年轮、往年今日抽象回看和更多用户主动选择的信息密度。基础 Watch App、基础 complication、Smart Stack 和可靠签到不收费；也不按表盘样式或尺寸重复收费。
+
+### 9.2 手腕上的日印语言
+
+Watch 使用与 iPhone 相同的“呼吸、落印、年轮”，但更短、更静：
+
+| Watch 状态 | 视觉 | 触觉 | 允许的文案 |
+| --- | --- | --- | --- |
+| `ready` | 空心印记 | 无 | 今天还空着 |
+| `submitting` | 单次收缩或系统进度 | 无成功触觉 | 正在确认 |
+| `pendingSync` | 带缺口的印记 | 中性单次触觉 | 已记录，等待同步 |
+| `committed` | 空心落为实心 | 一次轻量成功触觉 | 今天已落印 |
+| `failed` | 恢复空心并显示最短错误 | 一次不同于成功的告警触觉 | 未保存，请重试 / 在 iPhone 确认 |
+
+`pendingSync` 不能使用实心印记、成功绿色、勾号或与 `committed` 相同的触觉。只有 iPhone 权威 Repository 确认新建或幂等命中当天 `CheckInRecord` 后，Watch 才能落下实心印记。
+
+提醒到来时最多一次极轻的“呼吸”触觉和静态空心印记，不连续震动、不做惩罚性倒计时。Always-On 使用最终静态形状；Reduce Motion 只做淡入与形状替换。Watch 不显示奖杯、火焰、彩纸或“断签警告”。
+
+### 9.3 读取快照与签到命令
+
+两台设备之间不能共享同一 SQLite 文件。iPhone 正式 store 仍是唯一业务真源；Watch App 与 Watch Widget 只共享本机可丢弃的展示快照和命令 outbox。
+
+从 iPhone 到 Watch 的 `WatchProjectSnapshot` 至少包含：
+
+```text
+projectID
+projectRevision
+displayName / privacyMode
+projectTimeZoneIdentifier
+logicalDay
+isChecked
+checkedAt
+sevenDayPulse
+lastAcknowledgedOperationID
+generatedAt
+```
+
+它适合通过会覆盖旧值的 latest-context 通道更新，因为 Watch 只需要最新显示状态；快照可以缓存和重建，不能反向写回 iPhone store，也不能在 Watch 端演变成第二份签到历史。
+
+Watch 点击签到时先在本机 durable outbox 创建 `WatchCheckInCommand`，而不是创建 `CheckInRecord`：
+
+```text
+operationID: UUID
+projectID: UUID
+projectRevision
+occurredAt: UTC instant
+projectTimeZoneIdentifierSnapshot
+createdAt
+```
+
+- `operationID` 在重试、快速发送与后台传输之间保持不变；
+- iPhone 收到命令后仍通过正式 command service / `SwiftDataCheckInRepository` 写入；
+- 逻辑日、唯一 `recordKey` 和迟到命令语义由领域合同决定，Watch 不自行裁决最终逻辑日；
+- Watch 不提供任意日期参数、补签、删除或修改签到时间；
+- iPhone 回执至少包含 `operationID`、正式逻辑日、记录标识/时间和成功或失败原因；Watch 收到回执后才能清除 outbox 并进入 `committed`；
+- 同一命令重复送达，以及 iPhone、Widget、Live Activity 与 Watch 同时签到，都必须幂等收敛为同一天一条记录。
+
+传输策略是一条业务路径、两种速度：伴侣当前可达时用即时消息快速取得回执；不可达、超时或 App 退到后台时，用保证排队交付的后台用户信息继续传输。两条传输都携带同一 `operationID`，不能各自实现一套保存逻辑。最新状态快照不能承担签到命令，因为覆盖语义可能吞掉动作。
+
+跨午夜、Watch 快照时区过期、项目已重建或命令迟到到下一逻辑日时，首版不得静默把动作记到错误日期。领域合同没有明确裁决前，命令保留为 `pendingSync`，并提示“在 iPhone 确认”。正式开发前必须先在 `DOMAIN_CONTRACT.md` 新增“延迟到达的当时签到命令”语义和测试；此处不越权定义补签。
+
+### 9.4 Smart Stack、complication 与 Live Activity
+
+- complication 是安静的长期扫视面，只显示最新快照；没有新鲜快照时表达“需要同步”，不猜测今天状态；
+- Smart Stack 可在用户提醒时间附近提交更高相关性，但最终是否出现、排在何处由系统决定，产品文案不能承诺“到点一定浮上来”；
+- Watch App 与 complication/Smart Stack 的交互通过 App Intent 进入同一 Watch 命令 outbox；Widget 扩展不能另写一份完成状态；
+- watchOS 11 及以后，iPhone `DailyImprintActivity` 会在配对 Watch 的 Smart Stack 中出现；watchOS 10 没有这条表面，仍使用普通 Smart Stack Widget。Pulse 不再复制一条“Watch Live Activity”；可提供 Watch 专用布局，但状态仍来自同一 Activity 与签到命令；
+- iPhone 开启今日影像后，Watch 只提示“稍后用 iPhone 留一张今天”。Watch 没有相机，也不声称能远程替用户打开 iPhone 相机；
+- 岁月流影渲染时，Watch 最多显示抽象真实进度与完成入口，默认不显示面孔帧。
+
+### 9.5 提醒仲裁与隐私
+
+Apple Watch 依赖系统的通知路由和 iPhone 的唯一 `ReminderPolicy`，不建立第二个每日提醒调度器。同一逻辑日、同一提醒事件只能由本地通知、Live Activity 或微信中的一个主通道发出；系统把 iPhone 通知路由到 Watch 不算新通道，也不能因此再补一次 Watch 自定义提醒。
+
+Watch 默认隐私等级高于 App 前台：
+
+- complication、Smart Stack、通知与 Always-On 默认只显示抽象印记；
+- 主承诺、连续天数、往年今日和长期节律分别由用户显式开启；
+- 面貌照片、缩略图、文件名、地点、注释、缺席原因、人脸关键点与年龄推断永不进入默认 Watch 表面；
+- 手表丢失、取消配对、退出项目或清除数据后，iPhone 与 Watch 两端快照/outbox 都有可验证清理路径。
+
+### 9.6 Watch 验收门禁
+
+- WatchConnectivity 的后台排队传输必须在真实配对 iPhone 与 Apple Watch 上验证；模拟器结果不能替代；
+- 覆盖 iPhone/Watch 前台、后台、强退、重启、飞行模式、蓝牙/Wi-Fi 变化、失联后恢复和 Watch App 重装；
+- 覆盖提醒前后、逻辑日午夜两侧、项目时区变化、旧快照、重复/乱序/迟到命令和两端同时签到；
+- 任一路径都不产生第二条 `CheckInRecord`，也不让 `pendingSync` 冒充成功；
+- 通知实际路由到 iPhone 或 Watch 时只有一次触达，关闭后当天不重来；
+- complication、Smart Stack、Watch App，以及 watchOS 11+ 的 Live Activity，在最小/最大支持表盘、Always-On、Dynamic Type、VoiceOver、Reduce Motion 和锁定隐私下通过真机视觉验收；
+- 不高频刷新 complication、不持续动画、不轮询连接；完成 14 天电量观察后才进入生产；
+- 基础 Watch 入口的采用率和可靠性先独立成立，再评估 Plus 高级节律，不用付费转化掩盖同步失败。
+
+任一条件触发 Watch 阶段 `NO-GO`：无法区分待同步与已保存、必须维护第二份签到数据库、跨午夜会静默错日、提醒重复、面孔默认暴露，或只有模拟器证据没有配对真机证据。
+
+## 10. 验收与停止条件
+
+### 10.1 工程门禁
 
 - App、Widget 和 Live Activity 同时签到仍只有一个 `CheckInRecord`；
 - 只有保存成功或幂等回读后才显示实心落印；
@@ -274,7 +388,7 @@ Pulse Plus 候选：
 - 本地通知、灵动岛和微信仲裁不会重复触达；
 - Activity 失败只影响系统仪式，不阻塞签到、照片和导出事实。
 
-### 9.2 产品与视觉门禁
+### 10.2 产品与视觉门禁
 
 - 至少 30 名支持设备的 TestFlight 用户完成 14 天实验；
 - 用户能区分基础提醒、留印窗口和拍照邀请，不认为三者会同时轰炸；
@@ -286,18 +400,19 @@ Pulse Plus 候选：
 
 达到任一条件应停止或降频：同义提醒重复、关闭后重新出现、系统表面泄露照片、成功状态早于持久化、动画必须靠远程资源才能完成，或真实用户大量关闭 Live Activities。
 
-## 10. 分阶段落点
+## 11. 分阶段落点
 
 | 阶段 | 日印仪式范围 |
 | --- | --- |
 | R1 | App Group 正式 store、基础 Widget、Widget AppIntent、免费落印语言与本地启动原型 |
+| W0 | R1 稳定后提前验证配对真机、WatchConnectivity、`pendingSync` 与跨午夜命令；不写生产历史 |
 | R2.5 | 签到成功后的今日影像窗口，不单独追拍照提醒 |
 | R3 | ActivityKit push-to-start 原型、远程留印窗口、ReminderPolicy 通道仲裁；证据通过后才纳入 Plus |
 | R4 | 岁月流影实际生成进度、取消、失败与完成摘要 |
 | WX0 / WX1 | 复用 ReminderPolicy 和服务端调度基础设施，但微信资格与发送适配器独立门禁 |
-| R5 | 高级 Widget、Control、Action Button、Shortcuts、Watch 与跨表面一致体验 |
+| R5 | 伴侣型 Watch App、基础 complication / Smart Stack / 可靠签到免费；高级 Watch 节律、Widget、Control、Action Button 与 Shortcuts 分层验证 |
 
-## 11. 平台依据
+## 12. 平台依据
 
 - Live Activity 适合有明确开始和结束、持续不超过数小时的任务，并要求克制更新与敏感内容：[Live Activities HIG](https://developer.apple.com/design/human-interface-guidelines/live-activities)
 - Widget / Live Activity 单次动画最长两秒，Always-On 低亮度不播放动画：[Animating data updates in widgets and Live Activities](https://developer.apple.com/documentation/widgetkit/animating-data-updates-in-widgets-and-live-activities)
@@ -305,3 +420,8 @@ Pulse Plus 候选：
 - Live Activity 最长活跃八小时，之后最多在锁屏保留四小时：[Displaying live data with Live Activities](https://developer.apple.com/documentation/activitykit/displaying-live-data-with-live-activities)
 - 远程自动启动、更新和结束需要 push token、APNs 与服务端：[Starting and updating Live Activities with ActivityKit push notifications](https://developer.apple.com/documentation/activitykit/starting-and-updating-live-activities-with-activitykit-push-notifications)
 - Widget 独立进程、timeline 预算、App Group 与隐私约束：[Developing a WidgetKit strategy](https://developer.apple.com/documentation/widgetkit/developing-a-widgetkit-strategy)
+- Watch 体验应简短、可扫视，并由 Watch App、complication、通知和 Smart Stack 分工：[watchOS apps](https://developer.apple.com/documentation/watchos-apps/)
+- 从 watchOS 11 起，iPhone Live Activity 会进入配对 Watch 的 Smart Stack，Watch App 可提供专用布局与交互：[What’s new in watchOS 11](https://developer.apple.com/videos/play/wwdc2024/10205/)
+- 最新上下文、保证排队的用户信息、即时消息与真机验证边界：[Transferring data with Watch Connectivity](https://developer.apple.com/documentation/watchconnectivity/transferring-data-with-watch-connectivity)
+- Smart Stack 相关性只是提供给系统的建议，最终排序和出现由系统决定：[Widget suggestions in Smart Stacks](https://developer.apple.com/documentation/widgetkit/widget-suggestions-in-smart-stacks)
+- WidgetKit complication、Smart Stack 与交互式 App Intent：[Creating accessory widgets and watch complications](https://developer.apple.com/documentation/widgetkit/creating-accessory-widgets-and-watch-complications)

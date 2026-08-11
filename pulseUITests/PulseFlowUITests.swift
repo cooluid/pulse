@@ -13,9 +13,20 @@ final class PulseFlowUITests: XCTestCase {
         app.launchEnvironment["PULSE_UI_TEST_NOW"] = "2026-08-10T04:00:00Z"
     }
 
+    private func launchAndConfirmDefaultCommitment() {
+        app.launch()
+
+        let saveButton = app.buttons["commitment.save.button"]
+        XCTAssertTrue(saveButton.waitForExistence(timeout: 5))
+        XCTAssertTrue(saveButton.isEnabled)
+        saveButton.tap()
+
+        XCTAssertTrue(app.buttons["today.checkin.button"].waitForExistence(timeout: 5))
+    }
+
     func testCheckInPersistsAcrossRelaunchAndAppearsInHistory() throws {
         configureApp()
-        app.launch()
+        launchAndConfirmDefaultCommitment()
 
         let checkInButton = app.buttons["today.checkin.button"]
         XCTAssertTrue(checkInButton.waitForExistence(timeout: 5))
@@ -27,6 +38,7 @@ final class PulseFlowUITests: XCTestCase {
         assertWeekRailGeometry()
         assertRemovedTodayCopyIsAbsent()
         assertHeroGeometry()
+        assertCommitmentLivesInRhythmBand()
 
         let pendingAttachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
         pendingAttachment.name = "Today before check-in"
@@ -40,6 +52,7 @@ final class PulseFlowUITests: XCTestCase {
         assertWeekRailGeometry()
         assertRemovedTodayCopyIsAbsent()
         assertHeroGeometry()
+        assertCommitmentLivesInRhythmBand()
 
         app.terminate()
         app.launchEnvironment.removeValue(forKey: "PULSE_UI_TEST_RESET")
@@ -51,6 +64,7 @@ final class PulseFlowUITests: XCTestCase {
         XCTAssertTrue(persistedCheckInButton.label.contains("已签到"))
         assertRemovedTodayCopyIsAbsent()
         assertHeroGeometry()
+        assertCommitmentLivesInRhythmBand()
 
         let todayAttachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
         todayAttachment.name = "Today after persisted check-in"
@@ -79,7 +93,7 @@ final class PulseFlowUITests: XCTestCase {
 
     func testSettingsHidesPrimaryNavigationUntilClosed() throws {
         configureApp()
-        app.launch()
+        launchAndConfirmDefaultCommitment()
 
         let settingsButton = app.buttons["settings.navigation.open.today"]
         XCTAssertTrue(settingsButton.waitForExistence(timeout: 5))
@@ -107,7 +121,7 @@ final class PulseFlowUITests: XCTestCase {
 
     func testSettingsExposesPrivacyAndSupportLinks() throws {
         configureApp()
-        app.launch()
+        launchAndConfirmDefaultCommitment()
 
         let settingsButton = app.buttons["settings.navigation.open.today"]
         XCTAssertTrue(settingsButton.waitForExistence(timeout: 5))
@@ -124,7 +138,7 @@ final class PulseFlowUITests: XCTestCase {
 
     func testResetConfirmationIsPresentedFromTheResetRow() throws {
         configureApp()
-        app.launch()
+        launchAndConfirmDefaultCommitment()
 
         let settingsButton = app.buttons["settings.navigation.open.today"]
         XCTAssertTrue(settingsButton.waitForExistence(timeout: 5))
@@ -137,11 +151,15 @@ final class PulseFlowUITests: XCTestCase {
 
         let confirmButton = app.buttons["settings.reset.confirm.button"]
         XCTAssertTrue(confirmButton.waitForExistence(timeout: 3))
+        confirmButton.tap()
+
+        XCTAssertTrue(app.textFields["commitment.name.field"].waitForExistence(timeout: 5))
+        XCTAssertFalse(app.buttons["primary.navigation.today"].exists)
     }
 
     func testThemeAndLanguageChoicesApplyImmediatelyAndPersistAcrossRelaunch() throws {
         configureApp()
-        app.launch()
+        launchAndConfirmDefaultCommitment()
 
         let settingsButton = app.buttons["settings.navigation.open.today"]
         XCTAssertTrue(settingsButton.waitForExistence(timeout: 5))
@@ -193,7 +211,7 @@ final class PulseFlowUITests: XCTestCase {
 
     func testRecordDetailUsesSheetDismissalAndSourceAnchoredDeleteConfirmation() throws {
         configureApp()
-        app.launch()
+        launchAndConfirmDefaultCommitment()
 
         let checkInButton = app.buttons["today.checkin.button"]
         XCTAssertTrue(checkInButton.waitForExistence(timeout: 5))
@@ -223,7 +241,7 @@ final class PulseFlowUITests: XCTestCase {
             "-UIPreferredContentSizeCategoryName",
             "UICTContentSizeCategoryAccessibilityXXXL"
         ]
-        app.launch()
+        launchAndConfirmDefaultCommitment()
 
         let checkInButton = app.buttons["today.checkin.button"]
         XCTAssertTrue(checkInButton.waitForExistence(timeout: 5))
@@ -256,7 +274,7 @@ final class PulseFlowUITests: XCTestCase {
 
     func testHistoryExposesBidirectionalMonthNavigation() throws {
         configureApp()
-        app.launch()
+        launchAndConfirmDefaultCommitment()
 
         let historyNavigation = app.buttons["primary.navigation.history"]
         XCTAssertTrue(historyNavigation.waitForExistence(timeout: 5))
@@ -290,7 +308,7 @@ final class PulseFlowUITests: XCTestCase {
 
     func testMissedDayUsesExplicitCalendarSemantics() throws {
         configureApp()
-        app.launch()
+        launchAndConfirmDefaultCommitment()
         XCTAssertTrue(app.buttons["today.checkin.button"].waitForExistence(timeout: 5))
 
         app.terminate()
@@ -312,6 +330,99 @@ final class PulseFlowUITests: XCTestCase {
         add(attachment)
     }
 
+    func testCommitmentMustBeConfirmedAndPersistsAcrossRelaunch() throws {
+        configureApp()
+        app.launch()
+
+        XCTAssertFalse(app.buttons["today.checkin.button"].exists)
+        XCTAssertFalse(app.buttons["primary.navigation.today"].exists)
+
+        let nameField = app.textFields["commitment.name.field"]
+        let purposeField = app.textFields["commitment.purpose.field"]
+        let saveButton = app.buttons["commitment.save.button"]
+        XCTAssertTrue(nameField.waitForExistence(timeout: 10))
+        XCTAssertTrue(purposeField.exists)
+        XCTAssertTrue(saveButton.isEnabled)
+
+        nameField.tap()
+        nameField.typeText(" · 阅读")
+        nameField.typeText(XCUIKeyboardKey.return.rawValue)
+        XCTAssertTrue(purposeField.waitForExistence(timeout: 3))
+        purposeField.typeText("保持思考")
+        purposeField.typeText(XCUIKeyboardKey.return.rawValue)
+        saveButton.tap()
+
+        let commitmentName = app.staticTexts["today.commitment.name"]
+        let commitmentPurpose = app.staticTexts["today.commitment.purpose"]
+        XCTAssertTrue(commitmentName.waitForExistence(timeout: 5))
+        XCTAssertTrue(commitmentName.label.contains("阅读"))
+        XCTAssertTrue(commitmentPurpose.label.contains("保持思考"))
+
+        app.terminate()
+        app.launchEnvironment.removeValue(forKey: "PULSE_UI_TEST_RESET")
+        app.launch()
+
+        XCTAssertTrue(app.staticTexts["today.commitment.name"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["today.commitment.name"].label.contains("阅读"))
+        XCTAssertTrue(app.staticTexts["today.commitment.purpose"].label.contains("保持思考"))
+        XCTAssertFalse(app.buttons["commitment.save.button"].exists)
+    }
+
+    func testCommitmentRejectsBlankAndOversizedNameAtTheUIBoundary() throws {
+        configureApp()
+        app.launch()
+
+        let nameField = app.textFields["commitment.name.field"]
+        let saveButton = app.buttons["commitment.save.button"]
+        XCTAssertTrue(nameField.waitForExistence(timeout: 5))
+
+        replaceText(in: nameField, with: "  ")
+        XCTAssertFalse(saveButton.isEnabled)
+
+        replaceText(
+            in: nameField,
+            with: String(repeating: "a", count: 81)
+        )
+        XCTAssertFalse(saveButton.isEnabled)
+
+        replaceText(in: nameField, with: "Read")
+        XCTAssertTrue(saveButton.isEnabled)
+    }
+
+    func testCommitmentCanBeEditedFromSettingsWithoutChangingCheckInFacts() throws {
+        configureApp()
+        launchAndConfirmDefaultCommitment()
+
+        let checkInButton = app.buttons["today.checkin.button"]
+        checkInButton.tap()
+        XCTAssertFalse(checkInButton.isEnabled)
+
+        app.buttons["settings.navigation.open.today"].tap()
+        let commitmentLink = app.descendants(matching: .any)["settings.commitment.link"]
+        XCTAssertTrue(commitmentLink.waitForExistence(timeout: 3))
+        commitmentLink.tap()
+
+        let nameField = app.textFields["commitment.name.field"]
+        let purposeField = app.textFields["commitment.purpose.field"]
+        XCTAssertTrue(nameField.waitForExistence(timeout: 3))
+        nameField.tap()
+        nameField.typeText(" · 深度工作")
+        nameField.typeText(XCUIKeyboardKey.return.rawValue)
+        XCTAssertTrue(purposeField.waitForExistence(timeout: 3))
+        purposeField.typeText("把注意力留给重要的事")
+        purposeField.typeText(XCUIKeyboardKey.return.rawValue)
+        app.buttons["commitment.save.button"].tap()
+
+        let settingsNavigationBar = app.navigationBars["设置"]
+        XCTAssertTrue(settingsNavigationBar.waitForExistence(timeout: 3))
+        settingsNavigationBar.buttons.firstMatch.tap()
+
+        XCTAssertTrue(app.staticTexts["today.commitment.name"].waitForExistence(timeout: 3))
+        XCTAssertTrue(app.staticTexts["today.commitment.name"].label.contains("深度工作"))
+        XCTAssertTrue(app.staticTexts["today.commitment.purpose"].label.contains("注意力"))
+        XCTAssertFalse(app.buttons["today.checkin.button"].isEnabled)
+    }
+
     private func assertRemovedTodayCopyIsAbsent() {
         XCTAssertFalse(app.staticTexts["给今天留下一枚印记"].exists)
         XCTAssertFalse(app.staticTexts["今天已留下一枚印记"].exists)
@@ -323,6 +434,16 @@ final class PulseFlowUITests: XCTestCase {
             ).count,
             0
         )
+    }
+
+    private func replaceText(in field: XCUIElement, with replacement: String) {
+        field.tap()
+        if let currentValue = field.value as? String, !currentValue.isEmpty {
+            field.typeText(
+                String(repeating: XCUIKeyboardKey.delete.rawValue, count: currentValue.count)
+            )
+        }
+        field.typeText(replacement)
     }
 
     private func assertWeekRailGeometry() {
@@ -342,5 +463,14 @@ final class PulseFlowUITests: XCTestCase {
         XCTAssertTrue(kicker.label.contains("星期"))
         XCTAssertEqual(dayNumber.frame.midX, app.frame.midX, accuracy: 1)
         XCTAssertLessThan(kicker.frame.maxY, dayNumber.frame.minY)
+    }
+
+    private func assertCommitmentLivesInRhythmBand() {
+        let commitmentName = app.staticTexts["today.commitment.name"]
+        let rhythmBand = app.descendants(matching: .any)["today.streak.band"]
+        XCTAssertTrue(commitmentName.exists)
+        XCTAssertTrue(rhythmBand.exists)
+        XCTAssertGreaterThanOrEqual(commitmentName.frame.minY, rhythmBand.frame.minY)
+        XCTAssertLessThanOrEqual(commitmentName.frame.maxY, rhythmBand.frame.maxY)
     }
 }

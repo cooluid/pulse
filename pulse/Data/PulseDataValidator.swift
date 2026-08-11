@@ -7,6 +7,7 @@ struct ValidatedPulseImport {
     }
 
     let startLogicalDay: LogicalDay
+    let identity: HabitIdentity
     let records: [Record]
 }
 
@@ -28,10 +29,13 @@ enum PulseDataValidator {
             throw PulseError.invalidImport
         }
 
-        let normalizedName = payload.habit.name.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard normalizedName == payload.habit.name,
-              !normalizedName.isEmpty,
-              normalizedName.count <= PulseDataContract.maximumHabitNameLength else {
+        let identity: HabitIdentity
+        do {
+            identity = try HabitIdentity(
+                storedName: payload.habit.name,
+                storedPurpose: payload.habit.purpose
+            )
+        } catch {
             throw PulseError.invalidImport
         }
 
@@ -57,6 +61,7 @@ enum PulseDataValidator {
 
         return ValidatedPulseImport(
             startLogicalDay: startLogicalDay,
+            identity: identity,
             records: records
         )
     }

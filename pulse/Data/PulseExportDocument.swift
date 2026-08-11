@@ -5,9 +5,8 @@ import UniformTypeIdentifiers
 enum PulseDataContract {
     static let formatIdentifier = "co.fanr.pulse.export"
     static let fileExtension = "json"
-    static let exportSchemaVersion = 1
+    static let exportSchemaVersion = 2
     static let maximumRecordCount = 50_000
-    static let maximumHabitNameLength = 80
     static let maximumImportBytes = 32 * 1_024 * 1_024
 
     static func exportFilename(day: String?) -> String {
@@ -19,6 +18,8 @@ struct PulseExportPayload: Codable, Sendable {
     struct HabitPayload: Codable, Sendable {
         let id: UUID
         let name: String
+        let purpose: String?
+        let isIdentityConfirmed: Bool
         let createdAt: Date
         let startLogicalDay: String
         let creationTimeZoneIdentifier: String
@@ -61,11 +62,27 @@ struct PulseExportDocument: FileDocument {
     }
 
     static func encode(_ payload: PulseExportPayload) throws -> Data {
-        try encoder.encode(payload)
+        guard payload.format == PulseDataContract.formatIdentifier,
+              payload.schemaVersion == PulseDataContract.exportSchemaVersion else {
+            throw PulseError.exportUnavailable
+        }
+        return try encoder.encode(payload)
     }
 
     static func decode(_ data: Data) throws -> PulseExportPayload {
-        try decoder.decode(PulseExportPayload.self, from: data)
+        let envelope = try decoder.decode(PulseExportEnvelope.self, from: data)
+        guard envelope.format == PulseDataContract.formatIdentifier else {
+            throw PulseError.invalidImport
+        }
+
+        switch envelope.schemaVersion {
+        case 1:
+            return try decoder.decode(PulseExportPayloadV1.self, from: data).upgradedToV2()
+        case PulseDataContract.exportSchemaVersion:
+            return try decoder.decode(PulseExportPayload.self, from: data)
+        default:
+            throw PulseError.unsupportedImportVersion(envelope.schemaVersion)
+        }
     }
 
     private static var encoder: JSONEncoder {
@@ -79,5 +96,49 @@ struct PulseExportDocument: FileDocument {
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .iso8601
         return decoder
+    }
+}
+
+private struct PulseExportEnvelope: Decodable {
+    let format: String
+    let schemaVersion: Int
+}
+
+private struct PulseExportPayloadV1: Decodable {
+    struct HabitPayload: Decodable {
+        let id: UUID
+        let name: String
+        let createdAt: Date
+        let startLogicalDay: String
+        let creationTimeZoneIdentifier: String
+        let timeZoneIdentifier: String
+    }
+
+    let format: String
+    let schemaVersion: Int
+    let exportedAt: Date
+    let habit: HabitPayload
+    let records: [PulseExportPayload.RecordPayload]
+
+    func upgradedToV2() throws -> PulseExportPayload {
+        guard format == PulseDataContract.formatIdentifier, schemaVersion == 1 else {
+            throw PulseError.invalidImport
+        }
+        return PulseExportPayload(
+            format: format,
+            schemaVersion: PulseDataContract.exportSchemaVersion,
+            exportedAt: exportedAt,
+            habit: .init(
+                id: habit.id,
+                name: habit.name,
+                purpose: nil,
+                isIdentityConfirmed: false,
+                createdAt: habit.createdAt,
+                startLogicalDay: habit.startLogicalDay,
+                creationTimeZoneIdentifier: habit.creationTimeZoneIdentifier,
+                timeZoneIdentifier: habit.timeZoneIdentifier
+            ),
+            records: records
+        )
     }
 }

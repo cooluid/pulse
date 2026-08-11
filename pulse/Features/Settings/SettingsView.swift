@@ -13,6 +13,7 @@ struct SettingsView: View {
 
     var body: some View {
         Form {
+            commitmentSection
             reminderSection
             personalizationSection
             experienceSection
@@ -28,6 +29,27 @@ struct SettingsView: View {
         )
         .navigationBarTitleDisplayMode(.inline)
         .disabled(model.operation != nil)
+    }
+
+    private var commitmentSection: some View {
+        Section("commitment.section") {
+            NavigationLink {
+                CommitmentIdentityEditor(model: model, mode: .settings)
+            } label: {
+                VStack(alignment: .leading, spacing: PulseDesign.spacing4) {
+                    Text(model.habit?.name ?? "")
+                        .foregroundStyle(PulseDesign.ink)
+                    Text(model.habit?.purpose ?? PulseLocalization.string(
+                        "commitment.purpose.not_set",
+                        locale: locale
+                    ))
+                    .font(.footnote)
+                    .foregroundStyle(PulseDesign.secondary)
+                    .lineLimit(2)
+                }
+            }
+            .accessibilityIdentifier("settings.commitment.link")
+        }
     }
 
     private var personalizationSection: some View {

@@ -5,6 +5,7 @@ enum PulseError: LocalizedError, Equatable {
     case invalidTimeZoneTransition
     case invalidRecordDate(String)
     case invalidCheckIn
+    case invalidHabitIdentity
     case invalidSettings
     case notificationPermissionDenied
     case exportUnavailable
@@ -25,6 +26,8 @@ enum PulseError: LocalizedError, Equatable {
             PulseLocalization.string("error.record_date", locale: locale)
         case .invalidCheckIn:
             PulseLocalization.string("error.check_in_invalid", locale: locale)
+        case .invalidHabitIdentity:
+            PulseLocalization.string("error.habit_identity", locale: locale)
         case .invalidSettings:
             PulseLocalization.string("error.settings", locale: locale)
         case .notificationPermissionDenied:
