@@ -91,6 +91,9 @@ public struct PulseWidgetSnapshot: Codable, Equatable, Sendable {
     public let nextDayBoundary: Date
 
     public var isCheckedToday: Bool { checkedAt != nil }
+    public var previousSixCheckedCount: Int {
+        recentDays.dropLast().filter { $0.state == .checked }.count
+    }
 
     public init(
         habitID: UUID,

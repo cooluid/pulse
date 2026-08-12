@@ -65,7 +65,8 @@
 - Widget 快照必须投影规范化主承诺名称且不携带可选说明；设置只保留类型化 `widget.style` 构图偏好。Home Screen 显示名称，Lock Screen / StandBy / Always-On 不渲染名称，身份编辑或样式切换成功后必须请求 timeline reload。
 - 四种样式都必须在小号/中号消费完整日/月、七日事实、主承诺、今日状态与同一个单向签到入口；可见品牌和文字状态按原型取舍，不能恢复通用顶栏。断层双色按用户在原型后的明确修订把七日圆点固定左下，裂环缺口朝向右侧状态色场并在待签到/完成、全彩/系统着色下维持可见；越界巨环只有一个从左侧裁切的主环，承诺宣言以主承诺为第一读，错版撕页包含 18% 状态顶带、超大日号和竖排月份。中号必须使用独立比例，不得把小号拉宽。
 - 七日节律在 `beforeHabit / checked / missed / todayPending` 四种状态下分别保持小空心 / 大实心 / 小低强调实心 / 大强调空心；圆点与方块都不得透明到消失。相邻节点必须由低强调实线连接，连接线不得穿过空心节点、压过状态边框或制造分页控件暗示。日期 `1 / 10 / 11 / 31`、月份 `1 / 8 / 10 / 12`、80 字名称、English 与简体中文必须检查裁切和层级；AppIntent 命中区至少 44pt，完成态静态且不可撤销。
-- Home Screen 验证边到边背景和 12pt 文字安全区，只有装饰性巨环允许受控越界；Accessory 仍使用系统 `widgetContentMargins`。四式分别验证 `fullColor / accented / vibrant`、浅色/深色、iOS 26 Clear Liquid Glass 与降低透明度；透明外观必须来自系统移除容器背景，不接受自绘模糊或 `Color.clear` 截图冒充。
+- Accessory 圆形的待签到态只能是干净开放环，完成态是同一环加实心内核与单一勾形；两态都不得裁切。矩形不显示日期，左上状态完整可读，过去六日节点由不穿过空心节点的实线汇入右侧唯一今日印记；今天不得重复成第七个小节点。待签到圆形/矩形整块都是同一个 `Button`，完成态静态；VoiceOver 每块只生成一个主元素，朗读今日状态、过去六日已留印数量和必要操作提示。
+- Home Screen 验证边到边背景和 12pt 文字安全区，只有装饰性巨环允许受控越界；Accessory 重新应用系统 `widgetContentMargins`，以容器可用尺寸计算图形，不使用日期位数或设备特判。四式与 Accessory 分别验证 `fullColor / accented / vibrant`、浅色/深色、iOS 26 Clear Liquid Glass 与降低透明度；透明外观必须来自系统移除容器背景，不接受自绘模糊或 `Color.clear` 截图冒充。
 
 ## 4. 独立人工门禁
 
@@ -81,7 +82,7 @@
 - AppIcon 的 Default / Dark / Tinted 与商店素材；
 - iOS / iPadOS 17.x 可用最旧运行时上的安装、启动、签到、设置与历史主流程；
 - 签名、Archive、TestFlight 和 App Store 校验；
-- Home Screen 四种小号/中号、Lock Screen 圆形/矩形在待签到、已签到、未设置、偏好损坏和读取失败状态下的真实系统渲染；断层双色左下圆点、越界巨环受控裁切、承诺宣言长标题、错版撕页日期层级必须在 1× Home Screen 成立；AppIntent 不启动 App、保存成功后刷新、失败不显示完成；Lock Screen、StandBy 与 Always-On 不渲染主承诺名称或 Home Screen 样式，任何系统表面都不泄露可选说明；
+- Home Screen 四种小号/中号、Lock Screen 圆形/矩形在待签到、已签到、未设置、偏好损坏和读取失败状态下的真实系统渲染；断层双色左下圆点、越界巨环受控裁切、承诺宣言长标题、错版撕页日期层级必须在 1× Home Screen 成立；Accessory 必须复核待办环无伪勾、矩形无日期、六日轨迹真实连入今日印记、右侧不裁切、整块命中与单元素 VoiceOver；AppIntent 不启动 App、保存成功后刷新、失败不显示完成；Lock Screen、StandBy 与 Always-On 不渲染主承诺名称或 Home Screen 样式，任何系统表面都不泄露可选说明；
 - Widget 在 App 未运行、设备锁定、跨午夜、系统杀进程、快速双击、App/Widget 同日竞争、旧版升级和卸载重装下的真机行为；
 - 跨多个自然日的连续使用。
 

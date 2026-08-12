@@ -19,9 +19,7 @@ MASK_PATH = ROOT / "design" / "app-icon-source" / "open-day-ring-mask.png"
 ASSET_CATALOG = ROOT / "pulse" / "Assets.xcassets"
 APP_ICON_OUTPUT = ASSET_CATALOG / "AppIcon.appiconset"
 BRAND_MARK_OUTPUT = ASSET_CATALOG / "PulseMark.imageset"
-WIDGET_MARK_OUTPUT = ASSET_CATALOG / "PulseWidgetMark.imageset"
 SIZE = (1024, 1024)
-WIDGET_MARK_SIZE = (256, 256)
 
 COLOR_ASSETS = {
     "AccentColor": "tint",
@@ -133,21 +131,6 @@ def build_outputs() -> dict[Path, bytes]:
         }
     )
 
-    widget_mask = mask.resize(WIDGET_MARK_SIZE, Image.Resampling.LANCZOS)
-    widget_mark = Image.new("RGBA", WIDGET_MARK_SIZE, (255, 255, 255, 255))
-    widget_mark.putalpha(widget_mask)
-    outputs[WIDGET_MARK_OUTPUT / "PulseWidgetMark.png"] = png_bytes(widget_mark)
-    outputs[WIDGET_MARK_OUTPUT / "Contents.json"] = json_bytes(
-        {
-            "images": [
-                {"filename": "PulseWidgetMark.png", "idiom": "universal", "scale": "1x"},
-                {"idiom": "universal", "scale": "2x"},
-                {"idiom": "universal", "scale": "3x"},
-            ],
-            "info": {"author": "xcode", "version": 1},
-            "properties": {"template-rendering-intent": "template"},
-        }
-    )
     return outputs
 
 

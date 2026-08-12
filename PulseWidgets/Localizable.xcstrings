@@ -11,6 +11,40 @@
         }
       }
     },
+    "widget.accessibility.accessory.checked.summary" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Today is imprinted. Imprinted on %lld of the previous six days."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "今天已留印，过去六天已留印 %lld 天。"
+          }
+        }
+      }
+    },
+    "widget.accessibility.accessory.pending.summary" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Today is still open. Imprinted on %lld of the previous six days."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "今天还空着，过去六天已留印 %lld 天。"
+          }
+        }
+      }
+    },
     "widget.accessibility.checked" : {
       "localizations" : {
         "en" : {
@@ -23,6 +57,38 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "今天已经留下印记"
+          }
+        }
+      }
+    },
+    "widget.accessory.state.checked" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Imprinted today"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "今天已留印"
+          }
+        }
+      }
+    },
+    "widget.accessory.state.pending" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Still open today"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "今天还空着"
           }
         }
       }
@@ -112,13 +178,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "See your seven-day rhythm and leave today's imprint."
+            "value" : "See today's state and leave today's imprint."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "查看七日节奏，并留下今天的印记。"
+            "value" : "看见今天的状态，轻点留下今天。"
           }
         }
       }
@@ -128,13 +194,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Daily Imprint"
+            "value" : "Today's Imprint"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "每日印记"
+            "value" : "今日一印"
           }
         }
       }
@@ -284,22 +350,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "今日已印"
-          }
-        }
-      }
-    },
-    "widget.state.checked.short" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Imprinted"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "已留印"
           }
         }
       }

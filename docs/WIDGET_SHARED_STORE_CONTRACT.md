@@ -1,6 +1,6 @@
 # Pulse 基础 Widget 与共享 Store 合同
 
-文档版本：0.8<br>
+文档版本：0.9<br>
 状态：Canonical Implemented Contract；开发签名、共享 Store、生产 Widget target 与基础交互已落地；“四式日印”代码与自动化已完成，系统表面视觉证据必须重新绑定本次实现<br>
 评审日期：2026-08-12
 
@@ -10,11 +10,11 @@
 
 首批 Widget 是免费核心入口，不是第二个应用，也不新增业务事实：
 
-- Lock Screen 圆形：只显示今日空心或实心印记；
-- Lock Screen 矩形：显示最近七日方块节律，不显示主承诺文字；
+- Lock Screen 圆形：只显示今日开放环或实心完成印，待签到开放环不得出现会被误读为完成勾的斜线；
+- Lock Screen 矩形：不重复系统日期；左上显示今日短状态，过去六日节点以真实连接线汇入右侧唯一今日印记，不显示主承诺文字，也不把今天重复成第七个小节点；
 - Home Screen 小号/中号：设置可在“断层双色 / 越界巨环 / 承诺宣言 / 错版撕页”四种构图间切换；四式都消费同一日/月日期、七日节律、当前主承诺名称、今日状态与单向签到入口，但按原型分别取舍可见品牌和文字状态；默认“断层双色”遵循用户在原型后的明确修订，把七日圆点固定在左下方；所有 Home Screen 七日节点以低强调实线连接为一条时间轨迹，连接线不承载交互或业务事实；
 - Home Screen 名称直接读取唯一 `Habit` 真源；只允许一个类型化 `widget.style` 展示偏好决定构图。Lock Screen、StandBy 与 Always-On 不显示名称，任何 Widget 都不显示可选说明，Accessory 不随 Home Screen 样式复制四套布局；
-- 未签到操作使用 `Button`，不能使用可能反向删除事实的 `Toggle`；
+- 未签到操作使用覆盖 Accessory 完整可见区域的 `Button`，不能只让局部图形可点，也不能使用可能反向删除事实的 `Toggle`；
 - 已签到状态没有撤销入口；删除仍只在 App 内二次确认；
 - 本切片不创建 Live Activity、灵动岛、Watch、Control、Shortcuts、远程服务或第二套提醒。
 
@@ -131,9 +131,9 @@ Timeline 至少覆盖当前 entry，并在下一个项目时区零点后失效�
 
 ## 7. 隐私、可访问性与失败表达
 
-- Lock Screen、StandBy 和 Always-On 只显示抽象印记和最小日期状态，不渲染主承诺名称；
+- Lock Screen、StandBy 和 Always-On 只显示抽象印记与最小今日状态，不重复系统已经展示的日期，也不渲染主承诺名称；
 - Home Screen 固定显示用户已确认的主承诺名称，任何 Widget 都不显示“为什么重要”；名称与事实不写入 UserDefaults 或第二份投影真源，`widget.style` 只能选择四种 Home Screen 构图；
-- Widget 使用非纯颜色空心/实心圆点或方块、状态文字、系统字体和语义动态颜色；不使用 emoji、奖励或只靠颜色区分状态；
+- Widget 使用非纯颜色开放环/实心完成印、节点形态、状态文字、系统字体和语义动态颜色；Accessory 矩形的六个历史节点从辅助功能树隐藏，由整块标签统一朗读今日状态和过去六日已留印数量；不使用 emoji、奖励或只靠颜色区分状态；
 - Home Screen 全彩模式消费品牌浅/深色 Color Set；着色、透明外观、Lock Screen、StandBy 与 Always-On 读取系统 `widgetRenderingMode`，由系统移除容器背景并提供 Liquid Glass / vibrant 表现，产品不自绘毛玻璃或承诺任意壁纸透视；
 - Reduce Motion 直接显示静态最终状态；
 - group container 不可用、迁移未完成、store 打不开或快照损坏时显示明确不可用/升级态，不把“读取失败”伪装成“今日未签到”；
@@ -146,7 +146,7 @@ Timeline 至少覆盖当前 entry，并在下一个项目时区零点后失效�
 3. 已完成：实现 locator、journal v2、旧库/新安装两种模式、值级复制、确定性摘要、精确清理和崩溃恢复测试；
 4. 已完成：实现携带规范化主承诺名称的 `PulseWidgetSnapshot`、只读投影、按表面渲染的隐私裁决和跨项目时区 timeline 计划器；
 5. 已完成：加入双 target App Group entitlement、生产共享路径、Widget target、timeline 与单向签到 AppIntent；
-6. 已完成“四式日印”的类型化偏好、设置入口、timeline reload、四套小号/中号消费者与自动化；保存的 HTML 原型与旧运行界面并排复核后完成四式根因级校正，iOS 26.5 Simulator 真实桌面已逐一检查四种小号浅色未签到全彩状态。此前四层版与校正前四式的其余视觉证据不能继承；下一步补四式中号、已签到、深色、accented/vibrant/Clear、真机与未记录的 OS 版本、快速双击、App/Widget 同日竞争和异常恢复矩阵。
+6. 已完成“四式日印”的类型化偏好、设置入口、timeline reload、四套小号/中号消费者与自动化；保存的 HTML 原型与旧运行界面并排复核后完成四式根因级校正，iOS 26.5 Simulator 真实桌面已逐一检查四种小号浅色未签到全彩状态。2026-08-12 的真实 iPhone Widget Gallery 截图使旧 Accessory 界面判定为 `INTERFACE NO-GO`：矩形日期错误裁切、待办环误读为勾、右侧印记越界且七日节点缺少时间关系；正式替换为“节律汇印”。旧 Accessory 人工证据不能继承，下一步补新圆形/矩形的 Gallery、Lock Screen、StandBy、Always-On、待办/完成、深色、accented/vibrant 与真机交互矩阵，并继续补四式中号等未覆盖表面。
 
 ## 9. 自动化与真机门禁
 
@@ -158,7 +158,7 @@ Timeline 至少覆盖当前 entry，并在下一个项目时区零点后失效�
 - 两个独立 ModelContainer 同日写入最终只有一个 recordKey，回执为一次 `created`、其余 `alreadyPresent`；
 - Widget 未迁移时不可写，失败时不显示实心态；
 - Timeline 跨项目时区零点刷新，七日状态与 App 一致；
-- Home Screen 从正式快照显示规范化主承诺名称且身份编辑后刷新；四值 `widget.style` 可持久化并在切换时刷新，未知值失败关闭；Lock Screen 不渲染名称，任何 Widget 都不显示说明或读取 Home Screen 构图。
+- Home Screen 从正式快照显示规范化主承诺名称且身份编辑后刷新；四值 `widget.style` 可持久化并在切换时刷新，未知值失败关闭；Lock Screen 不渲染名称，任何 Widget 都不显示说明或读取 Home Screen 构图。Accessory 矩形只投影过去六日统计并由今日印记承载第七天，历史计数不得把今天重复计入。
 
 真实设备还必须覆盖 App 未运行、设备锁定、Widget 重载、快速双击、App/Widget 同时签到、系统杀进程、升级后首次启动和卸载重装。未签名构建、Preview 或模拟器单进程测试不能替代这些证据。
 
@@ -166,6 +166,6 @@ Timeline 至少覆盖当前 entry，并在下一个项目时区零点后失效�
 
 - 共享 store 与 Widget 产品/技术方向：设计 GO；
 - `PulseCore`、journal v2、旧库/新安装路径、纯值投影、App Group entitlement、生产 Widget target、开发设备签名与 Simulator 独立进程交互：工程 GO；
-- 真实 iPhone/iPad 的全新安装、旧数据升级、杀进程重启、跨时区与 Widget 基础数据交互：用户历史人工运行 GO；2026-08-11 重设计后的主屏幕/锁屏/Always-On、深浅/透明模式、最大动态字体、VoiceOver、Reduce Motion 与隐私表达仍需重新人工验收；
+- 真实 iPhone/iPad 的全新安装、旧数据升级、杀进程重启、跨时区与 Widget 基础数据交互：用户历史人工运行 GO；2026-08-12 实机截图已证明旧 Accessory 视觉 `NO-GO`，新“节律汇印”的锁屏/StandBy/Always-On、深浅/透明模式、最大动态字体、VoiceOver、Reduce Motion 与隐私表达仍需重新人工验收；
 - 未记录的设备型号与 OS 版本，以及 App 未运行、快速双击、App/Widget 同日竞争、卸载重装等逐项压力矩阵：发布前运行 NO-GO；
 - Apple Distribution、Archive/TestFlight 与商店工作：发布 NO-GO，不因工程 GO 自动启动。

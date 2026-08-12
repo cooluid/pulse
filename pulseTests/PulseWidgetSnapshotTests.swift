@@ -65,6 +65,7 @@ final class PulseWidgetSnapshotTests: XCTestCase {
             [.beforeHabit, .beforeHabit, .beforeHabit, .beforeHabit, .checked, .missed, .todayPending]
         )
         XCTAssertFalse(plan.snapshot.isCheckedToday)
+        XCTAssertEqual(plan.snapshot.previousSixCheckedCount, 1)
         XCTAssertEqual(
             plan.refreshAfter,
             makeDate(2026, 8, 12, 0, timeZone: timeZone)
@@ -94,6 +95,7 @@ final class PulseWidgetSnapshotTests: XCTestCase {
         XCTAssertEqual(plan.snapshot.habitName, "写一页")
         XCTAssertTrue(plan.snapshot.isCheckedToday)
         XCTAssertEqual(plan.snapshot.recentDays.last?.state, .checked)
+        XCTAssertEqual(plan.snapshot.previousSixCheckedCount, 0)
     }
 
     func testUnconfirmedIdentityCannotProduceAWidgetSnapshot() throws {

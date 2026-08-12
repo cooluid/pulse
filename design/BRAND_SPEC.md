@@ -20,7 +20,7 @@
 
 ## 2. 唯一视觉真源
 
-所有正式颜色只在 `design/brand-tokens.json` 定义一次。`scripts/build_brand_assets.py` 从该文件和唯一开放日环蒙版生成运行时 Color Set、AccentColor、AppIcon 三种外观、`PulseMark` 与 256 × 256 的 `PulseWidgetMark`；SwiftUI 只按语义名称消费生成资产。Widget 专用尺寸是同源派生输出，不是第二套手绘标记。
+所有正式颜色只在 `design/brand-tokens.json` 定义一次。`scripts/build_brand_assets.py` 从该文件和唯一开放日环蒙版生成运行时 Color Set、AccentColor、AppIcon 三种外观与 `PulseMark`；SwiftUI 只按语义名称消费生成资产。Widget 的小尺寸开放日环由同一代码原语按容器几何绘制，不归档第二份位图标记。
 
 不得在 Swift、Asset Catalog、AppIcon 脚本或设计文档中复制另一份颜色值。新增或修改颜色必须先修改品牌令牌，再重新生成并执行：
 
@@ -93,10 +93,11 @@ python3 scripts/build_brand_assets.py --check
 - 七日节律始终保留四种非纯颜色语义：已签到为大实心，漏签为小实心低强调，项目开始前为小空心，今天待签到为大空心强调。断层双色左下必须用圆点；越界巨环与承诺宣言使用方块；错版撕页使用圆点。相邻节点之间必须以低强调实线连接，线条只连接节点外缘并位于节点下层，不能穿过空心内部，也不能形成分页指示器的交互暗示。禁止透明到消失的节点或把新项目退化成孤立的“今天”。
 - 日期使用系统中等字重与等宽数字；错版撕页和断层双色允许使用原型定义的受控负字距形成海报密度。必须以 `1 / 10 / 11 / 31` 日号和 `1 / 8 / 10 / 12` 月份验证完整字形边界，不使用日期位数特判或缩小整个布局补救裁切。
 - Home Screen 正式关闭系统默认内容边距，让断层色场、越界环和撕页顶带抵达容器边缘；文字、节律和普通控件仍保持至少 12pt 内部安全区。越界只允许发生在装饰性开放环上，不得把文字、日期或命中区推出系统圆角蒙版。Accessory 必须重新应用系统 `widgetContentMargins`。
-- Home Screen 四式共用一个代码原生裂环原语：312° 环段、28% 径向环厚与干净平直断口，不叠加独立鼓包、芽点或补形；未签到使用 `action`，完成后使用 `grass` 并在环内形成实心日印与勾形。Accessory Circular / Rectangular 继续使用由唯一开放日环蒙版派生的 `PulseWidgetMark`。状态通过各式可见文字、空心/实心、七日末点和辅助功能标签表达，禁止 emoji、奖章、庆祝、连续奖励与循环动效。
-- Home Screen 固定显示主承诺名称，但名称只读取 `Habit` 真源，`widget.style` 只决定构图。Lock Screen、StandBy 与 Always-On 不显示主承诺正文，任何 Widget 都不显示“为什么重要”；Accessory 圆形只呈现裂环日印，矩形使用日期、短状态、七日方块和裂环。
+- Home Screen 四式与 Accessory 共用一个代码原生裂环原语：312° 环段、28% 径向环厚与干净平直断口，不叠加独立鼓包、芽点、补形或位图近似；Home Screen 未签到使用 `action`，完成后使用 `grass`，Accessory 交给系统单色或着色调色板。完成态在环内形成实心日印与单一镂空勾形；待签到态只保留开放环，不能出现会被误读为完成勾的斜线。状态通过各式可见文字、空心/实心、节律轨迹和辅助功能标签表达，禁止 emoji、奖章、庆祝、连续奖励与循环动效。
+- Home Screen 固定显示主承诺名称，但名称只读取 `Habit` 真源，`widget.style` 只决定构图。Lock Screen、StandBy 与 Always-On 不显示主承诺正文，任何 Widget 都不显示“为什么重要”。Accessory 使用唯一“节律汇印”语法：圆形只呈现今日开放环或完成印；矩形不再重复系统已展示的日期，左上显示今日短状态，过去六日节点以真实连接线流向右侧唯一今日印记。今天不能同时作为第七个小节点和大印重复出现。
+- Accessory 待签到圆形与矩形的完整可见区域都是同一个单向签到 `Button`；完成态静态且不可撤销。矩形的视觉节点从辅助功能树隐藏，整块只朗读今日状态、过去六日已留印数量与待签到操作提示。两种 Accessory 都重新应用系统 `widgetContentMargins`，图形按可用容器比例计算且不得越界、依赖日期位数或为特定设备硬编码。
 - Home Screen 全彩模式只使用品牌语义 Color Set；系统着色或透明外观通过 `widgetRenderingMode` 分离主内容与强调内容。`containerBackground(for: .widget)` 保持可移除，由系统提供 Clear / Liquid Glass / vibrant 表现；禁止自绘毛玻璃、渐变或用 `Color.clear` 截图冒充系统玻璃。
-- 未设置、共享 store 未 `ready` 或 `widget.style` 损坏时显示明确“打开一日一印 / Open Pulse”或不可用状态，不能静默改成另一种样式，也不能显示虚假待签到。WidgetKit 位图继续只使用同源 256 × 256 派生产物。
+- 未设置、共享 store 未 `ready` 或 `widget.style` 损坏时显示明确“打开一日一印 / Open Pulse”或不可用状态，不能静默改成另一种样式，也不能显示虚假待签到。
 - 四种样式的小号与中号，以及 Accessory Circular / Rectangular，必须分别在系统 Widget Gallery 与真实表面验收待签到、已签到、浅色、深色、accented、vibrant 和 Clear；Preview、编译成功或资产尺寸检查不能替代运行证据。
 
 ## 6. 布局与组件
