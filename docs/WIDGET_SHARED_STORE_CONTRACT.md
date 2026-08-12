@@ -51,7 +51,7 @@ App Group UserDefaults 只允许 `PulseSharedInterfacePreferences` 管理的 `in
 
 - 逻辑日、SwiftData model 与唯一 schema；
 - Repository、命令、验证与提交回执；
-- JSON 恢复合同；
+- 加密备份恢复合同；
 - 不可变 Widget 快照与 timeline 计划；
 - 不含业务事实的 `PulseSharedInterfacePreferences` 与纯 Foundation 日期本地化器。
 

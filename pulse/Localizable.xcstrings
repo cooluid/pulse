@@ -82,6 +82,159 @@
         }
       }
     },
+    "backup.passphrase.confirmation" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Confirm Password"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "再次输入密码"
+          }
+        }
+      }
+    },
+    "backup.passphrase.export.action" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Create Backup"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "创建备份"
+          }
+        }
+      }
+    },
+    "backup.passphrase.export.message" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Use at least 12 characters. Pulse cannot recover this password, so store it somewhere safe."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "请使用至少 12 个字符。一日一印无法找回此密码，请将它妥善保管。"
+          }
+        }
+      }
+    },
+    "backup.passphrase.export.title" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Encrypt Backup"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "加密备份"
+          }
+        }
+      }
+    },
+    "backup.passphrase.field" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Backup Password"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "备份密码"
+          }
+        }
+      }
+    },
+    "backup.passphrase.processing" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Processing encrypted backup…"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在处理加密备份…"
+          }
+        }
+      }
+    },
+    "backup.passphrase.restore.action" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unlock"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "解锁"
+          }
+        }
+      }
+    },
+    "backup.passphrase.restore.message" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enter the exact password used when this encrypted backup was created."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "请输入创建此加密备份时使用的完整密码。"
+          }
+        }
+      }
+    },
+    "backup.passphrase.restore.title" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unlock Backup"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "解锁备份"
+          }
+        }
+      }
+    },
     "calendar.status.before_habit" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -360,6 +513,108 @@
         }
       }
     },
+    "error.backup_authentication" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The password is incorrect or the backup has been changed or damaged."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "密码不正确，或备份文件已被修改或损坏。"
+          }
+        }
+      }
+    },
+    "error.backup_invalid" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The selected file is not a valid Pulse encrypted backup."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "所选文件不是有效的一日一印加密备份。"
+          }
+        }
+      }
+    },
+    "error.backup_passphrase" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Use a password of at least 12 characters and no more than 1,024 bytes."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "备份密码至少需要 12 个字符，且不能超过 1,024 bytes。"
+          }
+        }
+      }
+    },
+    "error.backup_passphrase_mismatch" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The two passwords do not match."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "两次输入的密码不一致。"
+          }
+        }
+      }
+    },
+    "error.backup_unavailable" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The encrypted backup could not be created."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "无法创建加密备份。"
+          }
+        }
+      }
+    },
+    "error.backup_version" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This backup uses a Pulse data version that this app does not support."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "该文件使用了当前版本不支持的一日一印数据格式。"
+          }
+        }
+      }
+    },
     "error.check_in_invalid" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -373,23 +628,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "本次签到未通过数据校验，请重试。"
-          }
-        }
-      }
-    },
-    "error.export" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "The export could not be created."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "无法创建导出文件。"
           }
         }
       }
@@ -428,57 +666,6 @@
         }
       }
     },
-    "error.primary_habit_unavailable" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Open Pulse and confirm your commitment before checking in."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "请先打开一日一印并确认主承诺，再进行签到。"
-          }
-        }
-      }
-    },
-    "error.import_invalid" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "The selected file is not a valid Pulse export."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "所选文件不是有效的一日一印导出数据。"
-          }
-        }
-      }
-    },
-    "error.import_version" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "This export was created by an unsupported Pulse data version."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "该文件使用了当前版本不支持的一日一印数据格式。"
-          }
-        }
-      }
-    },
     "error.notification_denied" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -492,6 +679,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "通知权限已关闭，可前往系统设置开启。"
+          }
+        }
+      }
+    },
+    "error.primary_habit_unavailable" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open Pulse and confirm your commitment before checking in."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "请先打开一日一印并确认主承诺，再进行签到。"
           }
         }
       }
@@ -889,18 +1093,99 @@
         }
       }
     },
-    "settings.data.footer" : {
+    "settings.backup.export" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Pulse stores check-ins locally. Export a JSON copy before deleting the app."
+            "value" : "Export Encrypted Backup"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "一日一印将签到记录保存在本机。删除 App 前请先导出 JSON 副本。"
+            "value" : "导出加密备份"
+          }
+        }
+      }
+    },
+    "settings.backup.restore" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restore Encrypted Backup"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "恢复加密备份"
+          }
+        }
+      }
+    },
+    "settings.backup.restore_confirmation.action" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Replace Current Data"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "替换当前数据"
+          }
+        }
+      }
+    },
+    "settings.backup.restore_confirmation.message" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The file contains %lld check-ins. Importing replaces all current check-in data and cannot be undone."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "文件包含 %lld 条签到记录。导入会替换当前全部签到数据，且无法撤销。"
+          }
+        }
+      }
+    },
+    "settings.backup.restore_confirmation.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Replace current check-in data?"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "替换当前签到数据？"
+          }
+        }
+      }
+    },
+    "settings.data.footer" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pulse protects check-ins on this device. Create an encrypted backup before deleting the app; its password cannot be recovered."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "一日一印会保护保存在本机的签到记录。删除 App 前请先创建加密备份；备份密码无法找回。"
           }
         }
       }
@@ -937,22 +1222,6 @@
         }
       }
     },
-    "settings.export" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Export Check-in Data"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "导出签到数据"
-          }
-        }
-      }
-    },
     "settings.haptics" : {
       "localizations" : {
         "en" : {
@@ -965,71 +1234,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "触觉反馈"
-          }
-        }
-      }
-    },
-    "settings.import" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Import Check-in Data"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "导入签到数据"
-          }
-        }
-      }
-    },
-    "settings.import_confirmation.action" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Replace Current Data"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "替换当前数据"
-          }
-        }
-      }
-    },
-    "settings.import_confirmation.message" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "The file contains %lld check-ins. Importing replaces all current check-in data and cannot be undone."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "文件包含 %lld 条签到记录。导入会替换当前全部签到数据，且无法撤销。"
-          }
-        }
-      }
-    },
-    "settings.import_confirmation.title" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Replace current check-in data?"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "替换当前签到数据？"
           }
         }
       }

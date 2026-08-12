@@ -212,7 +212,7 @@ final class PulseWidgetSnapshotTests: XCTestCase {
         clock: MutableWidgetClock
     ) throws -> SwiftDataCheckInRepository {
         SwiftDataCheckInRepository(
-            container: try PersistenceController.makeContainer(inMemory: true),
+            container: try PersistenceController.makeInMemoryContainer(),
             clock: clock,
             primaryHabitProvisioning: .createIfMissing(
                 try HabitIdentity(userName: "默认承诺", userPurpose: nil)

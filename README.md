@@ -11,7 +11,7 @@
 - App target：`pulse`
 - 测试 target：`pulseTests`、`pulseUITests`
 - 最低系统版本：iOS / iPadOS 18.0
-- 数据策略：本地优先，支持版本化 JSON 导出和全量恢复
+- 数据策略：App Group store 使用 iOS Data Protection；只支持口令保护的版本化 `.pulsebackup` 导出与全量恢复
 - 工程基线：Swift 6 严格并发、所有 target 警告即错误
 
 ## 文档入口

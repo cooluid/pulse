@@ -1,4 +1,5 @@
 import SwiftUI
+import SwiftData
 import OSLog
 import PulseCore
 
@@ -9,10 +10,18 @@ private enum StartupFailure: Equatable {
 }
 
 private enum PulseBootstrap {
-    private struct RuntimeStore {
-        let name: String
-        let inMemory: Bool
-        let url: URL?
+    private enum RuntimeStore {
+        case inMemory(name: String)
+        case disk(name: String, url: URL)
+
+        func makeContainer() throws -> ModelContainer {
+            switch self {
+            case .inMemory(let name):
+                try PersistenceController.makeInMemoryContainer(storeName: name)
+            case .disk(let name, let url):
+                try PersistenceController.makeContainer(storeName: name, storeURL: url)
+            }
+        }
     }
 
     case ready(PulseAppModel)
@@ -35,11 +44,7 @@ private enum PulseBootstrap {
                 userPurpose: nil
             )
             let store = try runtimeStore()
-            let container = try PersistenceController.makeContainer(
-                inMemory: store.inMemory,
-                storeName: store.name,
-                storeURL: store.url
-            )
+            let container = try store.makeContainer()
             let repository = SwiftDataCheckInRepository(
                 container: container,
                 clock: clock,
@@ -101,22 +106,23 @@ private enum PulseBootstrap {
             guard let identifier = UUID(uuidString: value) else {
                 preconditionFailure("PULSE_UI_TEST_STORE_ID must be a UUID.")
             }
-            return RuntimeStore(
+            let directoryURL = FileManager.default.temporaryDirectory
+                .appendingPathComponent("PulseUITests", isDirectory: true)
+                .appendingPathComponent(identifier.uuidString, isDirectory: true)
+            return .disk(
                 name: "PulseUITest-\(identifier.uuidString)",
-                inMemory: false,
-                url: nil
+                url: directoryURL.appendingPathComponent(PulseStoreContract.storeFilename)
             )
         }
         if ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil {
-            return RuntimeStore(name: "PulseUnitTests", inMemory: true, url: nil)
+            return .inMemory(name: "PulseUnitTests")
         }
 #endif
         let sharedLocation = try PulseStoreLocator().appGroupLocation(
             identifier: PulseRuntimeIdentity.appGroupIdentifier
         )
-        return RuntimeStore(
+        return .disk(
             name: PulseStoreContract.storeName,
-            inMemory: false,
             url: sharedLocation.storeURL
         )
     }

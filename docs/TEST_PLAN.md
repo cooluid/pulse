@@ -1,6 +1,6 @@
 # Pulse 1.0 测试计划
 
-文档版本：1.6
+文档版本：1.7
 状态：Canonical Acceptance Plan
 更新日期：2026-08-12
 
@@ -13,7 +13,7 @@
 - 真机、无障碍、系统通知、Widget 系统表面与分发分别需要真实证据；
 - 单项 GO 不能外推到未覆盖门禁。
 
-任何记录丢失、重复、错误逻辑日、无效导入破坏现有事实或虚假签到完成态都是 P0，并阻止工程 GO。
+任何记录丢失、重复、错误逻辑日、无效备份恢复破坏现有事实、明文备份泄漏或虚假签到完成态都是 P0，并阻止工程 GO。
 
 ## 2. 自动化矩阵
 
@@ -23,8 +23,8 @@
 | 逻辑日 | Gregorian、时区、DST、稳定起始日、未来/起始日前拒绝、记录时区保持 |
 | Repository | 唯一主项目、同日幂等、保存回执、删除、清除、rollback、双容器并发回读 |
 | 当前 schema | `PulseSchema 1.0.0` 真实磁盘读写、唯一键和目录创建；工程中不得出现预发布 schema 迁移器 |
-| JSON v1 | 唯一 JSON UTType、精确 format/version、完整 round-trip、大小/数量上限、身份/时区/来源/时间顺序/ID/日期唯一、旧开发 JSON 和未知版本失败关闭 |
-| Store | 只解析 App Group 正式路径；非法 group ID、group URL 缺失失败；不得存在私有路径、journal、staging 或 fallback |
+| 加密备份 v1 | 唯一 `.pulsebackup` UTType、PBKDF2 官方向量、随机 salt/nonce、AES-GCM round-trip、错误口令、逐段篡改、截断/尾随、未知版本/算法/参数、大小/数量上限、业务事实校验、预发布明文 JSON 失败关闭 |
+| Store | 只解析 App Group 正式路径；非法 group ID、group URL 缺失失败；目录/store/sidecar 统一文件保护；不得存在私有路径、事实缓存、journal、staging 或 fallback |
 | 设置 | 主题、周起始日、触觉、提醒时间；App Group 中 `interface.language` / `widget.style` 单一持久化、默认值、重置与损坏值失败关闭；App 私有设置不得复制语言 |
 | 提醒 | 60 日计划、平台预算、DST、已签到跳过、revision 竞态、关闭/清除取消、切语言重新协调 |
 | AppModel | 操作互斥、失败不提前改 UI、成功后刷新、导航复位、清除恢复日志 |
@@ -37,7 +37,7 @@
 - 首次启动确认主承诺，进入 Today；
 - 签到落盘，重启后保持，并在 History 出现；
 - Settings 隐藏一级品牌导航，返回后恢复；
-- 主承诺编辑、时区选择、导入、清除与失败表达；
+- 主承诺编辑、时区选择、加密备份导出/解锁/替换确认、清除与失败表达；
 - 主题和语言即时应用并跨重启保持；
 - English Settings 的返回按钮必须为 `Back`，不得出现 `返回`；中文对应 `返回`；
 - 中文 History 年度标题必须为 `记录 / 年份`，不得出现 `ARCHIVE`；
@@ -70,16 +70,17 @@ git diff --check
 还必须检查：
 
 - 所有 target 的 deployment target 都是 18.0；
-- App / Widget entitlement 与 App Group 一致；
+- App / Widget entitlement、App Group 与默认 Data Protection 等级一致；
 - `PrivacyInfo.xcprivacy` 被 App 和扩展正确打包；
 - `site` 是 `.gitmodules` 声明的正式 submodule，`git submodule status` 可解析；
-- 代码和权威文档不存在旧 schema、旧 JSON 升级、私有 store、journal 或 staging 的活引用。
+- 代码和权威文档不存在旧 schema、明文 JSON 文件协议/升级路径、私有 store、事实缓存、journal 或 staging 的活引用。
 
 ## 5. 真机与体验门禁
 
 自动化不能替代：
 
-- iPhone / iPad iOS 18 可用最旧运行时上的安装、启动、签到、设置、历史、重启和清除；
+- iPhone / iPad iOS 18 可用最旧运行时上的安装、启动、签到、设置、历史、重启、加密备份、恢复和清除；
+- 设备重启后首次解锁前 store 不可读；首次解锁后 App 与锁屏 Widget 能按合同恢复读取；
 - 通知首次授权、拒绝后恢复、实际到达、签到后取消和修改时间无旧请求；
 - 跟随系统/浅色/深色与 English/简体中文组合；
 - Dynamic Type 到最大 Accessibility 字号、VoiceOver、提高对比度、降低透明度、Reduce Motion；

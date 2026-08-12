@@ -21,7 +21,7 @@ final class CheckInRepositoryTests: XCTestCase {
 
     func testExistingStoreOnlyProvisioningNeverCreatesAPrimaryHabit() throws {
         let repository = SwiftDataCheckInRepository(
-            container: try PersistenceController.makeContainer(inMemory: true),
+            container: try PersistenceController.makeInMemoryContainer(),
             clock: MutableRepositoryClock(now: makeDate(day: 10, hour: 12)),
             primaryHabitProvisioning: .existingStoreOnly
         )
@@ -282,7 +282,7 @@ final class CheckInRepositoryTests: XCTestCase {
         let original = try repository.primaryHabit(systemTimeZone: timeZone)
         let originalRecord = try repository.checkIn(habitID: original.id)
         let checkedAt = makeDate(day: 9, hour: 9)
-        let duplicateDay = PulseExportPayload.RecordPayload(
+        let duplicateDay = PulseBackupPayload.RecordPayload(
             id: UUID(),
             logicalDay: "2026-08-09",
             checkedAt: checkedAt,
@@ -332,13 +332,13 @@ final class CheckInRepositoryTests: XCTestCase {
         )
 
         XCTAssertThrowsError(try repository.replaceAll(with: payload)) { error in
-            XCTAssertEqual(error as? PulseCoreError, .invalidImport)
+            XCTAssertEqual(error as? PulseCoreError, .invalidBackup)
         }
     }
 
     func testCorruptedHabitCannotEscapeRepositoryAsAValueSnapshot() throws {
         let clock = MutableRepositoryClock(now: makeDate(day: 10, hour: 9))
-        let container = try PersistenceController.makeContainer(inMemory: true)
+        let container = try PersistenceController.makeInMemoryContainer()
         let repository = try makeRepository(container: container, clock: clock)
         let original = try repository.primaryHabit(systemTimeZone: timeZone)
 
@@ -359,7 +359,7 @@ final class CheckInRepositoryTests: XCTestCase {
 
     func testCorruptedRecordCannotEscapeRepositoryAsAValueSnapshot() throws {
         let clock = MutableRepositoryClock(now: makeDate(day: 10, hour: 9))
-        let container = try PersistenceController.makeContainer(inMemory: true)
+        let container = try PersistenceController.makeInMemoryContainer()
         let repository = try makeRepository(container: container, clock: clock)
         let habit = try repository.primaryHabit(systemTimeZone: timeZone)
         let receipt = try repository.checkIn(habitID: habit.id)
@@ -396,11 +396,11 @@ final class CheckInRepositoryTests: XCTestCase {
         habitID: UUID = UUID(),
         createdAt: Date,
         exportedAt: Date,
-        records: [PulseExportPayload.RecordPayload]
-    ) -> PulseExportPayload {
-        PulseExportPayload(
-            format: PulseDataContract.formatIdentifier,
-            schemaVersion: PulseDataContract.exportSchemaVersion,
+        records: [PulseBackupPayload.RecordPayload]
+    ) -> PulseBackupPayload {
+        PulseBackupPayload(
+            format: PulseBackupContract.payloadFormatIdentifier,
+            schemaVersion: PulseBackupContract.payloadSchemaVersion,
             exportedAt: exportedAt,
             habit: .init(
                 id: habitID,
@@ -421,7 +421,7 @@ final class CheckInRepositoryTests: XCTestCase {
 
     private func makeRepository(clock: MutableRepositoryClock) throws -> SwiftDataCheckInRepository {
         try makeRepository(
-            container: PersistenceController.makeContainer(inMemory: true),
+            container: PersistenceController.makeInMemoryContainer(),
             clock: clock
         )
     }

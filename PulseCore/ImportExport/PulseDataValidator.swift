@@ -1,8 +1,8 @@
 import Foundation
 
-struct ValidatedPulseImport {
+struct ValidatedPulseBackup {
     struct Record {
-        let payload: PulseExportPayload.RecordPayload
+        let payload: PulseBackupPayload.RecordPayload
         let logicalDay: LogicalDay
     }
 
@@ -12,10 +12,10 @@ struct ValidatedPulseImport {
 }
 
 enum PulseDataValidator {
-    static func validate(_ payload: PulseExportPayload) throws -> ValidatedPulseImport {
-        guard payload.format == PulseDataContract.formatIdentifier,
-              payload.schemaVersion == PulseDataContract.exportSchemaVersion,
-              payload.records.count <= PulseDataContract.maximumRecordCount,
+    static func validate(_ payload: PulseBackupPayload) throws -> ValidatedPulseBackup {
+        guard payload.format == PulseBackupContract.payloadFormatIdentifier,
+              payload.schemaVersion == PulseBackupContract.payloadSchemaVersion,
+              payload.records.count <= PulseBackupContract.maximumRecordCount,
               let currentTimeZone = TimeZone(identifier: payload.habit.timeZoneIdentifier),
               let creationTimeZone = TimeZone(identifier: payload.habit.creationTimeZoneIdentifier),
               let startLogicalDay = LogicalDay(storageValue: payload.habit.startLogicalDay),
@@ -26,7 +26,7 @@ enum PulseDataValidator {
               LogicalDay.resolve(at: payload.exportedAt, timeZone: currentTimeZone)
                 >= startLogicalDay,
               payload.habit.createdAt <= payload.exportedAt else {
-            throw PulseCoreError.invalidImport
+            throw PulseCoreError.invalidBackup
         }
 
         let identity: HabitIdentity
@@ -36,12 +36,12 @@ enum PulseDataValidator {
                 storedPurpose: payload.habit.purpose
             )
         } catch {
-            throw PulseCoreError.invalidImport
+            throw PulseCoreError.invalidBackup
         }
 
         var logicalDays = Set<LogicalDay>()
         var recordIDs = Set<UUID>()
-        let records: [ValidatedPulseImport.Record] = try payload.records.map { record in
+        let records: [ValidatedPulseBackup.Record] = try payload.records.map { record in
             guard let logicalDay = LogicalDay(storageValue: record.logicalDay),
                   let recordTimeZone = TimeZone(identifier: record.timeZoneIdentifier),
                   LogicalDay.resolve(
@@ -54,12 +54,12 @@ enum PulseDataValidator {
                   record.createdAt <= payload.exportedAt,
                   logicalDays.insert(logicalDay).inserted,
                   recordIDs.insert(record.id).inserted else {
-                throw PulseCoreError.invalidImport
+                throw PulseCoreError.invalidBackup
             }
             return .init(payload: record, logicalDay: logicalDay)
         }
 
-        return ValidatedPulseImport(
+        return ValidatedPulseBackup(
             startLogicalDay: startLogicalDay,
             identity: identity,
             records: records

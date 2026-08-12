@@ -13,7 +13,7 @@ enum AppOperation: Equatable {
     case checkIn
     case deleteRecord
     case resetData
-    case importData
+    case restoreBackup
     case updateTimeZone
 }
 
@@ -309,14 +309,14 @@ final class PulseAppModel {
         }
     }
 
-    func makeExportDocument() throws -> PulseExportDocument {
+    func makeBackupDocument(passphrase: String) async throws -> PulseBackupDocument {
         guard let habit else {
-            throw PulseCoreError.exportUnavailable
+            throw PulseCoreError.backupUnavailable
         }
         let startLogicalDay = habit.startLogicalDay
-        let payload = PulseExportPayload(
-            format: PulseDataContract.formatIdentifier,
-            schemaVersion: PulseDataContract.exportSchemaVersion,
+        let payload = PulseBackupPayload(
+            format: PulseBackupContract.payloadFormatIdentifier,
+            schemaVersion: PulseBackupContract.payloadSchemaVersion,
             exportedAt: clock.now,
             habit: .init(
                 id: habit.id,
@@ -338,10 +338,12 @@ final class PulseAppModel {
                 )
             }
         )
-        return PulseExportDocument(payload: payload)
+        return try await Task.detached(priority: .userInitiated) {
+            try PulseBackupDocument(payload: payload, passphrase: passphrase)
+        }.value
     }
 
-    func decodeImport(from url: URL) throws -> PulseExportPayload {
+    func decodeBackup(from url: URL, passphrase: String) async throws -> PulseBackupPayload {
         let isSecurityScoped = url.startAccessingSecurityScopedResource()
         defer {
             if isSecurityScoped {
@@ -349,23 +351,15 @@ final class PulseAppModel {
             }
         }
 
-        let fileSize = try url.resourceValues(forKeys: [.fileSizeKey]).fileSize
-        guard let fileSize, fileSize <= PulseDataContract.maximumImportBytes else {
-            throw PulseCoreError.invalidImport
-        }
-        let data = try Data(contentsOf: url, options: [.mappedIfSafe])
-        let payload: PulseExportPayload
-        do {
-            payload = try PulseExportDocument.decode(data)
-        } catch {
-            throw PulseCoreError.invalidImport
-        }
-        return payload
+        let data = try PulseBackupDocument.readEncryptedData(from: url)
+        return try await Task.detached(priority: .userInitiated) {
+            try PulseBackupDocument.decode(data, passphrase: passphrase)
+        }.value
     }
 
-    func importData(_ payload: PulseExportPayload) async -> Bool {
+    func restoreBackup(_ payload: PulseBackupPayload) async -> Bool {
         guard operation == nil else { return false }
-        operation = .importData
+        operation = .restoreBackup
         invalidateReminderIntents()
         defer { operation = nil }
         do {

@@ -7,10 +7,12 @@ struct SettingsView: View {
     @Environment(\.openURL) private var openURL
     @Environment(\.locale) private var locale
     @State private var showsResetConfirmation = false
+    @State private var passphraseRequest: BackupPassphraseMode?
     @State private var showsExporter = false
-    @State private var exportDocument: PulseExportDocument?
+    @State private var exportDocument: PulseBackupDocument?
     @State private var showsImporter = false
-    @State private var pendingImport: PulseExportPayload?
+    @State private var selectedBackupURL: URL?
+    @State private var pendingRestore: PulseBackupPayload?
 
     var body: some View {
         Form {
@@ -32,6 +34,33 @@ struct SettingsView: View {
         .navigationBarTitleDisplayMode(.inline)
         .pulseSecondaryNavigation()
         .disabled(model.operation != nil)
+        .sheet(item: $passphraseRequest, onDismiss: finishPassphraseRequest) { mode in
+            BackupPassphraseView(mode: mode, locale: locale) { passphrase in
+                switch mode {
+                case .export:
+                    exportDocument = try await model.makeBackupDocument(passphrase: passphrase)
+                case .restore:
+                    guard let selectedBackupURL else {
+                        throw PulseCoreError.invalidBackup
+                    }
+                    pendingRestore = try await model.decodeBackup(
+                        from: selectedBackupURL,
+                        passphrase: passphrase
+                    )
+                }
+            }
+        }
+        .fileExporter(
+            isPresented: $showsExporter,
+            document: exportDocument,
+            contentType: .pulseBackup,
+            defaultFilename: backupFilename
+        ) { result in
+            if case .failure(let error) = result {
+                model.errorMessage = error.localizedDescription
+            }
+            exportDocument = nil
+        }
     }
 
     private var commitmentSection: some View {
@@ -220,75 +249,61 @@ struct SettingsView: View {
 
     private var exportButton: some View {
         Button {
-            do {
-                exportDocument = try model.makeExportDocument()
-                showsExporter = true
-            } catch {
-                model.errorMessage = error.localizedDescription
-            }
-        } label: {
-            Label("settings.export", systemImage: "square.and.arrow.up")
-        }
-        .accessibilityIdentifier("settings.export.button")
-        .fileExporter(
-            isPresented: $showsExporter,
-            document: exportDocument,
-            contentType: .json,
-            defaultFilename: exportFilename
-        ) { result in
-            if case .failure(let error) = result {
-                model.errorMessage = error.localizedDescription
-            }
             exportDocument = nil
+            passphraseRequest = .export
+        } label: {
+            Label("settings.backup.export", systemImage: "lock.doc")
         }
+        .accessibilityIdentifier("settings.backup.export.button")
     }
 
     private var importButton: some View {
         Button {
             showsImporter = true
         } label: {
-            Label("settings.import", systemImage: "square.and.arrow.down")
+            Label("settings.backup.restore", systemImage: "lock.open")
         }
-        .accessibilityIdentifier("settings.import.button")
+        .accessibilityIdentifier("settings.backup.restore.button")
         .fileImporter(
             isPresented: $showsImporter,
-            allowedContentTypes: PulseExportDocument.readableContentTypes
+            allowedContentTypes: PulseBackupDocument.readableContentTypes
         ) { result in
             do {
-                pendingImport = try model.decodeImport(from: result.get())
+                selectedBackupURL = try result.get()
+                passphraseRequest = .restore
             } catch {
                 model.errorMessage = error.localizedDescription
             }
         }
         .confirmationDialog(
-            "settings.import_confirmation.title",
+            "settings.backup.restore_confirmation.title",
             isPresented: Binding(
-                get: { pendingImport != nil },
-                set: { if !$0 { pendingImport = nil } }
+                get: { pendingRestore != nil },
+                set: { if !$0 { pendingRestore = nil } }
             ),
             titleVisibility: .visible
         ) {
-            if let pendingImport {
-                Button("settings.import_confirmation.action", role: .destructive) {
+            if let pendingRestore {
+                Button("settings.backup.restore_confirmation.action", role: .destructive) {
                     Task {
-                        if await model.importData(pendingImport) {
-                            self.pendingImport = nil
+                        if await model.restoreBackup(pendingRestore) {
+                            self.pendingRestore = nil
                         }
                     }
                 }
-                .accessibilityIdentifier("settings.import.confirm.button")
+                .accessibilityIdentifier("settings.backup.restore.confirm.button")
             }
             Button("action.cancel", role: .cancel) {
-                pendingImport = nil
+                pendingRestore = nil
             }
         } message: {
             Text(
                 String(
                     format: PulseLocalization.string(
-                        "settings.import_confirmation.message",
+                        "settings.backup.restore_confirmation.message",
                         locale: locale
                     ),
-                    pendingImport?.records.count ?? 0
+                    pendingRestore?.records.count ?? 0
                 )
             )
         }
@@ -348,8 +363,15 @@ struct SettingsView: View {
         )
     }
 
-    private var exportFilename: String {
-        PulseDataContract.exportFilename(day: model.today?.storageValue)
+    private var backupFilename: String {
+        PulseBackupContract.filename(day: model.today?.storageValue)
+    }
+
+    private func finishPassphraseRequest() {
+        selectedBackupURL = nil
+        if exportDocument != nil {
+            showsExporter = true
+        }
     }
 
     private var appVersion: String {
@@ -358,6 +380,196 @@ struct SettingsView: View {
         return [shortVersion, buildVersion.map { "(\($0))" }]
             .compactMap { $0 }
             .joined(separator: " ")
+    }
+}
+
+private enum BackupPassphraseMode: Identifiable {
+    case export
+    case restore
+
+    var id: Self { self }
+
+    var titleKey: String {
+        switch self {
+        case .export: "backup.passphrase.export.title"
+        case .restore: "backup.passphrase.restore.title"
+        }
+    }
+
+    var messageKey: String {
+        switch self {
+        case .export: "backup.passphrase.export.message"
+        case .restore: "backup.passphrase.restore.message"
+        }
+    }
+
+    var actionKey: String {
+        switch self {
+        case .export: "backup.passphrase.export.action"
+        case .restore: "backup.passphrase.restore.action"
+        }
+    }
+
+    var requiresConfirmation: Bool { self == .export }
+}
+
+private struct BackupPassphraseView: View {
+    let mode: BackupPassphraseMode
+    let locale: Locale
+    let onSubmit: @MainActor (String) async throws -> Void
+
+    @Environment(\.dismiss) private var dismiss
+    @FocusState private var focusedField: Field?
+    @State private var passphrase = ""
+    @State private var confirmation = ""
+    @State private var errorMessage: String?
+    @State private var isProcessing = false
+    @State private var showsProgress = false
+
+    private enum Field {
+        case passphrase
+        case confirmation
+    }
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section {
+                    Text(PulseLocalization.string(mode.messageKey, locale: locale))
+                        .font(.footnote)
+                        .foregroundStyle(PulseDesign.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+
+                    passphraseField(
+                        labelKey: "backup.passphrase.field",
+                        text: $passphrase,
+                        field: .passphrase
+                    )
+
+                    if mode.requiresConfirmation {
+                        passphraseField(
+                            labelKey: "backup.passphrase.confirmation",
+                            text: $confirmation,
+                            field: .confirmation
+                        )
+                    }
+                }
+
+                if showsProgress {
+                    Section {
+                        ProgressView(
+                            PulseLocalization.string(
+                                "backup.passphrase.processing",
+                                locale: locale
+                            )
+                        )
+                    }
+                }
+
+                if let errorMessage {
+                    Section {
+                        Label(errorMessage, systemImage: "exclamationmark.triangle.fill")
+                            .foregroundStyle(PulseDesign.action)
+                            .fixedSize(horizontal: false, vertical: true)
+                            .accessibilityIdentifier("backup.passphrase.error")
+                    }
+                }
+            }
+            .navigationTitle(PulseLocalization.string(mode.titleKey, locale: locale))
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("action.cancel") {
+                        clearSensitiveState()
+                        dismiss()
+                    }
+                    .disabled(isProcessing)
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button(PulseLocalization.string(mode.actionKey, locale: locale)) {
+                        submit()
+                    }
+                    .disabled(
+                        isProcessing
+                            || passphrase.isEmpty
+                            || (mode.requiresConfirmation && confirmation.isEmpty)
+                    )
+                    .accessibilityIdentifier("backup.passphrase.submit")
+                }
+            }
+            .onAppear { focusedField = .passphrase }
+            .onDisappear { clearSensitiveState() }
+        }
+        .presentationDetents([.medium, .large])
+        .interactiveDismissDisabled(isProcessing)
+    }
+
+    private func submit() {
+        errorMessage = nil
+        guard !mode.requiresConfirmation || passphrase == confirmation else {
+            errorMessage = PulseLocalization.string(
+                "error.backup_passphrase_mismatch",
+                locale: locale
+            )
+            clearSensitiveState()
+            focusedField = .passphrase
+            return
+        }
+        let submittedPassphrase = passphrase
+        clearSensitiveState()
+        focusedField = nil
+        isProcessing = true
+        Task {
+            Task { @MainActor in
+                try? await Task.sleep(for: .seconds(PulseDesign.savingIndicatorDelay))
+                if isProcessing {
+                    showsProgress = true
+                }
+            }
+            do {
+                try await onSubmit(submittedPassphrase)
+                isProcessing = false
+                showsProgress = false
+                dismiss()
+            } catch {
+                isProcessing = false
+                showsProgress = false
+                errorMessage = PulseErrorPresentation.localizedMessage(for: error, locale: locale)
+                    ?? PulseLocalization.string("error.generic", locale: locale)
+                focusedField = .passphrase
+            }
+        }
+    }
+
+    private func passphraseField(
+        labelKey: String,
+        text: Binding<String>,
+        field: Field
+    ) -> some View {
+        let label = PulseLocalization.string(labelKey, locale: locale)
+        return VStack(alignment: .leading, spacing: PulseDesign.spacing4) {
+            Text(label)
+                .font(.caption)
+                .foregroundStyle(PulseDesign.secondary)
+                .accessibilityHidden(true)
+            SecureField(label, text: text)
+                .focused($focusedField, equals: field)
+                .textContentType(field == .confirmation || mode == .export ? .newPassword : .password)
+                .textInputAutocapitalization(.never)
+                .autocorrectionDisabled()
+                .privacySensitive()
+                .accessibilityLabel(label)
+                .accessibilityIdentifier(
+                    field == .passphrase
+                        ? "backup.passphrase.field"
+                        : "backup.passphrase.confirmation"
+                )
+        }
+    }
+
+    private func clearSensitiveState() {
+        passphrase.removeAll(keepingCapacity: false)
+        confirmation.removeAll(keepingCapacity: false)
     }
 }
 

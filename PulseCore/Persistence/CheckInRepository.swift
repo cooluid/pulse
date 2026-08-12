@@ -11,7 +11,7 @@ public protocol CheckInRepositoryProtocol: AnyObject {
     func delete(recordID: UUID) throws
     func updateTimeZone(habitID: UUID, identifier: String) throws
     func resetAll(systemTimeZone: TimeZone) throws -> HabitSnapshot
-    func replaceAll(with payload: PulseExportPayload) throws -> HabitSnapshot
+    func replaceAll(with payload: PulseBackupPayload) throws -> HabitSnapshot
 }
 
 public enum PrimaryHabitProvisioning: Sendable {
@@ -285,9 +285,9 @@ public final class SwiftDataCheckInRepository: CheckInRepositoryProtocol {
         return try validatedHabitSnapshot(newHabit)
     }
 
-    public func replaceAll(with payload: PulseExportPayload) throws -> HabitSnapshot {
-        guard payload.schemaVersion == PulseDataContract.exportSchemaVersion else {
-            throw PulseCoreError.unsupportedImportVersion(payload.schemaVersion)
+    public func replaceAll(with payload: PulseBackupPayload) throws -> HabitSnapshot {
+        guard payload.schemaVersion == PulseBackupContract.payloadSchemaVersion else {
+            throw PulseCoreError.unsupportedBackupPayloadVersion(payload.schemaVersion)
         }
         let validated = try PulseDataValidator.validate(payload)
 

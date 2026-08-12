@@ -89,4 +89,30 @@ final class PulseStoreLocationTests: XCTestCase {
             XCTAssertEqual(error as? PulseStoreLocationError, .invalidDirectoryURL)
         }
     }
+
+    func testStoreProtectionCoversDirectoryAndExistingFiles() throws {
+        let root = FileManager.default.temporaryDirectory
+            .appendingPathComponent(UUID().uuidString, isDirectory: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        let store = root.appendingPathComponent("Pulse.store")
+        let sidecar = root.appendingPathComponent("Pulse.store-wal")
+        try Data("store".utf8).write(to: store)
+        try Data("wal".utf8).write(to: sidecar)
+
+        var protectedPaths = Set<String>()
+        try PulseStoreProtection.enforce(
+            in: root,
+            fileManager: .default,
+            attributeApplier: { attributes, path in
+                XCTAssertEqual(
+                    attributes[.protectionKey] as? FileProtectionType,
+                    PulseStoreProtection.fileProtectionType
+                )
+                protectedPaths.insert(path)
+            }
+        )
+
+        XCTAssertEqual(protectedPaths, Set([root.path, store.path, sidecar.path]))
+    }
 }

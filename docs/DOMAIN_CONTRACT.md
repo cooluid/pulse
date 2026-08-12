@@ -1,9 +1,9 @@
 # Pulse 签到业务合同
 
-文档版本：1.5<br>
+文档版本：1.6<br>
 状态：Canonical Contract
 
-本文档是日期、签到事实和导入恢复的唯一业务规则来源。
+本文档是日期、签到事实和加密备份恢复的唯一业务规则来源。
 
 ## 1. 数据事实
 
@@ -74,11 +74,11 @@ recordKey = lowercased(habitID) + ":" + logicalDay
 
 跨 SwiftData、UserDefaults 和通知中心无法形成单一数据库事务，因此开始前写入持久化的 `maintenance.resetPending` 操作日志。任一步骤中断时，下次启动会幂等地完成清除；只有全部完成后才删除日志并向 UI 报告成功。
 
-## 6. JSON v1 恢复合同
+## 6. 加密备份 v1 恢复合同
 
-恢复文件必须同时满足：
+恢复文件首先必须通过 [DATA_ENCRYPTION_CONTRACT.md](./DATA_ENCRYPTION_CONTRACT.md) 定义的二进制容器、PBKDF2-HMAC-SHA256、AES-256-GCM 认证、大小上限和口令边界。只有认证解密成功后，内存中的负载才进入以下业务校验：
 
-- `format == "co.fanr.pulse.export"` 且正式导出 `schemaVersion == 1`；
+- `format == "co.fanr.pulse.payload"` 且 `schemaVersion == 1`；
 - 文件不超过 32 MiB，记录不超过 50,000 条；
 - 项目名称、可选说明和身份确认状态满足第 1.1 节；
 - 当前时区和创建时区都有效；
@@ -88,13 +88,13 @@ recordKey = lowercased(habitID) + ":" + logicalDay
 - 记录不早于项目创建/起始日，写入时间不早于签到时间且不晚于导出时间；
 - 记录 ID 和逻辑日都唯一。
 
-完整验证成功后才全量替换；任一校验或保存失败都不修改现有事实。导入不覆盖设备偏好，完成后重新协调提醒。
+完整验证成功并经用户再次确认后才全量替换；任一认证、校验或保存失败都不修改现有事实。恢复不覆盖设备偏好，完成后重新协调提醒。
 
-`PulseExportCodec` 先读取最小 `format/schemaVersion` 信封，只接受完整 v1 后再进入同一语义校验和 Repository 替换路径。除此之外不猜字段、不尝试多解码器碰运气、不持久化双版本模型，也不升级预发布文件。
+`PulseEncryptedBackupCodec` 是唯一容器密码学入口，`PulseBackupPayloadCodec` 是认证后负载的唯一编解码与校验入口；只接受完整 v1 后再进入 Repository 替换路径。除此之外不猜参数、不尝试多解码器碰运气、不持久化双版本模型，也不升级预发布文件。
 
-文件选择器只消费 `PulseExportDocument.readableContentTypes` 声明的 JSON 类型，并通过安全作用域读取文件提供器 URL。App 必须声明 `LSSupportsOpeningDocumentsInPlace`，确保 iCloud Drive 等文件提供器可交付原文件；扩展名与提供器元数据只负责筛选，内容、格式标识和 schema 校验才是导入权威边界。
+文件选择器只消费 `PulseBackupDocument.readableContentTypes` 声明的 `.pulsebackup` 类型，并通过安全作用域读取文件提供器 URL。App 必须声明 `LSSupportsOpeningDocumentsInPlace`，确保 iCloud Drive 等文件提供器可交付原文件；扩展名与提供器元数据只负责筛选，容器头、认证 tag、内部格式标识和 schema 校验才是恢复权威边界。
 
-缺少正式格式标识、版本不等于 1 或缺少当前字段的开发期 JSON 不是发布合同，必须明确拒绝。Pulse 1.0 发布后，`PulseSchema 1.0.0` 与 JSON v1 成为必须长期保留的公开基线；后续任何 schema 或文件协议变化都必须新增显式迁移、上一公开版本 fixture 和失败恢复测试，不能再次清洁断代。
+预发布明文 JSON、未知容器参数、版本不等于 1 或缺少当前字段的负载不是发布合同，必须明确拒绝。Pulse 1.0 发布后，`PulseSchema 1.0.0` 与加密备份 v1 成为必须长期保留的公开基线；后续任何 schema 或文件协议变化都必须新增显式迁移、上一公开版本 fixture 和失败恢复测试，不能再次清洁断代。
 
 ## 7. 范围变更
 

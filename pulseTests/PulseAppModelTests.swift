@@ -225,7 +225,7 @@ final class PulseAppModelTests: XCTestCase {
     ) throws -> TestContext {
         let clock = MutablePulseClock(now: makeDate(day: 10, hour: 12))
         let repository = SwiftDataCheckInRepository(
-            container: try PersistenceController.makeContainer(inMemory: true),
+            container: try PersistenceController.makeInMemoryContainer(),
             clock: clock,
             primaryHabitProvisioning: .createIfMissing(
                 try HabitIdentity(userName: "Test Habit", userPurpose: nil)

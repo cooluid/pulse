@@ -1,6 +1,6 @@
 # 一日一印（Pulse）1.0 发布范围合同
 
-文档版本：1.5
+文档版本：1.6
 状态：Canonical Release Contract
 更新时间：2026-08-12
 
@@ -22,10 +22,10 @@ Pulse 1.0 只解决一个问题：让单个用户每天可靠地记录一次签�
 - 删除单条签到记录和清除全部数据。
 - 每日本地提醒；提醒遵循签到项目固定时区，以滚动 60 个日历日的一次性计划运行并在 App 活跃时刷新。
 - 一周起始日、触觉反馈和签到时区设置。
-- Pulse JSON v1 导出和校验后的全量恢复。
+- Pulse 加密备份 v1 导出和校验后的全量恢复；用户设置独立口令，密码无法找回。
 - English / 简体中文应用内切换并同步 App 与 Widget 内容；跟随系统 / 浅色 / 深色主题模式，动态字体、VoiceOver、iPhone 和 iPad 布局。Widget Gallery 与 AppIntent 等系统托管元数据仍按 iOS 的语言规则显示。
 
-JSON 是 1.0 唯一恢复协议。CSV 不承担恢复职责，也不进入 1.0。
+`.pulsebackup` 是 1.0 唯一恢复协议。预发布明文 JSON 与 CSV 均不承担恢复职责，也不进入 1.0。
 
 ## 3. 明确不进入 1.0
 
@@ -42,8 +42,8 @@ JSON 是 1.0 唯一恢复协议。CSV 不承担恢复职责，也不进入 1.0�
 
 ## 4. 数据与隐私承诺
 
-- 签到数据默认只保存在 App 与 Widget 共用的本地 App Group 容器；它仍属于本机应用沙盒边界，不上传到服务器或 iCloud。
-- 用户主动导出后，导出文件的保管责任转移给用户。
+- 签到数据默认只保存在 App 与 Widget 共用、受 iOS Data Protection 保护的本地 App Group 容器；它仍属于本机应用沙盒边界，不上传到服务器或 iCloud。
+- 用户主动创建的备份使用独立口令加密；App 不保存或上传口令。导出后，备份文件和密码的保管责任转移给用户。
 - 未启用云同步时，卸载应用会删除沙盒内数据；发布文案必须明确说明。
 - 应用不上传签到记录，不集成广告或第三方分析 SDK。
 - 除用户主动开启的本地通知外，不请求其他系统权限。
@@ -56,11 +56,11 @@ JSON 是 1.0 唯一恢复协议。CSV 不承担恢复职责，也不进入 1.0�
 | 显示名称 | 简体中文 `一日一印`；英文及其他语言 `Pulse` | 已确认并由系统本地化 |
 | Bundle ID | `co.fanr.pulse` | 已确认；命名空间来自用户持有的 `fanr.co` |
 | Marketing Version | `1.0` | 可作为首版候选 |
-| Build Number | `1` | 当前首个候选；App Store Connect 已接受上传。后续构建必须在源码统一递增 App 与 Widget build number，并重新走完整候选流程 |
+| Build Number | `2` | 加密基线的新候选；App 与 Widget 已在源码统一递增。已上传的 Build 1 不含本合同，必须被 Build 2 取代并重新走完整候选流程 |
 | 最低系统版本 | iOS / iPadOS 18.0 | 已在全部 target 统一；当前 iOS 18.6 Simulator 工程验证通过，可用最旧 18.x 与真机仍是发布门禁 |
-| Development Team | `6N3D8YA2FY` | App 与 Widget 的正式 Archive、App Store Connect 导出与上传已通过；Cloud Managed Apple Distribution、Store profile、App Group 与 `get-task-allow=false` 已核验，Apple 处理、TestFlight 回归与商店提交仍待完成 |
+| Development Team | `6N3D8YA2FY` | Build 1 的正式 Archive、App Store Connect 导出与上传已通过；Build 2 必须重新核验 Cloud Managed Apple Distribution、Store profile、App Group、Data Protection entitlement、`get-task-allow=false`、出口合规声明与上传结果 |
 | Widget 身份 | `co.fanr.pulse.widgets` / `group.co.fanr.pulse` | 两个开发描述文件均含正式 App Group；当前共享 store 已重定为首发唯一 schema，既有真机证据不能自动转移到本次 clean-break 候选，必须刷新系统表面与压力矩阵 |
-| 数据策略 | 本地优先 + Pulse JSON 恢复 | 1.0 推荐方案 |
+| 数据策略 | iOS Data Protection + Pulse 加密备份恢复 | 1.0 正式方案；备份/恢复不进入未来付费墙 |
 | AppIcon | “开放日环”，草绿 Default / Dark / Tinted | 几何与生成合同已录用；当前版本待最终视觉确认 |
 | 隐私政策 | `https://fanr.co/pulse/privacy/` | 已公开，并由 App 设置页直接链接 |
 | 产品支持 | `https://fanr.co/pulse/support/` | 已公开，联系邮箱为 `400822@163.com` |
@@ -68,7 +68,7 @@ JSON 是 1.0 唯一恢复协议。CSV 不承担恢复职责，也不进入 1.0�
 
 Bundle ID 一旦用于正式分发，就成为安装、钥匙串、通知和后续升级身份的一部分，不能把临时字符串带入发布后再随意更换。
 
-历史人工验收只证明当时构建中明确观察到的结果。本次候选的产品负责人确认、自动化、Archive、Apple Distribution 与上传证据分别记录在 `IMPLEMENTATION_STATUS.md` 和 `RELEASE_CANDIDATE_1_0_1.md`；它们仍不能替代尚未完成的 Apple 构建处理、TestFlight 回归和商店提交。
+历史人工验收只证明当时构建中明确观察到的结果。Build 1 的上传历史保留在 `RELEASE_CANDIDATE_1_0_1.md`；当前 Build 2 的自动化、加密、Archive 与 Apple Distribution 证据记录在 `IMPLEMENTATION_STATUS.md` 和 `RELEASE_CANDIDATE_1_0_2.md`。Build 2 仍处于未提交、未上传的预候选状态，这些证据不能替代源码可追溯性、线上政策同步、TestFlight 回归和商店提交。
 
 ## 6. 1.0 发布门禁
 

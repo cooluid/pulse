@@ -18,8 +18,47 @@
 	<string>$(MARKETING_VERSION)</string>
 	<key>CFBundleVersion</key>
 	<string>$(CURRENT_PROJECT_VERSION)</string>
+	<key>CFBundleDocumentTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeName</key>
+			<string>Pulse Encrypted Backup</string>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>LSHandlerRank</key>
+			<string>Owner</string>
+			<key>LSItemContentTypes</key>
+			<array>
+				<string>co.fanr.pulse.backup</string>
+			</array>
+		</dict>
+	</array>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
 	<key>LSSupportsOpeningDocumentsInPlace</key>
 	<true/>
+	<key>UTExportedTypeDeclarations</key>
+	<array>
+		<dict>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.data</string>
+			</array>
+			<key>UTTypeDescription</key>
+			<string>Pulse Encrypted Backup</string>
+			<key>UTTypeIdentifier</key>
+			<string>co.fanr.pulse.backup</string>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>pulsebackup</string>
+				</array>
+				<key>public.mime-type</key>
+				<string>application/vnd.fanr.pulse-backup</string>
+			</dict>
+		</dict>
+	</array>
 	<key>PulseAppGroupIdentifier</key>
 	<string>$(PULSE_APP_GROUP_IDENTIFIER)</string>
 	<key>UIApplicationSceneManifest</key>

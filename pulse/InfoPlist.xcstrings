@@ -20,7 +20,6 @@
     },
     "CFBundleName" : {
       "comment" : "Bundle name",
-      "extractionState" : "extracted_with_value",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -35,6 +34,9 @@
           }
         }
       }
+    },
+    "Pulse Encrypted Backup" : {
+
     }
   },
   "version" : "1.0"

@@ -168,6 +168,50 @@ final class PulseFlowUITests: XCTestCase {
         XCTAssertFalse(app.buttons["primary.navigation.today"].exists)
     }
 
+    func testEncryptedBackupRequiresMatchingProductPassphrase() throws {
+        configureApp()
+        launchAndConfirmDefaultCommitment()
+
+        app.buttons["settings.navigation.open.today"].tap()
+        let exportButton = app.buttons["settings.backup.export.button"]
+        XCTAssertTrue(exportButton.waitForExistence(timeout: 3))
+        for _ in 0..<6 where exportButton.frame.maxY > app.frame.maxY - 80 {
+            app.swipeUp()
+        }
+        XCTAssertTrue(exportButton.isHittable)
+        XCTAssertLessThanOrEqual(exportButton.frame.maxY, app.frame.maxY - 80)
+        exportButton.tap()
+
+        XCTAssertTrue(app.navigationBars["加密备份"].waitForExistence(timeout: 3))
+        let passphraseField = app.secureTextFields["backup.passphrase.field"]
+        let confirmationField = app.secureTextFields["backup.passphrase.confirmation"]
+        let submitButton = app.buttons["backup.passphrase.submit"]
+        XCTAssertTrue(passphraseField.waitForExistence(timeout: 3))
+        XCTAssertTrue(confirmationField.exists)
+        XCTAssertFalse(submitButton.isEnabled)
+
+        passphraseField.typeText("short")
+        confirmationField.tap()
+        confirmationField.typeText("short")
+        submitButton.tap()
+        let error = app.staticTexts["backup.passphrase.error"]
+        XCTAssertTrue(error.waitForExistence(timeout: 3))
+        XCTAssertTrue(error.label.contains("至少需要 12 个字符"))
+
+        replaceText(in: passphraseField, with: "correct horse battery staple")
+        replaceText(in: confirmationField, with: "correct horse battery staplx")
+        submitButton.tap()
+        XCTAssertTrue(error.label.contains("两次输入的密码不一致"))
+
+        let attachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
+        attachment.name = "Encrypted backup passphrase validation"
+        attachment.lifetime = .keepAlways
+        add(attachment)
+
+        app.buttons["取消"].tap()
+        XCTAssertFalse(app.navigationBars["加密备份"].exists)
+    }
+
     func testThemeAndLanguageChoicesApplyImmediatelyAndPersistAcrossRelaunch() throws {
         configureApp()
         launchAndConfirmDefaultCommitment()

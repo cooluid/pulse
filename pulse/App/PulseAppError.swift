@@ -22,12 +22,16 @@ enum PulseErrorPresentation {
                 "error.primary_habit_unavailable"
             case .invalidHabitIdentity:
                 "error.habit_identity"
-            case .exportUnavailable:
-                "error.export"
-            case .unsupportedImportVersion:
-                "error.import_version"
-            case .invalidImport:
-                "error.import_invalid"
+            case .backupUnavailable:
+                "error.backup_unavailable"
+            case .invalidBackupPassphrase:
+                "error.backup_passphrase"
+            case .backupAuthenticationFailed:
+                "error.backup_authentication"
+            case .unsupportedBackupContainerVersion, .unsupportedBackupPayloadVersion:
+                "error.backup_version"
+            case .invalidBackup:
+                "error.backup_invalid"
             }
             return PulseLocalization.string(key, locale: locale)
         }
