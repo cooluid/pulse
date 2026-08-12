@@ -56,9 +56,9 @@ Pulse 1.0 只解决一个问题：让单个用户每天可靠地记录一次签�
 | 显示名称 | 简体中文 `一日一印`；英文及其他语言 `Pulse` | 已确认并由系统本地化 |
 | Bundle ID | `co.fanr.pulse` | 已确认；命名空间来自用户持有的 `fanr.co` |
 | Marketing Version | `1.0` | 可作为首版候选 |
-| Build Number | `2` | 加密基线的新候选；App 与 Widget 已在源码统一递增。已上传的 Build 1 不含本合同，必须被 Build 2 取代并重新走完整候选流程 |
+| Build Number | `2` | 加密基线的唯一候选；App 与 Widget 已统一递增，并已从提交 `17f2ef44dd1fc2871ac25d181c057effa2e227e4` 构建上传。Apple 处理完成，当前为 `Ready to Submit`、`Expires in 90 days`；Build 1 已被取代 |
 | 最低系统版本 | iOS / iPadOS 18.0 | 已在全部 target 统一；当前 iOS 18.6 Simulator 工程验证通过，可用最旧 18.x 与真机仍是发布门禁 |
-| Development Team | `6N3D8YA2FY` | Build 1 的正式 Archive、App Store Connect 导出与上传已通过；Build 2 必须重新核验 Cloud Managed Apple Distribution、Store profile、App Group、Data Protection entitlement、`get-task-allow=false`、出口合规声明与上传结果 |
+| Development Team | `6N3D8YA2FY` | Build 2 的正式 Archive、Cloud Managed Apple Distribution、Store profile、App Group、Data Protection entitlement、`get-task-allow=false`、出口合规声明和上传结果均已核验；Delivery UUID 为 `0373b760-05e0-4299-bb50-6bd6ec3d2959` |
 | Widget 身份 | `co.fanr.pulse.widgets` / `group.co.fanr.pulse` | 两个开发描述文件均含正式 App Group；当前共享 store 已重定为首发唯一 schema，既有真机证据不能自动转移到本次 clean-break 候选，必须刷新系统表面与压力矩阵 |
 | 数据策略 | iOS Data Protection + Pulse 加密备份恢复 | 1.0 正式方案；备份/恢复不进入未来付费墙 |
 | AppIcon | “开放日环”，草绿 Default / Dark / Tinted | 几何与生成合同已录用；当前版本待最终视觉确认 |
@@ -68,7 +68,7 @@ Pulse 1.0 只解决一个问题：让单个用户每天可靠地记录一次签�
 
 Bundle ID 一旦用于正式分发，就成为安装、钥匙串、通知和后续升级身份的一部分，不能把临时字符串带入发布后再随意更换。
 
-历史人工验收只证明当时构建中明确观察到的结果。Build 1 的上传历史保留在 `RELEASE_CANDIDATE_1_0_1.md`；当前 Build 2 的自动化、加密、Archive 与 Apple Distribution 证据记录在 `IMPLEMENTATION_STATUS.md` 和 `RELEASE_CANDIDATE_1_0_2.md`。Build 2 仍处于未提交、未上传的预候选状态，这些证据不能替代源码可追溯性、线上政策同步、TestFlight 回归和商店提交。
+历史人工验收只证明当时构建中明确观察到的结果。Build 1 的上传历史保留在 `RELEASE_CANDIDATE_1_0_1.md`；当前 Build 2 的自动化、加密、Archive、上传与 Apple 处理证据记录在 `IMPLEMENTATION_STATUS.md` 和 `RELEASE_CANDIDATE_1_0_2.md`。Build 2 已成为唯一发布候选，但 `Ready to Submit` 不能替代真实设备 TestFlight 回归、外部 Beta App Review（如启用）或 App Store Review 提交。
 
 ## 6. 1.0 发布门禁
 

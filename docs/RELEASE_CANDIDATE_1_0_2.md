@@ -1,12 +1,16 @@
-# Pulse 1.0 (2) 加密预候选证据
+# Pulse 1.0 (2) 发布候选与 TestFlight 交付证据
 
-状态：**DISTRIBUTION ARTIFACT GO / RELEASE CANDIDATE NO-GO / NOT UPLOADED**  
-生成日期：2026-08-12  
-源码身份：当前 Pulse 与公开站点 checkout 均有未提交改动；本文件不伪造源码提交号
+状态：**BUILD UPLOAD GO / APPLE PROCESSING COMPLETE / READY TO SUBMIT / PUBLIC RELEASE NO-GO**
 
-本文件记录加密实现完成后的产物级验证。它不是上传授权，也不是正式发布候选声明。只有源码提交、线上政策同步、从提交重建和候选复核全部完成后，才能晋级为可上传候选。
+生成日期：2026-08-12
 
-## 1. 预候选身份
+Pulse 源码提交：`17f2ef44dd1fc2871ac25d181c057effa2e227e4`
+
+公开站点提交：`fdcf9f31d4d6b5ec09ed221d8cbac061a31f5473`
+
+本文件记录 Pulse 1.0 (2) 从不可变源码、公开政策、正式 Archive、App Store Connect 导出、上传到 Apple 处理完成的完整证据链。`Ready to Submit` 只表示构建已完成处理并可进入后续 TestFlight / 提交流程，不表示已分配测试员、已通过外部 Beta App Review、已提交 App Store Review 或已公开发布。
+
+## 1. 候选身份
 
 | 项目 | 值 |
 | --- | --- |
@@ -21,82 +25,89 @@
 | Backup UTI | `co.fanr.pulse.backup` |
 | Backup extension | `.pulsebackup` |
 
-版本号由工程显式管理；[`AppStoreConnectExportOptions.plist`](../Config/AppStoreConnectExportOptions.plist) 固定 `manageAppVersionAndBuildNumber=false`。App 与 Widget 必须共同使用 Build 2，不允许上传工具静默改号。
+版本号由工程显式管理；[`AppStoreConnectExportOptions.plist`](../Config/AppStoreConnectExportOptions.plist) 固定 `manageAppVersionAndBuildNumber=false`。上传配置由该唯一权威配置机械派生，只把 `destination` 从 `export` 改为 `upload`，没有维护第二套手写签名参数。
 
-## 2. 加密与数据保护合同
+## 2. 源码与公开政策
+
+- Pulse `main` 与 `origin/main` 在构建前均精确指向 `17f2ef44dd1fc2871ac25d181c057effa2e227e4`，工作区干净。
+- 公开站点 `main` 与 `origin/main` 已同步到 `fdcf9f31d4d6b5ec09ed221d8cbac061a31f5473`。
+- 网站依赖安全审计为 0 漏洞，lint 与生产构建通过。
+- 生产部署使用带 SHA-256 校验的版本化候选和原子符号链接切换；当前线上版本目录为 `/var/www/fanr.co.releases/fdcf9f31d4d6-20260812T083855Z`。
+- `https://fanr.co/pulse/`、`/pulse/privacy/` 与 `/pulse/support/` 均返回 HTTP 200；线上正文包含加密备份、密码不可恢复和 iOS Data Protection 说明，不再包含旧“JSON 导出与恢复”描述。
+
+## 3. 加密与数据保护合同
 
 - App Group SwiftData store、SQLite sidecar 和 Pulse store 目录使用 `NSFileProtectionCompleteUntilFirstUserAuthentication`。
-- App 与 Widget App ID、开发描述文件、Store 描述文件和最终代码签名使用同一 Data Protection entitlement。
+- App 与 Widget App ID、Store 描述文件和最终代码签名使用同一 Data Protection entitlement。
 - 正式外部格式只有 `.pulsebackup` v1；旧明文 JSON 不接受、不升级、不兼容。
 - KDF 为 PBKDF2-HMAC-SHA256，600,000 次迭代、16-byte 随机盐；加密为 AES-256-GCM，12-byte nonce、16-byte tag。
 - 容器头、盐和 nonce 作为 AAD 被认证；错误密码、任意篡改、截断、尾随内容、未知版本/算法或敌意长度都失败关闭。
 - 密码不保存、不上传、不可恢复；加密备份与恢复不受未来内购权益限制。
+- App 与 Widget 的 `ITSAppUsesNonExemptEncryption` 都为 `false`；当前只使用 Apple 平台内置加密能力。
 
 权威格式与威胁模型见 [数据加密合同](./DATA_ENCRYPTION_CONTRACT.md)。
 
-## 3. 自动化工程证据
+## 4. 自动化工程证据
 
 环境：Xcode 26.4（17E192），iPhone 16 Pro，iOS 18.6 Simulator，arm64。
 
 - 全量测试 `108/108` 通过，0 失败、0 跳过；单元/集成 93 项，UI 15 项。
-- Debug Simulator 构建通过。
-- Release `generic/platform=iOS` 构建通过。
-- Release 静态分析通过。
+- Release 静态分析成功。
 - 18 项品牌资产生成检查通过。
-- String Catalog 解析和 English / 简体中文生产键完整性通过。
-- Pulse 与公开站点仓库 `git diff --check` 通过；公开站点 `npm run lint` 与 `npm run build` 通过。
+- String Catalog 可解析，English / 简体中文生产键完整。
 
-## 4. Archive 证据
+可追溯证据根目录：
 
-临时 Archive：
+`/Users/fanr/Documents/work/pulse-release-artifacts/Pulse-1.0.2-17f2ef44-formal`
 
-`/tmp/Pulse-1.0.2-encryption-final2.xcarchive`
+- 测试日志：`test.log`
+- 测试结果：`PulseTests.xcresult`
+- 静态分析日志：`analyze.log`
+- Archive 日志：`archive.log`
+- 导出日志：`export.log`
+- 上传日志：`upload.log`
+- Xcode 分发日志：`pulse_2026-08-12_16-52-28.619.xcdistributionlogs`
 
-- `xcodebuild archive -allowProvisioningUpdates` 成功。
-- Archive 内 App 与 Widget 均为 `1.0 (2)`、arm64、最低 iOS 18.0。
-- App 与 Widget 的 App Group 均只有 `group.co.fanr.pulse`。
-- App 与 Widget 都包含 `NSFileProtectionCompleteUntilFirstUserAuthentication`。
-- App 二进制与 dSYM UUID：`E9E2051E-896A-308B-8725-57875D3C8D23`。
-- Widget 二进制与 dSYM UUID：`17B8BFF8-EC5A-3F85-B7DB-2FE7A84E6C15`。
-- 内嵌隐私清单与源码 SHA-256：`a331d51864743ebe4e00dd22360b4a538b6b3ac26a6b3eb54094e60a36959a12`。
+## 5. 正式 Archive 与 IPA
 
-Archive 初始签名为 Apple Development，仅证明 Archive 构建、结构和能力配置成立，不是最终分发身份。
+Archive：
 
-## 5. App Store Connect 导出证据
+`/Users/fanr/Documents/work/pulse-release-artifacts/Pulse-1.0.2-17f2ef44-formal/Pulse-1.0.2-17f2ef44.xcarchive`
 
-临时导出目录：
+IPA：
 
-`/tmp/Pulse-1.0.2-encryption-app-store-final2-20260812`
+`/Users/fanr/Documents/work/pulse-release-artifacts/Pulse-1.0.2-17f2ef44-formal/AppStoreExport/pulse.ipa`
 
-IPA：`pulse.ipa`  
-IPA SHA-256：`4c13f8569bb60053099b8c1e22daabb21968d74788eaae7d2e5b48fb1ce3a663`
+IPA SHA-256：`7944287f128bcd8a64ae6bff077c3ddac6701861ea95e702fe43fde93dc1e6cc`
 
-- `xcodebuild -exportArchive` 使用 `method=app-store-connect`、`signingStyle=automatic` 成功。
-- App 与 Widget 均由 Cloud Managed Apple Distribution 签名，证书有效至 2027-08-12。
-- App Store profile：`iOS Team Store Provisioning Profile: co.fanr.pulse`，UUID `a309f39b-4b2e-4976-b58c-5b3d1c4f45bc`。
-- Widget Store profile：`iOS Team Store Provisioning Profile: co.fanr.pulse.widgets`，UUID `661e8ee7-a44f-42b6-b7f7-6403fa2206de`。
-- App 与 Widget 均为 `get-task-allow=false`、`beta-reports-active=true`。
-- 两者的最终签名和 Store profile 都包含 `NSFileProtectionCompleteUntilFirstUserAuthentication`。
-- 两者的 `ITSAppUsesNonExemptEncryption` 均为 `false`。
-- IPA 嵌套签名通过 `codesign --verify --deep --strict`。
+- Archive、App Store Connect 导出和严格嵌套签名校验均成功。
+- App 与 Widget 都由 `Apple Distribution: Dang wenliang (6N3D8YA2FY)` 签名。
+- App Store profile UUID：`a309f39b-4b2e-4976-b58c-5b3d1c4f45bc`。
+- Widget Store profile UUID：`661e8ee7-a44f-42b6-b7f7-6403fa2206de`。
+- 两个 profile 均有效至 2027-08-12，且为 `get-task-allow=false`、`beta-reports-active=true`。
+- App 与 Widget 都只有 `group.co.fanr.pulse` 一个 App Group，并具有统一 Data Protection entitlement。
+- App 二进制与 dSYM UUID：`898902C8-0778-3E4C-ABD1-FA054626AC18`。
+- Widget 二进制与 dSYM UUID：`BDF90547-326D-379B-B8A8-6C96B6415965`。
+- 两个 dSYM 均通过 `dwarfdump --verify`；归档期的模块缓存提示未造成符号文件损坏。
+- 内嵌隐私清单与源码 SHA-256 均为 `a331d51864743ebe4e00dd22360b4a538b6b3ac26a6b3eb54094e60a36959a12`。
+- App 只声明 `.pulsebackup` / `co.fanr.pulse.backup` 正式文档合同；IPA 不包含第三方 Frameworks。
 
-## 6. 当前阻断项
+## 6. App Store Connect 交付
 
-1. Pulse checkout 尚未提交；当前 IPA 无法追溯到一个不可变源码提交。
-2. `coco-web` 的 Pulse 产品、隐私和支持页面修改尚未提交、发布。
-3. 2026-08-12 在线核验仍能读到“版本化 JSON / JSON 导出与恢复”，与 Build 2 不一致。
-4. Build 2 尚未上传 App Store Connect，也没有 Apple 处理结果。
-5. Build 2 新增加密备份尚无真实 iPhone / iPad TestFlight 安装、导出、错误密码、篡改和恢复证据。
-6. 加密密码界面仍缺 English、Light、最大动态字体和真人 VoiceOver 的候选复核。
+- 上传时间：2026-08-12 16:54:34（Asia/Shanghai）。
+- Xcode / Apple 直接返回：`Uploaded package is processing.`、`Upload succeeded.`、`** EXPORT SUCCEEDED **`。
+- Delivery UUID：`0373b760-05e0-4299-bb50-6bd6ec3d2959`。
+- 上传日志 SHA-256：`d0228c2d7768586b87c32d471be57ea41f03d33de59695ab6cd3c2c49df9b40c`。
+- ContentDelivery 日志 SHA-256：`9b19f5320f1a0a17bc67c0021e14aa813270537407ad3459bdfa097aa53e4261`。
+- 产品负责人随后在 App Store Connect 确认 Build 2 状态为 `Ready to Submit`，并显示 `Expires in 90 days`；这关闭了 Apple 构建处理门禁。
+- 上传和处理链路没有出现签名、版本号、App Group、Data Protection 或出口合规阻断；`Missing Compliance` 不再是当前 Build 2 的构建阻断项。
 
-## 7. 晋级条件
+## 7. 尚未关闭的发布门禁
 
-只有以下条件全部满足，才能把本文件状态更新为 `RELEASE CANDIDATE GO / READY TO UPLOAD`：
+1. 把 Build 2 加入内部测试组并取得真实设备 TestFlight 安装证据。
+2. 在真实 iPhone / iPad 验证加密导出、正确密码恢复、错误密码、篡改文件失败关闭、全量替换确认和 Widget 数据连续性。
+3. 对加密密码界面补齐 English、Light、最大动态字体和真人 VoiceOver 候选复核。
+4. 在项目支持的最旧 iOS 18.x 版本补齐安装与核心流程证据。
+5. 完成 App Store 版本元数据、截图、隐私答案、年龄分级等商店材料，并另行执行提交审核操作。
 
-1. 两个仓库的改动完成审阅并提交。
-2. 公开站点发布完成，线上正文与当前加密合同一致。
-3. 从 Pulse 的已提交源码重建 Archive 与 IPA。
-4. 重建产物再次通过版本、哈希、签名、Store profile、Data Protection、`get-task-allow=false`、隐私清单和 dSYM 核验。
-5. 产品负责人明确授权上传该唯一候选。
-
-在此之前，不得复用 Build 1，不得上传本轮临时 IPA，也不得把“导出成功”写成“TestFlight 已完成”。
+因此，Build 2 的上传和 Apple 处理结论为 GO；公开发布仍保持 NO-GO。Build 1 已被本候选取代，不得再作为后续测试或发布基线。
