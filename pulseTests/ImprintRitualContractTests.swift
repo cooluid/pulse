@@ -55,6 +55,7 @@ final class ImprintRitualContractTests: XCTestCase {
         )
         let source = try String(contentsOf: sourceURL, encoding: .utf8)
         XCTAssertTrue(source.contains("controller.sourceType = .camera"))
+        XCTAssertFalse(source.contains("controller.cameraDevice = .rear"))
         XCTAssertFalse(source.contains(".photoLibrary"))
         XCTAssertFalse(source.contains(".savedPhotosAlbum"))
     }

@@ -1,6 +1,7 @@
 import PulseCore
 import SwiftUI
 import UIKit
+import UniformTypeIdentifiers
 
 struct ImprintCameraView: UIViewControllerRepresentable {
     let onCapture: (UIImage, ImprintCameraPosition) -> Void
@@ -17,12 +18,10 @@ struct ImprintCameraView: UIViewControllerRepresentable {
         )
         let controller = UIImagePickerController()
         controller.sourceType = .camera
-        controller.mediaTypes = ["public.image"]
+        controller.mediaTypes = [UTType.image.identifier]
         controller.cameraCaptureMode = .photo
-        controller.cameraDevice = .rear
         controller.allowsEditing = false
         controller.delegate = context.coordinator
-        context.coordinator.controller = controller
         return controller
     }
 
@@ -31,7 +30,6 @@ struct ImprintCameraView: UIViewControllerRepresentable {
     final class Coordinator: NSObject, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
         let onCapture: (UIImage, ImprintCameraPosition) -> Void
         let onCancel: () -> Void
-        weak var controller: UIImagePickerController?
 
         init(
             onCapture: @escaping (UIImage, ImprintCameraPosition) -> Void,

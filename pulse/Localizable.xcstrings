@@ -354,6 +354,71 @@
         }
       }
     },
+    "calendar.status.with_media_format" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@, photo retained"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@，已留照片"
+          }
+        }
+      }
+    },
+    "camera.permission.message" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Allow camera access in Settings to take today’s photo. Your check-in is already saved."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "请在系统设置中允许相机权限后再拍摄；你的签到已经保存，不受影响。"
+          }
+        }
+      }
+    },
+    "camera.permission.open_settings" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open Settings"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "打开系统设置"
+          }
+        }
+      }
+    },
+    "camera.permission.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Camera Access Is Off"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "相机权限已关闭"
+          }
+        }
+      }
+    },
     "commitment.fields.footer" : {
       "localizations" : {
         "en" : {
@@ -649,6 +714,23 @@
         }
       }
     },
+    "error.camera_unavailable" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A camera is not available on this device."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "此设备当前无法使用相机。"
+          }
+        }
+      }
+    },
     "error.check_in_invalid" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -662,6 +744,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "本次签到未通过数据校验，请重试。"
+          }
+        }
+      }
+    },
+    "error.enhancement_required" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This widget style is part of Pulse Enhancements. Commitment Manifesto and basic reminders remain available without a purchase."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "这个小组件样式属于一日一印增强；承诺宣言样式和基础提醒无需购买即可使用。"
           }
         }
       }
@@ -730,6 +829,57 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "系统未能安排实时活动，且基础本地提醒当前不可用。请检查通知设置后重试。"
+          }
+        }
+      }
+    },
+    "error.media_file_unavailable" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A retained photo file is missing or unreadable. Your check-in data was not changed."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "一张留存照片缺失或无法读取；签到数据未被改动。"
+          }
+        }
+      }
+    },
+    "error.media_invalid" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This photo could not be validated and was not saved."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "这张照片未通过完整性校验，因此没有保存。"
+          }
+        }
+      }
+    },
+    "error.media_storage_unavailable" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Private photo storage is unavailable. Free device space and try again."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "私人照片存储当前不可用。请释放设备空间后重试。"
           }
         }
       }
@@ -832,23 +982,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "签到记录包含无效日期。"
-          }
-        }
-      }
-    },
-    "error.enhancement_required" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "This widget style is part of Pulse Enhancements. Commitment Manifesto and basic reminders remain available without a purchase."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "这个小组件样式属于一日一印增强；承诺宣言样式和基础提醒无需购买即可使用。"
           }
         }
       }
@@ -1132,6 +1265,22 @@
         }
       }
     },
+    "history.record_deleted_media_retained" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The check-in was deleted. This day’s photo remains as an independent memory."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "签到记录已删除；当天照片仍作为独立记忆保留。"
+          }
+        }
+      }
+    },
     "history.total" : {
       "localizations" : {
         "en" : {
@@ -1176,6 +1325,102 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "数据不可用"
+          }
+        }
+      }
+    },
+    "media.delete_confirmation.action" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete Photo"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "删除照片"
+          }
+        }
+      }
+    },
+    "media.delete_confirmation.message" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The check-in and its statistics stay unchanged. The photo cannot be recovered unless it is in an encrypted backup."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "签到与统计不会改变；除非照片已在加密备份中，否则删除后无法恢复。"
+          }
+        }
+      }
+    },
+    "media.delete_confirmation.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete this photo?"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "删除这张照片？"
+          }
+        }
+      }
+    },
+    "media.export_original" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Export Original"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "导出原图"
+          }
+        }
+      }
+    },
+    "media.preview.accessibility" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Private photo retained with this day"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "当天留存的私人照片"
+          }
+        }
+      }
+    },
+    "media.preview.unavailable" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Photo unavailable"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "照片不可用"
           }
         }
       }
@@ -1488,6 +1733,70 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "跟随系统"
+          }
+        }
+      }
+    },
+    "settings.media.invitation" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Offer a photo after check-in"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "签到后邀请留一张照片"
+          }
+        }
+      }
+    },
+    "settings.media.privacy_note" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Photos stay on this device and appear only inside Pulse. Encrypted backups include them."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "照片只保存在本机且仅在一日一印内显示；加密备份会完整包含照片。"
+          }
+        }
+      }
+    },
+    "settings.media.section" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Daily Memory"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "每日记忆"
+          }
+        }
+      }
+    },
+    "settings.media.storage" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Photo Storage"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "照片占用"
           }
         }
       }
@@ -2597,6 +2906,102 @@
         }
       }
     },
+    "today.media.capture" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keep One from Today"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "留一张今天"
+          }
+        }
+      }
+    },
+    "today.media.delete" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete Photo"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "删除照片"
+          }
+        }
+      }
+    },
+    "today.media.retake" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Retake"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "重拍"
+          }
+        }
+      }
+    },
+    "today.media.saving" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Securing today’s photo…"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在安全保存今天的照片…"
+          }
+        }
+      }
+    },
+    "today.media.subtitle" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not proof for a score—a private fragment that can grow with time."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "不是为了打分作证，而是留下一块会随时间生长的私人切片。"
+          }
+        }
+      }
+    },
+    "today.media.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "TODAY, IN FRAME"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "今日入镜"
+          }
+        }
+      }
+    },
     "today.navigation_title" : {
       "localizations" : {
         "en" : {
@@ -2643,156 +3048,6 @@
             "value" : "待留下印记"
           }
         }
-      }
-    },
-    "calendar.status.with_media_format" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "%@, photo retained" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "%@，已留照片" } }
-      }
-    },
-    "camera.permission.message" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Allow camera access in Settings to take today’s photo. Your check-in is already saved." } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "请在系统设置中允许相机权限后再拍摄；你的签到已经保存，不受影响。" } }
-      }
-    },
-    "camera.permission.open_settings" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Open Settings" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "打开系统设置" } }
-      }
-    },
-    "camera.permission.title" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Camera Access Is Off" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "相机权限已关闭" } }
-      }
-    },
-    "error.camera_unavailable" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "A camera is not available on this device." } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "此设备当前无法使用相机。" } }
-      }
-    },
-    "error.media_file_unavailable" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "A retained photo file is missing or unreadable. Your check-in data was not changed." } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "一张留存照片缺失或无法读取；签到数据未被改动。" } }
-      }
-    },
-    "error.media_invalid" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "This photo could not be validated and was not saved." } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "这张照片未通过完整性校验，因此没有保存。" } }
-      }
-    },
-    "error.media_storage_unavailable" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Private photo storage is unavailable. Free device space and try again." } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "私人照片存储当前不可用。请释放设备空间后重试。" } }
-      }
-    },
-    "history.record_deleted_media_retained" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "The check-in was deleted. This day’s photo remains as an independent memory." } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "签到记录已删除；当天照片仍作为独立记忆保留。" } }
-      }
-    },
-    "media.delete_confirmation.action" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Delete Photo" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "删除照片" } }
-      }
-    },
-    "media.delete_confirmation.message" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "The check-in and its statistics stay unchanged. The photo cannot be recovered unless it is in an encrypted backup." } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "签到与统计不会改变；除非照片已在加密备份中，否则删除后无法恢复。" } }
-      }
-    },
-    "media.delete_confirmation.title" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Delete this photo?" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "删除这张照片？" } }
-      }
-    },
-    "media.export_original" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Export Original" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "导出原图" } }
-      }
-    },
-    "media.preview.accessibility" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Private photo retained with this day" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "当天留存的私人照片" } }
-      }
-    },
-    "media.preview.unavailable" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Photo unavailable" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "照片不可用" } }
-      }
-    },
-    "settings.media.invitation" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Offer a photo after check-in" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "签到后邀请留一张照片" } }
-      }
-    },
-    "settings.media.privacy_note" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Photos stay on this device and appear only inside Pulse. Encrypted backups include them." } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "照片只保存在本机且仅在一日一印内显示；加密备份会完整包含照片。" } }
-      }
-    },
-    "settings.media.section" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Daily Memory" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "每日记忆" } }
-      }
-    },
-    "settings.media.storage" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Photo Storage" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "照片占用" } }
-      }
-    },
-    "today.media.capture" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Keep One from Today" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "留一张今天" } }
-      }
-    },
-    "today.media.delete" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Delete Photo" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "删除照片" } }
-      }
-    },
-    "today.media.retake" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Retake" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "重拍" } }
-      }
-    },
-    "today.media.saving" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Securing today’s photo…" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "正在安全保存今天的照片…" } }
-      }
-    },
-    "today.media.subtitle" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Not proof for a score—a private fragment that can grow with time." } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "不是为了打分作证，而是留下一块会随时间生长的私人切片。" } }
-      }
-    },
-    "today.media.title" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "TODAY, IN FRAME" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "今日入镜" } }
       }
     },
     "today.rhythm.start_today" : {
