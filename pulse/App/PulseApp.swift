@@ -5,6 +5,7 @@ import PulseCore
 private enum StartupFailure: Equatable {
     case persistence
     case settings
+    case sharedSettings
 }
 
 private enum PulseBootstrap {
@@ -19,7 +20,7 @@ private enum PulseBootstrap {
 
     private static let logger = Logger(
         subsystem: PulseRuntimeIdentity.bundleIdentifier,
-        category: "persistence"
+        category: "bootstrap"
     )
 
     @MainActor
@@ -45,7 +46,7 @@ private enum PulseBootstrap {
                 primaryHabitProvisioning: .createIfMissing(initialIdentity)
             )
             let settings = try AppSettings(
-                widgetStylePreferences: try PulseWidgetStylePreferences(
+                sharedInterfacePreferences: try PulseSharedInterfacePreferences(
                     appGroupIdentifier: PulseRuntimeIdentity.appGroupIdentifier
                 )
             )
@@ -60,6 +61,9 @@ private enum PulseBootstrap {
         } catch PulseAppError.invalidSettings {
             logger.error("Failed to load application settings.")
             return .failed(.settings)
+        } catch let error as PulseSharedInterfacePreferenceError {
+            logger.error("Failed to access shared interface settings: \(String(describing: error), privacy: .public)")
+            return .failed(.sharedSettings)
         } catch {
             logger.fault("Failed to initialize the persistent store: \(error.localizedDescription, privacy: .private)")
             return .failed(.persistence)
@@ -67,12 +71,12 @@ private enum PulseBootstrap {
     }
 
     @MainActor
-    static func resetSettings() {
-        let widgetStylePreferences = try? PulseWidgetStylePreferences(
+    static func resetSettings() throws {
+        let sharedInterfacePreferences = try PulseSharedInterfacePreferences(
             appGroupIdentifier: PulseRuntimeIdentity.appGroupIdentifier
         )
         AppSettings.clearStoredValues(
-            widgetStylePreferences: widgetStylePreferences
+            sharedInterfacePreferences: sharedInterfacePreferences
         )
     }
 
@@ -132,8 +136,12 @@ struct PulseApp: App {
                     failure: failure,
                     retry: { bootstrap = PulseBootstrap.build() },
                     resetSettings: {
-                        PulseBootstrap.resetSettings()
-                        bootstrap = PulseBootstrap.build()
+                        do {
+                            try PulseBootstrap.resetSettings()
+                            bootstrap = PulseBootstrap.build()
+                        } catch {
+                            bootstrap = .failed(.sharedSettings)
+                        }
                     }
                 )
             }
@@ -181,6 +189,8 @@ private struct StartupFailureView: View {
                 Text("startup.failure.persistence_message")
             case .settings:
                 Text("startup.failure.settings_message")
+            case .sharedSettings:
+                Text("startup.failure.shared_settings_message")
             }
         } actions: {
             Button("action.retry", action: retry)

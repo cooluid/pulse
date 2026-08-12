@@ -46,18 +46,40 @@ final class AppSettingsTests: XCTestCase {
     }
 
     func testThemeAndLanguageDefaultToSystemAndPersistExplicitChoices() throws {
-        let suiteName = "AppSettingsTests.\(UUID().uuidString)"
-        let defaults = try XCTUnwrap(UserDefaults(suiteName: suiteName))
-        defer { defaults.removePersistentDomain(forName: suiteName) }
+        let appSuiteName = "AppSettingsTests.App.\(UUID().uuidString)"
+        let sharedSuiteName = "AppSettingsTests.Shared.\(UUID().uuidString)"
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: appSuiteName))
+        let sharedDefaults = try XCTUnwrap(UserDefaults(suiteName: sharedSuiteName))
+        defer {
+            defaults.removePersistentDomain(forName: appSuiteName)
+            sharedDefaults.removePersistentDomain(forName: sharedSuiteName)
+        }
+        let sharedPreferences = PulseSharedInterfacePreferences(defaults: sharedDefaults)
 
-        let settings = try AppSettings(defaults: defaults)
+        let settings = try AppSettings(
+            sharedInterfacePreferences: sharedPreferences,
+            defaults: defaults
+        )
         XCTAssertEqual(settings.theme, .system)
         XCTAssertEqual(settings.language, .system)
 
         settings.theme = .dark
         settings.language = .english
 
-        let reloaded = try AppSettings(defaults: defaults)
+        XCTAssertNil(
+            defaults.object(forKey: PulseSharedInterfacePreferences.languageStorageKey)
+        )
+        XCTAssertEqual(
+            sharedDefaults.string(
+                forKey: PulseSharedInterfacePreferences.languageStorageKey
+            ),
+            PulseInterfaceLanguage.english.rawValue
+        )
+
+        let reloaded = try AppSettings(
+            sharedInterfacePreferences: sharedPreferences,
+            defaults: defaults
+        )
         XCTAssertEqual(reloaded.theme, .dark)
         XCTAssertEqual(reloaded.language, .english)
         XCTAssertEqual(reloaded.locale.identifier, "en")
@@ -68,12 +90,12 @@ final class AppSettingsTests: XCTestCase {
         let defaults = try XCTUnwrap(UserDefaults(suiteName: suiteName))
         defer { defaults.removePersistentDomain(forName: suiteName) }
 
-        let settings = try AppSettings(defaults: defaults)
+        let settings = try makeSettings(defaults: defaults)
         XCTAssertEqual(settings.widgetStyle, .faultField)
 
         for style in PulseWidgetStyle.allCases {
             settings.widgetStyle = style
-            XCTAssertEqual(try AppSettings(defaults: defaults).widgetStyle, style)
+            XCTAssertEqual(try makeSettings(defaults: defaults).widgetStyle, style)
         }
     }
 
@@ -81,9 +103,12 @@ final class AppSettingsTests: XCTestCase {
         let suiteName = "AppSettingsTests.WidgetStyle.Invalid.\(UUID().uuidString)"
         let defaults = try XCTUnwrap(UserDefaults(suiteName: suiteName))
         defer { defaults.removePersistentDomain(forName: suiteName) }
-        defaults.set("legacy-card", forKey: PulseWidgetStylePreferences.storageKey)
+        defaults.set(
+            "unknown-style",
+            forKey: PulseSharedInterfacePreferences.widgetStyleStorageKey
+        )
 
-        XCTAssertThrowsError(try AppSettings(defaults: defaults)) { error in
+        XCTAssertThrowsError(try makeSettings(defaults: defaults)) { error in
             XCTAssertEqual(error as? PulseAppError, .invalidSettings)
         }
     }
@@ -92,13 +117,16 @@ final class AppSettingsTests: XCTestCase {
         let invalidThemeSuite = "AppSettingsTests.Theme.\(UUID().uuidString)"
         let invalidThemeDefaults = try XCTUnwrap(UserDefaults(suiteName: invalidThemeSuite))
         invalidThemeDefaults.set("sepia", forKey: AppSettings.StorageKey.theme)
-        XCTAssertThrowsError(try AppSettings(defaults: invalidThemeDefaults))
+        XCTAssertThrowsError(try makeSettings(defaults: invalidThemeDefaults))
         invalidThemeDefaults.removePersistentDomain(forName: invalidThemeSuite)
 
         let invalidLanguageSuite = "AppSettingsTests.Language.\(UUID().uuidString)"
         let invalidLanguageDefaults = try XCTUnwrap(UserDefaults(suiteName: invalidLanguageSuite))
-        invalidLanguageDefaults.set("fr", forKey: AppSettings.StorageKey.language)
-        XCTAssertThrowsError(try AppSettings(defaults: invalidLanguageDefaults))
+        invalidLanguageDefaults.set(
+            "fr",
+            forKey: PulseSharedInterfacePreferences.languageStorageKey
+        )
+        XCTAssertThrowsError(try makeSettings(defaults: invalidLanguageDefaults))
         invalidLanguageDefaults.removePersistentDomain(forName: invalidLanguageSuite)
     }
 
@@ -106,7 +134,7 @@ final class AppSettingsTests: XCTestCase {
         let suiteName = "AppSettingsTests.\(UUID().uuidString)"
         let defaults = try XCTUnwrap(UserDefaults(suiteName: suiteName))
         defer { defaults.removePersistentDomain(forName: suiteName) }
-        let settings = try AppSettings(defaults: defaults)
+        let settings = try makeSettings(defaults: defaults)
         settings.theme = .light
         settings.language = .simplifiedChinese
         settings.widgetStyle = .tearOffCalendar
@@ -116,7 +144,7 @@ final class AppSettingsTests: XCTestCase {
         XCTAssertEqual(settings.theme, .system)
         XCTAssertEqual(settings.language, .system)
         XCTAssertEqual(settings.widgetStyle, .faultField)
-        let reloaded = try AppSettings(defaults: defaults)
+        let reloaded = try makeSettings(defaults: defaults)
         XCTAssertEqual(reloaded.theme, .system)
         XCTAssertEqual(reloaded.language, .system)
         XCTAssertEqual(reloaded.widgetStyle, .faultField)
@@ -127,7 +155,14 @@ final class AppSettingsTests: XCTestCase {
         let defaults = try XCTUnwrap(UserDefaults(suiteName: suiteName))
         defaults.set(1_440, forKey: AppSettings.StorageKey.reminderTimeMinutes)
 
-        XCTAssertThrowsError(try AppSettings(defaults: defaults))
+        XCTAssertThrowsError(try makeSettings(defaults: defaults))
         defaults.removePersistentDomain(forName: suiteName)
+    }
+
+    private func makeSettings(defaults: UserDefaults) throws -> AppSettings {
+        try AppSettings(
+            sharedInterfacePreferences: PulseSharedInterfacePreferences(defaults: defaults),
+            defaults: defaults
+        )
     }
 }

@@ -15,6 +15,42 @@ final class LogicalDayTests: XCTestCase {
         XCTAssertNil(LogicalDay(storageValue: "2026-02-30"))
     }
 
+    func testLocalizedWidgetDatesUseTheRequestedLocaleWithoutStorageFormats() {
+        let day = LogicalDay(year: 2026, month: 8, day: 11)
+        let english = Locale(identifier: "en")
+        let simplifiedChinese = Locale(identifier: "zh-Hans")
+
+        XCTAssertEqual(
+            PulseLocalizedDateFormatting.monthAndDay(day, locale: english),
+            "08/11"
+        )
+        XCTAssertEqual(
+            PulseLocalizedDateFormatting.monthName(day, locale: english),
+            "August"
+        )
+        XCTAssertEqual(
+            PulseLocalizedDateFormatting.accessibilityDate(day, locale: english),
+            "August 11, 2026"
+        )
+        XCTAssertEqual(
+            PulseLocalizedDateFormatting.monthName(day, locale: simplifiedChinese),
+            "八月"
+        )
+        XCTAssertEqual(
+            PulseLocalizedDateFormatting.accessibilityDate(
+                day,
+                locale: simplifiedChinese
+            ),
+            "2026年8月11日"
+        )
+        XCTAssertFalse(
+            PulseLocalizedDateFormatting.accessibilityDate(
+                day,
+                locale: simplifiedChinese
+            ).contains(day.storageValue)
+        )
+    }
+
     func testMidnightCreatesANewLogicalDay() {
         let beforeMidnight = makeDate(
             year: 2026,

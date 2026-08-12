@@ -97,7 +97,7 @@ python3 scripts/build_brand_assets.py --check
 - Home Screen 固定显示主承诺名称，但名称只读取 `Habit` 真源，`widget.style` 只决定构图。Lock Screen、StandBy 与 Always-On 不显示主承诺正文，任何 Widget 都不显示“为什么重要”。Accessory 使用唯一“节律汇印”语法：圆形在今日开放环或完成印内部显示本地化当日纯数字；矩形左上显示今日短状态，过去六日节点上方显示从各自 `LogicalDay` 派生的本地化纯数字，并以真实连接线流向右侧唯一今日印记，今天数字只进入大印内部。数字只提供时间身份，视觉权重低于状态；不得带“日”等日期后缀、硬编码数字、显示星期或把今天重复成第七个小节点。
 - Accessory 待签到圆形与矩形的完整可见区域都是同一个单向签到 `Button`；完成态静态且不可撤销。矩形的视觉节点从辅助功能树隐藏，整块只朗读今日状态、过去六日已留印数量与待签到操作提示。两种 Accessory 都重新应用系统 `widgetContentMargins`，图形按可用容器比例计算且不得越界、依赖日期位数或为特定设备硬编码。
 - Home Screen 全彩模式只使用品牌语义 Color Set；系统着色或透明外观通过 `widgetRenderingMode` 分离主内容与强调内容。`containerBackground(for: .widget)` 保持可移除，由系统提供 Clear / Liquid Glass / vibrant 表现；禁止自绘毛玻璃、渐变或用 `Color.clear` 截图冒充系统玻璃。
-- 未设置、共享 store 未 `ready` 或 `widget.style` 损坏时显示明确“打开一日一印 / Open Pulse”或不可用状态，不能静默改成另一种样式，也不能显示虚假待签到。
+- 未设置、共享 store 未就绪，或 `interface.language` / `widget.style` 损坏时显示明确“打开一日一印 / Open Pulse”或不可用状态，不能静默改语言、改样式或显示虚假待签到。
 - 四种样式的小号与中号，以及 Accessory Circular / Rectangular，必须分别在系统 Widget Gallery 与真实表面验收待签到、已签到、浅色、深色、accented、vibrant 和 Clear；Preview、编译成功或资产尺寸检查不能替代运行证据。
 
 ## 6. 布局与组件
@@ -122,7 +122,7 @@ python3 scripts/build_brand_assets.py --check
 - iPad 历史页使用“月份与统计 / 月历”双区构图；统计分隔线只取内容固有高度，不得随宽屏父容器拉成长空框。
 - 设置、时区、导入导出、删除确认继续使用系统标准控件，避免品牌化破坏平台可预期行为。
 - 主题只提供跟随系统、浅色、深色三种模式并继续消费同一套语义 Color Set；不得复制页面或另建平行配色真源。
-- 应用内语言只提供跟随系统、English、简体中文；切换后当前界面的日期、格式串、辅助功能标签和设置值必须同步更新，禁止中英混排残留。
+- 界面语言只提供跟随系统、English、简体中文；切换后 App 与 Widget 内容的日期、格式串、辅助功能标签和设置值必须消费同一 Locale，禁止中英混排残留。Widget Gallery 和 AppIntent 等系统托管静态元数据仍按 iOS 语言规则显示。
 - 设置中的单项说明进入对应控件副标题，分组说明作为卡片内部的说明行，不使用脱离圆角卡片的悬空 footer。
 - `confirmationDialog` 必须挂在发起操作的按钮上，让系统箭头指向真实触发源；记录详情使用系统 Sheet 拖拽指示器关闭，不额外增加“完成”导航按钮。
 - 设置入栈后根页不仅视觉隐藏，也必须从辅助功能树移除；返回后再恢复根内容和主导航。

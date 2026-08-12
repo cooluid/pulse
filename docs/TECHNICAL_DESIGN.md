@@ -1,6 +1,6 @@
 # Pulse 技术设计
 
-文档版本：1.7
+文档版本：1.8
 状态：Canonical Implemented Contract
 更新日期：2026-08-12
 
@@ -24,15 +24,16 @@ SwiftDataCheckInRepository ──→ PulseSchema ──→ one Pulse.store
                                        │
 PulseAppModel ──→ App UI       Widget/AppIntent
 
-AppSettings ──→ theme / language / reminder preferences
-PulseWidgetStylePreferences ──→ widget.style only
+AppSettings ──→ theme / reminder preferences
+PulseSharedInterfacePreferences ──→ interface.language / widget.style
 ```
 
 - `CheckInRecord` 是签到事实唯一来源；Repository 是唯一写入者。
 - SwiftData managed object 不越过 `PulseCore`；App 和 Widget 只消费已验证的不可变快照。
 - 统计、月历、连续天数、今日状态和 Widget timeline 都是可重建投影，不持久化第二份事实。
-- `AppSettings.language` 是应用内语言唯一状态；不写 `AppleLanguages`，不要求重启，也不维护页面级语言副本。
-- App Group UserDefaults 只允许 `widget.style`，不得保存名称、日期、签到或统计副本。
+- `PulseSharedInterfacePreferences` 是 App 与 Widget 的界面语言和 Widget 构图唯一持久化边界；`AppSettings.language` 只是同一值的可观察投影和写入口，不在 `.standard` UserDefaults 保存副本。
+- App Group UserDefaults 只允许 `interface.language` 与 `widget.style` 两个类型化展示偏好；不得保存名称、日期、签到或统计副本。缺失键分别表示正式默认值 `system` / `faultField`，未知值失败关闭。
+- 不写 `AppleLanguages`，不要求重启，不维护页面级或 Widget 专用语言副本。
 
 ## 3. 首发持久化合同
 
@@ -69,7 +70,9 @@ Pulse 尚未公开发布，因此 1.0 以一次干净基线开始：
 - 领域写入统一注入 `PulseClock`，不直接读取 `Date.now`。
 - `LogicalDay` 使用项目时区和 Gregorian 日历；存储格式固定，展示才本地化。
 - 提醒由纯值计划器生成未来 60 个日历日的一次性请求，签到、删除、导入、时区和设置变化后重新协调。
-- SwiftUI 文案消费根环境 Locale；代码生成文案使用 `PulseLocalization` 读取同一 String Catalog。
+- App 与 Widget 内容都由 `PulseSharedInterfacePreferences.interface.language` 解析同一个显式 Locale；SwiftUI 文案消费根环境 Locale，代码生成文案必须显式传入该 Locale。
+- `LogicalDay` 的可见日期和 VoiceOver 日期统一通过 `PulseLocalizedDateFormatting` 生成；不得显示固定 `MM/DD`、存储格式或隐式系统 Locale。
+- App 切换语言后同时重新协调提醒并刷新 Widget timeline。Widget Gallery 名称、配置说明与 AppIntent 等系统托管静态元数据继续由 iOS 的系统/应用语言决定，不伪装成可被运行时偏好覆盖。
 - 二级页面返回按钮由 `PulseSecondaryNavigationBackButton` 统一呈现，跟随应用内语言，避免系统语言与页面语言混用。
 - 日期、星期、时间、时区名和辅助功能文案都显式消费当前应用 Locale。
 

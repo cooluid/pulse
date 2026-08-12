@@ -185,6 +185,10 @@ final class PulseAppModelTests: XCTestCase {
         XCTAssertEqual(context.model.settings.language, .english)
         XCTAssertEqual(context.scheduler.snapshots.last?.localeIdentifier, "en")
         XCTAssertTrue(context.scheduler.snapshots.last?.enabled ?? false)
+        XCTAssertEqual(context.widgetReloader.reloadCount, 1)
+
+        context.model.requestLanguage(.english)
+        XCTAssertEqual(context.widgetReloader.reloadCount, 1)
     }
 
     func testChangingWidgetStylePersistsAndReloadsTimelineOnce() throws {
@@ -230,7 +234,10 @@ final class PulseAppModelTests: XCTestCase {
         let suiteName = "PulseAppModelTests.\(UUID().uuidString)"
         let defaults = UserDefaults(suiteName: suiteName)!
         defaults.removePersistentDomain(forName: suiteName)
-        let settings = try AppSettings(defaults: defaults)
+        let settings = try AppSettings(
+            sharedInterfacePreferences: PulseSharedInterfacePreferences(defaults: defaults),
+            defaults: defaults
+        )
         let scheduler = TestReminderScheduler(permission: notificationPermission)
         let haptics = TestHaptics()
         let widgetReloader = TestWidgetTimelineReloader()

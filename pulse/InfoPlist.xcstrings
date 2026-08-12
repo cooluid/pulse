@@ -24,8 +24,14 @@
       "localizations" : {
         "en" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "pulse"
+            "state" : "translated",
+            "value" : "Pulse"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "一日一印"
           }
         }
       }

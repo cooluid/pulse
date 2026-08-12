@@ -1,16 +1,6 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
-    "%lld/%lld" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$lld/%2$lld"
-          }
-        }
-      }
-    },
     "accessibility.date_status_format" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -1741,6 +1731,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "保存的应用设置无效。重置设置不会删除任何签到记录。"
+          }
+        }
+      }
+    },
+    "startup.failure.shared_settings_message" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pulse could not access the shared App and Widget settings. Retry first. If the problem continues, contact support."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "一日一印无法访问 App 与小组件的共享设置。请先重试；如果问题持续存在，请联系支持。"
           }
         }
       }

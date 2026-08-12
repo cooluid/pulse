@@ -157,7 +157,7 @@ struct CommitmentIdentityEditor: View {
         maximum: Int,
         identifier: String
     ) -> some View {
-        Text("\(value.count)/\(maximum)")
+        Text(verbatim: "\(value.count)/\(maximum)")
             .font(.caption.monospacedDigit())
             .foregroundStyle(value.count > maximum ? PulseDesign.action : PulseDesign.secondary)
             .frame(maxWidth: .infinity, alignment: .trailing)

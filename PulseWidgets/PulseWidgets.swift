@@ -41,6 +41,7 @@ private enum PulseWidgetEntryState {
 private struct PulseWidgetEntry: TimelineEntry {
     let date: Date
     let state: PulseWidgetEntryState
+    let language: PulseInterfaceLanguage
 }
 
 @MainActor
@@ -48,7 +49,8 @@ private struct PulseWidgetProvider: TimelineProvider {
     func placeholder(in context: Context) -> PulseWidgetEntry {
         PulseWidgetEntry(
             date: .now,
-            state: .ready(.placeholder, PulseWidgetStylePreferences.defaultStyle)
+            state: .ready(.placeholder, PulseSharedInterfacePreferences.defaultWidgetStyle),
+            language: .system
         )
     }
 
@@ -91,14 +93,29 @@ private enum PulseWidgetRuntime {
     }
 
     static func loadEntry(at date: Date) -> LoadResult {
+        let context: RuntimeContext
+        let language: PulseInterfaceLanguage
         do {
-            let context = try makeLocationContext()
+            context = try makeLocationContext()
+            language = try context.interfacePreferences.loadLanguage()
+        } catch {
+            return LoadResult(
+                entry: PulseWidgetEntry(
+                    date: date,
+                    state: .unavailable,
+                    language: .system
+                ),
+                refreshAfter: date.addingTimeInterval(15 * 60)
+            )
+        }
+
+        do {
             try requireExistingStore(at: context.location)
             let repository = try makeRepository(
                 at: context.location,
                 clock: FixedPulseClock(now: date)
             )
-            let style = try context.stylePreferences.load()
+            let style = try context.interfacePreferences.loadWidgetStyle()
             guard let plan = try PulseWidgetSnapshotReader.readTimelinePlan(
                 repository: repository,
                 at: date
@@ -106,22 +123,38 @@ private enum PulseWidgetRuntime {
                 throw RuntimeError.missingPrimaryHabit
             }
             return LoadResult(
-                entry: PulseWidgetEntry(date: date, state: .ready(plan.snapshot, style)),
+                entry: PulseWidgetEntry(
+                    date: date,
+                    state: .ready(plan.snapshot, style),
+                    language: language
+                ),
                 refreshAfter: plan.refreshAfter
             )
-        } catch RuntimeError.sharedStoreMissing {
+        } catch RuntimeError.sharedStoreMissing, RuntimeError.missingPrimaryHabit {
             return LoadResult(
-                entry: PulseWidgetEntry(date: date, state: .needsOpenApp),
+                entry: PulseWidgetEntry(
+                    date: date,
+                    state: .needsOpenApp,
+                    language: language
+                ),
                 refreshAfter: date.addingTimeInterval(15 * 60)
             )
         } catch PulseWidgetProjectionError.identityNotConfirmed {
             return LoadResult(
-                entry: PulseWidgetEntry(date: date, state: .needsOpenApp),
+                entry: PulseWidgetEntry(
+                    date: date,
+                    state: .needsOpenApp,
+                    language: language
+                ),
                 refreshAfter: date.addingTimeInterval(15 * 60)
             )
         } catch {
             return LoadResult(
-                entry: PulseWidgetEntry(date: date, state: .unavailable),
+                entry: PulseWidgetEntry(
+                    date: date,
+                    state: .unavailable,
+                    language: language
+                ),
                 refreshAfter: date.addingTimeInterval(15 * 60)
             )
         }
@@ -150,7 +183,7 @@ private enum PulseWidgetRuntime {
         let location = try PulseStoreLocator().appGroupLocation(identifier: identifier)
         return RuntimeContext(
             location: location,
-            stylePreferences: try PulseWidgetStylePreferences(
+            interfacePreferences: try PulseSharedInterfacePreferences(
                 appGroupIdentifier: identifier
             )
         )
@@ -178,7 +211,7 @@ private enum PulseWidgetRuntime {
 
     private struct RuntimeContext {
         let location: PulseStoreLocation
-        let stylePreferences: PulseWidgetStylePreferences
+        let interfacePreferences: PulseSharedInterfacePreferences
     }
 }
 
@@ -196,6 +229,15 @@ struct PulseCheckInIntent: AppIntent {
 }
 
 private struct PulseWidgetView: View {
+    let entry: PulseWidgetEntry
+
+    var body: some View {
+        PulseLocalizedWidgetView(entry: entry)
+            .environment(\.locale, entry.language.locale)
+    }
+}
+
+private struct PulseLocalizedWidgetView: View {
     let entry: PulseWidgetEntry
     @Environment(\.widgetFamily) private var family
     @Environment(\.widgetRenderingMode) private var renderingMode
@@ -362,24 +404,13 @@ private struct PulseWidgetView: View {
     private func accessoryDayNumbers(
         for days: [PulseWidgetDaySnapshot]
     ) -> [String] {
-        let formatter = accessoryDayNumberFormatter()
         return days.map { item in
-            formatter.string(from: NSNumber(value: item.day.day))
-                ?? String(item.day.day)
+            PulseLocalizedDateFormatting.dayNumber(item.day, locale: locale)
         }
     }
 
     private func accessoryDayNumber(for day: LogicalDay) -> String {
-        accessoryDayNumberFormatter().string(from: NSNumber(value: day.day))
-            ?? String(day.day)
-    }
-
-    private func accessoryDayNumberFormatter() -> NumberFormatter {
-        let formatter = NumberFormatter()
-        formatter.locale = locale
-        formatter.numberStyle = .none
-        formatter.usesGroupingSeparator = false
-        return formatter
+        PulseLocalizedDateFormatting.dayNumber(day, locale: locale)
     }
 
     private func accessoryHistoryDayLabel(_ dayNumber: String) -> some View {
@@ -506,9 +537,13 @@ private struct PulseWidgetView: View {
         let key = snapshot.isCheckedToday
             ? "widget.accessibility.accessory.checked.summary"
             : "widget.accessibility.accessory.pending.summary"
-        let format = String(localized: String.LocalizationValue(key))
-        return String.localizedStringWithFormat(
-            format,
+        let format = String(
+            localized: String.LocalizationValue(key),
+            locale: locale
+        )
+        return String(
+            format: format,
+            locale: locale,
             Int64(snapshot.previousSixCheckedCount)
         )
     }
@@ -836,7 +871,7 @@ private struct PulseWidgetHomeView: View {
                 .padding(.leading, size.width * (usesMediumMetrics ? 0.05 : 0.04))
                 .padding(.top, size.height * (usesMediumMetrics ? 0.14 : 0.15))
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-                .accessibilityLabel(Text(verbatim: "\(snapshot.today.day)"))
+                .accessibilityLabel(Text(verbatim: localizedAccessibilityDate))
 
             calendarMonthLabel(size: size)
 
@@ -894,7 +929,7 @@ private struct PulseWidgetHomeView: View {
         .monospacedDigit()
         .lineLimit(1)
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel(Text(verbatim: "\(snapshot.today.day)/\(snapshot.today.month)"))
+        .accessibilityLabel(Text(verbatim: localizedAccessibilityDate))
     }
 
     private func faultDate(size: CGSize) -> some View {
@@ -914,7 +949,7 @@ private struct PulseWidgetHomeView: View {
         }
         .foregroundStyle(primaryForeground)
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel(Text(verbatim: "\(snapshot.today.day)/\(snapshot.today.month)"))
+        .accessibilityLabel(Text(verbatim: localizedAccessibilityDate))
     }
 
     private func editorialStatus(foreground: Color, size: CGFloat) -> some View {
@@ -1192,7 +1227,15 @@ private struct PulseWidgetHomeView: View {
         case .missed: "widget.day.missed"
         case .todayPending: "widget.day.today_pending"
         }
-        return Text("\(item.day.storageValue), \(String(localized: String.LocalizationValue(stateKey)))")
+        let date = PulseLocalizedDateFormatting.accessibilityDate(
+            item.day,
+            locale: locale
+        )
+        let state = String(
+            localized: String.LocalizationValue(stateKey),
+            locale: locale
+        )
+        return Text(verbatim: "\(date), \(state)")
     }
 
     private var usesFullColorPalette: Bool {
@@ -1234,25 +1277,18 @@ private struct PulseWidgetHomeView: View {
     }
 
     private var editorialDate: String {
-        String(format: "%02d / %02d", snapshot.today.month, snapshot.today.day)
+        PulseLocalizedDateFormatting.monthAndDay(snapshot.today, locale: locale)
     }
 
     private var localizedMonthName: String {
-        var calendar = Calendar(identifier: .gregorian)
-        calendar.timeZone = .gmt
-        var components = DateComponents()
-        components.calendar = calendar
-        components.timeZone = .gmt
-        components.year = snapshot.today.year
-        components.month = snapshot.today.month
-        components.day = 1
-        guard let date = components.date else { return "\(snapshot.today.month)" }
+        PulseLocalizedDateFormatting.monthName(snapshot.today, locale: locale)
+    }
 
-        let formatter = DateFormatter()
-        formatter.locale = locale
-        formatter.calendar = calendar
-        formatter.setLocalizedDateFormatFromTemplate("MMMM")
-        return formatter.string(from: date)
+    private var localizedAccessibilityDate: String {
+        PulseLocalizedDateFormatting.accessibilityDate(
+            snapshot.today,
+            locale: locale
+        )
     }
 
     private var usesVerticalMonthText: Bool {

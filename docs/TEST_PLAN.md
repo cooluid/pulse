@@ -1,6 +1,6 @@
 # Pulse 1.0 测试计划
 
-文档版本：1.5
+文档版本：1.6
 状态：Canonical Acceptance Plan
 更新日期：2026-08-12
 
@@ -25,11 +25,11 @@
 | 当前 schema | `PulseSchema 1.0.0` 真实磁盘读写、唯一键和目录创建；工程中不得出现预发布 schema 迁移器 |
 | JSON v1 | 唯一 JSON UTType、精确 format/version、完整 round-trip、大小/数量上限、身份/时区/来源/时间顺序/ID/日期唯一、旧开发 JSON 和未知版本失败关闭 |
 | Store | 只解析 App Group 正式路径；非法 group ID、group URL 缺失失败；不得存在私有路径、journal、staging 或 fallback |
-| 设置 | 主题、应用内语言、周起始日、触觉、提醒时间、Widget 样式持久化；损坏值失败关闭 |
+| 设置 | 主题、周起始日、触觉、提醒时间；App Group 中 `interface.language` / `widget.style` 单一持久化、默认值、重置与损坏值失败关闭；App 私有设置不得复制语言 |
 | 提醒 | 60 日计划、平台预算、DST、已签到跳过、revision 竞态、关闭/清除取消、切语言重新协调 |
 | AppModel | 操作互斥、失败不提前改 UI、成功后刷新、导航复位、清除恢复日志 |
-| Widget | store 缺失/身份未确认不可写；七日投影、跨午夜刷新、样式偏好、隐私裁决、AppIntent 成功后刷新 |
-| 本地化 | English/简体中文即时切换且重启保持；同一活动界面不能混用；中文历史标题和二级返回按钮必须跟随应用语言 |
+| Widget | store 缺失/身份未确认不可写；七日投影、跨午夜刷新、共享语言/样式偏好、隐私裁决、AppIntent 成功后刷新 |
+| 本地化 | English/简体中文即时切换且重启保持；App 与 Widget 内容消费同一 Locale；切语言刷新 timeline；中文历史标题和二级返回按钮跟随语言；Widget 日期/月份/数字/VoiceOver 不使用固定或存储格式 |
 | 品牌资产 | token schema、18 项正式资产、解码像素、AppIcon alpha、生成器幂等、仓库 diff |
 
 ## 3. UI 自动化主流程
@@ -43,6 +43,7 @@
 - 中文 History 年度标题必须为 `记录 / 年份`，不得出现 `ARCHIVE`；
 - Dynamic Type/布局几何、底部导航、Today 主动作、History 月历和详情；
 - Widget 四种样式可选择并持久化。
+- App 切换 English / 简体中文后 Widget timeline 各刷新一次，重启后 App 与 Widget 内容继续消费同一共享语言。
 
 UI 测试使用固定 Clock 与 UUID 隔离磁盘 store；无效测试配置直接失败。截图 attachment 是指定运行环境的证据，不替代真机验收。
 
@@ -92,7 +93,7 @@ git diff --check
 - 工程门：共享 store、跨进程唯一性、快照、隐私、构建、entitlement 自动化通过；
 - Simulator 门：画廊识别、Home Screen、Lock Screen 和 AppIntent 在系统宿主中运行；
 - 真机门：App 未运行、设备锁定、跨午夜、快速双击、App/Widget 同日竞争、杀进程和卸载重装；
-- 视觉/无障碍门：四式小中号、圆形/矩形、深浅、accented/vibrant、StandBy、Always-On、最大字号、VoiceOver、Reduce Motion。
+- 视觉/无障碍门：四式小中号、圆形/矩形、English/简体中文、深浅、accented/vibrant、StandBy、Always-On、最大字号、VoiceOver、Reduce Motion。
 
 Preview、未签名构建或单进程测试不能替代上述门禁。
 

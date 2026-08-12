@@ -1,6 +1,6 @@
 # 一日一印（Pulse）系统仪式产品与交互合同
 
-文档版本：0.3<br>
+文档版本：0.4<br>
 状态：Canonical Ritual Semantics；当前只将 4.1 的 App 内基础落印纳入首个公开版本，其余能力仍受路线图阶段门禁约束<br>
 评审日期：2026-08-11
 
@@ -88,7 +88,7 @@ preparing → aligning → blending → encoding → completed / failed / cancel
 - Lock Screen 矩形：使用唯一“节律汇印”语法；左上显示今日短状态，过去六日节点上方显示不带日期后缀的本地化纯数字并以真实连接线汇入右侧唯一今日印记，今天数字显示在大印内部，不显示主承诺文本、星期或第七个今日小节点；
 - Home Screen 小号/中号：免费提供“断层双色 / 越界巨环 / 承诺宣言 / 错版撕页”四种构图；四式共用日/月日期、七日节律、当前主承诺名称、今日状态和同一个单向签到按钮，可见品牌与文字状态按各自原型取舍。默认“断层双色”遵循用户在原型后的明确修订，把七日圆点固定在左下；系统默认内容边距正式关闭，背景色场和巨环可抵达容器边缘，文字与普通控件按原型安全区定位。
 
-四式只是呈现选择：只保存一个类型化 `widget.style`，不得复制签到记录、连续天数、日期或主承诺。Lock Screen / StandBy / Always-On 继续使用唯一 Accessory 语法，不消费 Home Screen 样式，也不显示主承诺正文。未知样式值失败关闭，不能以另一套构图伪装成功。
+四式只是呈现选择：App Group 只保存同一 `PulseSharedInterfacePreferences` 下类型化的 `interface.language` 与 `widget.style`，不得复制签到记录、连续天数、日期或主承诺。Lock Screen / StandBy / Always-On 继续使用唯一 Accessory 语法，不消费 Home Screen 样式，也不显示主承诺正文。App 与 Widget 内容消费同一语言；未知语言或样式值失败关闭，不能以系统语言或另一套构图伪装成功。
 
 Widget 的未签到操作使用 `Button`，不使用可以反向切换的 `Toggle`。Accessory 待签到时整块系统分配区域都是同一按钮，不能只让图形局部可点；完成态静态。签到可从系统入口创建，但删除仍只在 App 内二次确认。设备锁定时交互遵循系统认证，不绕过锁屏。
 

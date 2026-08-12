@@ -4,35 +4,88 @@ import XCTest
 
 @MainActor
 final class PulseWidgetSnapshotTests: XCTestCase {
-    func testStylePreferenceDefaultsPersistsAndResets() throws {
-        let suiteName = "PulseWidgetStylePreferences.\(UUID().uuidString)"
+    func testWidgetStringCatalogHasEnglishAndSimplifiedChineseForEveryKey() throws {
+        let projectRoot = URL(fileURLWithPath: #filePath)
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+        let catalogURL = projectRoot
+            .appendingPathComponent("PulseWidgets", isDirectory: true)
+            .appendingPathComponent("Localizable.xcstrings", isDirectory: false)
+        let widgetSourceURL = projectRoot
+            .appendingPathComponent("PulseWidgets", isDirectory: true)
+            .appendingPathComponent("PulseWidgets.swift", isDirectory: false)
+        let catalog = try JSONDecoder().decode(
+            WidgetStringCatalog.self,
+            from: Data(contentsOf: catalogURL)
+        )
+        let widgetSource = try String(contentsOf: widgetSourceURL, encoding: .utf8)
+
+        XCTAssertEqual(catalog.sourceLanguage, "en")
+        XCTAssertFalse(catalog.strings.isEmpty)
+        for (key, entry) in catalog.strings {
+            XCTAssertTrue(
+                widgetSource.contains("\"\(key)\""),
+                "Widget localization key has no production consumer: \(key)."
+            )
+            for language in ["en", "zh-Hans"] {
+                let value = entry.localizations[language]?.stringUnit.value
+                XCTAssertFalse(
+                    value?.isEmpty ?? true,
+                    "Missing \(language) translation for \(key)."
+                )
+            }
+        }
+    }
+
+    func testSharedInterfacePreferencesPersistLanguageAndStyleAndReset() throws {
+        let suiteName = "PulseSharedInterfacePreferences.\(UUID().uuidString)"
         let defaults = try XCTUnwrap(UserDefaults(suiteName: suiteName))
         defer { defaults.removePersistentDomain(forName: suiteName) }
-        let preferences = PulseWidgetStylePreferences(defaults: defaults)
+        let preferences = PulseSharedInterfacePreferences(defaults: defaults)
 
-        XCTAssertEqual(try preferences.load(), .faultField)
+        XCTAssertEqual(try preferences.loadLanguage(), .system)
+        XCTAssertEqual(try preferences.loadWidgetStyle(), .faultField)
+
+        for language in PulseInterfaceLanguage.allCases {
+            preferences.saveLanguage(language)
+            XCTAssertEqual(try preferences.loadLanguage(), language)
+        }
 
         for style in PulseWidgetStyle.allCases {
-            preferences.save(style)
-            XCTAssertEqual(try preferences.load(), style)
+            preferences.saveWidgetStyle(style)
+            XCTAssertEqual(try preferences.loadWidgetStyle(), style)
         }
 
         preferences.reset()
-        XCTAssertEqual(try preferences.load(), .faultField)
+        XCTAssertEqual(try preferences.loadLanguage(), .system)
+        XCTAssertEqual(try preferences.loadWidgetStyle(), .faultField)
     }
 
-    func testStylePreferenceRejectsUnknownStoredValue() throws {
-        let suiteName = "PulseWidgetStylePreferences.Invalid.\(UUID().uuidString)"
+    func testSharedInterfacePreferencesRejectUnknownStoredValues() throws {
+        let suiteName = "PulseSharedInterfacePreferences.Invalid.\(UUID().uuidString)"
         let defaults = try XCTUnwrap(UserDefaults(suiteName: suiteName))
         defer { defaults.removePersistentDomain(forName: suiteName) }
-        defaults.set("legacy-card", forKey: PulseWidgetStylePreferences.storageKey)
+        let preferences = PulseSharedInterfacePreferences(defaults: defaults)
 
-        XCTAssertThrowsError(
-            try PulseWidgetStylePreferences(defaults: defaults).load()
-        ) { error in
+        defaults.set(
+            "unknown-language",
+            forKey: PulseSharedInterfacePreferences.languageStorageKey
+        )
+        XCTAssertThrowsError(try preferences.loadLanguage()) { error in
             XCTAssertEqual(
-                error as? PulseWidgetStylePreferenceError,
-                .invalidStoredStyle("legacy-card")
+                error as? PulseSharedInterfacePreferenceError,
+                .invalidStoredLanguage("unknown-language")
+            )
+        }
+
+        defaults.set(
+            "unknown-style",
+            forKey: PulseSharedInterfacePreferences.widgetStyleStorageKey
+        )
+        XCTAssertThrowsError(try preferences.loadWidgetStyle()) { error in
+            XCTAssertEqual(
+                error as? PulseSharedInterfacePreferenceError,
+                .invalidStoredWidgetStyle("unknown-style")
             )
         }
     }
@@ -178,6 +231,23 @@ final class PulseWidgetSnapshotTests: XCTestCase {
             from: DateComponents(year: year, month: month, day: day, hour: hour)
         )!
     }
+}
+
+private struct WidgetStringCatalog: Decodable {
+    struct Entry: Decodable {
+        struct Localization: Decodable {
+            struct StringUnit: Decodable {
+                let value: String
+            }
+
+            let stringUnit: StringUnit
+        }
+
+        let localizations: [String: Localization]
+    }
+
+    let sourceLanguage: String
+    let strings: [String: Entry]
 }
 
 @MainActor

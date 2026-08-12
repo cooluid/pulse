@@ -1,6 +1,6 @@
 # Pulse 基础 Widget 与共享 Store 合同
 
-文档版本：1.0
+文档版本：1.1
 状态：Canonical Implemented Contract
 更新日期：2026-08-12
 
@@ -43,7 +43,7 @@ FileManager.containerURL(forSecurityApplicationGroupIdentifier:)
 - 不存在 App 私有 store、旧库迁移、journal、staging、fallback 或双写。
 - 旧开发安装不属于公开数据合同，进入此首发基线时必须清洁安装。
 
-App Group UserDefaults 只允许类型化 `widget.style`。未知值必须失败关闭；不得保存任何业务事实或可反向覆盖 store 的投影。
+App Group UserDefaults 只允许 `PulseSharedInterfacePreferences` 管理的 `interface.language` 与 `widget.style`。缺失键分别表示 `system` / `faultField`，未知值必须失败关闭；不得保存任何业务事实或可反向覆盖 store 的投影。
 
 ## 4. 共享代码边界
 
@@ -53,7 +53,7 @@ App Group UserDefaults 只允许类型化 `widget.style`。未知值必须失败
 - Repository、命令、验证与提交回执；
 - JSON 恢复合同；
 - 不可变 Widget 快照与 timeline 计划；
-- 不含业务事实的 `PulseWidgetStylePreferences`。
+- 不含业务事实的 `PulseSharedInterfacePreferences` 与纯 Foundation 日期本地化器。
 
 Core 不含 SwiftUI 页面、WidgetKit 布局、通知调度、触觉或宿主本地化资源。禁止复制 model、Repository、偏好键或建立近似写入路径。
 
@@ -90,6 +90,9 @@ store 缺失或身份未确认显示“打开 App”；store 打不开、偏好�
 - 未签到按钮覆盖 Accessory 完整可见区域，不能只让局部图形可点，也不使用可反向删除事实的 Toggle。
 - 待办开放环不得形成类似完成勾的斜线；完成态用实心内核表达。
 - 日期和历史节点从真实 `LogicalDay` 与当前 Locale 派生，不持久化、不硬编码。
+- Widget 内容必须读取与 App 相同的 `interface.language` 并将解析后的 Locale 注入整棵 Widget view；App 切换语言后必须刷新 timeline。不得读取 `AppleLanguages`、保存 Widget 语言副本或让手写 `String(localized:)` 绕过显式 Locale。
+- Widget Gallery 名称、配置说明和 AppIntent 标题属于 iOS 托管的静态本地化元数据，跟随系统/应用语言；它们不冒充可由 App 内运行时语言动态覆盖的 Widget 内容。
+- 可见月日、月份、日号与 VoiceOver 日期统一使用 `PulseLocalizedDateFormatting`；禁止固定 `MM/DD`、`day/month` 或 ISO `storageValue` 作为用户文案。
 - 状态不只依赖颜色；使用形状、实心/开放、节点和统一辅助功能标签共同表达。
 - Accessory 的内部日号和历史节点从辅助功能树隐藏，由整块元素朗读今日状态与过去六日结果。
 - 着色、vibrant、透明、Lock Screen 和 Always-On 使用系统 rendering mode，不自绘毛玻璃。
@@ -103,7 +106,8 @@ store 缺失或身份未确认显示“打开 App”；store 打不开、偏好�
 - Widget 在 store 不存在、身份未确认和事实损坏时不可写且不显示虚假完成；
 - 两个独立 ModelContainer 同日写入最终只有一个 `recordKey`；
 - timeline 跨项目时区零点刷新，七日投影与 App 一致；
-- 四值 `widget.style` 持久化与未知值失败关闭；
+- 三值 `interface.language`、四值 `widget.style` 的单一共享持久化、默认值与未知值失败关闭；
+- English / 简体中文下的 Widget 状态文案、日期、月份、数字和 VoiceOver 组合；App 切换语言只刷新一次 timeline；
 - Home Screen 显示名称，Accessory 不泄露名称或说明；
 - AppIntent 仅在正式保存后刷新。
 

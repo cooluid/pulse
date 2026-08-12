@@ -78,7 +78,7 @@ struct SettingsView: View {
                     set: { model.requestLanguage($0) }
                 )
             ) {
-                ForEach(AppLanguage.allCases) { language in
+                ForEach(PulseInterfaceLanguage.allCases) { language in
                     Text(language.localizedName(locale: locale)).tag(language)
                 }
             }

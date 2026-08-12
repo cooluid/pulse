@@ -37,20 +37,7 @@ enum AppTheme: String, CaseIterable, Identifiable, Sendable {
     }
 }
 
-enum AppLanguage: String, CaseIterable, Identifiable, Sendable {
-    case system
-    case english = "en"
-    case simplifiedChinese = "zh-Hans"
-
-    var id: String { rawValue }
-
-    var locale: Locale {
-        switch self {
-        case .system: .autoupdatingCurrent
-        case .english, .simplifiedChinese: Locale(identifier: rawValue)
-        }
-    }
-
+extension PulseInterfaceLanguage {
     func localizedName(locale: Locale) -> String {
         switch self {
         case .system:
@@ -87,12 +74,11 @@ final class AppSettings {
         static let reminderTimeMinutes = "settings.reminderTimeMinutes"
         static let weekStart = "settings.weekStart"
         static let theme = "settings.theme"
-        static let language = "settings.language"
         static let resetPending = "maintenance.resetPending"
     }
 
     @ObservationIgnored private let defaults: UserDefaults
-    @ObservationIgnored private let widgetStylePreferences: PulseWidgetStylePreferences
+    @ObservationIgnored private let sharedInterfacePreferences: PulseSharedInterfacePreferences
     @ObservationIgnored private var isLoading = true
 
     var hapticsEnabled: Bool {
@@ -115,46 +101,47 @@ final class AppSettings {
         didSet { persist(StorageKey.theme, value: theme.rawValue) }
     }
 
-    var language: AppLanguage {
-        didSet { persist(StorageKey.language, value: language.rawValue) }
+    var language: PulseInterfaceLanguage {
+        didSet {
+            guard !isLoading else { return }
+            sharedInterfacePreferences.saveLanguage(language)
+        }
     }
 
     var widgetStyle: PulseWidgetStyle {
         didSet {
             guard !isLoading else { return }
-            widgetStylePreferences.save(widgetStyle)
+            sharedInterfacePreferences.saveWidgetStyle(widgetStyle)
         }
     }
 
     var locale: Locale { language.locale }
 
     init(
-        defaults: UserDefaults = .standard,
-        widgetStylePreferences: PulseWidgetStylePreferences? = nil
+        sharedInterfacePreferences: PulseSharedInterfacePreferences,
+        defaults: UserDefaults = .standard
     ) throws {
         self.defaults = defaults
-        let resolvedWidgetStylePreferences = widgetStylePreferences
-            ?? PulseWidgetStylePreferences(defaults: defaults)
-        self.widgetStylePreferences = resolvedWidgetStylePreferences
+        self.sharedInterfacePreferences = sharedInterfacePreferences
         defaults.register(defaults: [
             StorageKey.hapticsEnabled: true,
             StorageKey.reminderEnabled: false,
             StorageKey.reminderTimeMinutes: ReminderTime.standard.minutesFromMidnight,
             StorageKey.weekStart: WeekStart.monday.rawValue,
-            StorageKey.theme: AppTheme.system.rawValue,
-            StorageKey.language: AppLanguage.system.rawValue
+            StorageKey.theme: AppTheme.system.rawValue
         ])
+        let loadedLanguage: PulseInterfaceLanguage
         let loadedWidgetStyle: PulseWidgetStyle
         do {
-            loadedWidgetStyle = try resolvedWidgetStylePreferences.load()
+            loadedLanguage = try sharedInterfacePreferences.loadLanguage()
+            loadedWidgetStyle = try sharedInterfacePreferences.loadWidgetStyle()
         } catch {
             throw PulseAppError.invalidSettings
         }
         guard let loadedReminderTime = ReminderTime(
             minutesFromMidnight: defaults.integer(forKey: StorageKey.reminderTimeMinutes)
         ), let loadedWeekStart = WeekStart(rawValue: defaults.integer(forKey: StorageKey.weekStart)),
-        let loadedTheme = AppTheme(rawValue: defaults.string(forKey: StorageKey.theme) ?? ""),
-        let loadedLanguage = AppLanguage(rawValue: defaults.string(forKey: StorageKey.language) ?? "") else {
+        let loadedTheme = AppTheme(rawValue: defaults.string(forKey: StorageKey.theme) ?? "") else {
             throw PulseAppError.invalidSettings
         }
 
@@ -174,7 +161,10 @@ final class AppSettings {
 
     func reset() {
         isLoading = true
-        Self.clearStoredValues(defaults: defaults)
+        Self.clearStoredValues(
+            sharedInterfacePreferences: sharedInterfacePreferences,
+            defaults: defaults
+        )
 
         hapticsEnabled = true
         reminderEnabled = false
@@ -182,8 +172,7 @@ final class AppSettings {
         weekStart = .monday
         theme = .system
         language = .system
-        widgetStylePreferences.reset()
-        widgetStyle = PulseWidgetStylePreferences.defaultStyle
+        widgetStyle = PulseSharedInterfacePreferences.defaultWidgetStyle
         isLoading = false
     }
 
@@ -200,18 +189,17 @@ final class AppSettings {
     }
 
     static func clearStoredValues(
-        defaults: UserDefaults = .standard,
-        widgetStylePreferences: PulseWidgetStylePreferences? = nil
+        sharedInterfacePreferences: PulseSharedInterfacePreferences,
+        defaults: UserDefaults = .standard
     ) {
         [
             StorageKey.hapticsEnabled,
             StorageKey.reminderEnabled,
             StorageKey.reminderTimeMinutes,
             StorageKey.weekStart,
-            StorageKey.theme,
-            StorageKey.language
+            StorageKey.theme
         ].forEach(defaults.removeObject(forKey:))
-        widgetStylePreferences?.reset()
+        sharedInterfacePreferences.reset()
     }
 
     private func persist(_ key: String, value: Any) {

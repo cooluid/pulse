@@ -279,9 +279,10 @@ final class PulseAppModel {
         _ = enqueueReminderReconciliation()
     }
 
-    func requestLanguage(_ language: AppLanguage) {
+    func requestLanguage(_ language: PulseInterfaceLanguage) {
         guard settings.language != language else { return }
         settings.language = language
+        widgetTimelineReloader.reloadDailyImprint()
         _ = enqueueReminderReconciliation()
     }
 

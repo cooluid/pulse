@@ -1,16 +1,6 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
-    "%@, %@" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$@, %2$@"
-          }
-        }
-      }
-    },
     "widget.accessibility.accessory.checked.summary" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -201,23 +191,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "今日一印"
-          }
-        }
-      }
-    },
-    "widget.date.month_label" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "MONTH"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "月"
           }
         }
       }

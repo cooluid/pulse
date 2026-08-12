@@ -1,6 +1,6 @@
 # 一日一印（Pulse）1.0 发布范围合同
 
-文档版本：1.4
+文档版本：1.5
 状态：Canonical Release Contract
 更新时间：2026-08-12
 
@@ -17,13 +17,13 @@ Pulse 1.0 只解决一个问题：让单个用户每天可靠地记录一次签�
 - 固定签到时区和 00:00 日界线。
 - 今日签到、当日唯一性、重复点击保护和跨日刷新。
 - App 内有限日印仪式：待签到只进行一次有限呼吸，保存成功后完成空心到实心落印，Reduce Motion 使用静态等价表达；不包含 Live Activity。
-- 免费基础 Widget：Home Screen 小号/中号、Lock Screen 圆形/矩形；Home Screen 免费提供“断层双色 / 越界巨环 / 承诺宣言 / 错版撕页”四种构图。Widget 事实只读取同一个 App Group SwiftData store，未签到时提供单向签到 AppIntent；`widget.style` 只保存构图。Home Screen 显示当前主承诺名称，Lock Screen 只显示品牌“印记”和抽象状态，任何 Widget 都不显示“为什么重要”。
+- 免费基础 Widget：Home Screen 小号/中号、Lock Screen 圆形/矩形；Home Screen 免费提供“断层双色 / 越界巨环 / 承诺宣言 / 错版撕页”四种构图。Widget 事实只读取同一个 App Group SwiftData store，未签到时提供单向签到 AppIntent；App Group 只保存类型化的 `interface.language` 与 `widget.style` 展示偏好。Home Screen 显示当前主承诺名称，Lock Screen 只显示品牌“印记”和抽象状态，任何 Widget 都不显示“为什么重要”。
 - 最近 7 天、月历历史、当前连续、最长连续和累计签到。
 - 删除单条签到记录和清除全部数据。
 - 每日本地提醒；提醒遵循签到项目固定时区，以滚动 60 个日历日的一次性计划运行并在 App 活跃时刷新。
 - 一周起始日、触觉反馈和签到时区设置。
 - Pulse JSON v1 导出和校验后的全量恢复。
-- English / 简体中文应用内切换，跟随系统 / 浅色 / 深色主题模式，动态字体、VoiceOver、iPhone 和 iPad 布局。
+- English / 简体中文应用内切换并同步 App 与 Widget 内容；跟随系统 / 浅色 / 深色主题模式，动态字体、VoiceOver、iPhone 和 iPad 布局。Widget Gallery 与 AppIntent 等系统托管元数据仍按 iOS 的语言规则显示。
 
 JSON 是 1.0 唯一恢复协议。CSV 不承担恢复职责，也不进入 1.0。
 
