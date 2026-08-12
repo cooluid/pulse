@@ -2,8 +2,8 @@
 
 更新时间：2026-08-12
 当前工程结论：**GO（不可变源码提交 `17f2ef44dd1fc2871ac25d181c057effa2e227e4`、iOS 18.6 Simulator、Release 构建与静态分析）**。
-当前 Build 2 结论：**TESTFLIGHT DELIVERY GO / APPLE PROCESSING COMPLETE / READY TO SUBMIT**。正式 Archive 与 IPA 已从干净提交生成、核验并上传，Apple Delivery UUID 为 `0373b760-05e0-4299-bb50-6bd6ec3d2959`；App Store Connect 已显示 `Ready to Submit`、`Expires in 90 days`。
-当前公开发布结论：**NO-GO**。Build 2 尚未完成真实设备 TestFlight 加密恢复回归，也未完成商店版本材料与 App Store Review 提交。
+当前 Build 2 结论：**INTERNAL TESTFLIGHT CORE HUMAN GO / READY TO SUBMIT**。正式 Archive 与 IPA 已从干净提交生成、核验并上传，Apple Delivery UUID 为 `0373b760-05e0-4299-bb50-6bd6ec3d2959`；App Store Connect 已显示 `Ready to Submit`、`Expires in 90 days`。产品负责人随后确认内部 TestFlight 的 Build 2 全新安装、签到与 Widget 一致性、加密导出、错误密码失败关闭、清除后正确密码完整恢复，以及中英文、深浅色与 iPhone/iPad 基本布局均通过。
+当前公开发布结论：**NO-GO**。Build 2 的核心真机 TestFlight 流程已通过，但商店版本材料、最旧 iOS 18.x、无障碍和未记录的系统压力矩阵尚未关闭，也未提交 App Store Review。
 
 Build 1 的上传证据保留在 [Pulse 1.0 (1) 发布候选证据](./RELEASE_CANDIDATE_1_0_1.md)，但该构建不包含当前加密合同，已被 Build 2 工程基线取代，不得继续作为下一轮测试或发布候选。
 
@@ -65,8 +65,8 @@ Build 1 的上传证据保留在 [Pulse 1.0 (1) 发布候选证据](./RELEASE_CA
 ## 设计与人工证据边界
 
 - 加密密码 sheet 的简体中文、Dark、iPhone 16 Pro、iOS 18.6 Simulator 状态为 **INTERFACE / EXPERIENCE CANDIDATE**：信息层级、显式标签、不可找回说明、错误状态和清理行为成立。
-- English、Light、最大动态字体、真人 VoiceOver、文件导出器/导入器及真实设备完整恢复流程仍需 Build 2 候选复核。
-- 产品负责人此前确认真机与其余人工验收无问题；该结论对应 Build 1 既有功能，不能自动证明 Build 2 新增加密备份流程已在真机通过。
+- 产品负责人于 2026-08-12 确认内部 TestFlight Build 2 的 English / 简体中文、Light / Dark、iPhone / iPad 基本布局、文件导出器、错误密码失败关闭及清除后完整恢复均通过，记为范围受限的 **HUMAN GO**。
+- 本次人工证据没有设备型号、精确 OS、截图或逐项日志，不得外推到最大动态字体、真人 VoiceOver、最旧 iOS 18.x、篡改文件真机导入、通知和完整 Widget 压力矩阵。
 
 ## 分层结论
 
@@ -74,13 +74,13 @@ Build 1 的上传证据保留在 [Pulse 1.0 (1) 发布候选证据](./RELEASE_CA
 - **安全实现 GO**：在已定义威胁模型内，设备内文件保护与口令加密备份已落地；不宣称防越狱、运行时注入、截屏、键盘记录或用户弱密码。
 - **Apple Distribution artifact GO**：Build 2 的 App Store Connect IPA 已成功生成，最终分发签名、Store profile 与 entitlement 已核验。
 - **Release candidate GO**：源码、线上政策、测试、Archive、IPA、签名、符号、隐私清单和唯一构建身份已形成可追溯闭环。
-- **TestFlight delivery GO**：Build 2 已上传且 Apple 处理完成，状态为 `Ready to Submit`；这不等于已分配测试员或已通过外部 Beta App Review。
-- **公开发布 NO-GO**：尚无 Build 2 TestFlight 安装/恢复证据，也未完成商店版本提交。
+- **TestFlight delivery GO**：Build 2 已上传、Apple 处理完成并由内部测试员安装；这不等于已通过外部 Beta App Review 或已提交面向用户的 App Store Review。
+- **Internal TestFlight core HUMAN GO**：Build 2 全新安装、核心事实、Widget 一致性、加密导出、错误密码失败关闭、完整恢复及基础本地化/主题/双设备布局由产品负责人确认通过。
+- **公开发布 NO-GO**：未记录的真机/无障碍/系统压力门禁及商店材料仍未完成，也未提交 App Store Review。
 
 ## 下一步顺序
 
-1. 把 Build 2 加入内部测试组，确认测试员可以安装该唯一候选。
-2. 通过 TestFlight 在真实 iPhone / iPad 验证安装、升级、加密导出、错误密码、篡改文件、全量恢复和 Widget 数据连续性。
-3. 补齐 English、Light、最大动态字体、真人 VoiceOver 和最旧 iOS 18.x 候选证据。
-4. 完成 App Store 版本元数据、截图、隐私答案、年龄分级等材料，再单独授权提交 App Store Review。
-5. 内购另建 StoreKit 2 权益合同；购买状态不得成为数据事实源，也不得限制加密备份/恢复。
+1. 完成 App Store 版本元数据、截图、隐私答案、年龄分级和审核联系信息。
+2. 在提交审核前补齐最大动态字体、真人 VoiceOver、最旧 iOS 18.x、通知与 Widget 压力矩阵；篡改文件真机导入必须失败且不得改变现有事实。
+3. 产品负责人审阅商店材料与剩余门禁后，再单独授权提交 App Store Review。
+4. 内购另建 StoreKit 2 权益合同；购买状态不得成为数据事实源，也不得限制加密备份/恢复。

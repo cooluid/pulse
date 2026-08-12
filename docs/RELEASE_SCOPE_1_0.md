@@ -64,11 +64,11 @@ Pulse 1.0 只解决一个问题：让单个用户每天可靠地记录一次签�
 | AppIcon | “开放日环”，草绿 Default / Dark / Tinted | 几何与生成合同已录用；当前版本待最终视觉确认 |
 | 隐私政策 | `https://fanr.co/pulse/privacy/` | 已公开，并由 App 设置页直接链接 |
 | 产品支持 | `https://fanr.co/pulse/support/` | 已公开，联系邮箱为 `400822@163.com` |
-| 真实设备 | iPhone / iPad 核心真机矩阵 | 产品负责人于 2026-08-12 确认真机及其余人工验收无问题；仓库记录验收来源，但没有补造设备型号、精确 OS、逐项日志或截图 |
+| 真实设备 | iPhone / iPad 核心真机矩阵 | 产品负责人于 2026-08-12 确认内部 TestFlight Build 2 的全新安装、签到与 Widget 一致性、加密导出、错误密码失败关闭、清除后完整恢复、中英文、深浅色和双设备基本布局通过；没有补造设备型号、精确 OS、逐项日志或截图，未记录的无障碍与压力矩阵仍保持待验收 |
 
 Bundle ID 一旦用于正式分发，就成为安装、钥匙串、通知和后续升级身份的一部分，不能把临时字符串带入发布后再随意更换。
 
-历史人工验收只证明当时构建中明确观察到的结果。Build 1 的上传历史保留在 `RELEASE_CANDIDATE_1_0_1.md`；当前 Build 2 的自动化、加密、Archive、上传与 Apple 处理证据记录在 `IMPLEMENTATION_STATUS.md` 和 `RELEASE_CANDIDATE_1_0_2.md`。Build 2 已成为唯一发布候选，但 `Ready to Submit` 不能替代真实设备 TestFlight 回归、外部 Beta App Review（如启用）或 App Store Review 提交。
+历史人工验收只证明当时构建中明确观察到的结果。Build 1 的上传历史保留在 `RELEASE_CANDIDATE_1_0_1.md`；当前 Build 2 的自动化、加密、Archive、上传、Apple 处理与范围受限的内部 TestFlight 人工证据记录在 `IMPLEMENTATION_STATUS.md` 和 `RELEASE_CANDIDATE_1_0_2.md`。Build 2 已成为唯一发布候选，但核心真机流程通过不能替代未记录的无障碍/系统压力矩阵、外部 Beta App Review（如启用）或 App Store Review 提交。
 
 ## 6. 1.0 发布门禁
 
@@ -77,7 +77,7 @@ Bundle ID 一旦用于正式分发，就成为安装、钥匙串、通知和后�
 1. 正式视觉系统与 AppIcon 通过产品验收。
 2. 真实 iPhone 以正式 Bundle ID 完成安装、签到、重启持久化、触觉、通知与小组件全流程。
 3. 真实 iPad 完成安装、持久化、横竖屏、分屏和小组件验证。
-4. 签名 Archive、TestFlight 安装、升级和恢复流程通过。
+4. 签名 Archive、TestFlight 全新安装和恢复流程通过；Build 2 是首发 clean-break 基线，不以 Build 1 预发布数据兼容作为门禁，首个公开版本之后的升级必须另行验证迁移。
 5. 已公开的隐私说明与支持页面持续可达，商店文案和截图完成。
 6. Bundle ID、显示名称、版本号和支持设备范围正式签字确认。（Bundle ID 与显示名称已通过）
 7. 至少完成一轮跨多个自然日的内部试用。

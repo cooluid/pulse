@@ -1,6 +1,6 @@
 # Pulse 1.0 (2) 发布候选与 TestFlight 交付证据
 
-状态：**BUILD UPLOAD GO / APPLE PROCESSING COMPLETE / READY TO SUBMIT / PUBLIC RELEASE NO-GO**
+状态：**INTERNAL TESTFLIGHT CORE HUMAN GO / READY TO SUBMIT / PUBLIC RELEASE NO-GO**
 
 生成日期：2026-08-12
 
@@ -102,12 +102,24 @@ IPA SHA-256：`7944287f128bcd8a64ae6bff077c3ddac6701861ea95e702fe43fde93dc1e6cc`
 - 产品负责人随后在 App Store Connect 确认 Build 2 状态为 `Ready to Submit`，并显示 `Expires in 90 days`；这关闭了 Apple 构建处理门禁。
 - 上传和处理链路没有出现签名、版本号、App Group、Data Protection 或出口合规阻断；`Missing Compliance` 不再是当前 Build 2 的构建阻断项。
 
-## 7. 尚未关闭的发布门禁
+## 7. 内部 TestFlight 人工验收
 
-1. 把 Build 2 加入内部测试组并取得真实设备 TestFlight 安装证据。
-2. 在真实 iPhone / iPad 验证加密导出、正确密码恢复、错误密码、篡改文件失败关闭、全量替换确认和 Widget 数据连续性。
-3. 对加密密码界面补齐 English、Light、最大动态字体和真人 VoiceOver 候选复核。
-4. 在项目支持的最旧 iOS 18.x 版本补齐安装与核心流程证据。
-5. 完成 App Store 版本元数据、截图、隐私答案、年龄分级等商店材料，并另行执行提交审核操作。
+产品负责人于 2026-08-12 明确确认以下 Build 2 项目全部通过：
 
-因此，Build 2 的上传和 Apple 处理结论为 GO；公开发布仍保持 NO-GO。Build 1 已被本候选取代，不得再作为后续测试或发布基线。
+- 从 TestFlight 全新安装 `1.0 (2)`。
+- 创建签到后，App、历史与 Widget 状态一致。
+- 成功导出正式 `.pulsebackup` 文件。
+- 使用错误密码恢复时失败关闭，原数据不变。
+- 清除当前数据后，使用正确密码完整恢复主承诺与签到记录。
+- English / 简体中文、Light / Dark，以及 iPhone / iPad 基本布局正常。
+
+这些结果记为范围受限的 **HUMAN GO**。验收来源是产品负责人陈述；仓库不补造设备型号、精确 OS、截图、逐项日志或未执行场景。Build 2 是首个公开版本的 clean-break 基线，不要求兼容或升级 Build 1 的预发布测试数据。
+
+## 8. 尚未关闭的发布门禁
+
+1. 在真实设备验证篡改备份文件失败关闭且不改变现有事实。
+2. 补齐最大动态字体、真人 VoiceOver、最旧 iOS 18.x、通知和完整 Widget 压力矩阵。
+3. 完成 App Store 版本元数据、截图、隐私答案、年龄分级及审核联系信息。
+4. 产品负责人审阅剩余门禁后，另行授权提交 App Store Review。
+
+因此，Build 2 的上传、Apple 处理与内部 TestFlight 核心真机流程结论为 GO；公开发布仍保持 NO-GO。Build 1 已被本候选取代，不得再作为后续测试或发布基线。
