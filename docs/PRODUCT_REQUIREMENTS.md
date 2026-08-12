@@ -145,8 +145,8 @@ MVP 的目标不是搭建任务平台，而是让以下闭环稳定成立：
 `P1`：
 
 - 面向所有用户的每日基础提醒开关与提醒时间。
-- 独立 VIP 权益页：购买状态、恢复购买与诚实错误；商品价格只读取 StoreKit，未购买不展示伪价格。
-- 独立 Widget 构图画廊；收费样式被点击时明确进入 VIP 页，不在设置使用带锁下拉框。
+- 独立高阶权益页：购买状态、恢复购买与诚实错误；商品价格只读取 StoreKit，未购买不展示伪价格。
+- 独立 Widget 构图画廊；收费样式被点击时明确进入高阶权益页，不在设置使用带锁下拉框。
 - 提醒时间。
 - 一周起始日。
 - 主题模式设置：跟随系统、浅色、深色。
@@ -158,13 +158,13 @@ MVP 的目标不是搭建任务平台，而是让以下闭环稳定成立：
 
 分组说明必须进入对应卡片：单项规则作为控件副说明，整组规则作为卡片内说明行。破坏性确认必须绑定实际触发行，不得挂在整页容器上。
 
-VIP 权益只由 StoreKit 2 已验证交易派生，不持久化购买布尔值，也不进入 `CheckInRecord`、Repository、备份格式或 Widget 事实。商品展示名称与价格消费 App Store 返回值；`PulseEnhancementContract.currentCapabilities` 是已交付买断能力的唯一目录。新能力只有真正发布后才能加入目录和 VIP 页；加载失败、待处理、取消、无可恢复购买和验证失败均不得伪装为成功。
+高阶权益只由 StoreKit 2 已验证交易派生，不持久化购买布尔值，也不进入 `CheckInRecord`、Repository、备份格式或 Widget 事实。商品展示名称与价格消费 App Store 返回值；`PulseEnhancementContract.currentCapabilities` 是已交付买断能力的唯一目录。新能力只有真正发布后才能加入目录和高阶权益页；加载失败、待处理、取消、无可恢复购买和验证失败均不得伪装为成功。
 
 唯一 `ReminderDeliveryPolicy` 按“用户提醒意图 + 已验证权益 + 系统能力”选择一个提醒通道：只有用户关闭提醒时才为关闭；未购买、iOS / iPadOS 18–25，或 iOS 26 关闭 Live Activities 时，使用滚动 60 个日历日的一次性免费本地通知；已购买且 iOS / iPadOS 26 允许 Live Activities 时，滚动安排最多 7 个 transient Live Activity，支持灵动岛的 iPhone 由系统同时显示 Dynamic Island 表面。不得同时安排同义通知和 Live Activity。
 
 通知权限只在用户主动开启提醒时请求，用于免费基础提醒与增强通道不可用时的同一提醒连续性；首次启动不得直接弹出。用户拒绝通知时，仍可用的 scheduled Live Activity 不应被阻止；两个正式通道都不可用时必须显示同步失败并保留开关意图，不得静默关闭。今天已过提醒时间时从明天开始，已签到日期不生成请求；启动、回到前台、签到、权益或提醒设置变化时刷新并先取消旧通道。系统调度容量和呈现由 iOS 裁决，产品文案不能承诺“到点一定出现”。
 
-`PulseWidgetStyleAccessPolicy` 规定 `breathingOrbit`（呼吸环）是唯一免费 Home Screen Widget 构图；`grassWindow`（草窗）、`ripplePath`（涟漪径）、`morningDew`（晨露）属于同一个 VIP entitlement。设置写入与 Widget extension 渲染必须各自验证权益；未验证、撤销、共享偏好被外部写成收费样式时统一解析为呼吸环，不能仅隐藏选择入口。
+`PulseWidgetStyleAccessPolicy` 规定 `breathingOrbit`（呼吸环）是唯一免费 Home Screen Widget 构图；`morningDew`（晨露）、`diagonalLight`（斜光）、`tidalFill`（潮汐）、`cornerTint`（隅色）、`quietOrder`（静序）属于同一个高阶权益 entitlement。设置写入与 Widget extension 渲染必须各自验证权益；未验证、撤销、共享偏好被外部写成收费样式时统一解析为呼吸环，不能仅隐藏选择入口。
 
 ## 5. 功能范围
 
@@ -189,13 +189,13 @@ VIP 权益只由 StoreKit 2 已验证交易派生，不持久化购买布尔值�
 
 ### 5.2 P1：1.1 增强范围
 
-- 免费基础提醒：所有用户均可使用本地通知；一次买断 VIP 在受支持的 iOS 26 系统上增加定时 transient Live Activity / Dynamic Island 表面。
+- 免费基础提醒：所有用户均可使用本地通知；一次买断高阶权益在受支持的 iOS 26 系统上增加定时 transient Live Activity / Dynamic Island 表面。
 - 版本化 Pulse 加密备份 v2 导出与全量恢复，包含签到、媒体清单、原图与缩略图；备份/恢复永久属于免费数据主权能力。
 - 签到时区设置。
 - 一周起始日设置。
 - 更完整的错误恢复和空状态说明。
 - App 图标、启动体验和正式发布素材。
-- 基础 Widget：Home Screen 小号/中号的“呼吸环”构图面向所有用户；VIP 解锁“草窗 / 涟漪径 / 晨露”。草野四景均显示当前主承诺名称、最近七日投影与单向签到 AppIntent；Lock Screen 圆形/矩形只显示抽象状态且面向所有用户。App/Widget 只使用同一个 App Group store；`interface.language` / `widget.style` 只保存界面语言与构图，不保存签到状态或购买副本。
+- 基础 Widget：Home Screen 小号/中号的“呼吸环”构图面向所有用户；高阶权益解锁“晨露 / 斜光 / 潮汐 / 隅色 / 静序”。六式均显示当前主承诺名称、最近七日投影与单向签到 AppIntent；构图目录可在相同事实与视觉合同下继续增加。Lock Screen 圆形/矩形只显示抽象状态且面向所有用户。App/Widget 只使用同一个 App Group store；`interface.language` / `widget.style` 只保存界面语言与构图，不保存签到状态或购买副本。
 
 ### 5.3 P2：后续候选，不属于 MVP 承诺
 
@@ -214,7 +214,7 @@ VIP 权益只由 StoreKit 2 已验证交易派生，不持久化购买布尔值�
 
 - 登录注册。
 - 社交、排行榜或好友监督。
-- 订阅、积分商城和除 VIP 一次买断外的付费体系。
+- 订阅、积分商城和除高阶权益一次买断外的付费体系。
 - 服务器防作弊。
 - 团队考勤、审批或证明。
 - 自动补签。

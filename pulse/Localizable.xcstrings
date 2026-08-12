@@ -738,13 +738,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "This widget composition is included with VIP. Breathing Orbit and basic reminders stay available without a purchase."
+            "value" : "This widget composition is included with Advanced Benefits. Breathing Orbit and basic reminders stay available without a purchase."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "这个小组件构图属于 VIP；呼吸环和基础提醒无需购买。"
+            "value" : "这个小组件构图属于高阶权益；呼吸环和基础提醒无需购买。"
           }
         }
       }
@@ -908,13 +908,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "No previous VIP purchase was found for this Apple Account."
+            "value" : "No previous Advanced Benefits purchase was found for this Apple Account."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "当前 Apple 账户没有可恢复的 VIP 购买记录。"
+            "value" : "当前 Apple 账户没有可恢复的高阶权益购买记录。"
           }
         }
       }
@@ -925,13 +925,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "VIP is temporarily unavailable from the App Store. No price or purchase was assumed."
+            "value" : "Advanced Benefits are temporarily unavailable from the App Store. No price or purchase was assumed."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "App Store 暂时无法提供 VIP；当前未展示虚构价格，也没有完成购买。"
+            "value" : "App Store 暂时无法提供高阶权益；当前未展示虚构价格，也没有完成购买。"
           }
         }
       }
@@ -942,13 +942,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "The purchase could not be verified, so VIP remains locked."
+            "value" : "The purchase could not be verified, so Advanced Benefits remain locked."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "购买验证失败，VIP 仍保持锁定。"
+            "value" : "购买验证失败，高阶权益仍保持锁定。"
           }
         }
       }
@@ -1987,13 +1987,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Explore VIP benefits"
+            "value" : "Explore Advanced Benefits"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "查看 VIP 权益"
+            "value" : "查看高阶权益"
           }
         }
       }
@@ -2004,13 +2004,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "VIP"
+            "value" : "Advanced Benefits"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "VIP"
+            "value" : "高阶权益"
           }
         }
       }
@@ -2311,36 +2311,36 @@
         }
       }
     },
-    "settings.widget.style.grass_window" : {
+    "settings.widget.style.diagonal_light" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Grass Window"
+            "value" : "Diagonal Light"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "草窗"
+            "value" : "斜光"
           }
         }
       }
     },
-    "settings.widget.style.grass_window.detail" : {
+    "settings.widget.style.diagonal_light.detail" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Layered grass tones leave a gentle sense of depth."
+            "value" : "A soft diagonal field lets two grass tones meet without a hard edge."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "层叠草色，留出安静的景深。"
+            "value" : "柔和斜向断色，让两侧草色轻轻相遇。"
           }
         }
       }
@@ -2379,36 +2379,104 @@
         }
       }
     },
-    "settings.widget.style.ripple_path" : {
+    "settings.widget.style.tidal_fill" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ripple Path"
+            "value" : "Tidal Fill"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "涟漪径"
+            "value" : "潮汐"
           }
         }
       }
     },
-    "settings.widget.style.ripple_path.detail" : {
+    "settings.widget.style.tidal_fill.detail" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Soft ripples gather seven days into one path."
+            "value" : "Layered waterlines rise gently beneath today’s imprint."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "柔和涟漪，把七日节律收进一条路径。"
+            "value" : "层叠水线轻轻漫起，托住今天的印记。"
+          }
+        }
+      }
+    },
+    "settings.widget.style.corner_tint" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Corner Tint"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "隅色"
+          }
+        }
+      }
+    },
+    "settings.widget.style.corner_tint.detail" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Two softened color corners frame a generous quiet center."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "两处柔色贴住角边，中间留出安静呼吸。"
+          }
+        }
+      }
+    },
+    "settings.widget.style.quiet_order" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quiet Order"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "静序"
+          }
+        }
+      }
+    },
+    "settings.widget.style.quiet_order.detail" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A calm header, centered commitment, and grounded status rhythm."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "轻身份、居中承诺与底部节律，秩序清晰而松弛。"
           }
         }
       }
@@ -2516,13 +2584,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Included with VIP"
+            "value" : "Included with Advanced Benefits"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "VIP 包含"
+            "value" : "高阶权益包括"
           }
         }
       }
@@ -2567,13 +2635,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Unlock Grass Window, Ripple Path, and Morning Dew compositions."
+            "value" : "Unlock Morning Dew, Diagonal Light, Tidal Fill, Corner Tint, and Quiet Order compositions."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "解锁草窗、涟漪径与晨露构图。"
+            "value" : "解锁晨露、斜光、潮汐、隅色与静序构图。"
           }
         }
       }
@@ -2601,13 +2669,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "One purchase unlocks every VIP benefit listed here. New benefits will be described clearly when they ship."
+            "value" : "One purchase permanently unlocks every advanced benefit listed here. New benefits will be described clearly when they ship."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "一次买断，永久解锁当前列出的 VIP 权益。新增内容上线时，会在这里清晰说明。"
+            "value" : "一次买断，永久解锁当前列出的高阶权益。新增内容上线时，会在这里清晰说明。"
           }
         }
       }
@@ -2669,13 +2737,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "VIP"
+            "value" : "Advanced Benefits"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "VIP"
+            "value" : "高阶权益"
           }
         }
       }
@@ -2737,13 +2805,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "VIP Unlocked"
+            "value" : "Advanced Benefits Unlocked"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "VIP 已解锁"
+            "value" : "高阶权益已解锁"
           }
         }
       }
@@ -2788,13 +2856,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "VIP"
+            "value" : "Advanced Benefits"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "VIP"
+            "value" : "高阶权益"
           }
         }
       }
@@ -3201,13 +3269,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "VIP"
+            "value" : "Advanced"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "VIP"
+            "value" : "高阶"
           }
         }
       }

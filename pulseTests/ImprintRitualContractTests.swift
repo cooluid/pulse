@@ -18,6 +18,27 @@ final class ImprintRitualContractTests: XCTestCase {
         XCTAssertGreaterThan(PulseDesign.ambientFieldBreathAmplitude, 0)
         XCTAssertLessThanOrEqual(PulseDesign.ambientFieldBreathAmplitude, 0.012)
         XCTAssertGreaterThanOrEqual(PulseDesign.ambientFieldMinimumInterval, 1.0 / 30.0)
+        XCTAssertGreaterThan(PulseDesign.todayTidalBandBaseOpacity, 0)
+        XCTAssertLessThanOrEqual(PulseDesign.todayTidalBandBaseOpacity, 0.08)
+        XCTAssertGreaterThan(PulseDesign.todayTidalBandDrift, 0)
+        XCTAssertLessThanOrEqual(PulseDesign.todayTidalBandDrift, 8)
+    }
+
+    func testTodayUsesTheTidalFieldWithoutChangingOtherScreens() throws {
+        let repositoryRoot = URL(fileURLWithPath: #filePath)
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+        let designSource = try String(
+            contentsOf: repositoryRoot.appending(path: "pulse/Shared/PulseDesignSystem.swift"),
+            encoding: .utf8
+        )
+        let todaySource = try String(
+            contentsOf: repositoryRoot.appending(path: "pulse/Features/Today/TodayView.swift"),
+            encoding: .utf8
+        )
+
+        XCTAssertTrue(designSource.contains("showsTidalLayer: presentation == .today"))
+        XCTAssertTrue(todaySource.contains("PulseFieldBackground(presentation: .today)"))
     }
 
     func testAmbientFieldMotionHonorsLifecycleAndReduceMotion() throws {

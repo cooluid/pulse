@@ -55,12 +55,16 @@ extension PulseWidgetStyle {
         switch self {
         case .breathingOrbit:
             PulseLocalization.string("settings.widget.style.breathing_orbit", locale: locale)
-        case .grassWindow:
-            PulseLocalization.string("settings.widget.style.grass_window", locale: locale)
-        case .ripplePath:
-            PulseLocalization.string("settings.widget.style.ripple_path", locale: locale)
         case .morningDew:
             PulseLocalization.string("settings.widget.style.morning_dew", locale: locale)
+        case .diagonalLight:
+            PulseLocalization.string("settings.widget.style.diagonal_light", locale: locale)
+        case .tidalFill:
+            PulseLocalization.string("settings.widget.style.tidal_fill", locale: locale)
+        case .cornerTint:
+            PulseLocalization.string("settings.widget.style.corner_tint", locale: locale)
+        case .quietOrder:
+            PulseLocalization.string("settings.widget.style.quiet_order", locale: locale)
         }
     }
 
@@ -71,19 +75,29 @@ extension PulseWidgetStyle {
                 "settings.widget.style.breathing_orbit.detail",
                 locale: locale
             )
-        case .grassWindow:
-            PulseLocalization.string(
-                "settings.widget.style.grass_window.detail",
-                locale: locale
-            )
-        case .ripplePath:
-            PulseLocalization.string(
-                "settings.widget.style.ripple_path.detail",
-                locale: locale
-            )
         case .morningDew:
             PulseLocalization.string(
                 "settings.widget.style.morning_dew.detail",
+                locale: locale
+            )
+        case .diagonalLight:
+            PulseLocalization.string(
+                "settings.widget.style.diagonal_light.detail",
+                locale: locale
+            )
+        case .tidalFill:
+            PulseLocalization.string(
+                "settings.widget.style.tidal_fill.detail",
+                locale: locale
+            )
+        case .cornerTint:
+            PulseLocalization.string(
+                "settings.widget.style.corner_tint.detail",
+                locale: locale
+            )
+        case .quietOrder:
+            PulseLocalization.string(
+                "settings.widget.style.quiet_order.detail",
                 locale: locale
             )
         }

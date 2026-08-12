@@ -156,7 +156,7 @@ private final class TestStoreKitAccessClient: StoreKitAccessClient {
     init(
         product: StoreProductPresentation? = StoreProductPresentation(
             identifier: PulseEnhancementContract.productIdentifier,
-            displayName: "Pulse · VIP",
+            displayName: "Pulse · Advanced Benefits",
             description: "Test product",
             displayPrice: "¥18.00"
         ),

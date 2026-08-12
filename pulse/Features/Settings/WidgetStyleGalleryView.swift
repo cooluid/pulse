@@ -131,11 +131,7 @@ struct PulseWidgetStylePreview: View {
     var body: some View {
         GeometryReader { proxy in
             ZStack {
-                LinearGradient(
-                    colors: [PulseDesign.surface, PulseDesign.background.opacity(0.94)],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
+                PulseDesign.surface
                 preview(in: proxy.size)
             }
             .clipShape(RoundedRectangle(
@@ -167,26 +163,18 @@ struct PulseWidgetStylePreview: View {
                 }
                 .padding(PulseDesign.spacing16)
             }
-        case .grassWindow:
+        case .diagonalLight:
             ZStack {
-                RoundedRectangle(
-                    cornerRadius: size.height * 0.28,
-                    style: .continuous
-                )
-                .fill(PulseDesign.field.opacity(0.13))
-                .frame(width: size.width * 0.76, height: size.height * 0.78)
-                .offset(x: size.width * 0.18, y: size.height * 0.11)
-
-                Ellipse()
-                    .stroke(PulseDesign.grass.opacity(0.34), lineWidth: 1)
-                    .frame(width: size.width * 0.66, height: size.height * 0.72)
-                    .offset(x: size.width * 0.25, y: size.height * 0.13)
+                PulseDiagonalField()
+                    .fill(PulseDesign.field.opacity(0.18))
+                PulseDiagonalField(boundaryOffset: -0.045)
+                    .fill(PulseDesign.grass.opacity(0.055))
 
                 VStack(alignment: .leading, spacing: PulseDesign.spacing12) {
                     previewHeader
                     Spacer(minLength: 0)
                     previewCommitment()
-                        .frame(width: size.width * 0.58, alignment: .leading)
+                        .frame(width: size.width * 0.61, alignment: .leading)
                     HStack {
                         previewRhythm
                         Spacer()
@@ -195,21 +183,25 @@ struct PulseWidgetStylePreview: View {
                 }
                 .padding(PulseDesign.spacing16)
             }
-        case .ripplePath:
+        case .tidalFill:
             ZStack {
-                previewContours(size: size, anchor: CGPoint(x: 0.14, y: 0.56))
+                PulseTidalField(level: 0.48, lift: 0.025)
+                    .fill(PulseDesign.field.opacity(0.10))
+                PulseTidalField(level: 0.62, lift: -0.020)
+                    .fill(PulseDesign.field.opacity(0.14))
+                PulseTidalField(level: 0.76, lift: 0.018)
+                    .fill(PulseDesign.grass.opacity(0.10))
 
-                VStack(alignment: .trailing, spacing: PulseDesign.spacing12) {
+                VStack(alignment: .leading, spacing: PulseDesign.spacing12) {
                     previewHeader
                     Spacer(minLength: 0)
                     previewCommitment()
-                        .multilineTextAlignment(.trailing)
-                        .frame(width: size.width * 0.56, alignment: .trailing)
+                        .frame(width: size.width * 0.62, alignment: .leading)
                     Spacer(minLength: 0)
                     HStack {
-                        previewImprint
-                        Spacer()
                         previewRhythm
+                        Spacer()
+                        previewImprint
                     }
                 }
                 .padding(PulseDesign.spacing16)
@@ -242,6 +234,50 @@ struct PulseWidgetStylePreview: View {
                 }
                 .padding(PulseDesign.spacing16)
             }
+        case .cornerTint:
+            ZStack {
+                Circle()
+                    .fill(PulseDesign.field.opacity(0.18))
+                    .frame(width: size.height * 0.94, height: size.height * 0.94)
+                    .offset(x: -size.width * 0.39, y: -size.height * 0.37)
+                Circle()
+                    .fill(PulseDesign.grass.opacity(0.10))
+                    .frame(width: size.height * 0.72, height: size.height * 0.72)
+                    .offset(x: size.width * 0.44, y: size.height * 0.38)
+
+                VStack(alignment: .leading, spacing: PulseDesign.spacing12) {
+                    previewHeader
+                    Spacer(minLength: 0)
+                    previewCommitment()
+                        .frame(width: size.width * 0.60, alignment: .leading)
+                    Spacer(minLength: 0)
+                    HStack {
+                        previewRhythm
+                        Spacer()
+                        previewImprint
+                    }
+                }
+                .padding(PulseDesign.spacing16)
+            }
+        case .quietOrder:
+            VStack(spacing: PulseDesign.spacing12) {
+                previewHeader
+                Spacer(minLength: 0)
+                previewCommitment()
+                    .multilineTextAlignment(.center)
+                    .frame(maxWidth: .infinity, alignment: .center)
+                Spacer(minLength: 0)
+                HStack(spacing: PulseDesign.spacing12) {
+                    previewRhythm
+                    Spacer(minLength: PulseDesign.spacing8)
+                    previewImprint
+                }
+                .padding(.leading, PulseDesign.spacing12)
+                .padding(.trailing, PulseDesign.spacing8)
+                .padding(.vertical, PulseDesign.spacing8)
+                .background(PulseDesign.field.opacity(0.10), in: Capsule())
+            }
+            .padding(PulseDesign.spacing16)
         }
     }
 
@@ -321,5 +357,45 @@ struct PulseWidgetStylePreview: View {
                 .frame(width: 14, height: 14)
         }
         .frame(width: 34, height: 34)
+    }
+}
+
+private struct PulseDiagonalField: Shape {
+    var boundaryOffset: CGFloat = 0
+
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        path.move(to: CGPoint(
+            x: rect.width * (0.46 + boundaryOffset),
+            y: rect.minY
+        ))
+        path.addLine(to: CGPoint(x: rect.maxX, y: rect.minY))
+        path.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY))
+        path.addLine(to: CGPoint(
+            x: rect.width * (0.24 + boundaryOffset),
+            y: rect.maxY
+        ))
+        path.closeSubpath()
+        return path
+    }
+}
+
+private struct PulseTidalField: Shape {
+    let level: CGFloat
+    let lift: CGFloat
+
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        let startY = rect.height * level
+        path.move(to: CGPoint(x: rect.minX, y: startY))
+        path.addCurve(
+            to: CGPoint(x: rect.maxX, y: rect.height * (level + lift)),
+            control1: CGPoint(x: rect.width * 0.28, y: rect.height * (level - 0.10)),
+            control2: CGPoint(x: rect.width * 0.70, y: rect.height * (level + 0.10))
+        )
+        path.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY))
+        path.addLine(to: CGPoint(x: rect.minX, y: rect.maxY))
+        path.closeSubpath()
+        return path
     }
 }

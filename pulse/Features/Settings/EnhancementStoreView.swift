@@ -164,7 +164,13 @@ struct EnhancementStoreView: View {
                             .foregroundStyle(PulseDesign.secondary)
                             .fixedSize(horizontal: false, vertical: true)
                     }
+                    .frame(maxWidth: .infinity, alignment: .leading)
                 }
+                .frame(
+                    maxWidth: .infinity,
+                    minHeight: PulseDesign.storeCapabilityMinimumHeight,
+                    alignment: .topLeading
+                )
                 .padding(PulseDesign.spacing16)
                 .background(PulseDesign.surface.opacity(0.82), in: RoundedRectangle(
                     cornerRadius: PulseDesign.storeCapabilityCornerRadius,

@@ -6,9 +6,11 @@ public enum PulseWidgetContract {
 
 public enum PulseWidgetStyle: String, CaseIterable, Codable, Identifiable, Sendable {
     case breathingOrbit
-    case grassWindow
-    case ripplePath
     case morningDew
+    case diagonalLight
+    case tidalFill
+    case cornerTint
+    case quietOrder
 
     public var id: String { rawValue }
 }

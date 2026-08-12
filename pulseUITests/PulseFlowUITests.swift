@@ -196,7 +196,7 @@ final class PulseFlowUITests: XCTestCase {
         XCTAssertTrue(purchaseButton.waitForExistence(timeout: 3))
 
         let storeAttachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
-        storeAttachment.name = "VIP before purchase"
+        storeAttachment.name = "Advanced benefits before purchase"
         storeAttachment.lifetime = .keepAlways
         add(storeAttachment)
 
@@ -221,7 +221,7 @@ final class PulseFlowUITests: XCTestCase {
         )
 
         let purchasedSettingsAttachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
-        purchasedSettingsAttachment.name = "VIP purchased with free reminder retained"
+        purchasedSettingsAttachment.name = "Advanced benefits purchased with free reminder retained"
         purchasedSettingsAttachment.lifetime = .keepAlways
         add(purchasedSettingsAttachment)
 
@@ -249,10 +249,10 @@ final class PulseFlowUITests: XCTestCase {
         XCTAssertTrue(includedOption.waitForExistence(timeout: 3))
         XCTAssertTrue(premiumOption.waitForExistence(timeout: 3))
         XCTAssertTrue(includedOption.label.contains("已选择"))
-        XCTAssertTrue(premiumOption.label.contains("VIP"))
+        XCTAssertTrue(premiumOption.label.contains("高阶"))
 
         let optionsAttachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
-        optionsAttachment.name = "Free and VIP widget compositions"
+        optionsAttachment.name = "Free and advanced widget compositions"
         optionsAttachment.lifetime = .keepAlways
         add(optionsAttachment)
 
@@ -459,16 +459,42 @@ final class PulseFlowUITests: XCTestCase {
         XCTAssertTrue(galleryLink.waitForExistence(timeout: 3))
         galleryLink.tap()
 
-        let styleIdentifiers = ["breathingOrbit", "grassWindow", "ripplePath", "morningDew"]
-        for identifier in styleIdentifiers {
-            XCTAssertTrue(
-                app.buttons["widget.gallery.style.\(identifier)"].waitForExistence(timeout: 3)
-            )
+        let window = app.windows.firstMatch
+        let styleIdentifiers = [
+            "breathingOrbit",
+            "morningDew",
+            "diagonalLight",
+            "tidalFill",
+            "cornerTint",
+            "quietOrder",
+        ]
+        for (index, identifier) in styleIdentifiers.enumerated() {
+            let option = app.buttons["widget.gallery.style.\(identifier)"]
+            for _ in 0..<8 where !option.exists
+                || option.frame.maxY > window.frame.maxY - 20 {
+                app.swipeUp()
+            }
+            XCTAssertTrue(option.waitForExistence(timeout: 3))
+            XCTAssertLessThanOrEqual(option.frame.maxY, window.frame.maxY - 20)
+
+            if index == 1 || index == 3 || index == 5 {
+                let attachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
+                attachment.name = "Widget compositions \(index / 2 + 1) of 3"
+                attachment.lifetime = .keepAlways
+                add(attachment)
+            }
         }
 
-        app.buttons["widget.gallery.style.morningDew"].tap()
+        let finalStyle = app.buttons["widget.gallery.style.quietOrder"]
+        for _ in 0..<8 where !finalStyle.isHittable
+            || finalStyle.frame.maxY > window.frame.maxY - 20 {
+            app.swipeUp()
+        }
+        XCTAssertTrue(finalStyle.isHittable)
+        XCTAssertLessThanOrEqual(finalStyle.frame.maxY, window.frame.maxY - 20)
+        finalStyle.tap()
         XCTAssertTrue(
-            app.buttons["widget.gallery.style.morningDew"].label.contains("已选择")
+            finalStyle.label.contains("已选择")
         )
 
         app.terminate()
@@ -484,7 +510,7 @@ final class PulseFlowUITests: XCTestCase {
             app.swipeUp()
         }
         XCTAssertTrue(persistedGalleryLink.waitForExistence(timeout: 3))
-        XCTAssertTrue(persistedGalleryLink.label.contains("晨露"))
+        XCTAssertTrue(persistedGalleryLink.label.contains("静序"))
     }
 
     func testRecordDetailUsesSheetDismissalAndSourceAnchoredDeleteConfirmation() throws {

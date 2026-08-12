@@ -28,7 +28,7 @@ struct TodayView: View {
     var body: some View {
         ZStack {
             PulseScreenBackground()
-            PulseFieldBackground()
+            PulseFieldBackground(presentation: .today)
 
             VStack(spacing: 0) {
                 PulseAppHeader(source: .today)

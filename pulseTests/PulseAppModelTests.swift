@@ -246,12 +246,12 @@ final class PulseAppModelTests: XCTestCase {
         await context.model.start()
         let initialWidgetReloadCount = context.widgetReloader.reloadCount
 
-        context.model.requestWidgetStyle(.ripplePath)
+        context.model.requestWidgetStyle(.tidalFill)
 
-        XCTAssertEqual(context.model.settings.widgetStyle, .ripplePath)
+        XCTAssertEqual(context.model.settings.widgetStyle, .tidalFill)
         XCTAssertEqual(context.widgetReloader.reloadCount, initialWidgetReloadCount + 1)
 
-        context.model.requestWidgetStyle(.ripplePath)
+        context.model.requestWidgetStyle(.tidalFill)
         XCTAssertEqual(context.widgetReloader.reloadCount, initialWidgetReloadCount + 1)
     }
 
@@ -270,7 +270,7 @@ final class PulseAppModelTests: XCTestCase {
     func testFreeUserStartNormalizesPersistedPremiumWidgetStyle() async throws {
         let context = try makeContext(
             hasEnhancement: false,
-            initialWidgetStyle: .grassWindow
+            initialWidgetStyle: .diagonalLight
         )
 
         await context.model.start()

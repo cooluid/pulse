@@ -756,12 +756,16 @@ private struct PulseWidgetHomeView: View {
                 switch style {
                 case .breathingOrbit:
                     breathingOrbit(size: proxy.size)
-                case .grassWindow:
-                    grassWindow(size: proxy.size)
-                case .ripplePath:
-                    ripplePath(size: proxy.size)
                 case .morningDew:
                     morningDew(size: proxy.size)
+                case .diagonalLight:
+                    diagonalLight(size: proxy.size)
+                case .tidalFill:
+                    tidalFill(size: proxy.size)
+                case .cornerTint:
+                    cornerTint(size: proxy.size)
+                case .quietOrder:
+                    quietOrder(size: proxy.size)
                 }
             }
             .frame(width: proxy.size.width, height: proxy.size.height)
@@ -835,30 +839,17 @@ private struct PulseWidgetHomeView: View {
         }
     }
 
-    private func grassWindow(size: CGSize) -> some View {
+    private func diagonalLight(size: CGSize) -> some View {
         let actionDiameter = size.width * (usesMediumMetrics ? 0.18 : 0.24)
         let inset = size.width * (usesMediumMetrics ? 0.055 : 0.075)
 
         return ZStack {
             baseBackground
 
-            RoundedRectangle(
-                cornerRadius: size.height * 0.30,
-                style: .continuous
-            )
-            .fill(softFieldColor)
-            .frame(
-                width: size.width * (usesMediumMetrics ? 0.68 : 0.86),
-                height: size.height * 0.78
-            )
-            .offset(x: size.width * (usesMediumMetrics ? 0.18 : 0.15), y: size.height * 0.11)
-
-            organicContours(
-                size: size,
-                anchor: CGPoint(x: 0.82, y: 0.60),
-                widthRatio: usesMediumMetrics ? 0.46 : 0.72,
-                heightRatio: 0.78
-            )
+            PulseWidgetDiagonalField()
+                .fill(diagonalFieldColor)
+            PulseWidgetDiagonalField(boundaryOffset: -0.045)
+                .fill(diagonalHighlightColor)
 
             Text(verbatim: editorialDate)
                 .font(.system(size: css(17, in: size), weight: .medium, design: .rounded))
@@ -884,7 +875,7 @@ private struct PulseWidgetHomeView: View {
                 .lineLimit(2)
                 .minimumScaleFactor(0.64)
                 .frame(
-                    width: size.width * (usesMediumMetrics ? 0.62 : 0.68),
+                    width: size.width * (usesMediumMetrics ? 0.58 : 0.64),
                     alignment: .leading
                 )
                 .padding(.leading, inset)
@@ -910,19 +901,19 @@ private struct PulseWidgetHomeView: View {
         }
     }
 
-    private func ripplePath(size: CGSize) -> some View {
-        let actionDiameter = size.width * (usesMediumMetrics ? 0.22 : 0.34)
+    private func tidalFill(size: CGSize) -> some View {
+        let actionDiameter = size.width * (usesMediumMetrics ? 0.18 : 0.24)
         let inset = size.width * (usesMediumMetrics ? 0.055 : 0.075)
 
         return ZStack {
             baseBackground
 
-            organicContours(
-                size: size,
-                anchor: CGPoint(x: usesMediumMetrics ? 0.23 : 0.12, y: 0.58),
-                widthRatio: usesMediumMetrics ? 0.48 : 0.88,
-                heightRatio: 1.02
-            )
+            PulseWidgetTidalField(level: 0.46, lift: 0.025)
+                .fill(tidalFieldColor(opacity: 0.09))
+            PulseWidgetTidalField(level: 0.60, lift: -0.020)
+                .fill(tidalFieldColor(opacity: 0.13))
+            PulseWidgetTidalField(level: 0.75, lift: 0.018)
+                .fill(tidalAccentColor)
 
             editorialStatus(foreground: secondaryForeground, size: css(14, in: size))
                 .padding(.leading, inset)
@@ -944,34 +935,33 @@ private struct PulseWidgetHomeView: View {
                     design: .rounded
                 ))
                 .foregroundStyle(primaryForeground)
-                .multilineTextAlignment(.trailing)
+                .multilineTextAlignment(.leading)
                 .lineLimit(2)
                 .minimumScaleFactor(0.64)
                 .frame(
-                    width: size.width * (usesMediumMetrics ? 0.52 : 0.56),
-                    alignment: .trailing
+                    width: size.width * (usesMediumMetrics ? 0.60 : 0.64),
+                    alignment: .leading
                 )
-                .padding(.trailing, inset)
-                .padding(.top, size.height * 0.31)
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
+                .padding(.leading, inset)
+                .padding(.top, size.height * 0.30)
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
 
             homeImprintControl(
                 diameter: actionDiameter,
                 hasHalo: false,
-                coreScale: 0.40,
-                ringInsetRatio: 0.09,
-                pendingLabelScale: 0.12,
-                glyphScale: 0.23
+                coreScale: 0.42,
+                ringInsetRatio: 0.08,
+                pendingLabelScale: 0.14,
+                glyphScale: 0.25
             )
-            .position(
-                x: size.width * (usesMediumMetrics ? 0.22 : 0.19),
-                y: size.height * 0.57
-            )
+            .padding(.trailing, inset)
+            .padding(.bottom, size.height * 0.065)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
 
             homeWeekRail(snapshot.recentDays, gapCSS: 7, size: size)
-                .padding(.trailing, inset)
+                .padding(.leading, inset)
                 .padding(.bottom, size.height * 0.10)
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomLeading)
         }
     }
 
@@ -1051,6 +1041,136 @@ private struct PulseWidgetHomeView: View {
             .padding(.trailing, inset)
             .padding(.bottom, size.height * 0.065)
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
+        }
+    }
+
+    private func cornerTint(size: CGSize) -> some View {
+        let actionDiameter = size.width * (usesMediumMetrics ? 0.18 : 0.24)
+        let inset = size.width * (usesMediumMetrics ? 0.055 : 0.075)
+
+        return ZStack {
+            baseBackground
+
+            Circle()
+                .fill(cornerLeadingColor)
+                .frame(width: size.height * 0.96, height: size.height * 0.96)
+                .offset(x: -size.width * 0.40, y: -size.height * 0.38)
+
+            Circle()
+                .fill(cornerTrailingColor)
+                .frame(width: size.height * 0.74, height: size.height * 0.74)
+                .offset(x: size.width * 0.45, y: size.height * 0.39)
+
+            editorialStatus(foreground: secondaryForeground, size: css(14, in: size))
+                .padding(.leading, inset)
+                .padding(.top, size.height * 0.08)
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+
+            Text(verbatim: editorialDate)
+                .font(.system(size: css(17, in: size), weight: .medium, design: .rounded))
+                .foregroundStyle(actionForeground)
+                .monospacedDigit()
+                .padding(.trailing, inset)
+                .padding(.top, size.height * 0.08)
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
+
+            Text(verbatim: snapshot.habitName)
+                .font(.system(
+                    size: css(usesMediumMetrics ? 44 : 36, in: size),
+                    weight: .semibold,
+                    design: .rounded
+                ))
+                .foregroundStyle(primaryForeground)
+                .multilineTextAlignment(.leading)
+                .lineLimit(2)
+                .minimumScaleFactor(0.64)
+                .frame(
+                    width: size.width * (usesMediumMetrics ? 0.58 : 0.64),
+                    alignment: .leading
+                )
+                .padding(.leading, inset)
+                .padding(.top, size.height * 0.30)
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+
+            homeWeekRail(snapshot.recentDays, gapCSS: 7, size: size)
+                .padding(.leading, inset)
+                .padding(.bottom, size.height * 0.10)
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomLeading)
+
+            homeImprintControl(
+                diameter: actionDiameter,
+                hasHalo: false,
+                coreScale: 0.42,
+                ringInsetRatio: 0.08,
+                pendingLabelScale: 0.14,
+                glyphScale: 0.25
+            )
+            .padding(.trailing, inset)
+            .padding(.bottom, size.height * 0.065)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
+        }
+    }
+
+    private func quietOrder(size: CGSize) -> some View {
+        let actionDiameter = size.width * (usesMediumMetrics ? 0.16 : 0.22)
+        let inset = size.width * (usesMediumMetrics ? 0.055 : 0.075)
+
+        return ZStack {
+            baseBackground
+
+            VStack(spacing: 0) {
+                HStack(alignment: .firstTextBaseline) {
+                    editorialStatus(
+                        foreground: secondaryForeground,
+                        size: css(14, in: size)
+                    )
+                    Spacer()
+                    Text(verbatim: editorialDate)
+                        .font(.system(
+                            size: css(17, in: size),
+                            weight: .medium,
+                            design: .rounded
+                        ))
+                        .foregroundStyle(actionForeground)
+                        .monospacedDigit()
+                }
+
+                Spacer(minLength: 0)
+
+                Text(verbatim: snapshot.habitName)
+                    .font(.system(
+                        size: css(usesMediumMetrics ? 46 : 37, in: size),
+                        weight: .semibold,
+                        design: .rounded
+                    ))
+                    .foregroundStyle(primaryForeground)
+                    .multilineTextAlignment(.center)
+                    .lineLimit(2)
+                    .minimumScaleFactor(0.62)
+                    .frame(maxWidth: size.width * (usesMediumMetrics ? 0.70 : 0.78))
+
+                Spacer(minLength: 0)
+
+                HStack(spacing: css(12, in: size)) {
+                    homeWeekRail(snapshot.recentDays, gapCSS: 7, size: size)
+                    Spacer(minLength: css(8, in: size))
+                    homeImprintControl(
+                        diameter: actionDiameter,
+                        hasHalo: false,
+                        coreScale: 0.42,
+                        ringInsetRatio: 0.08,
+                        pendingLabelScale: 0.14,
+                        glyphScale: 0.25
+                    )
+                }
+                .padding(.leading, css(14, in: size))
+                .padding(.trailing, css(7, in: size))
+                .padding(.vertical, css(7, in: size))
+                .background(orderShelfColor, in: Capsule())
+            }
+            .padding(.horizontal, inset)
+            .padding(.top, size.height * 0.08)
+            .padding(.bottom, size.height * 0.065)
         }
     }
 
@@ -1282,14 +1402,50 @@ private struct PulseWidgetHomeView: View {
         usesFullColorPalette ? PulseWidgetDesign.grass : .primary
     }
 
-    private var softFieldColor: Color {
-        usesFullColorPalette
-            ? PulseWidgetDesign.grass.opacity(snapshot.isCheckedToday ? 0.16 : 0.11)
-            : Color.primary.opacity(0.08)
-    }
-
     private var dewFill: Color {
         usesFullColorPalette ? PulseWidgetDesign.grass : .primary
+    }
+
+    private var diagonalFieldColor: Color {
+        usesFullColorPalette
+            ? PulseWidgetDesign.field.opacity(0.19)
+            : Color.primary.opacity(0.10)
+    }
+
+    private var diagonalHighlightColor: Color {
+        usesFullColorPalette
+            ? PulseWidgetDesign.grass.opacity(0.055)
+            : Color.primary.opacity(0.035)
+    }
+
+    private func tidalFieldColor(opacity: Double) -> Color {
+        usesFullColorPalette
+            ? PulseWidgetDesign.field.opacity(opacity)
+            : Color.primary.opacity(opacity * 0.72)
+    }
+
+    private var tidalAccentColor: Color {
+        usesFullColorPalette
+            ? PulseWidgetDesign.grass.opacity(0.10)
+            : Color.primary.opacity(0.07)
+    }
+
+    private var cornerLeadingColor: Color {
+        usesFullColorPalette
+            ? PulseWidgetDesign.field.opacity(0.18)
+            : Color.primary.opacity(0.09)
+    }
+
+    private var cornerTrailingColor: Color {
+        usesFullColorPalette
+            ? PulseWidgetDesign.grass.opacity(0.10)
+            : Color.primary.opacity(0.06)
+    }
+
+    private var orderShelfColor: Color {
+        usesFullColorPalette
+            ? PulseWidgetDesign.field.opacity(0.10)
+            : Color.primary.opacity(0.07)
     }
 
     private var editorialDate: String {
@@ -1310,6 +1466,46 @@ private struct PulseWidgetHomeView: View {
     private func css(_ value: CGFloat, in size: CGSize) -> CGFloat {
         let prototypeHeight: CGFloat = usesMediumMetrics ? (680 / 2.05) : 340
         return value * size.height / prototypeHeight
+    }
+}
+
+private struct PulseWidgetDiagonalField: Shape {
+    var boundaryOffset: CGFloat = 0
+
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        path.move(to: CGPoint(
+            x: rect.width * (0.46 + boundaryOffset),
+            y: rect.minY
+        ))
+        path.addLine(to: CGPoint(x: rect.maxX, y: rect.minY))
+        path.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY))
+        path.addLine(to: CGPoint(
+            x: rect.width * (0.24 + boundaryOffset),
+            y: rect.maxY
+        ))
+        path.closeSubpath()
+        return path
+    }
+}
+
+private struct PulseWidgetTidalField: Shape {
+    let level: CGFloat
+    let lift: CGFloat
+
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        let startY = rect.height * level
+        path.move(to: CGPoint(x: rect.minX, y: startY))
+        path.addCurve(
+            to: CGPoint(x: rect.maxX, y: rect.height * (level + lift)),
+            control1: CGPoint(x: rect.width * 0.28, y: rect.height * (level - 0.10)),
+            control2: CGPoint(x: rect.width * 0.70, y: rect.height * (level + 0.10))
+        )
+        path.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY))
+        path.addLine(to: CGPoint(x: rect.minX, y: rect.maxY))
+        path.closeSubpath()
+        return path
     }
 }
 
@@ -1543,6 +1739,7 @@ private enum PulseWidgetDesign {
     static let actionForeground = Color("PulseActionForeground")
     static let ink = Color("PulseInk")
     static let secondary = Color("PulseSecondary")
+    static let field = Color("PulseField")
 
     static let spacing4: CGFloat = 4
     static let spacing8: CGFloat = 8

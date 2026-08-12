@@ -114,6 +114,7 @@ enum PulseDesign {
     static let storePreviewWidth: CGFloat = 248
     static let storePreviewHeight: CGFloat = 148
     static let storeCapabilityIconSize: CGFloat = 36
+    static let storeCapabilityMinimumHeight: CGFloat = 88
     static let storePurchaseButtonMinimumHeight: CGFloat = 56
     static let widgetGalleryPreviewHeight: CGFloat = 184
     static let widgetGalleryCardCornerRadius: CGFloat = 28
@@ -128,6 +129,9 @@ enum PulseDesign {
     static let ambientFieldHorizontalDrift: CGFloat = 7
     static let ambientFieldVerticalDrift: CGFloat = 4
     static let ambientFieldRotationAmplitude = 0.45
+    static let todayFieldOpacityMultiplier = 1.28
+    static let todayTidalBandBaseOpacity = 0.055
+    static let todayTidalBandDrift: CGFloat = 6
     static let savingAnimationDuration = 0.18
     static let savingIndicatorDelay = 0.25
     static let checkInLongPressDuration = 0.45
@@ -166,7 +170,14 @@ struct PulseScreenBackground: View {
     }
 }
 
+enum PulseFieldPresentation {
+    case standard
+    case today
+}
+
 struct PulseFieldBackground: View {
+    var presentation: PulseFieldPresentation = .standard
+
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.scenePhase) private var scenePhase
@@ -198,7 +209,8 @@ struct PulseFieldBackground: View {
                         ? PulseDesign.regularWidthFieldVerticalPositionRatio
                         : PulseDesign.fieldVerticalPositionRatio,
                     phase: phase,
-                    counterPhase: counterPhase
+                    counterPhase: counterPhase,
+                    showsTidalLayer: presentation == .today
                 )
             }
         }
@@ -251,19 +263,43 @@ private struct PulseAmbientFieldCanvas: View {
     let verticalPositionRatio: CGFloat
     let phase: Double
     let counterPhase: Double
+    let showsTidalLayer: Bool
 
     var body: some View {
         ZStack {
+            if showsTidalLayer {
+                tidalBands
+            }
             upperFlowLine
             contours
             lowerFlowLine
         }
     }
 
+    private var opacityMultiplier: Double {
+        showsTidalLayer ? PulseDesign.todayFieldOpacityMultiplier : 1
+    }
+
+    private var tidalBands: some View {
+        ZStack {
+            PulseFieldTidalBand(verticalBias: 0.30, thickness: 0.075, direction: 1)
+                .fill(PulseDesign.field.opacity(PulseDesign.todayTidalBandBaseOpacity * 0.72))
+            PulseFieldTidalBand(verticalBias: 0.40, thickness: 0.090, direction: -1)
+                .fill(PulseDesign.field.opacity(PulseDesign.todayTidalBandBaseOpacity))
+            PulseFieldTidalBand(verticalBias: 0.50, thickness: 0.105, direction: 1)
+                .fill(PulseDesign.grass.opacity(PulseDesign.todayTidalBandBaseOpacity * 0.72))
+        }
+        .scaleEffect(x: 1.02 + CGFloat(sin(phase)) * 0.006, y: 1, anchor: .center)
+        .offset(
+            x: CGFloat(cos(counterPhase)) * PulseDesign.todayTidalBandDrift,
+            y: CGFloat(sin(phase)) * PulseDesign.ambientFieldVerticalDrift * 0.85
+        )
+    }
+
     private var upperFlowLine: some View {
         PulseFieldFlowLine(verticalBias: 0.34)
             .stroke(
-                PulseDesign.field.opacity(PulseDesign.fieldBandOpacity),
+                PulseDesign.field.opacity(PulseDesign.fieldBandOpacity * opacityMultiplier),
                 style: StrokeStyle(lineWidth: PulseDesign.thinLineWidth, lineCap: .round)
             )
             .offset(
@@ -278,7 +314,7 @@ private struct PulseAmbientFieldCanvas: View {
         ZStack {
             Ellipse()
                 .stroke(
-                    PulseDesign.field.opacity(PulseDesign.fieldOutlineOpacity),
+                    PulseDesign.field.opacity(PulseDesign.fieldOutlineOpacity * opacityMultiplier),
                     lineWidth: PulseDesign.emphasisLineWidth
                 )
                 .frame(width: size.width * widthRatio, height: size.height * heightRatio)
@@ -289,7 +325,8 @@ private struct PulseAmbientFieldCanvas: View {
                     widthRatio: widthRatio,
                     heightRatio: heightRatio,
                     ringInset: ringInset,
-                    ring: ring
+                    ring: ring,
+                    opacityMultiplier: opacityMultiplier
                 )
             }
         }
@@ -307,7 +344,9 @@ private struct PulseAmbientFieldCanvas: View {
     private var lowerFlowLine: some View {
         PulseFieldFlowLine(verticalBias: 0.57)
             .stroke(
-                PulseDesign.field.opacity(PulseDesign.fieldBandOpacity * 0.72),
+                PulseDesign.field.opacity(
+                    PulseDesign.fieldBandOpacity * 0.72 * opacityMultiplier
+                ),
                 style: StrokeStyle(lineWidth: PulseDesign.thinLineWidth, lineCap: .round)
             )
             .offset(
@@ -323,6 +362,7 @@ private struct PulseFieldContourRing: View {
     let heightRatio: CGFloat
     let ringInset: CGFloat
     let ring: Int
+    let opacityMultiplier: Double
 
     var body: some View {
         Ellipse()
@@ -334,7 +374,7 @@ private struct PulseFieldContourRing: View {
     }
 
     private var ringOpacity: Double {
-        PulseDesign.fieldBandOpacity - Double(ring - 1) * 0.025
+        (PulseDesign.fieldBandOpacity - Double(ring - 1) * 0.025) * opacityMultiplier
     }
 
     private var ringWidth: CGFloat {
@@ -357,6 +397,47 @@ private struct PulseFieldFlowLine: Shape {
             control1: CGPoint(x: rect.width * 0.24, y: rect.height * (verticalBias - 0.12)),
             control2: CGPoint(x: rect.width * 0.68, y: rect.height * (verticalBias + 0.15))
         )
+        return path
+    }
+}
+
+private struct PulseFieldTidalBand: Shape {
+    let verticalBias: CGFloat
+    let thickness: CGFloat
+    let direction: CGFloat
+
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        let upperStart = rect.height * verticalBias
+        let upperEnd = rect.height * (verticalBias + 0.018 * direction)
+        let lowerStart = rect.height * (verticalBias + thickness)
+        let lowerEnd = rect.height * (verticalBias + thickness - 0.015 * direction)
+
+        path.move(to: CGPoint(x: rect.minX - rect.width * 0.08, y: upperStart))
+        path.addCurve(
+            to: CGPoint(x: rect.maxX + rect.width * 0.08, y: upperEnd),
+            control1: CGPoint(
+                x: rect.width * 0.28,
+                y: rect.height * (verticalBias - 0.055 * direction)
+            ),
+            control2: CGPoint(
+                x: rect.width * 0.68,
+                y: rect.height * (verticalBias + 0.070 * direction)
+            )
+        )
+        path.addLine(to: CGPoint(x: rect.maxX + rect.width * 0.08, y: lowerEnd))
+        path.addCurve(
+            to: CGPoint(x: rect.minX - rect.width * 0.08, y: lowerStart),
+            control1: CGPoint(
+                x: rect.width * 0.70,
+                y: rect.height * (verticalBias + thickness + 0.050 * direction)
+            ),
+            control2: CGPoint(
+                x: rect.width * 0.25,
+                y: rect.height * (verticalBias + thickness - 0.040 * direction)
+            )
+        )
+        path.closeSubpath()
         return path
     }
 }
