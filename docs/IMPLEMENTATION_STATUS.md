@@ -1,8 +1,9 @@
 # Pulse 实现与验收状态
 
 更新时间：2026-08-12
-当前工程结论：**GO（限当前源码、iOS 18.6 Simulator、无签名 Release 构建与静态分析）**。
-当前发布结论：**NO-GO**。真实设备、最低系统、完整系统表面、Apple Distribution、Archive、TestFlight 与 App Store 门禁尚未关闭。
+当前工程结论：**GO（提交 `cabde80`、iOS 18.6 Simulator、Release 构建与静态分析）**。
+当前候选结论：**RELEASE CANDIDATE GO**。正式 Archive 与 App Store Connect IPA 已生成并核验。
+当前公开发布结论：**NO-GO**。App Store Connect 上传/处理、TestFlight 安装回归和商店版本提交尚未执行。
 
 ## 当前唯一生产基线
 
@@ -47,6 +48,11 @@
 - 品牌资产生成检查：18 项与生成器一致。
 - App、InfoPlist 与 Widget String Catalog：JSON 解析通过，全部键均有非空 English / 简体中文值；Widget 另有生产消费者回归门禁。
 - 根仓库 `site` submodule：来源已声明，当前指针可解析且子仓库干净。
+- 提交 `cabde80` 已位于 `main` 与 `origin/main`；正式 Archive 生成成功。
+- App Store Connect 导出成功：App 与 Widget 均使用 Cloud Managed Apple Distribution 和 Store profile，`get-task-allow=false`、`beta-reports-active=true`，嵌套签名严格校验通过。
+- 导出 IPA SHA-256：`729ad834049ade944c02e03af22a82b705f5896a2439d86ecc82f16de0f673696`；完整证据见 [Pulse 1.0 (1) 发布候选证据](./RELEASE_CANDIDATE_1_0_1.md)。
+- 产品负责人于 2026-08-12 确认真机与其余人工验收无问题；该确认作为人工验收来源记录，不伪造成设备日志或自动化证据。
+- 产品、隐私和支持页面在候选生成时均返回 HTTPS 200。
 
 UI 运行证据另行人工检查了四张截图：
 
@@ -61,15 +67,16 @@ UI 运行证据另行人工检查了四张截图：
 
 - **工程 GO**：当前 checkout 的单一 schema/store/JSON、Repository 写入边界、App/Widget provisioning 边界、共享界面偏好、显式 Locale、iOS 18 部署目标、全量测试、Release 构建、静态分析和资源生成门禁已成立。
 - **界面候选 GO**：限 English 设置页、简体中文历史标题，以及 iPadOS 18.6 Home Screen 小/中号 Widget 的 English / 简体中文运行内容；主承诺原文保留符合用户内容边界。
-- **真实设备 NO-GO**：尚未在全新安装的真实 iPhone / iPad 上验证 App 首开建库、Widget 先于 App、App/Widget 同日竞争、杀进程重启、跨时区、通知和清除恢复。
-- **最低系统 NO-GO**：部署目标已提高到 18.0，但尚未在 iOS / iPadOS 18.0 设备或 Simulator 运行。
-- **完整视觉与可访问性 NO-GO**：当前 Widget 改版仍需 Lock Screen / StandBy / Always-On、深浅色完整矩阵、accented/vibrant、最大动态字体、真人 VoiceOver、Reduce Motion、降低透明度与 iPad 分屏证据；Widget Gallery、配置页与 AppIntent 静态元数据还需分别按系统语言验收。
-- **分发 NO-GO**：无 Apple Distribution、正式 Archive、TestFlight、App Store Connect 校验和商店材料验收证据。
+- **人工产品验收 GO**：产品负责人确认真机及其余人工验收无问题；仓库只记录该验收来源，不补造设备型号、OS 或截图细节。
+- **最低系统 ACCEPTED BY OWNER**：工程目标为 18.0，产品负责人确认其余验收无问题；当前自动化机器证据仍来自 18.6 Simulator。
+- **视觉与可访问性 ACCEPTED BY OWNER**：产品负责人确认相关人工验收无问题；自动化与此前截图证据范围保持原样。
+- **Archive / Apple Distribution GO**：正式 Archive 与 App Store Connect IPA 已成功生成并完成身份、权限、隐私清单、dSYM 和签名核验。
+- **外部分发 NO-GO**：IPA 尚未上传 App Store Connect，尚无 Apple 处理结果、TestFlight 安装/升级/恢复记录和商店版本提交结果。
 
 ## 下一步顺序
 
-1. 在真实 iPhone 与 iPad 做当前基线的全新安装，先验证 App 首开建库、Widget 先于 App 不建空库，以及 App/Widget 同日竞争的唯一事实结果。
-2. 在最低支持版本 iOS / iPadOS 18.0 重跑核心签到、历史、设置语言、通知、App Group 与 Widget 门禁。
-3. 完成真实设备上的通知异常、跨时区、清除恢复、动态字体、VoiceOver、Reduce Motion 和全部 Widget 系统表面验收。
-4. 对当前 AppIcon、商店截图、隐私/支持页面和网站 submodule 对应部署版本做最终内容验收。
-5. 建立 Apple Distribution，生成并检查 Archive，经 TestFlight 实装回归后再作上线 GO 决策。
+1. 经产品负责人明确授权，将候选 `pulse.ipa` 上传 App Store Connect；上传前确认 `1.0 (1)` 尚未被占用。
+2. 等待 Apple 处理完成并关闭构建警告、出口合规与隐私提示。
+3. 分配 TestFlight 内部测试，验证安装、升级、JSON 导出/恢复和 Widget 数据连续性。
+4. 完成并复核商店文案、截图、年龄分级、App Privacy、审核联系信息和版本提交。
+5. 只有 Apple 处理、TestFlight 与商店提交门禁全部通过后，才把公开发布结论改为 GO。

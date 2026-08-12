@@ -56,19 +56,19 @@ JSON 是 1.0 唯一恢复协议。CSV 不承担恢复职责，也不进入 1.0�
 | 显示名称 | 简体中文 `一日一印`；英文及其他语言 `Pulse` | 已确认并由系统本地化 |
 | Bundle ID | `co.fanr.pulse` | 已确认；命名空间来自用户持有的 `fanr.co` |
 | Marketing Version | `1.0` | 可作为首版候选 |
-| Build Number | `1` | 首次 TestFlight 前按发布流程递增 |
+| Build Number | `1` | 当前首个候选；上传前确认 App Store Connect 未占用，若冲突则在源码统一递增 App 与 Widget 后重新走完整候选流程 |
 | 最低系统版本 | iOS / iPadOS 18.0 | 已在全部 target 统一；当前 iOS 18.6 Simulator 工程验证通过，可用最旧 18.x 与真机仍是发布门禁 |
-| Development Team | `6N3D8YA2FY` | App 与 Widget 的开发签名设备构建及共享 App Group entitlement 已通过；Apple Distribution、Archive/TestFlight 与商店分发仍阻断 |
+| Development Team | `6N3D8YA2FY` | App 与 Widget 的正式 Archive 和 App Store Connect 导出已通过；Cloud Managed Apple Distribution、Store profile、App Group 与 `get-task-allow=false` 已核验，TestFlight/商店提交仍待执行 |
 | Widget 身份 | `co.fanr.pulse.widgets` / `group.co.fanr.pulse` | 两个开发描述文件均含正式 App Group；当前共享 store 已重定为首发唯一 schema，既有真机证据不能自动转移到本次 clean-break 候选，必须刷新系统表面与压力矩阵 |
 | 数据策略 | 本地优先 + Pulse JSON 恢复 | 1.0 推荐方案 |
 | AppIcon | “开放日环”，草绿 Default / Dark / Tinted | 几何与生成合同已录用；当前版本待最终视觉确认 |
 | 隐私政策 | `https://fanr.co/pulse/privacy/` | 已公开，并由 App 设置页直接链接 |
 | 产品支持 | `https://fanr.co/pulse/support/` | 已公开，联系邮箱为 `400822@163.com` |
-| 真实设备 | iPhone / iPad 核心真机矩阵 | 2026-08-11 的人工证据属于上一开发基线；首发 schema clean-break 与二级导航修正后必须以清洁安装重新验证，设备型号、OS 版本和压力路径以 `IMPLEMENTATION_STATUS.md` 为准 |
+| 真实设备 | iPhone / iPad 核心真机矩阵 | 产品负责人于 2026-08-12 确认真机及其余人工验收无问题；仓库记录验收来源，但没有补造设备型号、精确 OS、逐项日志或截图 |
 
 Bundle ID 一旦用于正式分发，就成为安装、钥匙串、通知和后续升级身份的一部分，不能把临时字符串带入发布后再随意更换。
 
-历史人工验收只证明当时构建中明确观察到的结果。它不自动证明本次首发 clean-break 候选、iOS / iPadOS 18 最旧运行时、精确并发/异常矩阵、Apple Distribution、Archive/TestFlight 或商店分发已经通过。
+历史人工验收只证明当时构建中明确观察到的结果。本次候选的产品负责人确认、自动化、Archive 与 Apple Distribution 证据分别记录在 `IMPLEMENTATION_STATUS.md` 和 `RELEASE_CANDIDATE_1_0_1.md`；它们仍不能替代尚未执行的 App Store Connect 处理、TestFlight 和商店提交。
 
 ## 6. 1.0 发布门禁
 
