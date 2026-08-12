@@ -10,18 +10,18 @@
       "internalID" : "14CFA85B-CCDF-48DB-BD52-E4C92F402A29",
       "localizations" : [
         {
-          "description" : "Unlock every Wild Imprint capability currently released, including scheduled Live Activities and advanced Widget compositions.",
-          "displayName" : "Pulse · Wild Imprint",
+          "description" : "Permanently unlock every VIP benefit currently released, including scheduled Live Activities and advanced Widget compositions.",
+          "displayName" : "Pulse · VIP",
           "locale" : "en_US"
         },
         {
-          "description" : "一次买断野印当前已发布的全部增强能力，包括定时实时活动与高级小组件构图。",
-          "displayName" : "一日一印 · 野印",
+          "description" : "一次买断当前已发布的全部 VIP 权益，包括定时实时活动与高级小组件构图。",
+          "displayName" : "一日一印 · VIP",
           "locale" : "zh_CN"
         }
       ],
       "productID" : "co.fanr.pulse.enhancement.lifetime",
-      "referenceName" : "Pulse Wild Imprint Lifetime",
+      "referenceName" : "Pulse VIP Lifetime",
       "type" : "NonConsumable"
     }
   ],

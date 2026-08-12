@@ -83,10 +83,11 @@ struct RootView: View {
     }
 
     private var primaryInterface: some View {
-        ZStack {
+        ZStack(alignment: .bottom) {
             NavigationStack(path: $todayPath) {
                 TodayView(
                     model: model,
+                    isActive: selectedSection == .today && todayPath.isEmpty,
                     primaryNavigationClearance: primaryNavigationHeight
                 )
                     .accessibilityHidden(!todayPath.isEmpty)
@@ -125,9 +126,7 @@ struct RootView: View {
             .accessibilityHidden(selectedSection != .history)
             .zIndex(selectedSection == .history ? 1 : 0)
             .animation(primaryContentAnimation, value: selectedSection)
-        }
-        .background(PulseScreenBackground())
-        .safeAreaInset(edge: .bottom, spacing: 0) {
+
             if isPrimaryNavigationVisible {
                 PulsePrimaryNavigation(
                     selection: $selectedSection,
@@ -140,8 +139,10 @@ struct RootView: View {
                 } action: { newHeight in
                     primaryNavigationHeight = newHeight
                 }
+                .zIndex(2)
             }
         }
+        .background(PulseScreenBackground())
     }
 
     private var isPrimaryNavigationVisible: Bool {

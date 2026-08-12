@@ -87,9 +87,9 @@ preparing → aligning → blending → encoding → completed / failed / cancel
 
 - Lock Screen 圆形：今日开放环与实心完成印内部都显示由当前 `LogicalDay` 派生的本地化纯数字，不带“日”等日期后缀；待签到开放环不得带有会被误读为勾形的斜线，完成态以实心内核替代勾；
 - Lock Screen 矩形：使用唯一“节律汇印”语法；左上显示今日短状态，过去六日节点上方显示不带日期后缀的本地化纯数字并以真实连接线汇入右侧唯一今日印记，今天数字显示在大印内部，不显示主承诺文本、星期或第七个今日小节点；
-- Home Screen 小号/中号：“承诺宣言”是唯一面向所有用户的免费构图，也是首次安装默认值；一次买断增强解锁“断层双色 / 越界巨环 / 错版撕页”。四式共用日/月日期、七日节律、当前主承诺名称、今日状态和同一个单向签到按钮，可见品牌与文字状态按各自原型取舍。系统默认内容边距正式关闭，背景色场和巨环可抵达容器边缘，文字与普通控件按原型安全区定位。
+- Home Screen 小号/中号：“呼吸环”是唯一面向所有用户的免费构图，也是首次安装默认值；VIP 解锁“草窗 / 涟漪径 / 晨露”。草野四景共用日期、圆点七日节律、当前主承诺、今日状态和同一个单向签到按钮；差异只来自细椭圆轮廓、柔和色场与留白关系，不使用粗黑线、斜切色块或海报负字距。
 
-四式只是呈现选择：App Group 只保存同一 `PulseSharedInterfacePreferences` 下类型化的 `interface.language` 与 `widget.style`，不得复制签到记录、连续天数、日期、主承诺或购买状态。App 在写入样式前检查 StoreKit entitlement；Widget extension 在生成每个 snapshot/timeline 时独立验证同一 entitlement。未验证、撤销或偏好被外部写成收费样式时统一渲染“承诺宣言”。Lock Screen / StandBy / Always-On 继续使用唯一 Accessory 语法，永久免费，不消费 Home Screen 样式，也不显示主承诺正文。App 与 Widget 内容消费同一语言；未知语言或样式值失败关闭，不能以系统语言或另一套构图伪装成功。
+四景只是呈现选择：App Group 只保存同一 `PulseSharedInterfacePreferences` 下类型化的 `interface.language` 与 `widget.style`，不得复制签到记录、连续天数、日期、主承诺或购买状态。App 在写入样式前检查 StoreKit entitlement；Widget extension 在生成每个 snapshot/timeline 时独立验证同一 entitlement。未验证、撤销或偏好被外部写成收费样式时统一渲染“呼吸环”。Lock Screen / StandBy / Always-On 继续使用唯一 Accessory 语法，永久免费，不消费 Home Screen 样式，也不显示主承诺正文。App 与 Widget 内容消费同一语言；未知语言或样式值失败关闭，不能以系统语言或另一套构图伪装成功。
 
 Widget 的未签到操作使用 `Button`，不使用可以反向切换的 `Toggle`。Accessory 待签到时整块系统分配区域都是同一按钮，不能只让图形局部可点；完成态静态。签到可从系统入口创建，但删除仍只在 App 内二次确认。设备锁定时交互遵循系统认证，不绕过锁屏。
 
@@ -120,7 +120,7 @@ deliveryMode = disabled | localNotification | scheduledLiveActivity
 目标不是小视频，而是两秒内完成的事实状态变化：
 
 ```text
-开放日环 → 权威提交 → 实心完成印
+深草行动印（空心内核）→ 权威提交 → 鲜草完成印（实心内核）
 ```
 
 - App 内先显示中性的写入反馈，不提前显示成功；
@@ -132,17 +132,17 @@ deliveryMode = disabled | localNotification | scheduledLiveActivity
 
 首个公开版本当前只实现 App 内基础落印，不创建 ActivityKit 实例：
 
-- 待签到：静态开放日环，不自动呼吸或持续循环；
+- 待签到：深草绿色行动印内保留空心内核；页面进入时外部低强调光环最多完成一次有限呼吸，不持续循环；
 - `saving`：只显示中性写入反馈，不能出现实心印记、成功触觉或完成时间；
-- 已留印：仅由 Repository 的正式提交回执触发，形成实心完成印并停在静态状态；
-- 保存失败：恢复开放日环，保留可重试入口并显示真实错误，不播放成功动效或触觉；
+- 已留印：仅由 Repository 的正式提交回执触发，切换为鲜草绿并形成实心内核，随后停在静态状态；
+- 保存失败：恢复深草行动印与空心内核，保留可重试入口并显示真实错误，不播放成功动效或触觉；
 - 已签到状态在启动、回前台或重建 View 时直接显示静态完成印，不得重播一次用户并未刚刚完成的仪式。
 
 App 内页面只保存短暂的呈现阶段和动画进度，不持久化 `activityState`，也不把呈现阶段作为签到事实。一次正常落印总时长不得超过两秒；Reduce Motion 只做短淡入与形状替换，不做缩放、回弹或扩散。
 
 ### 4.2 留印提醒窗口
 
-只有 StoreKit 已验证“野印”权益且用户主动开启提醒后，才允许在提醒时间自动启动 Live Activity；未购买用户在同一提醒时间使用免费本地通知。首版使用 transient Live Activity，每个逻辑日最多自动启动一次；它会在用户锁屏、收起扩展灵动岛或点按外部等系统定义的交互后结束，Pulse 不用 `staleDate` 伪造定时结束。设置页不能把 Live Activity 写成“仅灵动岛”，因为无灵动岛设备仍使用 Lock Screen 表面。
+只有 StoreKit 已验证 VIP 权益且用户主动开启提醒后，才允许在提醒时间自动启动 Live Activity；未购买用户在同一提醒时间使用免费本地通知。首版使用 transient Live Activity，每个逻辑日最多自动启动一次；它会在用户锁屏、收起扩展灵动岛或点按外部等系统定义的交互后结束，Pulse 不用 `staleDate` 伪造定时结束。设置页不能把 Live Activity 写成“仅灵动岛”，因为无灵动岛设备仍使用 Lock Screen 表面。
 
 Compact 示例：
 
@@ -237,7 +237,7 @@ Pulse 最低版本为 iOS / iPadOS 18.0，因此只保留两条正式版本分�
 
 ## 7. 视觉与动效合同
 
-日印仪式沿用“iOS 原生语言 + 断层海报品牌”：系统字体、SF Symbols、语义动态颜色与受控的信号橙/电草绿令牌，不增加霓虹、多彩统计、无语义玻璃卡片或第二套相机品牌。灵动岛背景由系统控制为不透明黑色，因此用形状、层级和措辞保留品牌，而不是强行改背景。照片是内容层，不反向定义全局配色。
+日印仪式沿用“iOS 原生语言 + 草野脉冲品牌”：系统字体、SF Symbols、语义动态颜色与受控的深草绿/鲜草绿令牌，不增加霓虹、多彩统计、无语义玻璃卡片或第二套相机品牌。灵动岛背景由系统控制为不透明黑色，因此用形状、层级和措辞保留品牌，而不是强行改背景。照片是内容层，不反向定义全局配色。
 
 动效参数在设计实现前集中定义，不散落硬编码：
 
@@ -250,7 +250,7 @@ memory       = 印记旁出现相机轮廓，用于可选留影
 render       = 实际进度环，用于岁月流影生成
 ```
 
-每次动画最长两秒；不做无限循环呼吸。所有状态提供 Reduce Motion、Always-On、低对比背景、动态字体、VoiceOver 和纯静态等价表达。
+状态转换动画每次最长两秒，不对按钮、文字或状态控件做无限循环。App 根场域允许唯一的 18 秒低振幅环境呼吸与细线漂移：只在前台且 Reduce Motion 关闭时由时间轴驱动，失活后暂停；它不改变业务状态，也不进入 Widget、Live Activity 或 Always-On。所有状态提供 Reduce Motion、低对比背景、动态字体、VoiceOver 和纯静态等价表达。
 
 ## 8. 免费与 Pulse Plus
 
@@ -260,13 +260,13 @@ render       = 实际进度环，用于岁月流影生成
 - 用户在 App 完成签到后的短暂 Live Activity 回声；
 - 回归与里程碑变体；
 - 基础本地通知提醒；
-- Home Screen“承诺宣言”、全部 Lock Screen Widget 与幂等签到；
+- Home Screen“呼吸环”、全部 Lock Screen Widget 与幂等签到；
 - 影像功能进入生产后的签到后拍照窗口。
 
-一次买断“野印”：
+一次买断 VIP：
 
 - iOS 26 本地定时 transient Live Activity；支持设备由系统同时提供 Dynamic Island，其他设备显示 Lock Screen 表面；
-- Home Screen“断层双色 / 越界巨环 / 错版撕页”三种额外构图；
+- Home Screen“草窗 / 涟漪径 / 晨露”三种额外构图；
 - 一个商品、一个永久 entitlement；商品价格从 StoreKit 返回值读取，不持久化购买布尔副本；`PulseEnhancementContract.currentCapabilities` 是购买页当前已交付能力的唯一目录。
 
 Pulse Plus 候选：
@@ -279,7 +279,7 @@ Pulse Plus 候选：
 - Apple Watch 上的 28/90/365 日节律、回归力、印期、年轮和往年今日抽象回看；
 - 将来经用户需求验证的专注印刻 Live Activity。
 
-野印当前收费对象是“增强系统呈现 + 三种额外构图”，不是基础提醒可靠性。未来能力只有真正交付后才能加入统一能力目录和购买页，不能预售路线图。无灵动岛设备仍可获得 Lock Screen Live Activity 表面，所有用户都保留本地通知与承诺宣言。权益不可用或被撤销时，提醒继续按基础本地通知策略协调，Home Screen 样式解析为承诺宣言；不得删除签到、照片、影片、报告、备份或 Widget。
+VIP 当前收费对象是“增强系统呈现 + 三种额外构图”，不是基础提醒可靠性。未来能力只有真正交付后才能加入统一能力目录和权益页，不能预售路线图。无灵动岛设备仍可获得 Lock Screen Live Activity 表面，所有用户都保留本地通知与呼吸环。权益不可用或被撤销时，提醒继续按基础本地通知策略协调，Home Screen 样式解析为呼吸环；不得删除签到、照片、影片、报告、备份或 Widget。
 
 ## 9. Apple Watch 子系统
 
@@ -421,7 +421,7 @@ Watch 默认隐私等级高于 App 前台：
 
 | 阶段 | 日印仪式范围 |
 | --- | --- |
-| R0.5 | 首版免费基础提醒 + 野印：StoreKit 2 单一永久 entitlement、iOS 26 本地 scheduled Live Activity、三种额外 Home Screen Widget 样式与单通道仲裁 |
+| R0.5 | 首版免费基础提醒 + VIP：StoreKit 2 单一永久 entitlement、iOS 26 本地 scheduled Live Activity、三种额外 Home Screen Widget 样式与单通道仲裁 |
 | R1 | App Group 正式 store、基础 Widget、Widget AppIntent、免费落印语言与后续系统仪式原型 |
 | W0 | R1 稳定后提前验证配对真机、WatchConnectivity、`pendingSync` 与跨午夜命令；不写生产历史 |
 | 1.1 | 签到成功后的今日入镜，不单独追拍照提醒，照片不进入系统表面 |

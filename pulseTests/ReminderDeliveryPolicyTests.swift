@@ -70,9 +70,9 @@ final class ReminderDeliveryPolicyTests: XCTestCase {
 }
 
 final class PulseWidgetStyleAccessPolicyTests: XCTestCase {
-    func testCommitmentManifestoIsTheOnlyIncludedStyle() {
-        XCTAssertEqual(PulseWidgetStyleAccessPolicy.freeStyle, .commitmentManifesto)
-        XCTAssertFalse(PulseWidgetStyleAccessPolicy.requiresEnhancement(.commitmentManifesto))
+    func testBreathingOrbitIsTheOnlyIncludedStyle() {
+        XCTAssertEqual(PulseWidgetStyleAccessPolicy.freeStyle, .breathingOrbit)
+        XCTAssertFalse(PulseWidgetStyleAccessPolicy.requiresEnhancement(.breathingOrbit))
         XCTAssertEqual(
             PulseWidgetStyle.allCases.filter {
                 PulseWidgetStyleAccessPolicy.requiresEnhancement($0)
@@ -84,10 +84,10 @@ final class PulseWidgetStyleAccessPolicyTests: XCTestCase {
     func testUnavailablePremiumStyleResolvesToIncludedStyle() {
         XCTAssertEqual(
             PulseWidgetStyleAccessPolicy.resolvedStyle(
-                preferredStyle: .oversizedRing,
+                preferredStyle: .ripplePath,
                 hasEnhancementEntitlement: false
             ),
-            .commitmentManifesto
+            .breathingOrbit
         )
     }
 

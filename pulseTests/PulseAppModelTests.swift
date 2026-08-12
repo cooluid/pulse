@@ -246,12 +246,12 @@ final class PulseAppModelTests: XCTestCase {
         await context.model.start()
         let initialWidgetReloadCount = context.widgetReloader.reloadCount
 
-        context.model.requestWidgetStyle(.oversizedRing)
+        context.model.requestWidgetStyle(.ripplePath)
 
-        XCTAssertEqual(context.model.settings.widgetStyle, .oversizedRing)
+        XCTAssertEqual(context.model.settings.widgetStyle, .ripplePath)
         XCTAssertEqual(context.widgetReloader.reloadCount, initialWidgetReloadCount + 1)
 
-        context.model.requestWidgetStyle(.oversizedRing)
+        context.model.requestWidgetStyle(.ripplePath)
         XCTAssertEqual(context.widgetReloader.reloadCount, initialWidgetReloadCount + 1)
     }
 
@@ -260,9 +260,9 @@ final class PulseAppModelTests: XCTestCase {
         await context.model.start()
         let initialWidgetReloadCount = context.widgetReloader.reloadCount
 
-        context.model.requestWidgetStyle(.tearOffCalendar)
+        context.model.requestWidgetStyle(.morningDew)
 
-        XCTAssertEqual(context.model.settings.widgetStyle, .commitmentManifesto)
+        XCTAssertEqual(context.model.settings.widgetStyle, .breathingOrbit)
         XCTAssertEqual(context.widgetReloader.reloadCount, initialWidgetReloadCount)
         XCTAssertNotNil(context.model.errorMessage)
     }
@@ -270,12 +270,12 @@ final class PulseAppModelTests: XCTestCase {
     func testFreeUserStartNormalizesPersistedPremiumWidgetStyle() async throws {
         let context = try makeContext(
             hasEnhancement: false,
-            initialWidgetStyle: .faultField
+            initialWidgetStyle: .grassWindow
         )
 
         await context.model.start()
 
-        XCTAssertEqual(context.model.settings.widgetStyle, .commitmentManifesto)
+        XCTAssertEqual(context.model.settings.widgetStyle, .breathingOrbit)
         XCTAssertNil(context.model.errorMessage)
     }
 
@@ -303,7 +303,7 @@ final class PulseAppModelTests: XCTestCase {
             supportsScheduledLiveActivities: false,
             liveActivitiesEnabled: false
         ),
-        initialWidgetStyle: PulseWidgetStyle = .commitmentManifesto
+        initialWidgetStyle: PulseWidgetStyle = .breathingOrbit
     ) throws -> TestContext {
         let clock = MutablePulseClock(now: makeDate(day: 10, hour: 12))
         let repository = SwiftDataPulseRepository(

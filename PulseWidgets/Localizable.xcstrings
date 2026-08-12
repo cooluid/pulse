@@ -199,38 +199,6 @@
         }
       }
     },
-    "widget.brand.daily_imprint" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Daily Imprint"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "一日一印"
-          }
-        }
-      }
-    },
-    "widget.brand.imprint" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Imprint"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "印记"
-          }
-        }
-      }
-    },
     "widget.configuration.description" : {
       "localizations" : {
         "en" : {

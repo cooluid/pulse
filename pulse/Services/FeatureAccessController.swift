@@ -219,8 +219,8 @@ final class UITestStoreKitAccessClient: StoreKitAccessClient {
     func loadProduct(identifier: String) async throws -> StoreProductPresentation? {
         StoreProductPresentation(
             identifier: identifier,
-            displayName: "一日一印 · 野印",
-            description: "一次买断野印当前已发布的增强能力。",
+            displayName: "一日一印 · VIP",
+            description: "一次买断当前已发布的 VIP 权益。",
             displayPrice: "¥18.00"
         )
     }

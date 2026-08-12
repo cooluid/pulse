@@ -68,7 +68,7 @@ AppModel 同时建立 `recordsByDay` 与 `mediaByDay`。照片不参与 CheckInS
 
 ## 8. 视觉与可访问性
 
-影像作为内容层进入“断层海报”系统，不新增相机品牌壳或第二色板。Today 保留签到主动作，影像条在成功后出现；History 以小相机标记日期。所有操作使用系统 Button/确认对话框、44pt 命中区、Dynamic Type、VoiceOver 和 Reduce Motion 等价状态。
+影像作为内容层进入“草野脉冲”系统，不新增相机品牌壳或第二色板。Today 保留签到主动作，影像卡在周轨迹与连续状态之后出现；History 以小相机标记日期。所有操作使用系统 Button/确认对话框、44pt 命中区、Dynamic Type、VoiceOver 和 Reduce Motion 等价状态。
 
 ## 9. 证据边界
 

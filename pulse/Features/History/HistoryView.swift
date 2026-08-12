@@ -20,7 +20,8 @@ struct HistoryView: View {
 
     var body: some View {
         ZStack {
-            PulsePosterBackground()
+            PulseScreenBackground()
+            PulseFieldBackground()
 
             VStack(spacing: 0) {
                 PulseAppHeader(source: .history)
@@ -44,7 +45,7 @@ struct HistoryView: View {
                                     ? PulseDesign.regularWidthVerticalPadding
                                     : PulseDesign.spacing4
                             )
-                            .padding(.bottom, accessibilityScrollClearance)
+                            .padding(.bottom, scrollClearance)
                             .frame(maxWidth: .infinity)
                     }
                     .scrollIndicators(.hidden)
@@ -86,8 +87,8 @@ struct HistoryView: View {
         horizontalSizeClass == .regular && !dynamicTypeSize.isAccessibilitySize
     }
 
-    private var accessibilityScrollClearance: CGFloat {
-        dynamicTypeSize.isAccessibilitySize ? primaryNavigationClearance : 0
+    private var scrollClearance: CGFloat {
+        primaryNavigationClearance + PulseDesign.spacing16
     }
 
     private var historyHeading: some View {
@@ -126,12 +127,10 @@ struct HistoryView: View {
                     )
                 )
                 .font(.system(.caption2, design: .default, weight: .bold))
-                .textCase(.uppercase)
                 .foregroundStyle(PulseDesign.secondary)
 
                 Text(PulseFormatting.monthOnly(month, timeZone: timeZone, locale: locale))
-                .font(.system(size: 56, weight: .black))
-                .tracking(-2)
+                .font(.largeTitle.bold())
                 .foregroundStyle(PulseDesign.ink)
             }
         }
@@ -172,12 +171,11 @@ struct HistoryView: View {
     }
 
     private var statisticsRow: some View {
-        HStack(alignment: .bottom, spacing: 0) {
+        HStack(spacing: 0) {
             StatisticTile(
                 value: model.statistics.currentStreak,
                 labelKey: "history.current_streak",
-                accessibilityIdentifier: "history.stat.current",
-                isPrimary: true
+                accessibilityIdentifier: "history.stat.current"
             )
 
             Divider()
@@ -185,8 +183,7 @@ struct HistoryView: View {
             StatisticTile(
                 value: model.statistics.longestStreak,
                 labelKey: "history.longest_streak",
-                accessibilityIdentifier: "history.stat.longest",
-                isPrimary: false
+                accessibilityIdentifier: "history.stat.longest"
             )
 
             Divider()
@@ -194,8 +191,7 @@ struct HistoryView: View {
             StatisticTile(
                 value: model.statistics.totalCount,
                 labelKey: "history.total",
-                accessibilityIdentifier: "history.stat.total",
-                isPrimary: false
+                accessibilityIdentifier: "history.stat.total"
             )
         }
         .padding(.vertical, PulseDesign.spacing20)
@@ -325,12 +321,11 @@ private struct StatisticTile: View {
     let value: Int
     let labelKey: LocalizedStringKey
     let accessibilityIdentifier: String
-    let isPrimary: Bool
 
     var body: some View {
-        VStack(alignment: .leading, spacing: PulseDesign.spacing4) {
+        VStack(spacing: PulseDesign.spacing4) {
             Text(value, format: .number)
-                .font(.system(size: isPrimary ? 52 : 30, weight: .black))
+                .font(.title2.bold())
                 .monospacedDigit()
                 .foregroundStyle(PulseDesign.ink)
 
@@ -339,7 +334,7 @@ private struct StatisticTile: View {
                 .foregroundStyle(PulseDesign.secondary)
                 .lineLimit(1)
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
+        .frame(maxWidth: .infinity)
         .accessibilityElement(children: .combine)
         .accessibilityIdentifier(accessibilityIdentifier)
     }

@@ -91,7 +91,7 @@ final class AppSettingsTests: XCTestCase {
         defer { defaults.removePersistentDomain(forName: suiteName) }
 
         let settings = try makeSettings(defaults: defaults)
-        XCTAssertEqual(settings.widgetStyle, .commitmentManifesto)
+        XCTAssertEqual(settings.widgetStyle, .breathingOrbit)
 
         for style in PulseWidgetStyle.allCases {
             settings.widgetStyle = style
@@ -137,17 +137,17 @@ final class AppSettingsTests: XCTestCase {
         let settings = try makeSettings(defaults: defaults)
         settings.theme = .light
         settings.language = .simplifiedChinese
-        settings.widgetStyle = .tearOffCalendar
+        settings.widgetStyle = .morningDew
 
         settings.reset()
 
         XCTAssertEqual(settings.theme, .system)
         XCTAssertEqual(settings.language, .system)
-        XCTAssertEqual(settings.widgetStyle, .commitmentManifesto)
+        XCTAssertEqual(settings.widgetStyle, .breathingOrbit)
         let reloaded = try makeSettings(defaults: defaults)
         XCTAssertEqual(reloaded.theme, .system)
         XCTAssertEqual(reloaded.language, .system)
-        XCTAssertEqual(reloaded.widgetStyle, .commitmentManifesto)
+        XCTAssertEqual(reloaded.widgetStyle, .breathingOrbit)
     }
 
     func testInvalidPersistedReminderTimeFailsInitialization() throws {

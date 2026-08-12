@@ -226,7 +226,7 @@ struct SettingsView: View {
                     PulseBrandMark(size: 44)
                     VStack(alignment: .leading, spacing: PulseDesign.spacing4) {
                         Text("store.title")
-                            .font(.headline.weight(.black))
+                            .font(.headline.weight(.semibold))
                             .foregroundStyle(PulseDesign.ink)
                         Text(
                             model.featureAccess.hasEnhancement

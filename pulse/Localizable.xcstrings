@@ -34,6 +34,22 @@
         }
       }
     },
+    "action.close" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Close"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "关闭"
+          }
+        }
+      }
+    },
     "action.ok" : {
       "localizations" : {
         "en" : {
@@ -722,13 +738,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "This widget composition belongs to Wild Imprint. Commitment Manifesto and basic reminders stay available without a purchase."
+            "value" : "This widget composition is included with VIP. Breathing Orbit and basic reminders stay available without a purchase."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "这个小组件构图属于野印；承诺宣言和基础提醒无需购买。"
+            "value" : "这个小组件构图属于 VIP；呼吸环和基础提醒无需购买。"
           }
         }
       }
@@ -892,13 +908,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "No previous Wild Imprint purchase was found for this Apple Account."
+            "value" : "No previous VIP purchase was found for this Apple Account."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "当前 Apple 账户没有可恢复的野印购买记录。"
+            "value" : "当前 Apple 账户没有可恢复的 VIP 购买记录。"
           }
         }
       }
@@ -909,13 +925,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Wild Imprint is temporarily unavailable from the App Store. No price or purchase was assumed."
+            "value" : "VIP is temporarily unavailable from the App Store. No price or purchase was assumed."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "App Store 暂时无法提供野印；当前未展示虚构价格，也没有完成购买。"
+            "value" : "App Store 暂时无法提供 VIP；当前未展示虚构价格，也没有完成购买。"
           }
         }
       }
@@ -926,13 +942,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "The purchase could not be verified, so Wild Imprint remains locked."
+            "value" : "The purchase could not be verified, so VIP remains locked."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "购买验证失败，野印仍保持锁定。"
+            "value" : "购买验证失败，VIP 仍保持锁定。"
           }
         }
       }
@@ -1971,13 +1987,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "See what Wild Imprint unlocks"
+            "value" : "Explore VIP benefits"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "看看野印解锁什么"
+            "value" : "查看 VIP 权益"
           }
         }
       }
@@ -1988,13 +2004,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Wild Imprint"
+            "value" : "VIP"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "野印"
+            "value" : "VIP"
           }
         }
       }
@@ -2261,70 +2277,138 @@
         }
       }
     },
-    "settings.widget.style.commitment_manifesto" : {
-      "extractionState" : "stale",
+    "settings.widget.style.breathing_orbit" : {
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Commitment Manifesto"
+            "value" : "Breathing Orbit"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "承诺宣言"
+            "value" : "呼吸环"
           }
         }
       }
     },
-    "settings.widget.style.fault_field" : {
-      "extractionState" : "stale",
+    "settings.widget.style.breathing_orbit.detail" : {
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Fault Field"
+            "value" : "Fine contours give today a quiet breath."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "断层双色"
+            "value" : "细线环绕，让今天轻轻呼吸。"
           }
         }
       }
     },
-    "settings.widget.style.oversized_ring" : {
-      "extractionState" : "stale",
+    "settings.widget.style.grass_window" : {
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Oversized Ring"
+            "value" : "Grass Window"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "越界巨环"
+            "value" : "草窗"
           }
         }
       }
     },
-    "settings.widget.style.tear_off_calendar" : {
-      "extractionState" : "stale",
+    "settings.widget.style.grass_window.detail" : {
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Tear-Off Calendar"
+            "value" : "Layered grass tones leave a gentle sense of depth."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "错版撕页"
+            "value" : "层叠草色，留出安静的景深。"
+          }
+        }
+      }
+    },
+    "settings.widget.style.morning_dew" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Morning Dew"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "晨露"
+          }
+        }
+      }
+    },
+    "settings.widget.style.morning_dew.detail" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rounded drops bring a lighter start to the day."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "圆润光点，照见轻盈的新一天。"
+          }
+        }
+      }
+    },
+    "settings.widget.style.ripple_path" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ripple Path"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "涟漪径"
+          }
+        }
+      }
+    },
+    "settings.widget.style.ripple_path.detail" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Soft ripples gather seven days into one path."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "柔和涟漪，把七日节律收进一条路径。"
           }
         }
       }
@@ -2415,7 +2499,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "UNLOCK FOREVER · %@"
+            "value" : "Unlock Forever · %@"
           }
         },
         "zh-Hans" : {
@@ -2432,13 +2516,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Included Now"
+            "value" : "Included with VIP"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "现在就有"
+            "value" : "VIP 包含"
           }
         }
       }
@@ -2483,13 +2567,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Unlock Fault Field, Oversized Ring, and Tear-Off Calendar compositions."
+            "value" : "Unlock Grass Window, Ripple Path, and Morning Dew compositions."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "解锁断层双色、越界巨环与错版撕页构图。"
+            "value" : "解锁草窗、涟漪径与晨露构图。"
           }
         }
       }
@@ -2517,13 +2601,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "One purchase unlocks every released Wild Imprint capability. New capabilities join this page only when they ship."
+            "value" : "One purchase unlocks every VIP benefit listed here. New benefits will be described clearly when they ship."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "一次买断，解锁所有已发布的野印能力。新能力真正上线后才会加入这里。"
+            "value" : "一次买断，永久解锁当前列出的 VIP 权益。新增内容上线时，会在这里清晰说明。"
           }
         }
       }
@@ -2534,13 +2618,30 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "MAKE THE MARK LOUDER."
+            "value" : "A FINER RHYTHM, EVERY DAY."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "让这一印，响一点。"
+            "value" : "让每天的印记，更有层次。"
+          }
+        }
+      }
+    },
+    "store.lifetime_badge" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "One-time purchase"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "一次买断"
           }
         }
       }
@@ -2568,13 +2669,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Wild Imprint"
+            "value" : "VIP"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "野印"
+            "value" : "VIP"
           }
         }
       }
@@ -2602,13 +2703,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Four Compositions"
+            "value" : "Widget Compositions"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "四式日印"
+            "value" : "小组件构图"
           }
         }
       }
@@ -2636,13 +2737,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "WILD IMPRINT UNLOCKED"
+            "value" : "VIP Unlocked"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "野印已解锁"
+            "value" : "VIP 已解锁"
           }
         }
       }
@@ -2687,13 +2788,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "WILD IMPRINT"
+            "value" : "VIP"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "野印"
+            "value" : "VIP"
           }
         }
       }
@@ -2837,13 +2938,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "MARK"
+            "value" : "Check In Today"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "留印"
+            "value" : "今日待签到"
           }
         }
       }
@@ -2854,7 +2955,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "TAP TO MARK · HOLD FOR CAMERA"
+            "value" : "Tap to mark · Hold for camera"
           }
         },
         "zh-Hans" : {
@@ -2899,18 +3000,51 @@
         }
       }
     },
-    "today.media.capture" : {
+    "today.commitment.cue" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Take Today’s Photo"
+            "value" : "Today’s Commitment"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "拍下今天"
+            "value" : "今天守住"
+          }
+        }
+      }
+    },
+    "today.kicker_with_weekday_format" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ / %@"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ / %@"
+          }
+        }
+      }
+    },
+    "today.media.capture_compact" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add Photo"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "入镜"
           }
         }
       }
@@ -2947,34 +3081,34 @@
         }
       }
     },
-    "today.media.saving" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Saving photo…"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "保存照片…"
-          }
-        }
-      }
-    },
     "today.media.title" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "TODAY, IN FRAME"
+            "value" : "Today, in frame"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "今日入镜"
+          }
+        }
+      }
+    },
+    "today.media.view_compact" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "View Photo"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "查看入镜"
           }
         }
       }
@@ -3067,13 +3201,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Wild Imprint"
+            "value" : "VIP"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "野印"
+            "value" : "VIP"
           }
         }
       }

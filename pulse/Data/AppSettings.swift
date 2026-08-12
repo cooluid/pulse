@@ -53,14 +53,39 @@ extension PulseInterfaceLanguage {
 extension PulseWidgetStyle {
     func localizedName(locale: Locale) -> String {
         switch self {
-        case .faultField:
-            PulseLocalization.string("settings.widget.style.fault_field", locale: locale)
-        case .oversizedRing:
-            PulseLocalization.string("settings.widget.style.oversized_ring", locale: locale)
-        case .commitmentManifesto:
-            PulseLocalization.string("settings.widget.style.commitment_manifesto", locale: locale)
-        case .tearOffCalendar:
-            PulseLocalization.string("settings.widget.style.tear_off_calendar", locale: locale)
+        case .breathingOrbit:
+            PulseLocalization.string("settings.widget.style.breathing_orbit", locale: locale)
+        case .grassWindow:
+            PulseLocalization.string("settings.widget.style.grass_window", locale: locale)
+        case .ripplePath:
+            PulseLocalization.string("settings.widget.style.ripple_path", locale: locale)
+        case .morningDew:
+            PulseLocalization.string("settings.widget.style.morning_dew", locale: locale)
+        }
+    }
+
+    func localizedDescription(locale: Locale) -> String {
+        switch self {
+        case .breathingOrbit:
+            PulseLocalization.string(
+                "settings.widget.style.breathing_orbit.detail",
+                locale: locale
+            )
+        case .grassWindow:
+            PulseLocalization.string(
+                "settings.widget.style.grass_window.detail",
+                locale: locale
+            )
+        case .ripplePath:
+            PulseLocalization.string(
+                "settings.widget.style.ripple_path.detail",
+                locale: locale
+            )
+        case .morningDew:
+            PulseLocalization.string(
+                "settings.widget.style.morning_dew.detail",
+                locale: locale
+            )
         }
     }
 }

@@ -66,3 +66,44 @@ struct ImprintMediaPreview: View {
         .accessibilityLabel("media.preview.accessibility")
     }
 }
+
+struct ImprintMediaThumbnail: View {
+    let media: ImprintMediaSnapshot
+    let load: (ImprintMediaSnapshot) async throws -> Data
+
+    @State private var image: UIImage?
+
+    var body: some View {
+        Group {
+            if let image {
+                Image(uiImage: image)
+                    .resizable()
+                    .scaledToFill()
+            } else {
+                Image(systemName: "photo.fill")
+                    .font(.caption)
+                    .foregroundStyle(PulseDesign.action)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .background(PulseDesign.background)
+            }
+        }
+        .frame(
+            width: PulseDesign.mediaCompanionThumbnailSize,
+            height: PulseDesign.mediaCompanionThumbnailSize
+        )
+        .clipShape(Circle())
+        .overlay {
+            Circle()
+                .stroke(PulseDesign.grass, lineWidth: PulseDesign.thinLineWidth)
+        }
+        .task(id: media.modifiedAt) {
+            do {
+                let data = try await load(media)
+                image = UIImage(data: data)
+            } catch {
+                image = nil
+            }
+        }
+        .accessibilityHidden(true)
+    }
+}

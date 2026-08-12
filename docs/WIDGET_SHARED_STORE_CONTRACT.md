@@ -2,7 +2,7 @@
 
 文档版本：1.1
 状态：Canonical Implemented Contract
-更新日期：2026-08-12
+更新日期：2026-08-13
 
 本文定义 1.1 Widget、共享 store、跨进程签到和系统表面边界。签到日期与唯一性仍只以 [DOMAIN_CONTRACT.md](./DOMAIN_CONTRACT.md) 为准。
 
@@ -10,7 +10,7 @@
 
 Widget 是同一签到事实的系统入口，不是第二个应用：
 
-- Home Screen 小号/中号可选择“断层双色 / 越界巨环 / 承诺宣言 / 错版撕页”四种构图；
+- Home Screen 小号/中号可选择“呼吸环 / 草窗 / 涟漪径 / 晨露”四种草野构图；
 - Lock Screen 圆形显示带当日日号的开放环或实心完成印；
 - Lock Screen 矩形把过去六日节点以连接线汇入右侧今日印记，今天不重复成第七个小节点；
 - 未签到只提供单向签到；已签到无撤销入口；删除仍只在 App 内二次确认；
@@ -43,7 +43,7 @@ FileManager.containerURL(forSecurityApplicationGroupIdentifier:)
 - 不存在 App 私有 store、旧库迁移、journal、staging、fallback 或双写。
 - 旧开发安装不属于公开数据合同，进入此首发基线时必须清洁安装。
 
-App Group UserDefaults 只允许 `PulseSharedInterfacePreferences` 管理的 `interface.language` 与 `widget.style`。缺失键分别表示 `system` / `commitmentManifesto`，未知值必须失败关闭；不得保存任何业务事实或可反向覆盖 store 的投影。`commitmentManifesto` 是唯一免费 Home Screen 构图，其余三种需要统一增强 entitlement；App 与 Widget extension 分别在写入和渲染边界检查当前 StoreKit 权益，未验证、撤销或读取失败都解析为免费构图。
+App Group UserDefaults 只允许 `PulseSharedInterfacePreferences` 管理的 `interface.language` 与 `widget.style`。缺失键分别表示 `system` / `breathingOrbit`，未知值必须失败关闭；不得保存任何业务事实或可反向覆盖 store 的投影。`breathingOrbit` 是唯一免费 Home Screen 构图，`grassWindow`、`ripplePath` 与 `morningDew` 需要统一 VIP entitlement；App 与 Widget extension 分别在写入和渲染边界检查当前 StoreKit 权益，未验证、撤销或读取失败都解析为免费构图。
 
 ## 4. 共享代码边界
 

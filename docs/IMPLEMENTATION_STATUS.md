@@ -1,6 +1,6 @@
 # Pulse 1.1 实现与验收状态
 
-更新时间：2026-08-12
+更新时间：2026-08-13
 
 当前 checkout 结论：**1.1 (4) ENGINEERING CANDIDATE / INTERFACE CANDIDATE / DISTRIBUTION NO-GO**。
 
@@ -24,15 +24,17 @@
 ## 产品与收费边界
 
 - 永久免费：签到、拍摄、查看、重拍、删除、关闭邀请、原图单独导出、照片空间查看，以及包含全部原图/缩略图的加密备份与完整恢复。
-- 当前一次买断“野印”授予类型化能力目录中的高级 Widget 构图和支持设备上的 scheduled Live Activity，不把用户自己的照片或数据主权重新收费。未来能力只有实际发布后才加入同一目录和购买页。
+- 当前一次买断 VIP 授予类型化能力目录中的高级 Widget 构图和支持设备上的 scheduled Live Activity，不把用户自己的照片或数据主权重新收费。未来能力只有实际发布后才加入同一目录和权益页。
 - 未来可收费：本地智能对齐、长区间岁月流影、年度影片、4K、跨阶段比较与高级档案排版；权益结束不能锁住、删除或降质既有原图和已导出成果。
 - 不做考勤证明、补签照片、位置水印、年龄/颜值/身份/健康推断，也不静默上传面貌照片。
 
 ## 本轮 clean break
 
-- 品牌从旧“脉冲场 + 悬浮胶囊底栏”断代为“断层海报 + 贴边双页签”；颜色只由 `design/brand-tokens.json` 生成，旧同心场、无限呼吸、宽度追逐和整屏透明命中层已删除。
-- 今日开放日环支持单击签到与 0.45 秒长按“签到并拍照”；长按先完成权威签到提交，再请求相机，且 VoiceOver 提供独立动作。
-- 购买从设置内嵌分组迁到独立“野印”页；商品价格只读 StoreKit，当前已交付权益只读 `PulseEnhancementContract.currentCapabilities`。Widget 样式从下拉框迁到独立构图画廊。
+- 品牌按产品确认从“断层海报 + 贴边双页签”干净切换为“草野脉冲 + 状态式悬浮底栏”；颜色仍只由 `design/brand-tokens.json` 生成，不保留断层海报运行时分支。底栏两个入口稳定等宽，根内容按实测底栏高度清空滚动末端。
+- 今日深草行动印支持单击签到与 0.45 秒长按“签到并拍照”；长按先完成权威签到提交，再请求相机，且 VoiceOver 提供独立动作。待签到进入时只有一次有限呼吸，权威提交后才播放收缩、落印和低强调回波，Reduce Motion 使用静态形状替换。
+- VIP 从设置内嵌分组迁到独立权益页；商品价格只读 StoreKit，当前已交付权益只读 `PulseEnhancementContract.currentCapabilities`。权益页使用轻量身份卡、横向构图预览、独立权益卡和紧凑购买条，末项权益与恢复购买必须能完整滚到购买条上方。
+- Home Screen Widget 与 App 内画廊统一为“呼吸环、草窗、涟漪径、晨露”四种草野构图；删除旧粗黑分隔、斜切色块、方形节律和无消费者字符串。画廊末张卡必须能完整进入安全区域。
+- 根页面常态背景加入 18 秒低振幅呼吸与细线漂移，最高 12 fps；仅在 scene active 且未开启 Reduce Motion 时推进，后台与 Reduce Motion 使用静态相位。该环境层不得驱动按钮持续闪烁或伪装成进度反馈。
 - 首启、今日、记录、设置与购买文案统一为短句；删除运行时“低压力、面向所有用户免费、不是为了打分作证”等解释性废话。
 - 删除旧 `CheckInRepositoryProtocol` / `SwiftDataCheckInRepository` 名称，统一为 `PulseRepositoryProtocol` / `SwiftDataPulseRepository`。
 - 删除旧 `PulseBackupDocument` 路径，系统导出统一使用 `PulseBackupExport: Transferable`；单张原图导出使用独立 JPEG Transferable。
@@ -44,9 +46,9 @@
 
 验证环境：macOS 26.6、Xcode 26.6（17F113）、iPhone 17 Pro / iOS 26.5 Simulator（arm64）。
 
-- 本轮 116 项单元/集成测试与 19 项 Simulator UI 测试全量通过；覆盖长按事务、主流程持久化、独立购买页、Widget 画廊、动态字体、数据重置和语言/主题持久化。当前改动尚未形成不可变提交，因此状态保持 **ENGINEERING CANDIDATE**，不写成最终 GO。
+- 本轮 119 项单元/集成测试与 19 项 Simulator UI 测试全量通过；覆盖长按事务、主流程持久化、独立购买页、VIP 与 Widget 末端滚动边界、动态字体、数据重置、语言/主题持久化，以及环境动效周期、振幅、生命周期与 Reduce Motion 源码合同。当前改动尚未形成不可变提交，因此状态保持 **ENGINEERING CANDIDATE**，不写成最终 GO。
 - 媒体自动化覆盖独立删除/重新关联、同日替换、文件安装/读取/审计、缩略图损坏、无相册回退、v2 归档往返、随机性、错误口令、篡改、v1 拒绝、缺条目与缩略图身份不匹配。
-- Simulator 截图已复审待签到、已签到、记录、独立野印页与 Widget 画廊；独立野印页进一步通过购买前截图发现并修复 CTA 首屏缺席与购买坞过高问题，现在同屏保留品牌叙事、真实构图和 StoreKit 实价购买动作。UI 自动化也发现并修复贴边底栏曾覆盖整屏命中区的问题。当前结果为 **INTERFACE CANDIDATE**，不是相机真机、视觉全矩阵或人体体验 GO。
+- Simulator 截图已复审待签到、已签到、记录、独立 VIP 页与 Widget 画廊；前台常态页另有连续录屏，确认背景轮廓存在低振幅呼吸与漂移，不再用静态截图冒充动效证据。UI 自动化也发现并修复贴边底栏曾覆盖整屏命中区、VIP 购买区过厚和页面末端可能被遮挡的问题。当前结果为 **INTERFACE CANDIDATE**；它仍不是相机真机、真实 Home Screen Widget host、Reduce Motion 系统切换、完整视觉矩阵或人体体验 GO。
 - Release `generic/platform=iOS` 无签名构建通过；Release 静态分析通过；Swift 警告按错误处理。
 - 19 项品牌生成资产检查通过，包含由同一令牌确定性产出的 AppIcon 三外观与小尺寸评审图；App、InfoPlist 与 Widget String Catalog 可解析；App/Widget plist 可解析。
 - `git diff --check` 通过；生产 Swift 源码没有 TODO/FIXME/HACK、相册回退、样例照片或演示数据路径。

@@ -35,7 +35,7 @@ public enum PulseStoreKitEntitlementReader {
 }
 
 public enum PulseWidgetStyleAccessPolicy {
-    public static let freeStyle = PulseWidgetStyle.commitmentManifesto
+    public static let freeStyle = PulseWidgetStyle.breathingOrbit
 
     public static func requiresEnhancement(_ style: PulseWidgetStyle) -> Bool {
         style != freeStyle
