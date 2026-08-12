@@ -200,6 +200,7 @@ private struct PulseWidgetView: View {
     @Environment(\.widgetFamily) private var family
     @Environment(\.widgetRenderingMode) private var renderingMode
     @Environment(\.widgetContentMargins) private var widgetContentMargins
+    @Environment(\.locale) private var locale
 
     var body: some View {
         Group {
@@ -273,7 +274,10 @@ private struct PulseWidgetView: View {
         GeometryReader { proxy in
             let side = min(proxy.size.width, proxy.size.height)
 
-            accessoryImprintMark(snapshot)
+            accessoryImprintMark(
+                snapshot,
+                dayNumber: accessoryDayNumber(for: snapshot.today)
+            )
                 .frame(width: side, height: side)
                 .position(x: proxy.size.width / 2, y: proxy.size.height / 2)
         }
@@ -304,6 +308,7 @@ private struct PulseWidgetView: View {
         GeometryReader { proxy in
             let metrics = PulseAccessoryRhythmMetrics(size: proxy.size)
             let history = Array(snapshot.recentDays.dropLast())
+            let dayNumbers = accessoryDayNumbers(for: snapshot.recentDays)
 
             ZStack(alignment: .topLeading) {
                 Text(snapshot.isCheckedToday
@@ -327,6 +332,12 @@ private struct PulseWidgetView: View {
 
                 ForEach(Array(history.enumerated()), id: \.element.id) { index, item in
                     let side = accessoryHistoryMarkSide(item.state)
+                    accessoryHistoryDayLabel(dayNumbers[index])
+                        .position(
+                            x: metrics.historyCenters[index],
+                            y: metrics.historyDateY
+                        )
+
                     accessoryHistoryMark(item)
                         .frame(width: side, height: side)
                         .position(
@@ -335,13 +346,58 @@ private struct PulseWidgetView: View {
                         )
                 }
 
-                accessoryImprintMark(snapshot)
+                accessoryImprintMark(
+                    snapshot,
+                    dayNumber: dayNumbers.last
+                        ?? accessoryDayNumber(for: snapshot.today)
+                )
                     .frame(width: metrics.imprintSide, height: metrics.imprintSide)
                     .position(metrics.imprintCenter)
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .contentShape(Rectangle())
+    }
+
+    private func accessoryDayNumbers(
+        for days: [PulseWidgetDaySnapshot]
+    ) -> [String] {
+        let formatter = accessoryDayNumberFormatter()
+        return days.map { item in
+            formatter.string(from: NSNumber(value: item.day.day))
+                ?? String(item.day.day)
+        }
+    }
+
+    private func accessoryDayNumber(for day: LogicalDay) -> String {
+        accessoryDayNumberFormatter().string(from: NSNumber(value: day.day))
+            ?? String(day.day)
+    }
+
+    private func accessoryDayNumberFormatter() -> NumberFormatter {
+        let formatter = NumberFormatter()
+        formatter.locale = locale
+        formatter.numberStyle = .none
+        formatter.usesGroupingSeparator = false
+        return formatter
+    }
+
+    private func accessoryHistoryDayLabel(_ dayNumber: String) -> some View {
+        Text(verbatim: dayNumber)
+            .font(.system(
+                size: PulseWidgetDesign.accessoryDateFontSize,
+                weight: .semibold
+            ))
+            .monospacedDigit()
+            .foregroundStyle(
+                Color.primary.opacity(PulseWidgetDesign.accessoryDateOpacity)
+            )
+            .lineLimit(1)
+            .frame(
+                width: PulseWidgetDesign.accessoryDateLabelWidth,
+                height: PulseWidgetDesign.accessoryDateLabelHeight
+            )
+            .accessibilityHidden(true)
     }
 
     private func accessoryConnectorPath(
@@ -426,7 +482,10 @@ private struct PulseWidgetView: View {
         }
     }
 
-    private func accessoryImprintMark(_ snapshot: PulseWidgetSnapshot) -> some View {
+    private func accessoryImprintMark(
+        _ snapshot: PulseWidgetSnapshot,
+        dayNumber: String
+    ) -> some View {
         PulseWidgetImprintMark(
             isChecked: snapshot.isCheckedToday,
             usesSystemPalette: true,
@@ -436,6 +495,8 @@ private struct PulseWidgetView: View {
             showsPendingCore: false,
             pendingLabelScale: 0,
             glyphScale: PulseWidgetDesign.imprintGlyphScale,
+            centerLabel: dayNumber,
+            centerLabelScale: PulseWidgetDesign.accessoryTodayDateScale,
             ringRotationDegrees: 0,
             coreRotationDegrees: 0
         )
@@ -994,6 +1055,8 @@ private struct PulseWidgetHomeView: View {
                 showsPendingCore: true,
                 pendingLabelScale: pendingLabelScale,
                 glyphScale: glyphScale,
+                centerLabel: nil,
+                centerLabelScale: 0,
                 ringRotationDegrees: ringRotationDegrees,
                 coreRotationDegrees: coreRotationDegrees
             )
@@ -1239,6 +1302,8 @@ private struct PulseWidgetImprintMark: View {
     let showsPendingCore: Bool
     let pendingLabelScale: CGFloat
     let glyphScale: CGFloat
+    let centerLabel: String?
+    let centerLabelScale: CGFloat
     let ringRotationDegrees: Double
     let coreRotationDegrees: Double
     @Environment(\.widgetRenderingMode) private var renderingMode
@@ -1256,7 +1321,24 @@ private struct PulseWidgetImprintMark: View {
                     ZStack {
                         Circle()
                             .fill(completedColor)
-                        if usesCutoutGlyph {
+                        if let centerLabel {
+                            Text(verbatim: centerLabel)
+                                .font(.system(
+                                    size: side * centerLabelScale,
+                                    weight: .bold
+                                ))
+                                .monospacedDigit()
+                                .foregroundStyle(
+                                    usesCutoutGlyph
+                                        ? Color.black
+                                        : completedCoreForeground
+                                )
+                                .blendMode(
+                                    usesCutoutGlyph ? .destinationOut : .normal
+                                )
+                                .minimumScaleFactor(0.72)
+                                .lineLimit(1)
+                        } else if usesCutoutGlyph {
                             Image(systemName: "checkmark")
                                 .font(.system(
                                     size: side * glyphScale,
@@ -1279,6 +1361,20 @@ private struct PulseWidgetImprintMark: View {
                         height: side * coreScale
                     )
                     .rotationEffect(.degrees(coreRotationDegrees))
+                } else if let centerLabel {
+                    Text(verbatim: centerLabel)
+                        .font(.system(
+                            size: side * centerLabelScale,
+                            weight: .bold
+                        ))
+                        .monospacedDigit()
+                        .foregroundStyle(pendingColor)
+                        .minimumScaleFactor(0.72)
+                        .lineLimit(1)
+                        .frame(
+                            width: side * coreScale,
+                            height: side * coreScale
+                        )
                 } else if showsPendingCore {
                     ZStack {
                         Circle()
@@ -1363,6 +1459,7 @@ private struct PulseAccessoryRhythmMetrics {
     let imprintCenter: CGPoint
     let imprintLeadingAnchor: CGPoint
     let historyCenters: [CGFloat]
+    let historyDateY: CGFloat
     let railY: CGFloat
     let statusWidth: CGFloat
 
@@ -1384,21 +1481,32 @@ private struct PulseAccessoryRhythmMetrics {
             x: size.width - imprintSide + visibleRingInset,
             y: imprintCenter.y
         )
-        let firstCenter = PulseWidgetDesign.accessoryRailLargeSide / 2
+        let firstCenter = max(
+            PulseWidgetDesign.accessoryRailLargeSide / 2,
+            PulseWidgetDesign.accessoryDateLabelWidth / 2
+        )
         let lastCenter = max(
             firstCenter,
             imprintLeadingAnchor.x - PulseWidgetDesign.accessoryRailTerminalGap
         )
         let step = (lastCenter - firstCenter) / 5
+        let railY = min(
+            size.height - PulseWidgetDesign.accessoryRailLargeSide / 2,
+            size.height * PulseWidgetDesign.accessoryRailYRatio
+        )
 
         self.imprintSide = imprintSide
         self.imprintCenter = imprintCenter
         self.imprintLeadingAnchor = imprintLeadingAnchor
         historyCenters = (0..<6).map { firstCenter + CGFloat($0) * step }
-        railY = min(
-            size.height - PulseWidgetDesign.accessoryRailLargeSide / 2,
-            size.height * PulseWidgetDesign.accessoryRailYRatio
+        historyDateY = max(
+            PulseWidgetDesign.accessoryDateLabelHeight / 2,
+            railY
+                - PulseWidgetDesign.accessoryRailLargeSide / 2
+                - PulseWidgetDesign.accessoryDateRailGap
+                - PulseWidgetDesign.accessoryDateLabelHeight / 2
         )
+        self.railY = railY
         statusWidth = max(
             0,
             size.width - imprintSide - PulseWidgetDesign.spacing8
@@ -1432,10 +1540,16 @@ private enum PulseWidgetDesign {
     static let accessoryRailStrokeWidth: CGFloat = 1.5
     static let accessoryConnectorWidth: CGFloat = 1
     static let accessoryConnectorOpacity = 0.28
+    static let accessoryDateFontSize: CGFloat = 8
+    static let accessoryDateLabelWidth: CGFloat = 14
+    static let accessoryDateLabelHeight: CGFloat = 10
+    static let accessoryDateRailGap: CGFloat = 2
+    static let accessoryDateOpacity = 0.62
+    static let accessoryTodayDateScale: CGFloat = 0.24
     static let accessoryImprintHeightRatio: CGFloat = 0.82
     static let accessoryImprintWidthRatio: CGFloat = 0.26
     static let accessoryRailYRatio: CGFloat = 0.73
-    static let accessoryRailTerminalGap: CGFloat = 12
+    static let accessoryRailTerminalGap: CGFloat = 14
     static let homeMissedOpacity = 0.38
     static let homeBeforeHabitOpacity = 0.58
     static let accessoryMissedOpacity = 0.42
