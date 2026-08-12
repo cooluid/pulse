@@ -19,6 +19,19 @@ final class CheckInRepositoryTests: XCTestCase {
         XCTAssertEqual(try repository.existingPrimaryHabit(), created)
     }
 
+    func testExistingStoreOnlyProvisioningNeverCreatesAPrimaryHabit() throws {
+        let repository = SwiftDataCheckInRepository(
+            container: try PersistenceController.makeContainer(inMemory: true),
+            clock: MutableRepositoryClock(now: makeDate(day: 10, hour: 12)),
+            primaryHabitProvisioning: .existingStoreOnly
+        )
+
+        XCTAssertThrowsError(try repository.primaryHabit(systemTimeZone: timeZone)) { error in
+            XCTAssertEqual(error as? PulseCoreError, .primaryHabitUnavailable)
+        }
+        XCTAssertNil(try repository.existingPrimaryHabit())
+    }
+
     func testPrimaryHabitIsCreatedOnlyOnce() throws {
         let clock = MutableRepositoryClock(now: makeDate(day: 10, hour: 12))
         let repository = try makeRepository(clock: clock)
@@ -92,7 +105,7 @@ final class CheckInRepositoryTests: XCTestCase {
     func testSeparateContainersObserveOneSharedDiskCheckInFact() throws {
         let directory = FileManager.default.temporaryDirectory
             .appendingPathComponent(
-                "PulseSharedStoreTests-\(UUID().uuidString)",
+                "PulseConcurrentStoreTests-\(UUID().uuidString)",
                 isDirectory: true
             )
         try FileManager.default.createDirectory(
@@ -105,21 +118,21 @@ final class CheckInRepositoryTests: XCTestCase {
         let clock = MutableRepositoryClock(now: makeDate(day: 10, hour: 9))
         let firstRepository = SwiftDataCheckInRepository(
             container: try PersistenceController.makeContainer(
-                storeName: "PulseSharedStore",
+                storeName: "PulseConcurrentStore",
                 storeURL: storeURL
             ),
             clock: clock,
-            initialIdentity: try makeInitialIdentity()
+            primaryHabitProvisioning: .createIfMissing(try makeInitialIdentity())
         )
         let firstHabit = try firstRepository.primaryHabit(systemTimeZone: timeZone)
 
         let secondRepository = SwiftDataCheckInRepository(
             container: try PersistenceController.makeContainer(
-                storeName: "PulseSharedStore",
+                storeName: "PulseConcurrentStore",
                 storeURL: storeURL
             ),
             clock: clock,
-            initialIdentity: try makeInitialIdentity()
+            primaryHabitProvisioning: .createIfMissing(try makeInitialIdentity())
         )
         let secondHabit = try secondRepository.primaryHabit(systemTimeZone: timeZone)
         XCTAssertEqual(secondHabit.id, firstHabit.id)
@@ -130,11 +143,11 @@ final class CheckInRepositoryTests: XCTestCase {
 
         let verificationRepository = SwiftDataCheckInRepository(
             container: try PersistenceController.makeContainer(
-                storeName: "PulseSharedStore",
+                storeName: "PulseConcurrentStore",
                 storeURL: storeURL
             ),
             clock: clock,
-            initialIdentity: try makeInitialIdentity()
+            primaryHabitProvisioning: .createIfMissing(try makeInitialIdentity())
         )
         let records = try verificationRepository.allRecords(habitID: firstHabit.id)
 
@@ -420,7 +433,7 @@ final class CheckInRepositoryTests: XCTestCase {
         SwiftDataCheckInRepository(
             container: container,
             clock: clock,
-            initialIdentity: try makeInitialIdentity()
+            primaryHabitProvisioning: .createIfMissing(try makeInitialIdentity())
         )
     }
 

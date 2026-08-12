@@ -284,3 +284,42 @@ struct PulseAppHeader: View {
         .frame(maxWidth: .infinity)
     }
 }
+
+struct PulseSecondaryNavigationBackButton: View {
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        Button {
+            dismiss()
+        } label: {
+            Label {
+                Text("navigation.back")
+            } icon: {
+                Image(systemName: "chevron.backward")
+            }
+        }
+        .accessibilityIdentifier("navigation.back")
+    }
+}
+
+private struct PulseSecondaryNavigationModifier: ViewModifier {
+    let isEnabled: Bool
+
+    func body(content: Content) -> some View {
+        content
+            .navigationBarBackButtonHidden(isEnabled)
+            .toolbar {
+                if isEnabled {
+                    ToolbarItem(placement: .topBarLeading) {
+                        PulseSecondaryNavigationBackButton()
+                    }
+                }
+            }
+    }
+}
+
+extension View {
+    func pulseSecondaryNavigation(isEnabled: Bool = true) -> some View {
+        modifier(PulseSecondaryNavigationModifier(isEnabled: isEnabled))
+    }
+}

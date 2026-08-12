@@ -86,16 +86,14 @@ private enum PulseWidgetRuntime {
 
     enum RuntimeError: Error {
         case missingAppGroupIdentifier
-        case sharedStoreNotReady
+        case sharedStoreMissing
         case missingPrimaryHabit
     }
 
     static func loadEntry(at date: Date) -> LoadResult {
         do {
             let context = try makeLocationContext()
-            guard try context.migrator.currentPhase(target: context.location) == .ready else {
-                throw RuntimeError.sharedStoreNotReady
-            }
+            try requireExistingStore(at: context.location)
             let repository = try makeRepository(
                 at: context.location,
                 clock: FixedPulseClock(now: date)
@@ -111,7 +109,7 @@ private enum PulseWidgetRuntime {
                 entry: PulseWidgetEntry(date: date, state: .ready(plan.snapshot, style)),
                 refreshAfter: plan.refreshAfter
             )
-        } catch RuntimeError.sharedStoreNotReady {
+        } catch RuntimeError.sharedStoreMissing {
             return LoadResult(
                 entry: PulseWidgetEntry(date: date, state: .needsOpenApp),
                 refreshAfter: date.addingTimeInterval(15 * 60)
@@ -132,9 +130,7 @@ private enum PulseWidgetRuntime {
     static func checkIn() throws {
         let clock = SystemPulseClock()
         let context = try makeLocationContext()
-        guard try context.migrator.currentPhase(target: context.location) == .ready else {
-            throw RuntimeError.sharedStoreNotReady
-        }
+        try requireExistingStore(at: context.location)
         let repository = try makeRepository(at: context.location, clock: clock)
         guard let habit = try repository.existingPrimaryHabit(),
               habit.isIdentityConfirmed else {
@@ -154,11 +150,16 @@ private enum PulseWidgetRuntime {
         let location = try PulseStoreLocator().appGroupLocation(identifier: identifier)
         return RuntimeContext(
             location: location,
-            migrator: PulseSharedStoreMigrator(),
             stylePreferences: try PulseWidgetStylePreferences(
                 appGroupIdentifier: identifier
             )
         )
+    }
+
+    private static func requireExistingStore(at location: PulseStoreLocation) throws {
+        guard FileManager.default.fileExists(atPath: location.storeURL.path) else {
+            throw RuntimeError.sharedStoreMissing
+        }
     }
 
     private static func makeRepository(
@@ -171,13 +172,12 @@ private enum PulseWidgetRuntime {
                 storeURL: location.storeURL
             ),
             clock: clock,
-            initialIdentity: try HabitIdentity(userName: "Pulse", userPurpose: nil)
+            primaryHabitProvisioning: .existingStoreOnly
         )
     }
 
     private struct RuntimeContext {
         let location: PulseStoreLocation
-        let migrator: PulseSharedStoreMigrator
         let stylePreferences: PulseWidgetStylePreferences
     }
 }

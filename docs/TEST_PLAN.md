@@ -1,106 +1,108 @@
-# Pulse 测试与验收合同
+# Pulse 1.0 测试计划
 
-文档版本：1.9<br>
-状态：Canonical Gate
+文档版本：1.5
+状态：Canonical Acceptance Plan
+更新日期：2026-08-12
 
-## 1. 自动化门禁
+## 1. 判定原则
 
-每次发布候选必须通过：
+测试从事实风险出发，不从页面数量出发：
 
-1. Swift 6 警告即错误的 Debug 与 Release 构建；
-2. Xcode 静态分析；
-3. 全量单元、集成与 UI 测试；
-4. `python3 scripts/build_brand_assets.py --check`；
-5. String Catalog 和 Asset Catalog 编译。
+- 自动化证明当前代码在当前环境中的工程行为；
+- Simulator 截图证明指定模拟环境中的界面结果；
+- 真机、无障碍、系统通知、Widget 系统表面与分发分别需要真实证据；
+- 单项 GO 不能外推到未覆盖门禁。
 
-主题与语言设置还必须覆盖默认值、持久化、非法存储值失败关闭、双语资源解析，以及语言变化后提醒重新排期。
+任何记录丢失、重复、错误逻辑日、无效导入破坏现有事实或虚假签到完成态都是 P0，并阻止工程 GO。
 
-测试使用内存 SwiftData 容器、独立 UserDefaults suite、显式时区和可变/固定 Clock，不依赖运行测试当天的真实日期。
+## 2. 自动化矩阵
 
-## 2. 领域与数据对抗矩阵
-
-| 范围 | 必须证明 |
+| 范围 | 必须覆盖 |
 | --- | --- |
-| 日期 | 零点、跨月、跨年、闰年、DST；存储格式不受 Locale 影响 |
-| 项目 | 主 slot 唯一；起始日在创建后稳定；当前时区变化不改写起始日 |
-| 主承诺身份 | 名称/说明规范化、长度和控制字符；首次确认；幂等编辑；失败回滚；修改不改变项目 ID、起始日、记录或统计 |
-| 签到 | Repository 权威 Clock；同日幂等；跨日新增；起始日前拒绝；无补签 API |
-| 跨进程签到基础 | 两个独立磁盘 ModelContainer 同日写入最终只有一个 `recordKey`；保存竞争失败后 rollback + 回读，非竞争错误不伪装成功 |
-| PulseCore 边界 | App 只链接一个 `PulseCore` 产物；Core 开启 extension-safe 编译；持久化模型不进入 App；损坏身份或记录在 Repository 内失败，不能生成可空/部分有效快照 |
-| 日印仪式 | 提交回执区分新建/幂等；失败无成功触觉；正常时序不超过两秒；Reduce Motion 无缩放/扩散；启动已有记录不重播；代码中不存在无限循环动画 |
-| 删除/清除 | 删除只影响目标；失败不提前关闭；清除日志可在下次启动完成 |
-| 统计 | 空集合、今天/昨天、多段连续、乱序、重复、删除后重算 |
-| 迁移/导入 | 真实磁盘 SwiftData V1→V2；私有 V1/V2 store 经 Repository 值级搬到独立目标；全新安装经显式 staging admission；journal v2 区分 `existingStore / newInstallation`；`copying / verified / sourceRemoved` 中断恢复；迁移确定性摘要；源/目标篡改、删除失败、损坏/未知 journal、无源/空源、无 journal 既有目标、同路径/符号链接和 `ready` 后源复现均失败关闭；`ready` 后目标正常签到/编辑再启动不得被旧摘要拒绝；单一 JSON UTType；精确 v1→v2 规范化；v2 format/schema、文件/数量上限、身份、时区、起始日来源、记录时区映射、时间顺序、ID/日期唯一 |
-| Widget 投影 | 未确认身份不可生成可签到快照；最近七日状态、隐私名称裁决、实际签到时间与跨 DST/项目时区零点刷新正确；只读路径不创建项目 |
-| Widget 样式偏好 | 四个正式 raw value 往返、缺省为 `faultField`、未知值失败关闭；设置切换只请求一次 timeline reload，不写入任何签到事实 |
-| App Group | App/Widget 两个签名 entitlement 与 provisioning 均包含唯一正式 group；生产只打开共享 store，App 私有源与 staging 完成后无 store artifact；group URL 缺失失败关闭 |
-| 原子性 | 无效导入不删除现有数据；保存失败 rollback |
-| 提醒 | 权限拒绝与系统外撤权；旧权限结果不能覆盖新意图；快照与最新记录一致；60 日窗口、当天已过时间、已签到日、DST 不存在时间；失败关闭且无部分计划 |
+| 身份 | 名称/说明规范化、长度、Emoji、控制字符、不可见格式字符、首次确认、幂等编辑、编辑不改变事实 |
+| 逻辑日 | Gregorian、时区、DST、稳定起始日、未来/起始日前拒绝、记录时区保持 |
+| Repository | 唯一主项目、同日幂等、保存回执、删除、清除、rollback、双容器并发回读 |
+| 当前 schema | `PulseSchema 1.0.0` 真实磁盘读写、唯一键和目录创建；工程中不得出现预发布 schema 迁移器 |
+| JSON v1 | 唯一 JSON UTType、精确 format/version、完整 round-trip、大小/数量上限、身份/时区/来源/时间顺序/ID/日期唯一、旧开发 JSON 和未知版本失败关闭 |
+| Store | 只解析 App Group 正式路径；非法 group ID、group URL 缺失失败；不得存在私有路径、journal、staging 或 fallback |
+| 设置 | 主题、应用内语言、周起始日、触觉、提醒时间、Widget 样式持久化；损坏值失败关闭 |
+| 提醒 | 60 日计划、平台预算、DST、已签到跳过、revision 竞态、关闭/清除取消、切语言重新协调 |
+| AppModel | 操作互斥、失败不提前改 UI、成功后刷新、导航复位、清除恢复日志 |
+| Widget | store 缺失/身份未确认不可写；七日投影、跨午夜刷新、样式偏好、隐私裁决、AppIntent 成功后刷新 |
+| 本地化 | English/简体中文即时切换且重启保持；同一活动界面不能混用；中文历史标题和二级返回按钮必须跟随应用语言 |
+| 品牌资产 | token schema、18 项正式资产、解码像素、AppIcon alpha、生成器幂等、仓库 diff |
 
-首个公开版本之后，任何 SwiftData 或 JSON schema 变化都必须增加上一发布版本 fixture 和迁移测试。
+## 3. UI 自动化主流程
 
-## 3. UI 自动化
+- 首次启动确认主承诺，进入 Today；
+- 签到落盘，重启后保持，并在 History 出现；
+- Settings 隐藏一级品牌导航，返回后恢复；
+- 主承诺编辑、时区选择、导入、清除与失败表达；
+- 主题和语言即时应用并跨重启保持；
+- English Settings 的返回按钮必须为 `Back`，不得出现 `返回`；中文对应 `返回`；
+- 中文 History 年度标题必须为 `记录 / 年份`，不得出现 `ARCHIVE`；
+- Dynamic Type/布局几何、底部导航、Today 主动作、History 月历和详情；
+- Widget 四种样式可选择并持久化。
 
-- 首次启动先显示预填默认名称的主承诺确认；保存成功后才显示主界面。
-- 主承诺确认、今日页名称提示与设置编辑消费同一持久化名称；编辑与重启后保持，完整清除后重新确认。可选“为什么重要”只在设置编辑页持久化，不得投影到今日页根界面。
-- 今日页在日号与签到主动作之间显示无容器、无交互的主承诺名称提示；提示必须位于日号之后、签到控件之前并与二者无重叠。常规字号下长名称保持主动作可见，Accessibility 字号允许自然换行和滚动；不得使用负间距、缩小字体或设备特判补救。
-- 今日页在周轨迹之后只显示连续状态；零连续显示“从今天开始”，签到后显示完整“连续 N 天”。状态必须与周轨迹共用中轴。旧摘要容器、承诺卡片、栏目标签、通用鼓励语与胶囊边界必须不存在。
-- 主承诺名称和说明支持中英文、Emoji 与最大字号；无效输入不能提交，保存失败不离开编辑页。
-- 签到后按钮不可重复触发并显示真实时间。
-- 保存中只显示中性反馈；成功后空心印记收缩并形成实心印记；启动已有记录只显示静态实心态，失败不出现实心态。
-- 今日页每次成为当前页最多有限呼吸一次；Reduce Motion 下没有缩放、回弹、扩散或循环呼吸。
-- 终止重启后事实仍存在。
-- 历史页统计与月历同步。
-- 历史页提供可见的上一月 / 下一月控件；当前月禁用下一月，退到过去月份后可返回当前月。
-- 漏签日具备明确语义并保留非颜色视觉标记。
-- 设置入栈时根导航与根页面元素同时离开辅助功能树，返回后恢复。
-- 设置分组说明位于对应卡片内；清除确认从清除行呈现。
-- 主题与语言可在设置中即时切换并跨重启保持；英文与简体中文不得在同一活动界面混用。
-- 记录详情不显示“完成”按钮；删除确认从删除按钮呈现，取消后不改变记录。
-- 7 个星期标题身份稳定；周轨迹今天节点与相邻节点共用相同纵向几何，签到前后不得改变文字基线。
-- 周轨迹与签到控件必须无重叠：iPhone 单列允许前者位于后者之后，iPad 双区允许两者水平分离；测试不得把单列纵向关系硬编码为全设备规则。
-- 中文今日页顶端日期信息不得混入英文 `TODAY`；深浅色脉冲场装饰不得在状态栏两角形成可见边缘。
-- Accessibility XXXL 下签到控件横向扩展，页头设置入口保持可达，两个根导航等宽且完整位于屏幕内；滚动后节奏摘要完整位于固定底栏之上。
-- 测试通过 UUID store 与 `PULSE_UI_TEST_RESET` 隔离数据，通过 `PULSE_UI_TEST_NOW` 固定业务时间。
-- Widget 快照必须投影规范化主承诺名称且不携带可选说明；设置只保留类型化 `widget.style` 构图偏好。Home Screen 显示名称，Lock Screen / StandBy / Always-On 不渲染名称，身份编辑或样式切换成功后必须请求 timeline reload。
-- 四种样式都必须在小号/中号消费完整日/月、七日事实、主承诺、今日状态与同一个单向签到入口；可见品牌和文字状态按原型取舍，不能恢复通用顶栏。断层双色按用户在原型后的明确修订把七日圆点固定左下，裂环缺口朝向右侧状态色场并在待签到/完成、全彩/系统着色下维持可见；越界巨环只有一个从左侧裁切的主环，承诺宣言以主承诺为第一读，错版撕页包含 18% 状态顶带、超大日号和竖排月份。中号必须使用独立比例，不得把小号拉宽。
-- 七日节律在 `beforeHabit / checked / missed / todayPending` 四种状态下分别保持小空心 / 大实心 / 小低强调实心 / 大强调空心；圆点与方块都不得透明到消失。相邻节点必须由低强调实线连接，连接线不得穿过空心节点、压过状态边框或制造分页控件暗示。日期 `1 / 10 / 11 / 31`、月份 `1 / 8 / 10 / 12`、80 字名称、English 与简体中文必须检查裁切和层级；AppIntent 命中区至少 44pt，完成态静态且不可撤销。
-- Accessory 圆形的待签到态只能是“开放环 + 当日纯数字”，完成态是“同一环 + 实心内核 + 镂空当日纯数字”，不得出现完成勾；两态都不得裁切。矩形左上状态完整可读，过去六日节点上方以当前 Locale 的纯数字定位，并由不穿过空心节点的实线汇入右侧唯一今日印记；今天数字只进入大印内部，今天不得重复成第七个小节点。全部数字必须来自各自 `LogicalDay`，不得出现“日”等日期后缀；中文/English、本地化数字、跨周、跨月均不得错位或硬编码。必须覆盖 `1 / 10 / 11 / 31`，确认两位数不裁切、不和相邻标签或大印相撞。待签到圆形/矩形整块都是同一个 `Button`，完成态静态；视觉数字与节点从辅助功能树隐藏，VoiceOver 每块只生成一个主元素，朗读今日状态、过去六日已留印数量和必要操作提示。
-- Home Screen 验证边到边背景和 12pt 文字安全区，只有装饰性巨环允许受控越界；Accessory 重新应用系统 `widgetContentMargins`，以容器可用尺寸计算图形，不使用日期位数或设备特判。四式与 Accessory 分别验证 `fullColor / accented / vibrant`、浅色/深色、iOS 26 Clear Liquid Glass 与降低透明度；透明外观必须来自系统移除容器背景，不接受自绘模糊或 `Color.clear` 截图冒充。
+UI 测试使用固定 Clock 与 UUID 隔离磁盘 store；无效测试配置直接失败。截图 attachment 是指定运行环境的证据，不替代真机验收。
 
-## 4. 独立人工门禁
+## 4. 构建与静态门禁
 
-自动化不能替代以下证据：
+每个发布候选至少执行：
 
-- iPhone / iPad 真机安装、重启持久化、删除与完整清除；
-- 通知首次授权、拒绝后恢复、设定时间到达、签到后取消、修改时间无旧请求；
-- 跟随系统/浅色/深色，以及 English/简体中文组合下的可读性、高对比度、降低透明度、Reduce Motion；
-- Dynamic Type 默认至 Accessibility 最大字号、VoiceOver 主流程；
-- iPad 竖横屏和分屏；
-- iPad 今日与历史双区构图、统计分隔线固有高度、月份切换方向；
-- 签到成功的主印、周轨迹、连续天数分阶段反馈，以及页面与底栏切换动效；
-- AppIcon 的 Default / Dark / Tinted 与商店素材；
-- iOS / iPadOS 17.x 可用最旧运行时上的安装、启动、签到、设置与历史主流程；
-- 签名、Archive、TestFlight 和 App Store 校验；
-- Home Screen 四种小号/中号、Lock Screen 圆形/矩形在待签到、已签到、未设置、偏好损坏和读取失败状态下的真实系统渲染；断层双色左下圆点、越界巨环受控裁切、承诺宣言长标题、错版撕页日期层级必须在 1× Home Screen 成立；Accessory 必须复核待办环无伪勾、完成态无勾且实心成立、前六个本地化日号与历史节点同轴、今日日号位于大印内部、`1 / 10 / 11 / 31` 无裁切碰撞、六日轨迹真实连入今日印记、右侧不裁切、整块命中与单元素 VoiceOver；AppIntent 不启动 App、保存成功后刷新、失败不显示完成；Lock Screen、StandBy 与 Always-On 不渲染主承诺名称或 Home Screen 样式，任何系统表面都不泄露可选说明；
-- Widget 在 App 未运行、设备锁定、跨午夜、系统杀进程、快速双击、App/Widget 同日竞争、旧版升级和卸载重装下的真机行为；
-- 跨多个自然日的连续使用。
+```bash
+xcodebuild -project pulse.xcodeproj -scheme pulse \
+  -destination 'platform=iOS Simulator,name=iPhone 16 Pro,OS=18.6' test
 
-## 5. 阻断标准
+xcodebuild -project pulse.xcodeproj -scheme pulse \
+  -configuration Release -destination 'generic/platform=iOS' \
+  CODE_SIGNING_ALLOWED=NO build
 
-- P0：记录丢失/重复、错误逻辑日、统计事实错误、清除错误目标、无效导入破坏现有数据。
-- P1：通知持续错误、关键布局不可用、删除失败假成功、VoiceOver 无法完成主流程。
-- P2：不阻断主流程的视觉、动效或文案问题。
+xcodebuild -project pulse.xcodeproj -scheme pulse \
+  -configuration Release -destination 'generic/platform=iOS' \
+  CODE_SIGNING_ALLOWED=NO analyze
 
-任何未关闭 P0 阻止工程 GO；工程 GO 也不能替代真机、通知、视觉和发布门禁。
+python3 scripts/build_brand_assets.py --check
+git diff --check
+```
 
-## 6. Widget 分层门禁
+还必须检查：
 
-Widget 已进入生产工程，仍必须按 [WIDGET_SHARED_STORE_CONTRACT.md](./WIDGET_SHARED_STORE_CONTRACT.md) 第 9 节独立判定：
+- 所有 target 的 deployment target 都是 18.0；
+- App / Widget entitlement 与 App Group 一致；
+- `PrivacyInfo.xcprivacy` 被 App 和扩展正确打包；
+- `site` 是 `.gitmodules` 声明的正式 submodule，`git submodule status` 可解析；
+- 代码和权威文档不存在旧 schema、旧 JSON 升级、私有 store、journal 或 staging 的活引用。
 
-- **自动化工程门**：迁移、新安装、快照、隐私偏好、构建和签名 entitlement 全部通过；
-- **模拟器运行门**：系统画廊识别、小号/中号真实主屏归档、单向 AppIntent 与刷新通过；Preview 不能替代该证据；
-- **真机运行门**：App 未运行、设备锁定、跨午夜、并发、升级与系统杀进程仍必须通过；
-- **视觉/无障碍门**：深浅色、最大字号、VoiceOver、Reduce Motion、Lock Screen/Always-On 隐私独立验收。
+## 5. 真机与体验门禁
 
-开发签名设备构建证明 Apple 后端身份与 App Group 能力可用，但不证明真实设备体验、分发签名、Archive、TestFlight 或 App Store 就绪。
+自动化不能替代：
+
+- iPhone / iPad iOS 18 可用最旧运行时上的安装、启动、签到、设置、历史、重启和清除；
+- 通知首次授权、拒绝后恢复、实际到达、签到后取消和修改时间无旧请求；
+- 跟随系统/浅色/深色与 English/简体中文组合；
+- Dynamic Type 到最大 Accessibility 字号、VoiceOver、提高对比度、降低透明度、Reduce Motion；
+- iPad 竖横屏、分屏和 regular-width 构图；
+- 签到落印、触觉、周轨迹、连续天数和月份切换节奏；
+- AppIcon Default / Dark / Tinted 与商店素材；
+- 多个自然日的连续使用。
+
+## 6. Widget 独立门禁
+
+- 工程门：共享 store、跨进程唯一性、快照、隐私、构建、entitlement 自动化通过；
+- Simulator 门：画廊识别、Home Screen、Lock Screen 和 AppIntent 在系统宿主中运行；
+- 真机门：App 未运行、设备锁定、跨午夜、快速双击、App/Widget 同日竞争、杀进程和卸载重装；
+- 视觉/无障碍门：四式小中号、圆形/矩形、深浅、accented/vibrant、StandBy、Always-On、最大字号、VoiceOver、Reduce Motion。
+
+Preview、未签名构建或单进程测试不能替代上述门禁。
+
+## 7. 发布门禁
+
+工程 GO 之后仍需单独取得：
+
+- Apple Distribution 签名和 Archive 验证；
+- TestFlight 安装与升级路径；
+- App Store Connect 元数据、隐私问卷、截图、支持与隐私页面；
+- 发布候选真机矩阵和多日试用结论。
+
+任一未完成项都必须以 NO-GO 或待验收记录，不能用“构建成功”替代。

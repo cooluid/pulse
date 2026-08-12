@@ -3,7 +3,7 @@ import Foundation
 public enum PulseDataContract {
     public static let formatIdentifier = "co.fanr.pulse.export"
     public static let fileExtension = "json"
-    public static let exportSchemaVersion = 2
+    public static let exportSchemaVersion = 1
     public static let maximumRecordCount = 50_000
     public static let maximumImportBytes = 32 * 1_024 * 1_024
 
@@ -103,15 +103,10 @@ public enum PulseExportCodec {
             throw PulseCoreError.invalidImport
         }
 
-        let payload: PulseExportPayload
-        switch envelope.schemaVersion {
-        case 1:
-            payload = try decoder.decode(PulseExportPayloadV1.self, from: data).upgradedToV2()
-        case PulseDataContract.exportSchemaVersion:
-            payload = try decoder.decode(PulseExportPayload.self, from: data)
-        default:
+        guard envelope.schemaVersion == PulseDataContract.exportSchemaVersion else {
             throw PulseCoreError.unsupportedImportVersion(envelope.schemaVersion)
         }
+        let payload = try decoder.decode(PulseExportPayload.self, from: data)
         _ = try PulseDataValidator.validate(payload)
         return payload
     }
@@ -133,43 +128,4 @@ public enum PulseExportCodec {
 private struct PulseExportEnvelope: Decodable {
     let format: String
     let schemaVersion: Int
-}
-
-private struct PulseExportPayloadV1: Decodable {
-    struct HabitPayload: Decodable {
-        let id: UUID
-        let name: String
-        let createdAt: Date
-        let startLogicalDay: String
-        let creationTimeZoneIdentifier: String
-        let timeZoneIdentifier: String
-    }
-
-    let format: String
-    let schemaVersion: Int
-    let exportedAt: Date
-    let habit: HabitPayload
-    let records: [PulseExportPayload.RecordPayload]
-
-    func upgradedToV2() throws -> PulseExportPayload {
-        guard format == PulseDataContract.formatIdentifier, schemaVersion == 1 else {
-            throw PulseCoreError.invalidImport
-        }
-        return PulseExportPayload(
-            format: format,
-            schemaVersion: PulseDataContract.exportSchemaVersion,
-            exportedAt: exportedAt,
-            habit: .init(
-                id: habit.id,
-                name: habit.name,
-                purpose: nil,
-                isIdentityConfirmed: false,
-                createdAt: habit.createdAt,
-                startLogicalDay: habit.startLogicalDay,
-                creationTimeZoneIdentifier: habit.creationTimeZoneIdentifier,
-                timeZoneIdentifier: habit.timeZoneIdentifier
-            ),
-            records: records
-        )
-    }
 }

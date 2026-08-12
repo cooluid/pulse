@@ -14,22 +14,27 @@ public protocol CheckInRepositoryProtocol: AnyObject {
     func replaceAll(with payload: PulseExportPayload) throws -> HabitSnapshot
 }
 
+public enum PrimaryHabitProvisioning: Sendable {
+    case existingStoreOnly
+    case createIfMissing(HabitIdentity)
+}
+
 @MainActor
 public final class SwiftDataCheckInRepository: CheckInRepositoryProtocol {
     private let container: ModelContainer
     private var context: ModelContext
     private let clock: any PulseClock
-    private let initialIdentity: HabitIdentity
+    private let primaryHabitProvisioning: PrimaryHabitProvisioning
 
     public init(
         container: ModelContainer,
         clock: any PulseClock,
-        initialIdentity: HabitIdentity
+        primaryHabitProvisioning: PrimaryHabitProvisioning
     ) {
         self.container = container
         context = Self.makeContext(container: container)
         self.clock = clock
-        self.initialIdentity = initialIdentity
+        self.primaryHabitProvisioning = primaryHabitProvisioning
     }
 
     public func existingPrimaryHabit() throws -> HabitSnapshot? {
@@ -46,6 +51,9 @@ public final class SwiftDataCheckInRepository: CheckInRepositoryProtocol {
     public func primaryHabit(systemTimeZone: TimeZone) throws -> HabitSnapshot {
         if let existing = try existingPrimaryHabit() {
             return existing
+        }
+        guard case .createIfMissing(let initialIdentity) = primaryHabitProvisioning else {
+            throw PulseCoreError.primaryHabitUnavailable
         }
 
         let now = clock.now
@@ -250,6 +258,9 @@ public final class SwiftDataCheckInRepository: CheckInRepositoryProtocol {
     }
 
     public func resetAll(systemTimeZone: TimeZone) throws -> HabitSnapshot {
+        guard case .createIfMissing(let initialIdentity) = primaryHabitProvisioning else {
+            throw PulseCoreError.primaryHabitUnavailable
+        }
         let records = try context.fetch(FetchDescriptor<CheckInRecord>())
         let habits = try context.fetch(FetchDescriptor<Habit>())
         records.forEach(context.delete)

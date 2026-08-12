@@ -1,9 +1,9 @@
 import Foundation
 import SwiftData
 
-typealias Habit = PulseSchemaV2.Habit
+typealias Habit = PulseSchema.Habit
 
-extension PulseSchemaV2 {
+extension PulseSchema {
     @Model
     final class Habit {
         static let primarySlotKey = "primary"

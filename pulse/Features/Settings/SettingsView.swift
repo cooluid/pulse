@@ -30,6 +30,7 @@ struct SettingsView: View {
             PulseLocalization.string("settings.navigation_title", locale: locale)
         )
         .navigationBarTitleDisplayMode(.inline)
+        .pulseSecondaryNavigation()
         .disabled(model.operation != nil)
     }
 
@@ -394,6 +395,7 @@ private struct TimeZonePickerView: View {
         .tint(PulseDesign.tint)
         .navigationTitle("settings.timezone")
         .navigationBarTitleDisplayMode(.inline)
+        .pulseSecondaryNavigation()
         .searchable(text: $searchText, prompt: "settings.timezone.search")
         .confirmationDialog(
             "settings.timezone_confirmation.title",

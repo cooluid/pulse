@@ -18,6 +18,8 @@ enum PulseErrorPresentation {
                 "error.record_date"
             case .invalidCheckIn:
                 "error.check_in_invalid"
+            case .primaryHabitUnavailable:
+                "error.primary_habit_unavailable"
             case .invalidHabitIdentity:
                 "error.habit_identity"
             case .exportUnavailable:

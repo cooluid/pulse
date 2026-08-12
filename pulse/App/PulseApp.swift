@@ -33,10 +33,7 @@ private enum PulseBootstrap {
                 ),
                 userPurpose: nil
             )
-            let store = try runtimeStore(
-                clock: clock,
-                initialIdentity: initialIdentity
-            )
+            let store = try runtimeStore()
             let container = try PersistenceController.makeContainer(
                 inMemory: store.inMemory,
                 storeName: store.name,
@@ -45,7 +42,7 @@ private enum PulseBootstrap {
             let repository = SwiftDataCheckInRepository(
                 container: container,
                 clock: clock,
-                initialIdentity: initialIdentity
+                primaryHabitProvisioning: .createIfMissing(initialIdentity)
             )
             let settings = try AppSettings(
                 widgetStylePreferences: try PulseWidgetStylePreferences(
@@ -94,10 +91,7 @@ private enum PulseBootstrap {
     }
 
     @MainActor
-    private static func runtimeStore(
-        clock: any PulseClock,
-        initialIdentity: HabitIdentity
-    ) throws -> RuntimeStore {
+    private static func runtimeStore() throws -> RuntimeStore {
 #if DEBUG
         if let value = ProcessInfo.processInfo.environment["PULSE_UI_TEST_STORE_ID"] {
             guard let identifier = UUID(uuidString: value) else {
@@ -113,22 +107,13 @@ private enum PulseBootstrap {
             return RuntimeStore(name: "PulseUnitTests", inMemory: true, url: nil)
         }
 #endif
-        let locator = PulseStoreLocator()
-        let privateLocation = try locator.appPrivateLocation()
-        let sharedLocation = try locator.appGroupLocation(
+        let sharedLocation = try PulseStoreLocator().appGroupLocation(
             identifier: PulseRuntimeIdentity.appGroupIdentifier
-        )
-        let readyLocation = try PulseSharedStoreBootstrapper().prepareSharedStore(
-            privateLocation: privateLocation,
-            sharedLocation: sharedLocation,
-            systemTimeZone: .autoupdatingCurrent,
-            clock: clock,
-            initialIdentity: initialIdentity
         )
         return RuntimeStore(
             name: PulseStoreContract.storeName,
             inMemory: false,
-            url: readyLocation.storeURL
+            url: sharedLocation.storeURL
         )
     }
 }

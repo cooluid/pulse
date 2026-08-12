@@ -41,6 +41,7 @@ struct CommitmentIdentityEditor: View {
         .tint(PulseDesign.tint)
         .navigationTitle(navigationTitle)
         .navigationBarTitleDisplayMode(.inline)
+        .pulseSecondaryNavigation(isEnabled: mode == .settings)
         .disabled(model.operation != nil)
         .safeAreaInset(edge: .bottom, spacing: 0) {
             saveArea

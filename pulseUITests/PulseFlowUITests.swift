@@ -116,7 +116,10 @@ final class PulseFlowUITests: XCTestCase {
         settingsAttachment.lifetime = .keepAlways
         add(settingsAttachment)
 
-        settingsNavigationBar.buttons.firstMatch.tap()
+        let backButton = app.buttons["navigation.back"]
+        XCTAssertTrue(backButton.exists)
+        XCTAssertEqual(backButton.label, "返回")
+        backButton.tap()
 
         XCTAssertTrue(app.buttons["primary.navigation.today"].waitForExistence(timeout: 3))
         XCTAssertTrue(app.buttons["primary.navigation.history"].exists)
@@ -183,6 +186,11 @@ final class PulseFlowUITests: XCTestCase {
         englishOption.tap()
 
         XCTAssertTrue(app.navigationBars["Settings"].waitForExistence(timeout: 3))
+        let englishBackButton = app.buttons["navigation.back"]
+        XCTAssertTrue(englishBackButton.waitForExistence(timeout: 3))
+        XCTAssertEqual(englishBackButton.label, "Back")
+        XCTAssertFalse(app.buttons.matching(NSPredicate(format: "label == %@", "返回")).firstMatch.exists)
+
         let themePicker = app.descendants(matching: .any)["settings.theme.picker"]
         XCTAssertTrue(themePicker.waitForExistence(timeout: 3))
         themePicker.tap()
@@ -215,6 +223,27 @@ final class PulseFlowUITests: XCTestCase {
         XCTAssertTrue(persistedThemePicker.waitForExistence(timeout: 3))
         XCTAssertTrue(persistedLanguagePicker.label.contains("English"))
         XCTAssertTrue(persistedThemePicker.label.contains("Dark"))
+        XCTAssertEqual(app.buttons["navigation.back"].label, "Back")
+    }
+
+    func testChineseHistoryUsesLocalizedArchiveHeading() throws {
+        configureApp()
+        launchAndConfirmDefaultCommitment()
+
+        let historyNavigation = app.buttons["primary.navigation.history"]
+        XCTAssertTrue(historyNavigation.waitForExistence(timeout: 3))
+        historyNavigation.tap()
+
+        let localizedHeading = app.staticTexts
+            .matching(NSPredicate(format: "label == %@", "记录 / 2026"))
+            .firstMatch
+        XCTAssertTrue(localizedHeading.waitForExistence(timeout: 3))
+        XCTAssertFalse(
+            app.staticTexts
+                .matching(NSPredicate(format: "label CONTAINS %@", "ARCHIVE"))
+                .firstMatch
+                .exists
+        )
     }
 
     func testAllWidgetStylesAreSelectableAndPersistAcrossRelaunch() throws {
@@ -340,7 +369,8 @@ final class PulseFlowUITests: XCTestCase {
         let nextMonth = app.buttons["history.month.next"]
         XCTAssertTrue(heading.waitForExistence(timeout: 3))
         XCTAssertTrue(heading.label.contains("八月"))
-        XCTAssertFalse(heading.label.contains("记录"))
+        XCTAssertTrue(heading.label.contains("记录 / 2026"))
+        XCTAssertFalse(heading.label.contains("ARCHIVE"))
         XCTAssertTrue(previousMonth.exists)
         XCTAssertTrue(nextMonth.exists)
         XCTAssertTrue(previousMonth.isEnabled)

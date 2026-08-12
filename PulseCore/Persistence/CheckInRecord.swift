@@ -1,9 +1,9 @@
 import Foundation
 import SwiftData
 
-typealias CheckInRecord = PulseSchemaV2.CheckInRecord
+typealias CheckInRecord = PulseSchema.CheckInRecord
 
-extension PulseSchemaV2 {
+extension PulseSchema {
     @Model
     final class CheckInRecord {
         @Attribute(.unique) var id: UUID

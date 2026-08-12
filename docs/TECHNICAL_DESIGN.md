@@ -1,120 +1,99 @@
 # Pulse 技术设计
 
-文档版本：1.6<br>
-状态：Implemented App + PulseCore + App Group Shared Store + PulseWidgets
+文档版本：1.7
+状态：Canonical Implemented Contract
+更新日期：2026-08-12
 
 ## 1. 工程基线
 
 - SwiftUI + SwiftData + Observation + Swift Concurrency。
-- Swift 6，严格并发检查，所有 target 警告即错误。
-- iOS / iPadOS 17.0，iPhone 与 iPad 共用产品实现。
-- 正式 target：`PulseCore`、`pulse`、`PulseWidgetsExtension`、`pulseTests`、`pulseUITests`。`PulseCore` 是静态 Swift framework，开启 `APPLICATION_EXTENSION_API_ONLY`，由 App 与 Widget 共同链接。
-- Bundle ID：`co.fanr.pulse`。
-- 不依赖第三方运行时库；品牌资产生成器唯一 Python 依赖固定在 `requirements.txt`。
+- Swift 6、严格并发检查、全部 target 警告即错误。
+- 最低系统为 iOS / iPadOS 18.0；iPhone 与 iPad 共用正式实现。
+- 正式 target 只有 `PulseCore`、`pulse`、`PulseWidgetsExtension`、`pulseTests`、`pulseUITests`。
+- `PulseCore` 是 App 与 Widget 唯一共享的 extension-safe framework；无第三方运行时依赖。
 
-## 2. 所有权链
+## 2. 事实所有权
 
 ```text
-PulseCore
-├── PulseClock ──→ authoritative now
-├── SwiftDataCheckInRepository ──→ Habit + CheckInRecord
-├── PulseExportCodec ──→ one decode / validation path
-└── validated immutable snapshots
-                 ↓ module boundary
-PulseAppModel ──→ Today / History / Settings
-   ↓ value snapshot
-ReminderScheduler ──→ UserNotifications
+PulseClock ──→ authoritative now
+                       ↓
+SwiftDataCheckInRepository ──→ PulseSchema ──→ one Pulse.store
+             │                         ↑
+             ├── immutable snapshots ──┤
+             └── commit receipts       │
+                                       │
+PulseAppModel ──→ App UI       Widget/AppIntent
 
-AppSettings ──→ ConfiguredRootView
-   ↓ persisted theme and language
-SwiftUI environment + PulseLocalization
-
-App + PulseWidgetsExtension
-   ↓ same App Group URL
-PulseSharedStoreBootstrapper ──→ one Pulse.store
-   ↓ immutable projection
-PulseWidgetSnapshot ──→ Widget timeline / one-way AppIntent
+AppSettings ──→ theme / language / reminder preferences
+PulseWidgetStylePreferences ──→ widget.style only
 ```
 
-- `PulseCore` 只编译 `Domain / Persistence / ImportExport / Widget projection` 与类型化 `PulseWidgetStylePreferences`；不依赖 SwiftUI、WidgetKit、UserNotifications、触觉、页面或宿主本地化资源。唯一 UserDefaults 消费只读写不含业务事实的 `widget.style`，App 与 Widget 源码都不再复制 Core 文件或偏好键。
-- Repository 是事实写入和持久化语义校验的唯一所有者，并持有与 AppModel 相同的 Clock；SwiftData managed object 不越过模块边界，调用方只接收已经验证、关键日期与时区非可空的 `HabitSnapshot`、`CheckInRecordSnapshot` 和提交回执。
-- `existingPrimaryHabit()` 是不产生默认项目的只读入口；启动迁移与 Widget 读取不能借用会创建数据的 `primaryHabit(systemTimeZone:)` 猜测事实。
-- AppModel 是页面快照、操作互斥、导航复位和提醒意图顺序的唯一所有者。
-- AppSettings 是主题与应用内语言的唯一持久化所有者；根窗口直接观察它，不能依赖页面级副本。
-- View 只呈现状态与发起意图，不直接访问 SwiftData、UserDefaults 或通知中心。
-- 统计与月历从记录快照派生；按逻辑日字典为内存索引，不是第二份持久化事实。
+- `CheckInRecord` 是签到事实唯一来源；Repository 是唯一写入者。
+- SwiftData managed object 不越过 `PulseCore`；App 和 Widget 只消费已验证的不可变快照。
+- 统计、月历、连续天数、今日状态和 Widget timeline 都是可重建投影，不持久化第二份事实。
+- `AppSettings.language` 是应用内语言唯一状态；不写 `AppleLanguages`，不要求重启，也不维护页面级语言副本。
+- App Group UserDefaults 只允许 `widget.style`，不得保存名称、日期、签到或统计副本。
 
-## 3. 持久化模型
+## 3. 首发持久化合同
 
-`Habit`：`id`、唯一 `slotKey`、`name`、可选 `purpose`、`isIdentityConfirmed`、`createdAt`、稳定 `startLogicalDayValue`、创建时区、当前签到时区。
+Pulse 尚未公开发布，因此 1.0 以一次干净基线开始：
 
-`CheckInRecord`：唯一 `id`、唯一 `recordKey`、`habitID`、`logicalDayValue`、`checkedAt`、`createdAt`、记录时区。
+- 唯一 SwiftData schema 为 `PulseSchema`，版本 `1.0.0`；
+- 唯一 store 为系统 App Group 容器中的 `Library/Application Support/Pulse/Pulse.store`；
+- 不存在 App 私有 store、位置 fallback、双写、搬迁 journal、staging 或预发布 schema 迁移器；
+- 旧开发安装必须清洁安装，不能把开发期测试数据伪装成公开用户兼容责任。
 
-`HabitSnapshot`、`CheckInRecordSnapshot` 与 `PulseWidgetSnapshot` 是 `PulseCore` 对外公开的不可变、`Sendable` 输出；它们复制事实值但不拥有写入能力，也不持久化为第二套模型。Repository 在创建快照前统一验证身份规范、起始日来源、时区、recordKey、时间顺序和逻辑日唯一性；损坏事实不能以可空字段或静默默认值逃出 Core。AppModel、Today、History 和 Widget timeline 都不能持有 `PersistentModel` 实例。
+`PersistenceController` 是创建目录和打开 ModelContainer 的唯一边界。App 负责首次建立 store；Widget 在主 store 文件不存在时只显示“打开 Pulse 完成设置”，不会先于 App 创建空库。
 
-当前 SwiftData schema 为 V2。`PulseSchemaV1` 和 `PulseSchemaV2` 分别冻结各自的命名空间模型，运行时代码只通过 latest typealias 消费 V2；V1→V2 使用明确的 lightweight migration，新增字段的迁移值为 `purpose == nil`、`isIdentityConfirmed == false`。真实磁盘 fixture 必须证明项目和记录全部保留。
+首个公开版本发布后，`PulseSchema 1.0.0` 才成为必须长期保留的迁移起点。以后任何 schema 变化都必须新增显式迁移计划和上一公开版本的真实磁盘 fixture，不允许再次清洁断代。
 
-JSON 只导出 v2。`PulseExportCodec` 是编码、精确版本解码与完整语义验证的唯一公开入口；v1 只在内存中升级为 v2。App 的 `PulseExportDocument` 只是 FileDocument 适配器，不再拥有第二套 codec 或 validator。
+## 4. JSON 恢复合同
 
-## 4. 操作与失败语义
+- 正式格式只有 `co.fanr.pulse.export` / `schemaVersion == 1`。
+- `PulseExportCodec` 是编码、精确解码和完整语义校验的唯一入口。
+- `PulseExportDocument` 只适配系统文件选择器，不拥有第二套 codec 或 validator。
+- 缺少格式标识、版本不是 1、字段不完整、超出上限或语义损坏时失败关闭；不猜字段、不轮询多套 decoder、不升级预发布 JSON。
+- 完整验证成功后 Repository 才替换事实；失败不能先删除现有数据。
 
-- `AppOperation` 串行化身份更新、签到、删除、清除、导入和时区更新，防止 UI 并发写入。
-- Repository 在 `save()` 失败时 rollback；View 只在成功返回后关闭详情或选择器。
-- 启动分别识别持久化失败和设置损坏：前者只允许重试，避免诱导删数据；后者可以只重置设置，明确保留签到事实。
-- `PulseCoreError` 只表达领域、持久化和导入导出错误；设置与通知错误属于宿主 `PulseAppError`。用户文案由 App 的单一错误呈现器按当前应用 Locale 映射，Core 不反向读取宿主资源。
-- 全量清除用持久化操作日志跨启动恢复，避免数据库已清空但设置/通知未清的假成功。
-- 导入先限制文件大小，再解码和完整验证，最后由 Repository 单次替换。
-- 主承诺输入由 `HabitIdentity` 统一规范化与验证；View 不直接修改 `Habit`。Repository 只在值变化或首次确认时保存，保存失败统一 rollback。
-- Repository 的签到命令返回不可持久化的 `CheckInCommitReceipt`，明确标记新建或幂等命中；AppModel 在刷新正式快照后才把回执交给页面，并只为新建事实触发一次成功触觉。
-- 今日页的日印状态机只拥有 `ready / saving / contracting / imprinting / imprinted` 短暂呈现状态。启动时从 `todayRecord` 投影为静态状态，失败回到 `ready`；不把动画阶段写入 SwiftData 或 UserDefaults。
+## 5. 操作与失败语义
 
-## 5. 提醒一致性
+- `AppOperation` 串行化身份更新、签到、删除、清除、导入和时区更新。
+- Repository 保存失败必须 rollback；页面只在成功回执和正式快照返回后推进。
+- 同日并发签到由 `recordKey` 唯一约束、事务、失败回滚和正式回读共同裁决，不能依赖进程内锁。
+- 启动区分持久化失败与设置损坏：持久化失败只允许重试；设置损坏可只重置设置，不删除签到事实。
+- 全量清除使用持久化操作日志跨启动恢复，避免数据库和偏好只清一半。
+- UI 动画阶段只存在内存中，不写 SwiftData 或 UserDefaults。
 
-- 提醒时间只存一个 `0...1439` 的午夜起分钟数。
-- 调度消费纯值 `ReminderScheduleSnapshot`，不跨异步边界持有可变 SwiftData 模型。
-- AppModel 为用户意图和协调任务分别维护单调 revision；旧权限结果和旧调度结果不能覆盖新操作。
-- `ReminderSchedulePlanner` 先生成可独立测试的纯值计划。协调任务串行执行，每次先移除 Pulse 的待处理请求，再为从今天起的 60 个日历日创建一次性通知；保留 4 个系统待处理名额，不把平台上限全部占满。
-- 启动、回到前台、签到、删除、导入、时区/语言/提醒设置变化都会滚动刷新计划。超过当前 60 日窗口且用户没有再次打开 App 时，不承诺继续送达提醒。
-- 夏令时不存在的本地时间采用当天下一可用时间并保留分钟值；重复时间采用第一次出现的时刻。计划项保存归一后的绝对时间和一次性触发组件，测试不依赖通知中心。
-- 已签到日期不生成提醒；关闭提醒和清除数据会移除 Pulse 的待处理与已送达通知。
+## 6. 时间、提醒与本地化
 
-## 6. 时间、格式与可测试性
-
-- 领域与数据写入不直接调用 `Date.now`，统一注入 `PulseClock`。
-- Debug UI 测试通过 `PULSE_UI_TEST_NOW` 注入 ISO-8601 固定时间，并用 UUID 命名的独立磁盘 store 验证跨重启持久化；单元测试宿主使用内存 store。无效测试配置直接触发前置条件失败。
-- 首次确认状态保存在 `Habit`，与清除和导入一起迁移；不使用 `UserDefaults` onboarding 标志，不从默认名称猜测状态。
-- 存储日期使用 `LogicalDay` 固定格式，展示才使用本地化 formatter。
-- 历史签到时间使用记录自己的时区；当前日期与后续签到使用项目当前时区。
-- 主题提供跟随系统、浅色、深色三种模式；语言提供跟随系统、English、简体中文三种模式。
-- SwiftUI 文案消费根环境 Locale；代码生成的错误、格式串、辅助功能标签和通知文案由 `PulseLocalization` 显式选择 `en.lproj` 或 `zh-Hans.lproj`，避免切换后混用系统语言。
-- 日期、星期、时间和时区名称显式消费当前应用 Locale；提醒快照携带不可变 Locale 标识，切换语言会重新协调待发送通知。
+- 领域写入统一注入 `PulseClock`，不直接读取 `Date.now`。
+- `LogicalDay` 使用项目时区和 Gregorian 日历；存储格式固定，展示才本地化。
+- 提醒由纯值计划器生成未来 60 个日历日的一次性请求，签到、删除、导入、时区和设置变化后重新协调。
+- SwiftUI 文案消费根环境 Locale；代码生成文案使用 `PulseLocalization` 读取同一 String Catalog。
+- 二级页面返回按钮由 `PulseSecondaryNavigationBackButton` 统一呈现，跟随应用内语言，避免系统语言与页面语言混用。
+- 日期、星期、时间、时区名和辅助功能文案都显式消费当前应用 Locale。
 
 ## 7. 设计系统
 
 - `design/brand-tokens.json` 是颜色真源，`scripts/build_brand_assets.py` 生成 Color Set、品牌标记与 AppIcon。
-- JSON 生成物按字节检查；PNG 按解码后的 mode、尺寸和像素检查，隔离压缩器版本差异。
-- 所有布局、透明度和动效常量集中于 `PulseDesign`。
-- 正文使用 Dynamic Type；104 pt 日号用 `@ScaledMetric`。Accessibility 字号下，固定圆形主动作切换为可扩展胶囊。
-- 待签到光环只在今日页成为当前页时进行一次有限呼吸；背景场保持静态，不存在 `repeatForever` 动画。
-- 正常落印总时长不超过两秒；Reduce Motion 关闭呼吸、收缩、回弹和扩散，只保留短淡入与静态形状替换。
+- 布局、透明度、动效和触控尺寸统一由 `PulseDesign` 管理。
+- 正文支持 Dynamic Type；Accessibility 字号下固定圆形动作切换为可扩展形态。
+- Reduce Motion 关闭呼吸、收缩、回弹和扩散，只保留必要状态过渡。
+- 一级 Today / History 使用品牌导航；Settings、承诺编辑和时区选择使用同一二级导航合同。
 
-## 8. 安全与隐私
+## 8. Widget 与共享 Store
 
-- 数据仅在 App/Widget 共用的本地 App Group 容器和用户主动导出的 JSON 中存在。
-- 不记录位置、广告标识或导出内容。
-- 文件导入使用 security-scoped URL，并有 32 MiB 上限。
-- `PrivacyInfo.xcprivacy` 声明不跟踪、不收集数据，并以 `CA92.1` 说明仅为 App 功能持久化设置而访问 UserDefaults。
-- 设置页直接提供公开隐私政策和产品支持入口；两者共享一份集中式 URL 定义。
-- CloudKit、分析 SDK 和远程账户不在 1.0，不保留隐藏入口或半成品实现。
+- App `co.fanr.pulse` 与 Widget `co.fanr.pulse.widgets` 通过 `group.co.fanr.pulse` 读取同一个 store。
+- group ID 由项目级 `PULSE_APP_GROUP_IDENTIFIER` 注入 Info 与 entitlement，不能在多个 target 分别定义。
+- Widget 的快照读取不产生默认项目；身份未确认、store 缺失或读取失败都有明确状态，不能伪装成“今日未签到”。
+- AppIntent 只执行单向签到，成功落盘后才请求 timeline reload；Widget 无删除、清除、导入、改时区或编辑承诺能力。
+- Home Screen 可显示已确认名称；Lock Screen、StandBy、Always-On 不显示名称；任何 Widget 都不显示“为什么重要”。
 
-## 9. Widget 与共享 Store
+详细系统表面合同见 [WIDGET_SHARED_STORE_CONTRACT.md](./WIDGET_SHARED_STORE_CONTRACT.md)。
 
-基础 Widget 建立在一个 App Group SwiftData store 和唯一 `PulseCore` 编译目标上，不复制 model、Repository 或签到状态。正式身份是 App `co.fanr.pulse`、Widget `co.fanr.pulse.widgets`、App Group `group.co.fanr.pulse`；group ID 由项目级 `PULSE_APP_GROUP_IDENTIFIER` 注入两个 target 的 Info 与 entitlement。开发设备构建已经取得两个独立 provisioning profile，签名 entitlement 都包含同一个正式 group。
+## 9. 安全与发布边界
 
-`PulseSharedStoreBootstrapper` 是 App 启动的唯一位置裁决器：存在私有旧库时走 `.existingStore`，不存在任何旧库时走显式 `.newInstallation` staging；冲突或不完整源失败关闭。两条路径共享 journal v2 和 `copying → verified → sourceRemoved → ready` 状态机。迁移阶段的 SHA-256 摘要只证明源/目标事务一致；进入 `ready` 后目标已经成为可变事实真源，重启只验证源未复现、目标存在且可读取主承诺，不能拿旧摘要拒绝正常签到或身份编辑。
-
-App 与 Widget 只通过系统 App Group API 解析 `Library/Application Support/Pulse/Pulse.store`。App 私有 store 只作为一次性迁移源，完成后主文件、WAL 与 SHM 被精确删除；不存在共享失败回退、双写或第二份签到状态。Widget 在 journal 未 `ready` 或身份未确认时显示明确“打开 App 完成设置”状态，不创建默认项目、不打开未录用目标、不伪装成待签到。
-
-`PulseWidgetProjector` 从正式 Repository 投影规范化主承诺名称、最近七日、今日记录、生成时间与项目时区下一个零点；`PulseWidgetSnapshotReader` 不产生写入。Home Screen 直接消费该名称，Lock Screen / StandBy / Always-On 不渲染名称，任何 Widget 都不携带“为什么重要”。`PulseWidgetStylePreferences` 在 App Group UserDefaults 只保存 `faultField / oversizedRing / commitmentManifesto / tearOffCalendar` 四值之一，缺省为 `faultField`、未知值失败关闭；它不保存名称、日期、签到或统计，也不能反向覆盖 store。
-
-Widget AppIntent 在独立扩展进程执行单向签到；进程内由各自 ModelContext 串行化，进程间由 SQLite 事务、`recordKey` 唯一约束和保存失败后的 rollback + 回读裁决。App 与 AppIntent 只在事实保存并重新读取成功后请求 timeline reload；刷新失败不能反向覆盖 store。详细状态机、隐私与设备门禁以 [WIDGET_SHARED_STORE_CONTRACT.md](./WIDGET_SHARED_STORE_CONTRACT.md) 为准。
+- 数据只存在于本地 App Group store 和用户主动导出的 JSON。
+- `PrivacyInfo.xcprivacy` 声明不跟踪、不收集数据，并说明 UserDefaults API 的功能性用途。
+- 1.0 不含 CloudKit、账户、分析 SDK、远程服务或半成品入口。
+- 自动化与 Simulator 证据只能关闭工程门；真机、无障碍、Widget 系统表面、签名分发、TestFlight 和 App Store 门禁分别判定。

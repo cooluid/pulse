@@ -161,7 +161,9 @@ final class PulseWidgetSnapshotTests: XCTestCase {
         SwiftDataCheckInRepository(
             container: try PersistenceController.makeContainer(inMemory: true),
             clock: clock,
-            initialIdentity: try HabitIdentity(userName: "默认承诺", userPurpose: nil)
+            primaryHabitProvisioning: .createIfMissing(
+                try HabitIdentity(userName: "默认承诺", userPurpose: nil)
+            )
         )
     }
 

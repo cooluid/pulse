@@ -15,7 +15,7 @@
 | [PRODUCT_STRATEGY_2_X.md](./PRODUCT_STRATEGY_2_X.md) | 提出 1.0 之后的定位、功能组合、收费边界与验证门槛，不改变 1.0 冻结范围 | 产品、设计、商业、开发 |
 | [POST_1_0_ROADMAP.md](./POST_1_0_ROADMAP.md) | 将后续战略拆成带证据门禁的发布、实验、Plus、影像、系统入口与智能阶段 | 产品、开发、测试、发布负责人 |
 | [PULSE_RITUAL_CONTRACT.md](./PULSE_RITUAL_CONTRACT.md) | 定义 Widget、Live Activity、灵动岛、锁屏、Apple Watch、系统动效和提醒通道的统一产品语义 | 产品、设计、开发、测试 |
-| [WIDGET_SHARED_STORE_CONTRACT.md](./WIDGET_SHARED_STORE_CONTRACT.md) | 定义基础 Widget、App Group store 搬迁、跨进程签到、隐私与能力准入门禁 | 产品、开发、测试、发布负责人 |
+| [WIDGET_SHARED_STORE_CONTRACT.md](./WIDGET_SHARED_STORE_CONTRACT.md) | 定义基础 Widget、唯一 App Group store、跨进程签到、隐私与能力准入门禁 | 产品、开发、测试、发布负责人 |
 
 ## 优先级定义
 
@@ -36,7 +36,7 @@
 
 功能范围已在 `RELEASE_SCOPE_1_0.md` 冻结。以下发布身份与验收项必须在对外发布前关闭：
 
-1. 当前最低系统版本统一为 17.0；发布前必须完成 17.x 可用最旧运行时与对应真机覆盖，不能只验证最新系统。
+1. 当前最低系统版本统一为 18.0；发布前必须完成 iOS / iPadOS 18 可用最旧运行时与对应真机覆盖，不能只验证较新系统。
 2. 1.0 已选择本地优先与 JSON 恢复；发布文案必须明确卸载数据边界，CloudKit 不进入 1.0。
 3. App 的正式版本号、商店文案与截图；Bundle ID、中英文显示名称、隐私说明和支持入口已经冻结。
 
@@ -47,6 +47,6 @@
 - 签到规则发生变化时，先修改 `DOMAIN_CONTRACT.md`，再改实现和测试。
 - 产品范围发生变化时，先修改 `PRODUCT_REQUIREMENTS.md` 与 `RELEASE_SCOPE_1_0.md`。
 - Widget、Live Activity、灵动岛、Apple Watch 或提醒通道语义变化时，先修改 `PULSE_RITUAL_CONTRACT.md`，再映射路线图、实现和测试。
-- Widget 的共享数据位置、迁移或跨进程写入变化时，先修改 `WIDGET_SHARED_STORE_CONTRACT.md`，不得在 Widget target 内另建数据路径。
+- Widget 的共享数据位置、schema 或跨进程写入变化时，先修改 `WIDGET_SHARED_STORE_CONTRACT.md`，不得在 Widget target 内另建数据路径。
 - 不在多个文档复制完整算法；其他文档通过链接引用业务规则。
 - 完成一项任务时，必须同时满足对应自动化测试和手工验收，不以“能编译”代替完成。

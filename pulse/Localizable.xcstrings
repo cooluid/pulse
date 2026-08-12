@@ -438,6 +438,23 @@
         }
       }
     },
+    "error.primary_habit_unavailable" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open Pulse and confirm your commitment before checking in."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "请先打开一日一印并确认主承诺，再进行签到。"
+          }
+        }
+      }
+    },
     "error.import_invalid" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -602,7 +619,7 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "ARCHIVE / %@"
+            "value" : "记录 / %@"
           }
         }
       }
@@ -812,6 +829,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "数据不可用"
+          }
+        }
+      }
+    },
+    "navigation.back" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Back"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "返回"
           }
         }
       }

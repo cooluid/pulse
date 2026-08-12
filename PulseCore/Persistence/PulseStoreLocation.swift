@@ -4,12 +4,9 @@ public enum PulseStoreContract {
     public static let storeName = "Pulse"
     public static let storeFilename = "Pulse.store"
     public static let productDirectoryName = "Pulse"
-    public static let migrationJournalFilename = "SharedStoreMigration.json"
-    public static let newInstallationStagingDirectoryName = "NewInstallationBootstrap"
 }
 
 public enum PulseStoreLocationError: Error, Equatable, Sendable {
-    case applicationSupportDirectoryUnavailable
     case invalidApplicationGroupIdentifier
     case applicationGroupContainerUnavailable
     case invalidDirectoryURL
@@ -18,7 +15,6 @@ public enum PulseStoreLocationError: Error, Equatable, Sendable {
 public struct PulseStoreLocation: Equatable, Sendable {
     public let directoryURL: URL
     public let storeURL: URL
-    public let migrationJournalURL: URL
 
     public init(directoryURL: URL) throws {
         guard directoryURL.isFileURL,
@@ -32,46 +28,13 @@ public struct PulseStoreLocation: Equatable, Sendable {
             PulseStoreContract.storeFilename,
             isDirectory: false
         )
-        migrationJournalURL = standardizedDirectoryURL.appendingPathComponent(
-            PulseStoreContract.migrationJournalFilename,
-            isDirectory: false
-        )
-    }
-
-    public var storeArtifactURLs: [URL] {
-        [
-            storeURL,
-            URL(fileURLWithPath: storeURL.path + "-wal"),
-            URL(fileURLWithPath: storeURL.path + "-shm")
-        ]
-    }
-
-    public var newInstallationStagingLocation: PulseStoreLocation {
-        get throws {
-            try PulseStoreLocation(
-                directoryURL: directoryURL.appendingPathComponent(
-                    PulseStoreContract.newInstallationStagingDirectoryName,
-                    isDirectory: true
-                )
-            )
-        }
     }
 }
 
 public struct PulseStoreLocator {
-    private let applicationSupportDirectoryProvider: () throws -> URL
     private let applicationGroupContainerProvider: (String) -> URL?
 
     public init(fileManager: FileManager = .default) {
-        applicationSupportDirectoryProvider = {
-            guard let directory = fileManager.urls(
-                for: .applicationSupportDirectory,
-                in: .userDomainMask
-            ).first else {
-                throw PulseStoreLocationError.applicationSupportDirectoryUnavailable
-            }
-            return directory
-        }
         applicationGroupContainerProvider = { identifier in
             fileManager.containerURL(
                 forSecurityApplicationGroupIdentifier: identifier
@@ -80,15 +43,9 @@ public struct PulseStoreLocator {
     }
 
     init(
-        applicationSupportDirectoryProvider: @escaping () throws -> URL,
         applicationGroupContainerProvider: @escaping (String) -> URL?
     ) {
-        self.applicationSupportDirectoryProvider = applicationSupportDirectoryProvider
         self.applicationGroupContainerProvider = applicationGroupContainerProvider
-    }
-
-    public func appPrivateLocation() throws -> PulseStoreLocation {
-        try PulseStoreLocation(directoryURL: applicationSupportDirectoryProvider())
     }
 
     public func appGroupLocation(identifier: String) throws -> PulseStoreLocation {

@@ -2,27 +2,10 @@ import XCTest
 @testable import PulseCore
 
 final class PulseStoreLocationTests: XCTestCase {
-    func testPrivateLocationUsesTheExplicitApplicationSupportDirectory() throws {
-        let location = try PulseStoreLocator().appPrivateLocation()
-        let applicationSupport = try XCTUnwrap(
-            FileManager.default.urls(
-                for: .applicationSupportDirectory,
-                in: .userDomainMask
-            ).first
-        )
-
-        XCTAssertEqual(location.directoryURL, applicationSupport.standardizedFileURL)
-        XCTAssertEqual(location.storeURL.lastPathComponent, "Pulse.store")
-    }
-
     func testAppGroupLocationUsesTheSystemContainerAndCanonicalSubdirectory() throws {
         let groupRoot = URL(fileURLWithPath: "/private/group-container", isDirectory: true)
         var requestedIdentifier: String?
         let locator = PulseStoreLocator(
-            applicationSupportDirectoryProvider: {
-                XCTFail("App Group lookup must not inspect the private Application Support path.")
-                return URL(fileURLWithPath: "/unused")
-            },
             applicationGroupContainerProvider: { identifier in
                 requestedIdentifier = identifier
                 return groupRoot
@@ -45,7 +28,6 @@ final class PulseStoreLocationTests: XCTestCase {
     func testAppGroupLocationRejectsInvalidIdentifierWithoutCallingProvider() {
         var providerWasCalled = false
         let locator = PulseStoreLocator(
-            applicationSupportDirectoryProvider: { URL(fileURLWithPath: "/unused") },
             applicationGroupContainerProvider: { _ in
                 providerWasCalled = true
                 return URL(fileURLWithPath: "/unused")
@@ -73,7 +55,6 @@ final class PulseStoreLocationTests: XCTestCase {
 
     func testAppGroupLocationFailsWhenTheSystemDoesNotReturnAContainer() {
         let locator = PulseStoreLocator(
-            applicationSupportDirectoryProvider: { URL(fileURLWithPath: "/unused") },
             applicationGroupContainerProvider: { _ in nil }
         )
 
@@ -87,19 +68,13 @@ final class PulseStoreLocationTests: XCTestCase {
         }
     }
 
-    func testStoreArtifactsAreAnExactMainWalShmAllowlist() throws {
+    func testStoreLocationHasOneCanonicalStoreURL() throws {
         let location = try PulseStoreLocation(
             directoryURL: URL(fileURLWithPath: "/tmp/pulse-location", isDirectory: true)
         )
 
-        XCTAssertEqual(
-            location.storeArtifactURLs.map(\.lastPathComponent),
-            ["Pulse.store", "Pulse.store-wal", "Pulse.store-shm"]
-        )
-        XCTAssertEqual(
-            location.migrationJournalURL.lastPathComponent,
-            "SharedStoreMigration.json"
-        )
+        XCTAssertEqual(location.directoryURL.path, "/tmp/pulse-location")
+        XCTAssertEqual(location.storeURL.lastPathComponent, "Pulse.store")
     }
 
     func testLocationRejectsNonFileURL() {

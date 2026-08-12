@@ -1,8 +1,8 @@
 # 一日一印（Pulse）1.0 发布范围合同
 
-文档版本：1.3
+文档版本：1.4
 状态：Canonical Release Contract
-更新时间：2026-08-11
+更新时间：2026-08-12
 
 ## 1. 冻结原则
 
@@ -22,7 +22,7 @@ Pulse 1.0 只解决一个问题：让单个用户每天可靠地记录一次签�
 - 删除单条签到记录和清除全部数据。
 - 每日本地提醒；提醒遵循签到项目固定时区，以滚动 60 个日历日的一次性计划运行并在 App 活跃时刷新。
 - 一周起始日、触觉反馈和签到时区设置。
-- 版本化 Pulse JSON 导出和校验后的全量恢复。
+- Pulse JSON v1 导出和校验后的全量恢复。
 - English / 简体中文应用内切换，跟随系统 / 浅色 / 深色主题模式，动态字体、VoiceOver、iPhone 和 iPad 布局。
 
 JSON 是 1.0 唯一恢复协议。CSV 不承担恢复职责，也不进入 1.0。
@@ -57,18 +57,18 @@ JSON 是 1.0 唯一恢复协议。CSV 不承担恢复职责，也不进入 1.0�
 | Bundle ID | `co.fanr.pulse` | 已确认；命名空间来自用户持有的 `fanr.co` |
 | Marketing Version | `1.0` | 可作为首版候选 |
 | Build Number | `1` | 首次 TestFlight 前按发布流程递增 |
-| 最低系统版本 | iOS / iPadOS 17.0 | 已在工程统一；本轮按用户指示不下载 17.x 运行时，行为验证仍是发布门禁 |
+| 最低系统版本 | iOS / iPadOS 18.0 | 已在全部 target 统一；当前 iOS 18.6 Simulator 工程验证通过，可用最旧 18.x 与真机仍是发布门禁 |
 | Development Team | `6N3D8YA2FY` | App 与 Widget 的开发签名设备构建及共享 App Group entitlement 已通过；Apple Distribution、Archive/TestFlight 与商店分发仍阻断 |
-| Widget 身份 | `co.fanr.pulse.widgets` / `group.co.fanr.pulse` | 两个开发描述文件均含正式 App Group；模拟器证据已通过，用户也已在真实 iPhone/iPad 确认主屏幕、锁屏、Always-On、升级/重启、跨时区与 Widget 交互未发现问题；未记录的 OS/压力矩阵仍独立 |
+| Widget 身份 | `co.fanr.pulse.widgets` / `group.co.fanr.pulse` | 两个开发描述文件均含正式 App Group；当前共享 store 已重定为首发唯一 schema，既有真机证据不能自动转移到本次 clean-break 候选，必须刷新系统表面与压力矩阵 |
 | 数据策略 | 本地优先 + Pulse JSON 恢复 | 1.0 推荐方案 |
 | AppIcon | “开放日环”，草绿 Default / Dark / Tinted | 几何与生成合同已录用；当前版本待最终视觉确认 |
 | 隐私政策 | `https://fanr.co/pulse/privacy/` | 已公开，并由 App 设置页直接链接 |
 | 产品支持 | `https://fanr.co/pulse/support/` | 已公开，联系邮箱为 `400822@163.com` |
-| 真实设备 | iPhone / iPad 核心真机矩阵 | 2026-08-11 用户人工验收覆盖全新安装、旧数据升级、杀进程重启、跨时区、Widget、可访问性与多日使用；设备型号、OS 版本和未明确枚举的压力路径仍以 `IMPLEMENTATION_STATUS.md` 为准 |
+| 真实设备 | iPhone / iPad 核心真机矩阵 | 2026-08-11 的人工证据属于上一开发基线；首发 schema clean-break 与二级导航修正后必须以清洁安装重新验证，设备型号、OS 版本和压力路径以 `IMPLEMENTATION_STATUS.md` 为准 |
 
 Bundle ID 一旦用于正式分发，就成为安装、钥匙串、通知和后续升级身份的一部分，不能把临时字符串带入发布后再随意更换。
 
-本次用户人工验收属于正式 `HUMAN` 证据，可以关闭其明确覆盖的真机、界面、体验和多日使用门禁；它不自动证明未记录的 iOS / iPadOS 17.x、精确并发/异常矩阵、Apple Distribution、Archive/TestFlight 或商店分发已经通过。
+历史人工验收只证明当时构建中明确观察到的结果。它不自动证明本次首发 clean-break 候选、iOS / iPadOS 18 最旧运行时、精确并发/异常矩阵、Apple Distribution、Archive/TestFlight 或商店分发已经通过。
 
 ## 6. 1.0 发布门禁
 
@@ -81,7 +81,7 @@ Bundle ID 一旦用于正式分发，就成为安装、钥匙串、通知和后�
 5. 已公开的隐私说明与支持页面持续可达，商店文案和截图完成。
 6. Bundle ID、显示名称、版本号和支持设备范围正式签字确认。（Bundle ID 与显示名称已通过）
 7. 至少完成一轮跨多个自然日的内部试用。
-8. 真实设备覆盖 Widget 首次安装、旧私有库升级、App 未运行、锁屏、跨午夜、快速双击和 App/Widget 同日竞争；任何失败都不能显示虚假完成态或产生重复记录。
+8. 真实设备覆盖 Widget 清洁安装、Widget 先于 App 加载、App 未运行、锁屏、跨午夜、快速双击和 App/Widget 同日竞争；任何失败都不能显示虚假完成态、创建空白第二库或产生重复记录。
 
 ## 7. 变更控制
 

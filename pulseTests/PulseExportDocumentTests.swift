@@ -20,7 +20,7 @@ final class PulseExportDocumentTests: XCTestCase {
         XCTAssertEqual(PulseExportDocument.writableContentTypes, [.json])
     }
 
-    func testJSONRoundTripPreservesCompleteV2Contract() throws {
+    func testJSONRoundTripPreservesCompleteV1Contract() throws {
         let habitID = UUID()
         let recordID = UUID()
         let date = Date(timeIntervalSince1970: 1_786_320_000)
@@ -72,18 +72,12 @@ final class PulseExportDocumentTests: XCTestCase {
         XCTAssertThrowsError(try PulseExportDocument.decode(legacyJSON))
     }
 
-    func testFormalV1JSONUpgradesExactlyToUnconfirmedV2() throws {
+    func testIncompleteV1JSONIsRejectedWithoutCompatibilityUpgrade() {
         let data = Data(
             #"{"format":"co.fanr.pulse.export","schemaVersion":1,"exportedAt":"2026-08-10T04:00:00Z","habit":{"id":"53A93055-6F29-48AC-9C6B-BC1E5A0C5F4A","name":"Daily","createdAt":"2026-08-10T04:00:00Z","startLogicalDay":"2026-08-10","creationTimeZoneIdentifier":"Asia/Shanghai","timeZoneIdentifier":"Asia/Shanghai"},"records":[]}"#.utf8
         )
 
-        let upgraded = try PulseExportDocument.decode(data)
-
-        XCTAssertEqual(upgraded.schemaVersion, 2)
-        XCTAssertEqual(upgraded.habit.name, "Daily")
-        XCTAssertNil(upgraded.habit.purpose)
-        XCTAssertFalse(upgraded.habit.isIdentityConfirmed)
-        XCTAssertNoThrow(try PulseExportCodec.encode(upgraded))
+        XCTAssertThrowsError(try PulseExportDocument.decode(data))
     }
 
     func testUnsupportedJSONVersionIsRejectedWithoutGuessing() {

@@ -223,7 +223,9 @@ final class PulseAppModelTests: XCTestCase {
         let repository = SwiftDataCheckInRepository(
             container: try PersistenceController.makeContainer(inMemory: true),
             clock: clock,
-            initialIdentity: try HabitIdentity(userName: "Test Habit", userPurpose: nil)
+            primaryHabitProvisioning: .createIfMissing(
+                try HabitIdentity(userName: "Test Habit", userPurpose: nil)
+            )
         )
         let suiteName = "PulseAppModelTests.\(UUID().uuidString)"
         let defaults = UserDefaults(suiteName: suiteName)!
