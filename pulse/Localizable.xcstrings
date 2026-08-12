@@ -1,6 +1,40 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "activity.reminder.alert.body" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Today is still open. You can come back whenever you are ready."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "今天还空着，准备好时随时回来。"
+          }
+        }
+      }
+    },
+    "activity.reminder.alert.title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Leave today’s mark"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "留下今天这一印"
+          }
+        }
+      }
+    },
     "accessibility.date_status_format" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -62,6 +96,108 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "重试"
+          }
+        }
+      }
+    },
+    "error.live_activities_unavailable" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Live Activities are turned off. Enable them in iOS Settings, or allow notifications to use the fallback reminder."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "实时活动已关闭。请在系统设置中开启，或允许通知以使用回退提醒。"
+          }
+        }
+      }
+    },
+    "error.live_activity_scheduling" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The system could not schedule the Live Activity. No reminder was enabled. Please try again."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "系统未能安排实时活动，提醒没有开启。请稍后重试。"
+          }
+        }
+      }
+    },
+    "error.purchase_nothing_to_restore" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No previous Reminder Enhancement purchase was found for this Apple Account."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "当前 Apple 账户没有可恢复的提醒增强购买记录。"
+          }
+        }
+      }
+    },
+    "error.purchase_product_unavailable" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reminder Enhancement is temporarily unavailable from the App Store. No price or purchase was assumed."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store 暂时无法提供提醒增强，没有使用虚构价格或完成购买。"
+          }
+        }
+      }
+    },
+    "error.purchase_verification" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The purchase could not be verified, so Reminder Enhancement remains locked."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "购买验证失败，提醒增强仍保持锁定。"
+          }
+        }
+      }
+    },
+    "error.reminder_purchase_required" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Purchase Reminder Enhancement before enabling a daily reminder."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "请先买断提醒增强，再开启每日提醒。"
           }
         }
       }
@@ -1369,6 +1505,210 @@
         }
       }
     },
+    "settings.purchase.buy_format" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Buy once · %@"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "一次买断 · %@"
+          }
+        }
+      }
+    },
+    "settings.purchase.description" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "On iOS 26, Pulse schedules a short Live Activity; supported iPhone models can also show it in the Dynamic Island. On iOS 18–25, Pulse uses local notifications. Core check-in stays available without a purchase."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "iOS 26 会安排短时实时活动，支持的 iPhone 也可在灵动岛显示；iOS 18–25 使用本地通知。未购买仍可正常签到。"
+          }
+        }
+      }
+    },
+    "settings.purchase.loading" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Loading App Store product…"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在读取 App Store 商品…"
+          }
+        }
+      }
+    },
+    "settings.purchase.pending" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Purchase pending approval"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "购买正在等待批准"
+          }
+        }
+      }
+    },
+    "settings.purchase.processing" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Contacting the App Store…"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在连接 App Store…"
+          }
+        }
+      }
+    },
+    "settings.purchase.purchased" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reminder Enhancement purchased"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "提醒增强已购买"
+          }
+        }
+      }
+    },
+    "settings.purchase.restore" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restore Purchase"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "恢复购买"
+          }
+        }
+      }
+    },
+    "settings.purchase.title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reminder Enhancement"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "提醒增强"
+          }
+        }
+      }
+    },
+    "settings.purchase.unavailable" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The App Store product is temporarily unavailable."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store 商品暂时不可用。"
+          }
+        }
+      }
+    },
+    "settings.reminder.delivery.disabled" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No reminder channel is active."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "当前没有可用提醒通道。"
+          }
+        }
+      }
+    },
+    "settings.reminder.delivery.live_activity" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This device uses scheduled Live Activities. Dynamic Island presentation depends on the iPhone model and system settings."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "此设备使用定时实时活动；是否显示灵动岛取决于 iPhone 型号与系统设置。"
+          }
+        }
+      }
+    },
+    "settings.reminder.delivery.notification" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This device uses local notifications. Notification permission is requested only when you enable the reminder."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "此设备使用本地通知；只有主动开启提醒时才会请求通知权限。"
+          }
+        }
+      }
+    },
     "settings.reminder.footer" : {
       "localizations" : {
         "en" : {
@@ -1397,6 +1737,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "签到提醒"
+          }
+        }
+      }
+    },
+    "settings.reminder.purchased_footer" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pulse sends one private, low-pressure reminder for each eligible day. It never includes your commitment text."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "每个符合条件的日期只触达一次，不显示你的主承诺正文，也不制造断签压力。"
           }
         }
       }

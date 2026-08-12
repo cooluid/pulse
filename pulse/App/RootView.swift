@@ -57,6 +57,11 @@ struct RootView: View {
         .onReceive(NotificationCenter.default.publisher(for: UIApplication.significantTimeChangeNotification)) { _ in
             Task { await model.handleSceneActivation() }
         }
+        .onOpenURL { url in
+            guard url.scheme == "pulse", url.host == "today" else { return }
+            selectedSection = .today
+            todayPath.removeAll()
+        }
         .onChange(of: model.navigationResetToken) { _, _ in
             selectedSection = .today
             todayPath.removeAll()

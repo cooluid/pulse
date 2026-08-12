@@ -1,6 +1,6 @@
 # Pulse 1.0 测试计划
 
-文档版本：1.7
+文档版本：1.8
 状态：Canonical Acceptance Plan
 更新日期：2026-08-12
 
@@ -26,7 +26,10 @@
 | 加密备份 v1 | 唯一 `.pulsebackup` UTType、PBKDF2 官方向量、随机 salt/nonce、AES-GCM round-trip、错误口令、逐段篡改、截断/尾随、未知版本/算法/参数、大小/数量上限、业务事实校验、预发布明文 JSON 失败关闭 |
 | Store | 只解析 App Group 正式路径；非法 group ID、group URL 缺失失败；目录/store/sidecar 统一文件保护；不得存在私有路径、事实缓存、journal、staging 或 fallback |
 | 设置 | 主题、周起始日、触觉、提醒时间；App Group 中 `interface.language` / `widget.style` 单一持久化、默认值、重置与损坏值失败关闭；App 私有设置不得复制语言 |
-| 提醒 | 60 日计划、平台预算、DST、已签到跳过、revision 竞态、关闭/清除取消、切语言重新协调 |
+| StoreKit / 权益 | 非消耗型商品 ID 单一来源；加载失败、购买成功/取消/待处理、恢复、无可恢复购买、未验证/撤销失败关闭；价格只来自 StoreKit；不得持久化 `isPro` |
+| 提醒策略 | 未购买关闭；已购买 iOS 26 + Live Activities 可用选择定时 Activity；iOS 18–25 与 iOS 26 撤权选择本地通知；任何状态只允许一个通道 |
+| 本地通知 | 60 日计划、平台预算、DST、已签到跳过、revision 竞态、关闭/清除取消、切语言与权益变化重新协调；只在该通道请求通知权限 |
+| Live Activity | iOS 26 `start:` 调度、transient 系统收口、最多 7 个滚动入口、首个失败诚实报错、部分容量保留前缀、关闭/签到/清除取消；Lock Screen / Compact / Minimal / Expanded 使用同一状态且不保存签到事实 |
 | AppModel | 操作互斥、失败不提前改 UI、成功后刷新、导航复位、清除恢复日志 |
 | Widget | store 缺失/身份未确认不可写；七日投影、跨午夜刷新、共享语言/样式偏好、隐私裁决、AppIntent 成功后刷新 |
 | 本地化 | English/简体中文即时切换且重启保持；App 与 Widget 内容消费同一 Locale；切语言刷新 timeline；中文历史标题和二级返回按钮跟随语言；Widget 日期/月份/数字/VoiceOver 不使用固定或存储格式 |
@@ -44,6 +47,7 @@
 - Dynamic Type/布局几何、底部导航、Today 主动作、History 月历和详情；
 - Widget 四种样式可选择并持久化。
 - App 切换 English / 简体中文后 Widget timeline 各刷新一次，重启后 App 与 Widget 内容继续消费同一共享语言。
+- 未购买设置页只显示基础体验和真实商品入口，不出现提醒开关；测试购买成功后在同一会话解锁提醒设置，恢复/待处理/商品不可用有独立可识别状态。
 
 UI 测试使用固定 Clock 与 UUID 隔离磁盘 store；无效测试配置直接失败。截图 attachment 是指定运行环境的证据，不替代真机验收。
 
@@ -82,6 +86,8 @@ git diff --check
 - iPhone / iPad iOS 18 可用最旧运行时上的安装、启动、签到、设置、历史、重启、加密备份、恢复和清除；
 - 设备重启后首次解锁前 store 不可读；首次解锁后 App 与锁屏 Widget 能按合同恢复读取；
 - 通知首次授权、拒绝后恢复、实际到达、签到后取消和修改时间无旧请求；
+- iOS 26 真机验证提醒时间前的 pending Activity、实际锁屏显示、支持设备 Dynamic Island 的 Compact/Minimal/Expanded、无灵动岛设备的 Lock Screen、关闭 Live Activities 后通知回退，以及系统容量/多 Activity 竞争；
+- StoreKit Configuration 只作为本地开发 fixture；Sandbox、TestFlight 与生产商品分别验证购买、恢复、取消、Ask to Buy/待处理、退款/撤销和换机，商品价格与 App Store Connect 一致；
 - 跟随系统/浅色/深色与 English/简体中文组合；
 - Dynamic Type 到最大 Accessibility 字号、VoiceOver、提高对比度、降低透明度、Reduce Motion；
 - iPad 竖横屏、分屏和 regular-width 构图；
@@ -103,6 +109,7 @@ Preview、未签名构建或单进程测试不能替代上述门禁。
 工程 GO 之后仍需单独取得：
 
 - Apple Distribution 签名和 Archive 验证；
+- App Store Connect 非消耗型商品、协议/税务、审核材料及其与 App 版本的提交关系；
 - TestFlight 安装与升级路径；
 - App Store Connect 元数据、隐私问卷、截图、支持与隐私页面；
 - 发布候选真机矩阵和多日试用结论。

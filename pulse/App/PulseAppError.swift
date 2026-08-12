@@ -4,6 +4,9 @@ import PulseCore
 enum PulseAppError: Error, Equatable {
     case invalidSettings
     case notificationPermissionDenied
+    case liveActivitiesUnavailable
+    case liveActivitySchedulingFailed
+    case reminderEnhancementRequired
 }
 
 enum PulseErrorPresentation {
@@ -42,6 +45,24 @@ enum PulseErrorPresentation {
                 "error.settings"
             case .notificationPermissionDenied:
                 "error.notification_denied"
+            case .liveActivitiesUnavailable:
+                "error.live_activities_unavailable"
+            case .liveActivitySchedulingFailed:
+                "error.live_activity_scheduling"
+            case .reminderEnhancementRequired:
+                "error.reminder_purchase_required"
+            }
+            return PulseLocalization.string(key, locale: locale)
+        }
+
+        if let storeError = error as? StoreAccessError {
+            let key = switch storeError {
+            case .productUnavailable:
+                "error.purchase_product_unavailable"
+            case .verificationFailed:
+                "error.purchase_verification"
+            case .nothingToRestore:
+                "error.purchase_nothing_to_restore"
             }
             return PulseLocalization.string(key, locale: locale)
         }

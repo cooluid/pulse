@@ -58,6 +58,7 @@ private enum PulseBootstrap {
             let model = PulseAppModel(
                 repository: repository,
                 settings: settings,
+                featureAccess: runtimeFeatureAccess(),
                 reminderScheduler: ReminderScheduler(),
                 clock: clock,
                 hapticFeedback: HapticFeedback()
@@ -73,6 +74,19 @@ private enum PulseBootstrap {
             logger.fault("Failed to initialize the persistent store: \(error.localizedDescription, privacy: .private)")
             return .failed(.persistence)
         }
+    }
+
+    @MainActor
+    private static func runtimeFeatureAccess() -> FeatureAccessController {
+#if DEBUG
+        if let value = ProcessInfo.processInfo.environment["PULSE_UI_TEST_REMINDER_PURCHASED"] {
+            return FeatureAccessController(
+                client: UITestStoreKitAccessClient(hasEntitlement: value == "1"),
+                listensForTransactionUpdates: false
+            )
+        }
+#endif
+        return FeatureAccessController()
     }
 
     @MainActor

@@ -107,6 +107,7 @@ final class ReminderSchedulePlannerTests: XCTestCase {
     ) -> ReminderScheduleSnapshot {
         ReminderScheduleSnapshot(
             enabled: enabled,
+            deliveryMode: enabled ? .localNotification : .disabled,
             time: time,
             timeZoneIdentifier: timeZoneIdentifier,
             localeIdentifier: "en",

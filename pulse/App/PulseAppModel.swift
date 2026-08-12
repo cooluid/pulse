@@ -41,6 +41,7 @@ final class PulseAppModel {
     private var recordsByDay: [LogicalDay: CheckInRecordSnapshot] = [:]
 
     let settings: AppSettings
+    let featureAccess: FeatureAccessController
 
     private(set) var loadState: AppLoadState = .loading
     private(set) var habit: HabitSnapshot?
@@ -60,6 +61,7 @@ final class PulseAppModel {
     init(
         repository: any CheckInRepositoryProtocol,
         settings: AppSettings,
+        featureAccess: FeatureAccessController,
         reminderScheduler: any ReminderScheduling,
         clock: any PulseClock,
         hapticFeedback: any HapticFeedbackProviding,
@@ -67,10 +69,15 @@ final class PulseAppModel {
     ) {
         self.repository = repository
         self.settings = settings
+        self.featureAccess = featureAccess
         self.reminderScheduler = reminderScheduler
         self.clock = clock
         self.hapticFeedback = hapticFeedback
         self.widgetTimelineReloader = widgetTimelineReloader
+        featureAccess.accessDidChange = { [weak self] _ in
+            guard let self else { return }
+            _ = self.enqueueReminderReconciliation()
+        }
     }
 
     var isSaving: Bool {
@@ -78,7 +85,15 @@ final class PulseAppModel {
     }
 
     var displayedReminderEnabled: Bool {
-        reminderEnabledIntent ?? settings.reminderEnabled
+        featureAccess.hasReminderEnhancement
+            && (reminderEnabledIntent ?? settings.reminderEnabled)
+    }
+
+    var reminderDeliveryMode: ReminderDeliveryMode {
+        FeatureAccessPolicy.reminderDeliveryMode(
+            hasReminderEnhancement: featureAccess.hasReminderEnhancement,
+            capabilities: reminderScheduler.deliveryCapabilities
+        )
     }
 
     var canCheckInToday: Bool {
@@ -112,24 +127,39 @@ final class PulseAppModel {
 
     func start() async {
         loadState = .loading
+        let featureAccessTask = Task { @MainActor [featureAccess] in
+            await featureAccess.start()
+        }
 #if DEBUG
         if !hasAppliedUITestReset,
            ProcessInfo.processInfo.environment["PULSE_UI_TEST_RESET"] == "1" {
             hasAppliedUITestReset = true
             loadState = await resetAllData() ? .ready : .failed
+            await featureAccessTask.value
+            if loadState == .ready {
+                await enqueueReminderReconciliation().value
+            }
             return
         }
 #endif
         if settings.isResetPending {
             loadState = await resetAllData() ? .ready : .failed
         } else {
-            await reload(reconcileReminders: true)
+            await reload(reconcileReminders: false)
+        }
+        await featureAccessTask.value
+        if loadState == .ready {
+            await enqueueReminderReconciliation().value
         }
     }
 
     func handleSceneActivation() async {
         guard operation == nil else { return }
-        await reload(reconcileReminders: true)
+        await reload(reconcileReminders: false)
+        await featureAccess.refresh()
+        if loadState == .ready {
+            await enqueueReminderReconciliation().value
+        }
     }
 
     @discardableResult
@@ -224,6 +254,10 @@ final class PulseAppModel {
     }
 
     func requestReminderEnabled(_ enabled: Bool) {
+        guard featureAccess.hasReminderEnhancement else {
+            present(PulseAppError.reminderEnhancementRequired)
+            return
+        }
         reminderIntentRevision += 1
         let revision = reminderIntentRevision
         reminderEnabledIntent = enabled
@@ -236,14 +270,26 @@ final class PulseAppModel {
     private func applyReminderEnabled(_ enabled: Bool, revision: Int) async {
         if enabled {
             do {
+                guard featureAccess.hasReminderEnhancement else {
+                    throw PulseAppError.reminderEnhancementRequired
+                }
+                let deliveryMode = reminderDeliveryMode
+                guard deliveryMode != .disabled else {
+                    throw PulseAppError.reminderEnhancementRequired
+                }
+
                 let allowed: Bool
-                switch await reminderScheduler.permissionState() {
-                case .authorized:
+                if deliveryMode == .scheduledLiveActivity {
                     allowed = true
-                case .notDetermined:
-                    allowed = try await reminderScheduler.requestPermission()
-                case .denied:
-                    allowed = false
+                } else {
+                    switch await reminderScheduler.permissionState() {
+                    case .authorized:
+                        allowed = true
+                    case .notDetermined:
+                        allowed = try await reminderScheduler.requestPermission()
+                    case .denied:
+                        allowed = false
+                    }
                 }
 
                 guard revision == reminderIntentRevision else { return }
@@ -255,7 +301,7 @@ final class PulseAppModel {
                 }
 
                 settings.setReminderEnabled(true)
-                notificationPermission = .authorized
+                notificationPermission = await reminderScheduler.permissionState()
                 reminderEnabledIntent = nil
                 await enqueueReminderReconciliation().value
             } catch {
@@ -277,6 +323,26 @@ final class PulseAppModel {
     func requestReminderTime(_ reminderTime: ReminderTime) {
         settings.reminderTime = reminderTime
         _ = enqueueReminderReconciliation()
+    }
+
+    func purchaseReminderEnhancement() async {
+        do {
+            let outcome = try await featureAccess.purchase()
+            if outcome == .purchased {
+                await enqueueReminderReconciliation().value
+            }
+        } catch {
+            present(error)
+        }
+    }
+
+    func restoreReminderEnhancement() async {
+        do {
+            try await featureAccess.restore()
+            await enqueueReminderReconciliation().value
+        } catch {
+            present(error)
+        }
     }
 
     func requestLanguage(_ language: PulseInterfaceLanguage) {
@@ -472,7 +538,8 @@ final class PulseAppModel {
         }
 
         let snapshot = ReminderScheduleSnapshot(
-            enabled: settings.reminderEnabled,
+            enabled: settings.reminderEnabled && featureAccess.hasReminderEnhancement,
+            deliveryMode: reminderDeliveryMode,
             time: settings.reminderTime,
             timeZoneIdentifier: habit.timeZoneIdentifier,
             localeIdentifier: settings.locale.identifier,

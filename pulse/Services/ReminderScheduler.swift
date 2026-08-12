@@ -1,3 +1,4 @@
+import ActivityKit
 import Foundation
 import PulseCore
 import UserNotifications
@@ -10,6 +11,7 @@ enum NotificationPermissionState: Equatable, Sendable {
 
 struct ReminderScheduleSnapshot: Sendable {
     let enabled: Bool
+    let deliveryMode: ReminderDeliveryMode
     let time: ReminderTime
     let timeZoneIdentifier: String
     let localeIdentifier: String
@@ -84,6 +86,7 @@ enum ReminderSchedulePlanner {
 
 @MainActor
 protocol ReminderScheduling: AnyObject {
+    var deliveryCapabilities: ReminderDeliveryCapabilities { get }
     func permissionState() async -> NotificationPermissionState
     func requestPermission() async throws -> Bool
     func reconcile(_ snapshot: ReminderScheduleSnapshot) async throws
@@ -91,11 +94,83 @@ protocol ReminderScheduling: AnyObject {
 }
 
 @MainActor
+protocol ReminderLiveActivityScheduling: AnyObject {
+    var capabilities: ReminderDeliveryCapabilities { get }
+    func schedule(_ reminder: PlannedReminder, locale: Locale) async throws
+    func removeAll() async
+}
+
+@MainActor
+final class ActivityKitReminderLiveActivityScheduler: ReminderLiveActivityScheduling {
+    var capabilities: ReminderDeliveryCapabilities {
+        if #available(iOS 26.0, *) {
+            return ReminderDeliveryCapabilities(
+                supportsScheduledLiveActivities: true,
+                liveActivitiesEnabled: ActivityAuthorizationInfo().areActivitiesEnabled
+            )
+        }
+        return ReminderDeliveryCapabilities(
+            supportsScheduledLiveActivities: false,
+            liveActivitiesEnabled: false
+        )
+    }
+
+    func schedule(_ reminder: PlannedReminder, locale: Locale) async throws {
+        guard #available(iOS 26.0, *), capabilities.liveActivitiesEnabled else {
+            throw PulseAppError.liveActivitiesUnavailable
+        }
+
+        let attributes = PulseReminderActivityAttributes(
+            logicalDay: reminder.day.storageValue,
+            localeIdentifier: locale.identifier
+        )
+        let content = ActivityContent(
+            state: PulseReminderActivityAttributes.ContentState(),
+            staleDate: nil
+        )
+        let alert = AlertConfiguration(
+            title: LocalizedStringResource(
+                "activity.reminder.alert.title",
+                locale: locale
+            ),
+            body: LocalizedStringResource(
+                "activity.reminder.alert.body",
+                locale: locale
+            ),
+            sound: .default
+        )
+
+        _ = try Activity<PulseReminderActivityAttributes>.request(
+            attributes: attributes,
+            content: content,
+            style: .transient,
+            alertConfiguration: alert,
+            start: reminder.deliveryDate
+        )
+    }
+
+    func removeAll() async {
+        for activity in Activity<PulseReminderActivityAttributes>.activities {
+            await activity.end(nil, dismissalPolicy: .immediate)
+        }
+    }
+}
+
+@MainActor
 final class ReminderScheduler: ReminderScheduling {
     private let center: UNUserNotificationCenter
+    private let liveActivityScheduler: any ReminderLiveActivityScheduling
 
-    init(center: UNUserNotificationCenter = .current()) {
+    init(
+        center: UNUserNotificationCenter = .current(),
+        liveActivityScheduler: any ReminderLiveActivityScheduling = ActivityKitReminderLiveActivityScheduler()
+    ) {
         self.center = center
+        self.liveActivityScheduler = liveActivityScheduler
+    }
+
+    var deliveryCapabilities: ReminderDeliveryCapabilities {
+        liveActivityScheduler.capabilities
     }
 
     func permissionState() async -> NotificationPermissionState {
@@ -118,40 +193,34 @@ final class ReminderScheduler: ReminderScheduling {
 
     func reconcile(_ snapshot: ReminderScheduleSnapshot) async throws {
         await removePendingPulseNotifications()
-        guard snapshot.enabled else { return }
-        guard await permissionState() == .authorized else {
-            throw PulseAppError.notificationPermissionDenied
-        }
+        await removePulseLiveActivities()
+        guard snapshot.enabled, snapshot.deliveryMode != .disabled else { return }
 
         let locale = Locale(identifier: snapshot.localeIdentifier)
+        let plan = try ReminderSchedulePlanner.makePlan(for: snapshot)
 
         do {
-            for reminder in try ReminderSchedulePlanner.makePlan(for: snapshot) {
-                try Task.checkCancellation()
-
-                let content = UNMutableNotificationContent()
-                content.title = PulseLocalization.string("notification.title", locale: locale)
-                content.body = PulseLocalization.string("notification.body", locale: locale)
-                content.sound = .default
-
-                let request = UNNotificationRequest(
-                    identifier: PulseRuntimeIdentity.reminderRequestPrefix + reminder.day.storageValue,
-                    content: content,
-                    trigger: UNCalendarNotificationTrigger(
-                        dateMatching: reminder.triggerComponents,
-                        repeats: false
-                    )
-                )
-                try await center.add(request)
+            switch snapshot.deliveryMode {
+            case .disabled:
+                return
+            case .localNotification:
+                guard await permissionState() == .authorized else {
+                    throw PulseAppError.notificationPermissionDenied
+                }
+                try await scheduleLocalNotifications(plan, locale: locale)
+            case .scheduledLiveActivity:
+                try await scheduleLiveActivities(plan, locale: locale)
             }
         } catch {
             await removePendingPulseNotifications()
+            await removePulseLiveActivities()
             throw error
         }
     }
 
     func removeAllPulseNotifications() async {
         await removePendingPulseNotifications()
+        await removePulseLiveActivities()
         let delivered = await center.deliveredNotifications()
         let identifiers = delivered
             .map(\.request.identifier)
@@ -165,5 +234,60 @@ final class ReminderScheduler: ReminderScheduling {
             .map(\.identifier)
             .filter { $0.hasPrefix(PulseRuntimeIdentity.reminderRequestPrefix) }
         center.removePendingNotificationRequests(withIdentifiers: identifiers)
+    }
+
+    private func scheduleLocalNotifications(
+        _ plan: [PlannedReminder],
+        locale: Locale
+    ) async throws {
+        for reminder in plan {
+            try Task.checkCancellation()
+
+            let content = UNMutableNotificationContent()
+            content.title = PulseLocalization.string("notification.title", locale: locale)
+            content.body = PulseLocalization.string("notification.body", locale: locale)
+            content.sound = .default
+
+            let request = UNNotificationRequest(
+                identifier: PulseRuntimeIdentity.reminderRequestPrefix + reminder.day.storageValue,
+                content: content,
+                trigger: UNCalendarNotificationTrigger(
+                    dateMatching: reminder.triggerComponents,
+                    repeats: false
+                )
+            )
+            try await center.add(request)
+        }
+    }
+
+    private func scheduleLiveActivities(
+        _ plan: [PlannedReminder],
+        locale: Locale
+    ) async throws {
+        guard liveActivityScheduler.capabilities.supportsScheduledLiveActivities,
+              liveActivityScheduler.capabilities.liveActivitiesEnabled else {
+            throw PulseAppError.liveActivitiesUnavailable
+        }
+
+        var scheduledCount = 0
+        for reminder in plan.prefix(PulseReminderActivityContract.maximumScheduledActivities) {
+            try Task.checkCancellation()
+            do {
+                try await liveActivityScheduler.schedule(reminder, locale: locale)
+                scheduledCount += 1
+            } catch where scheduledCount > 0 {
+                // ActivityKit applies a device-dependent pending activity budget.
+                // Keeping the accepted prefix is more useful than deleting every valid reminder.
+                break
+            }
+        }
+
+        guard scheduledCount > 0 || plan.isEmpty else {
+            throw PulseAppError.liveActivitySchedulingFailed
+        }
+    }
+
+    private func removePulseLiveActivities() async {
+        await liveActivityScheduler.removeAll()
     }
 }

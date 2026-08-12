@@ -11,6 +11,7 @@ final class PulseFlowUITests: XCTestCase {
         app.launchEnvironment["PULSE_UI_TEST_RESET"] = "1"
         app.launchEnvironment["PULSE_UI_TEST_STORE_ID"] = UUID().uuidString
         app.launchEnvironment["PULSE_UI_TEST_NOW"] = "2026-08-10T04:00:00Z"
+        app.launchEnvironment["PULSE_UI_TEST_REMINDER_PURCHASED"] = "0"
     }
 
     private func launchAndConfirmDefaultCommitment() {
@@ -125,6 +126,36 @@ final class PulseFlowUITests: XCTestCase {
         XCTAssertTrue(app.buttons["primary.navigation.history"].exists)
     }
 
+    func testReminderEnhancementPurchaseUnlocksReminderWithoutChangingCheckIn() throws {
+        configureApp()
+        launchAndConfirmDefaultCommitment()
+
+        app.buttons["settings.navigation.open.today"].tap()
+
+        let purchaseButton = app.buttons["settings.purchase.buy"]
+        XCTAssertTrue(purchaseButton.waitForExistence(timeout: 3))
+        XCTAssertFalse(app.switches["settings.reminder.toggle"].exists)
+
+        purchaseButton.tap()
+
+        XCTAssertTrue(
+            app.descendants(matching: .any)["settings.purchase.status"]
+                .waitForExistence(timeout: 3)
+        )
+        XCTAssertTrue(
+            app.descendants(matching: .any)["settings.reminder.toggle"]
+                .waitForExistence(timeout: 3)
+        )
+
+        let purchasedSettingsAttachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
+        purchasedSettingsAttachment.name = "Purchased reminder settings"
+        purchasedSettingsAttachment.lifetime = .keepAlways
+        add(purchasedSettingsAttachment)
+
+        app.buttons["navigation.back"].tap()
+        XCTAssertTrue(app.buttons["today.checkin.button"].waitForExistence(timeout: 3))
+    }
+
     func testSettingsExposesPrivacyAndSupportLinks() throws {
         configureApp()
         launchAndConfirmDefaultCommitment()
@@ -174,6 +205,9 @@ final class PulseFlowUITests: XCTestCase {
 
         app.buttons["settings.navigation.open.today"].tap()
         let exportButton = app.buttons["settings.backup.export.button"]
+        for _ in 0..<8 where !exportButton.exists {
+            app.swipeUp()
+        }
         XCTAssertTrue(exportButton.waitForExistence(timeout: 3))
         for _ in 0..<6 where exportButton.frame.maxY > app.frame.maxY - 80 {
             app.swipeUp()

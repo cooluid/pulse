@@ -1,8 +1,8 @@
 # 一日一印（Pulse）系统仪式产品与交互合同
 
-文档版本：0.4<br>
-状态：Canonical Ritual Semantics；当前只将 4.1 的 App 内基础落印纳入首个公开版本，其余能力仍受路线图阶段门禁约束<br>
-评审日期：2026-08-11
+文档版本：0.5<br>
+状态：Canonical Ritual Semantics；当前将 4.1 的 App 内基础落印与 4.2 的买断提醒窗口纳入首个公开版本，其余能力仍受路线图阶段门禁约束<br>
+评审日期：2026-08-12
 
 本文是 Pulse 在 Widget、Live Activity、灵动岛、锁屏、StandBy、Apple Watch、Control、Action Button 和提醒通道上的产品语义权威。它定义“什么时候出现、表达什么、如何结束、什么可以收费”；签到日期、唯一性、删除和时区仍只以 [DOMAIN_CONTRACT.md](./DOMAIN_CONTRACT.md) 为准，版本顺序只以 [POST_1_0_ROADMAP.md](./POST_1_0_ROADMAP.md) 为准。
 
@@ -27,7 +27,8 @@ Pulse 不把系统表面当作更多通知位，而把它们组织成一套有�
 | Apple Watch 高级节律与长期档案 | GO，Plus 候选 | 28/90/365 日节律、印期与年轮会随数据持续产生新价值 |
 | 签到成功的系统落印动效 | GO，免费 | 形成 Pulse 的品牌签名，但不替代 App 内反馈 |
 | 签到后的今日影像窗口 | GO，影像实验通过后免费 | 把“完成今天”自然延伸为“留下今天” |
-| 提醒时间自动出现的留印窗口 | 条件 GO | 必须用户主动开启，并有 ActivityKit push-to-start 与服务端证据 |
+| iOS 26 提醒时间自动出现的本地留印窗口 | GO，一次买断 | 必须用户购买并主动开启；使用 iOS 26 本地 scheduled Live Activity，不需要把 APNs/后端伪装成前置条件 |
+| iOS 18–25 本地通知提醒 | GO，同一买断权益的降级通道 | Live Activity 本地定时 API 不存在，只允许通知单通道，不复制提醒 |
 | 回归与里程碑变体 | GO，免费 | 只在用户本来就签到的时刻出现，不额外打扰 |
 | 岁月流影生成进度 | GO，随 Plus 渲染能力提供 | 属于真实、持续变化、可取消的任务 |
 | 全天常驻“今日未签到” | NO-GO | 没有合适的开始/结束，制造压力并长期占用系统表面 |
@@ -53,7 +54,7 @@ stateDiagram-v2
     state "已结束" as Ended
 
     [*] --> Inactive
-    Inactive --> ReminderWindow: "用户开启的远程提醒到达"
+    Inactive --> ReminderWindow: "iOS 26 已购买用户的本地定时 Activity 到达"
     Inactive --> Saving: "从 App 或系统入口发起签到"
     ReminderWindow --> Saving: "用户选择留下今天"
     Saving --> Imprinted: "Repository 保存成功"
@@ -102,16 +103,16 @@ Compact、Minimal、Expanded 和 Lock Screen 必须都能独立理解；有灵�
 
 ### 3.3 通知：一次到达
 
-本地通知仍是免费、离线可用的基本提醒。自动 Live Activity 和未来微信提醒是可选通道，不与本地通知同时表达同一逻辑日的同一提醒。
+提醒增强是一次买断权益，但签到核心永久免费。已购买用户在 iOS 26 优先使用本地定时 Live Activity；iOS 18–25 或 iOS 26 关闭 Live Activities 时使用本地通知。未来远程 Live Activity 和微信提醒仍是后续候选，不能与当前主通道同时表达同一逻辑日的同一提醒。
 
 唯一 `ReminderPolicy` 决定主通道和显式回退：
 
 ```text
-primaryChannel = localNotification | liveActivity | weChat
+primaryChannel = none | localNotification | liveActivity | weChat
 fallbackChannel = none | localNotification
 ```
 
-如果用户选择灵动岛提醒但设备不支持、授权关闭、push-to-start token 失效或远程任务未接受，才能按用户同意回退到本地通知。通道协调使用单调 revision；旧任务、旧权限结果和迟到回调不能恢复已经关闭的提醒。
+未购买时主通道为 `none`。已购买 iOS 26 设备在 Live Activities 被关闭时自动落入本地通知，并只在用户主动开启提醒时请求通知权限；iOS 26 不因设备没有灵动岛而降级，Lock Screen Live Activity 仍是正式表面。通道协调使用单调 revision；旧任务、旧权限结果和迟到回调不能恢复已经关闭的提醒。
 
 ## 4. 日印仪式场景
 
@@ -142,7 +143,7 @@ App 内页面只保存短暂的呈现阶段和动画进度，不持久化 `activ
 
 ### 4.2 留印提醒窗口
 
-只有用户主动开启“灵动岛提醒”后，才允许在提醒时间自动启动。窗口可选 10、20 或 30 分钟，每个逻辑日最多自动启动一次。
+只有 StoreKit 已验证“提醒增强”权益且用户主动开启提醒后，才允许在提醒时间自动启动。首版使用 transient Live Activity，每个逻辑日最多自动启动一次；它会在用户锁屏、收起扩展灵动岛或点按外部等系统定义的交互后结束，Pulse 不用 `staleDate` 伪造定时结束。设置页不能把 Live Activity 写成“仅灵动岛”，因为无灵动岛设备仍使用 Lock Screen 表面。
 
 Compact 示例：
 
@@ -194,14 +195,14 @@ Compact 显示实际进度，如 `◐ 63%`；Expanded 显示当前阶段、照�
 - 本地通知、灵动岛和微信对同一提醒只允许一个主通道实际发送；
 - 签到成功会取消当天本地通知、远程提醒任务和当前 `ReminderWindow`；
 - 照片邀请只能由签到成功转入，不能在签到前单独占用灵动岛；
-- 正常日印仪式不超过 30 分钟，不利用 ActivityKit 的八小时上限做全天常驻；
+- transient 提醒由系统按短暂交互收口，不利用 ActivityKit 的八小时上限做全天常驻；
 - 渲染 Activity 只在用户主动创建导出任务后启动，结束、失败和取消都必须收口文件与状态；
 - 系统可能压缩、隐藏或调整灵动岛呈现，任何业务完成都不能依赖用户看见动画。
 - iPhone 与 Apple Watch 对同一提醒只触达一次；不在 Watch 再建立一套独立每日通知计划来争夺注意力；
 
-自动在提醒时间启动 Live Activity 不能依赖现有本地通知调度器。正式方案需要用户主动授权、ActivityKit push-to-start token、APNs 和最小后端调度；没有这条证据链时只允许本地通知，或由用户点击通知后进入 App 再启动仪式。
+iOS 26 的正式方案使用 ActivityKit 本地 `start:` 调度，不借本地通知触发、不要求 App 在后台执行，也不需要 APNs。调度器滚动提交最多 7 个 transient Activity；这个数字是 Pulse 的保守上限，不是对系统容量的承诺。系统可因设备预算、用户设置或并发 Activity 拒绝、延迟、压缩或隐藏呈现，产品不能承诺“到点必现”。
 
-Pulse 最低版本为 iOS / iPadOS 18.0，因此不保留 17.0 / 17.1 的 Live Activity 兼容分支。未来若进入自动启动实现，仍必须先具备用户授权、push-to-start token、APNs 与最小后端调度的完整证据链；缺少任一环节时只允许本地通知或用户主动进入 App，不提供必然失败的伪开关。
+Pulse 最低版本为 iOS / iPadOS 18.0，因此只保留两条正式版本分支：iOS 26 的 scheduled Live Activity 与 iOS 18–25 的本地通知。未来若实现跨更长时间、服务端个性策略或远程启动，仍必须另行具备 push-to-start token、APNs 和最小后端证据链；不能把远程通道混进本轮本地买断功能。
 
 ## 6. 数据、隐私与失败边界
 
@@ -259,13 +260,18 @@ render       = 实际进度环，用于岁月流影生成
 - App 内落印动画和系统落印语言；
 - 用户在 App 完成签到后的短暂 Live Activity 回声；
 - 回归与里程碑变体；
-- 标准本地提醒；
 - 基础 Home / Lock Screen Widget 与幂等签到；
 - 影像功能进入生产后的签到后拍照窗口。
 
+一次买断“提醒增强”：
+
+- iOS 26 本地定时 transient Live Activity；支持设备由系统同时提供 Dynamic Island，其他设备显示 Lock Screen 表面；
+- iOS 18–25 的本地通知，以及 iOS 26 关闭 Live Activities 时的通知回退；
+- 一个商品、一个永久 entitlement、一个提醒主通道；商品价格从 StoreKit 返回值读取，不持久化购买布尔副本。
+
 Pulse Plus 候选：
 
-- 由服务端在提醒时间自动 push-to-start 的留印窗口；
+- 由服务端进行更长周期、跨设备或个性策略的远程 push-to-start 留印窗口；
 - 提醒窗口长度、表达与经验证的个人节律策略；
 - 正式多通道提醒和一致回退；
 - 高级节律、印期、年轮和往年今日 Widget；
@@ -273,7 +279,7 @@ Pulse Plus 候选：
 - Apple Watch 上的 28/90/365 日节律、回归力、印期、年轮和往年今日抽象回看；
 - 将来经用户需求验证的专注印刻 Live Activity。
 
-收费对象是持续调度、个性策略、长期档案和高级生成价值，不是“解锁灵动岛或 Watch 皮肤”。权益到期不删除签到、照片、影片或报告，也不阻断免费本地提醒、基础 Widget 与基础 Watch 签到。
+本轮一次买断收费对象是“可靠的系统提醒入口”，不是单独售卖灵动岛皮肤；同一权益在无灵动岛设备仍有 Lock Screen / 本地通知价值。权益不可用或被撤销时只取消提醒计划，不删除签到、照片、影片、报告、备份或 Widget；未来 Plus 不得要求既有买断用户为同一提醒能力重复付费。
 
 ## 9. Apple Watch 子系统
 
@@ -393,8 +399,8 @@ Watch 默认隐私等级高于 App 前台：
 - 只有保存成功或幂等回读后才显示实心落印；
 - 逻辑日、提醒窗口和 Activity 结束全部使用项目签到时区；
 - 每日自动启动上限、关闭后不重启、签到后取消和跨日换代均通过竞态测试；
-- push token 轮换、撤权、APNs 延迟、重复与乱序回调不会恢复旧任务；
-- iOS / iPadOS 18 可用最旧版本与当前版本分别验证 push-to-start、撤权和本地通知降级；
+- iOS 26 本地 scheduled Activity 的容量拒绝、部分成功、撤权和重新协调不会恢复旧任务或产生双通道；
+- iOS / iPadOS 18–25 与 26 分别验证本地通知、scheduled Activity、Live Activities 关闭后的通知降级；
 - 不支持灵动岛、未授权、Always-On、Reduce Motion、设备锁定和系统压缩呈现均有完整降级；
 - 本地通知、灵动岛和微信仲裁不会重复触达；
 - Activity 失败只影响系统仪式，不阻塞签到、照片和导出事实。
@@ -415,10 +421,11 @@ Watch 默认隐私等级高于 App 前台：
 
 | 阶段 | 日印仪式范围 |
 | --- | --- |
-| R1 | App Group 正式 store、基础 Widget、Widget AppIntent、免费落印语言与本地启动原型 |
+| R0.5 | 首版买断提醒增强：StoreKit 2 单一 entitlement、iOS 26 本地 scheduled Live Activity、iOS 18–25 通知回退与单通道仲裁 |
+| R1 | App Group 正式 store、基础 Widget、Widget AppIntent、免费落印语言与后续系统仪式原型 |
 | W0 | R1 稳定后提前验证配对真机、WatchConnectivity、`pendingSync` 与跨午夜命令；不写生产历史 |
 | R2.5 | 签到成功后的今日影像窗口，不单独追拍照提醒 |
-| R3 | ActivityKit push-to-start 原型、远程留印窗口、ReminderPolicy 通道仲裁；证据通过后才纳入 Plus |
+| R3 | ActivityKit push-to-start 原型、远程留印窗口与多通道仲裁；不得向买断用户重复销售现有本地提醒能力 |
 | R4 | 岁月流影实际生成进度、取消、失败与完成摘要 |
 | WX0 / WX1 | 复用 ReminderPolicy 和服务端调度基础设施，但微信资格与发送适配器独立门禁 |
 | R5 | 伴侣型 Watch App、基础 complication / Smart Stack / 可靠签到免费；高级 Watch 节律、Widget、Control、Action Button 与 Shortcuts 分层验证 |
@@ -426,6 +433,7 @@ Watch 默认隐私等级高于 App 前台：
 ## 12. 平台依据
 
 - Live Activity 适合有明确开始和结束、持续不超过数小时的任务，并要求克制更新与敏感内容：[Live Activities HIG](https://developer.apple.com/design/human-interface-guidelines/live-activities)
+- iOS 26 可用 `start:` 在本地安排 Live Activity；scheduled Activity 计入设备相关并发上限，transient Activity 由系统按锁屏、收起或外部点按等交互结束，`staleDate` 只表示内容过期：[Displaying live data with Live Activities](https://developer.apple.com/documentation/activitykit/displaying-live-data-with-live-activities)
 - Widget / Live Activity 单次动画最长两秒，Always-On 低亮度不播放动画：[Animating data updates in widgets and Live Activities](https://developer.apple.com/documentation/widgetkit/animating-data-updates-in-widgets-and-live-activities)
 - Widget App Intent、锁定设备认证与操作完成后的 timeline reload：[Adding interactivity to widgets and Live Activities](https://developer.apple.com/documentation/widgetkit/adding-interactivity-to-widgets-and-live-activities)
 - Live Activity 最长活跃八小时，之后最多在锁屏保留四小时：[Displaying live data with Live Activities](https://developer.apple.com/documentation/activitykit/displaying-live-data-with-live-activities)

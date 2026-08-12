@@ -1,3 +1,4 @@
+import ActivityKit
 import AppIntents
 import Foundation
 import PulseCore
@@ -8,6 +9,118 @@ import WidgetKit
 struct PulseWidgetsBundle: WidgetBundle {
     var body: some Widget {
         PulseDailyImprintWidget()
+        PulseReminderLiveActivity()
+    }
+}
+
+struct PulseReminderLiveActivity: Widget {
+    var body: some WidgetConfiguration {
+        ActivityConfiguration(for: PulseReminderActivityAttributes.self) { context in
+            PulseReminderLockScreenView(context: context)
+                .environment(\.locale, Locale(identifier: context.attributes.localeIdentifier))
+                .activityBackgroundTint(PulseWidgetDesign.background)
+                .activitySystemActionForegroundColor(PulseWidgetDesign.action)
+                .widgetURL(PulseReminderActivityContract.deepLink)
+        } dynamicIsland: { context in
+            let locale = Locale(identifier: context.attributes.localeIdentifier)
+            return DynamicIsland {
+                DynamicIslandExpandedRegion(.leading) {
+                    PulseReminderMark(size: 28)
+                }
+                DynamicIslandExpandedRegion(.center) {
+                    Text(
+                        LocalizedStringResource(
+                            "activity.reminder.title",
+                            locale: locale
+                        )
+                    )
+                        .font(.headline)
+                        .lineLimit(1)
+                }
+                DynamicIslandExpandedRegion(.bottom) {
+                    HStack(spacing: PulseWidgetDesign.spacing8) {
+                        Text(
+                            LocalizedStringResource(
+                                "activity.reminder.body",
+                                locale: locale
+                            )
+                        )
+                            .font(.subheadline)
+                            .foregroundStyle(PulseWidgetDesign.secondary)
+                            .lineLimit(2)
+                        Spacer(minLength: PulseWidgetDesign.spacing8)
+                        Link(destination: PulseReminderActivityContract.deepLink) {
+                            Text(
+                                LocalizedStringResource(
+                                    "activity.reminder.action",
+                                    locale: locale
+                                )
+                            )
+                                .font(.subheadline.weight(.semibold))
+                        }
+                    }
+                }
+            } compactLeading: {
+                PulseReminderMark(size: 18)
+            } compactTrailing: {
+                Text(
+                    LocalizedStringResource(
+                        "activity.reminder.compact",
+                        locale: locale
+                    )
+                )
+                    .font(.caption2.weight(.semibold))
+            } minimal: {
+                PulseReminderMark(size: 18)
+            }
+            .keylineTint(PulseWidgetDesign.grass)
+            .widgetURL(PulseReminderActivityContract.deepLink)
+        }
+    }
+}
+
+private struct PulseReminderLockScreenView: View {
+    let context: ActivityViewContext<PulseReminderActivityAttributes>
+
+    var body: some View {
+        HStack(spacing: PulseWidgetDesign.spacing8) {
+            PulseReminderMark(size: 40)
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text("activity.reminder.title")
+                    .font(.headline)
+                Text("activity.reminder.body")
+                    .font(.subheadline)
+                    .foregroundStyle(PulseWidgetDesign.secondary)
+                    .lineLimit(2)
+            }
+
+            Spacer(minLength: PulseWidgetDesign.spacing8)
+
+            Link(destination: PulseReminderActivityContract.deepLink) {
+                Image(systemName: "arrow.up.right")
+                    .font(.headline.weight(.semibold))
+                    .frame(width: 44, height: 44)
+            }
+            .accessibilityLabel("activity.reminder.action")
+        }
+        .padding(PulseWidgetDesign.homeSafeInset)
+    }
+}
+
+private struct PulseReminderMark: View {
+    let size: CGFloat
+
+    var body: some View {
+        ZStack {
+            Circle()
+                .stroke(PulseWidgetDesign.grass, lineWidth: max(2, size * 0.1))
+            Circle()
+                .fill(PulseWidgetDesign.grass)
+                .frame(width: size * 0.2, height: size * 0.2)
+        }
+        .frame(width: size, height: size)
+        .accessibilityHidden(true)
     }
 }
 

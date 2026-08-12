@@ -1,0 +1,43 @@
+{
+  "identifier" : "50E6B9E0-9F95-4F15-A0D3-D2CA7FC2DD1A",
+  "nonRenewingSubscriptions" : [
+
+  ],
+  "products" : [
+    {
+      "displayPrice" : "18",
+      "familyShareable" : false,
+      "internalID" : "A8A5DF21-4EC4-4EB4-A885-6E48E39513DD",
+      "localizations" : [
+        {
+          "description" : "A one-time purchase for scheduled Live Activity or local notification reminders.",
+          "displayName" : "Reminder Enhancement",
+          "locale" : "en_US"
+        },
+        {
+          "description" : "一次买断定时实时活动或本地通知提醒。",
+          "displayName" : "提醒增强",
+          "locale" : "zh_CN"
+        }
+      ],
+      "productID" : "co.fanr.pulse.reminder.lifetime",
+      "referenceName" : "Pulse Reminder Enhancement Lifetime",
+      "type" : "NonConsumable"
+    }
+  ],
+  "settings" : {
+    "_failTransactionsEnabled" : false,
+    "_locale" : "zh_CN",
+    "_storefront" : "CHN",
+    "_storeKitErrors" : [
+
+    ]
+  },
+  "subscriptionGroups" : [
+
+  ],
+  "version" : {
+    "major" : 3,
+    "minor" : 0
+  }
+}

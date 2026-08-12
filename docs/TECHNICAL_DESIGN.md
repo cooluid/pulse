@@ -1,6 +1,6 @@
 # Pulse 技术设计
 
-文档版本：1.9
+文档版本：2.0
 状态：Canonical Implemented Contract
 更新日期：2026-08-12
 
@@ -26,6 +26,7 @@ PulseAppModel ──→ App UI       Widget/AppIntent
 
 AppSettings ──→ theme / reminder preferences
 PulseSharedInterfacePreferences ──→ interface.language / widget.style
+StoreKit 2 verified entitlement ──→ FeatureAccessPolicy ──→ one ReminderDeliveryMode
 ```
 
 - `CheckInRecord` 是签到事实唯一来源；Repository 是唯一写入者。
@@ -72,7 +73,11 @@ App 与 Widget entitlement、专用 store 目录和现存 sidecar 统一使用 `
 
 - 领域写入统一注入 `PulseClock`，不直接读取 `Date.now`。
 - `LogicalDay` 使用项目时区和 Gregorian 日历；存储格式固定，展示才本地化。
-- 提醒由纯值计划器生成未来 60 个日历日的一次性请求，签到、删除、备份恢复、时区和设置变化后重新协调。
+- `FeatureAccessController` 只从 StoreKit 2 已验证的当前 entitlement 和交易更新派生 `hasReminderEnhancement`；不把 `isPro`、商品价格或 entitlement 缓存到 UserDefaults、SwiftData、备份或 App Group。
+- `FeatureAccessPolicy` 是购买状态与平台能力到 `ReminderDeliveryMode` 的唯一映射：未购买关闭；已购买 + iOS 26 + Live Activities 可用时选择 `scheduledLiveActivity`；其余已购买环境选择 `localNotification`。
+- `ReminderSchedulePlanner` 只生成项目时区下的可发送逻辑日；`ReminderScheduler.reconcile` 先清理 Pulse 旧通知和旧 Activity，再只安排一个通道。通知通道使用未来 60 个日历日的一次性请求；iOS 26 ActivityKit 通道使用 `Activity.request(... style: .transient, start:)` 滚动安排最多 7 个短暂系统入口，避免把设备相关调度预算误当作无限容量。
+- iOS 26 设备如果关闭 Live Activities，策略在进入调度前回退本地通知；第一个定时 Activity 即失败则诚实报错，已有前缀成功后遇到系统容量上限保留已接受前缀。系统可能压缩、延迟或不展示，业务正确性不依赖系统表面出现。
+- 通知权限仅服务本地通知通道；未购买或定时 Live Activity 通道不请求通知权限。签到、删除、备份恢复、时区、语言、权益和提醒设置变化后重新协调。
 - App 与 Widget 内容都由 `PulseSharedInterfacePreferences.interface.language` 解析同一个显式 Locale；SwiftUI 文案消费根环境 Locale，代码生成文案必须显式传入该 Locale。
 - `LogicalDay` 的可见日期和 VoiceOver 日期统一通过 `PulseLocalizedDateFormatting` 生成；不得显示固定 `MM/DD`、存储格式或隐式系统 Locale。
 - App 切换语言后同时重新协调提醒并刷新 Widget timeline。Widget Gallery 名称、配置说明与 AppIntent 等系统托管静态元数据继续由 iOS 的系统/应用语言决定，不伪装成可被运行时偏好覆盖。
@@ -103,5 +108,5 @@ App 与 Widget entitlement、专用 store 目录和现存 sidecar 统一使用 `
 - 口令、派生密钥和明文负载不持久化；加密备份与恢复永久属于免费数据主权能力，后续 StoreKit 权益不得介入 Repository 或备份 codec。
 - App 与 Widget 的 `ITSAppUsesNonExemptEncryption` 均为 `NO`；依据是运行时只调用 Apple OS 提供的标准密码学能力。若未来引入第三方或随 App 分发的密码学实现，必须重新审查出口合规。
 - `PrivacyInfo.xcprivacy` 声明不跟踪、不收集数据，并说明 UserDefaults API 的功能性用途。
-- 1.0 不含 CloudKit、账户、分析 SDK、远程服务或半成品入口。
+- 1.0 含一个 StoreKit 2 非消耗型提醒增强商品与本地 ActivityKit/UserNotifications 调度；不含 CloudKit、账户、分析 SDK、远程调度服务或第二套购买事实。
 - 自动化与 Simulator 证据只能关闭工程门；真机、无障碍、Widget 系统表面、签名分发、TestFlight 和 App Store 门禁分别判定。
