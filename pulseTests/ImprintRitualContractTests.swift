@@ -4,20 +4,9 @@ import XCTest
 
 @MainActor
 final class ImprintRitualContractTests: XCTestCase {
-    func testFiniteMotionDurationsStayWithinTwoSecondContract() {
-        XCTAssertGreaterThan(PulseDesign.idleAuraBreathDuration, 0)
-        XCTAssertLessThanOrEqual(PulseDesign.idleAuraBreathDuration, 2)
-        XCTAssertGreaterThan(PulseDesign.imprintCompletionDuration, 0)
-        XCTAssertLessThanOrEqual(PulseDesign.imprintCompletionDuration, 2)
-        XCTAssertLessThanOrEqual(PulseDesign.imprintReducedMotionFadeDuration, 2)
-    }
-
-    func testOnlyCommittedPresentationPhasesUseTheSolidGlyph() {
-        XCTAssertFalse(ImprintRitualPhase.ready.usesSolidGlyph)
-        XCTAssertFalse(ImprintRitualPhase.saving.usesSolidGlyph)
-        XCTAssertFalse(ImprintRitualPhase.contracting.usesSolidGlyph)
-        XCTAssertTrue(ImprintRitualPhase.imprinting.usesSolidGlyph)
-        XCTAssertTrue(ImprintRitualPhase.imprinted.usesSolidGlyph)
+    func testCheckInStateMotionStaysWithinTwoSecondContract() {
+        XCTAssertGreaterThan(PulseDesign.checkInStateDuration, 0)
+        XCTAssertLessThanOrEqual(PulseDesign.checkInStateDuration, 2)
     }
 
     func testProductionSourceContainsNoUnboundedRepeatForeverMotion() throws {

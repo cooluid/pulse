@@ -4,6 +4,17 @@ import XCTest
 
 @MainActor
 final class FeatureAccessControllerTests: XCTestCase {
+    func testCurrentCapabilityDirectoryPublishesOnlyDeliveredCapabilities() {
+        XCTAssertEqual(
+            PulseEnhancementContract.currentCapabilities,
+            [.advancedWidgetCompositions, .scheduledLiveActivity]
+        )
+        XCTAssertEqual(
+            Set(PulseEnhancementContract.currentCapabilities).count,
+            PulseEnhancementContract.currentCapabilities.count
+        )
+    }
+
     func testStoreKitFixtureMatchesTheSharedEnhancementContract() throws {
         let projectRoot = URL(fileURLWithPath: #filePath)
             .deletingLastPathComponent()
@@ -145,7 +156,7 @@ private final class TestStoreKitAccessClient: StoreKitAccessClient {
     init(
         product: StoreProductPresentation? = StoreProductPresentation(
             identifier: PulseEnhancementContract.productIdentifier,
-            displayName: "Pulse Enhancements",
+            displayName: "Pulse · Wild Imprint",
             description: "Test product",
             displayPrice: "¥18.00"
         ),

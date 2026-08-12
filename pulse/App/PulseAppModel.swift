@@ -451,6 +451,11 @@ final class PulseAppModel {
         widgetTimelineReloader.reloadDailyImprint()
     }
 
+    func notifyPhotoIntentReady() {
+        guard settings.hapticsEnabled else { return }
+        hapticFeedback.notifyHoldReady()
+    }
+
     func updateTimeZone(identifier: String) async -> Bool {
         guard operation == nil, let habit else { return false }
         operation = .updateTimeZone

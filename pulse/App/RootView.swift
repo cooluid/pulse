@@ -87,7 +87,6 @@ struct RootView: View {
             NavigationStack(path: $todayPath) {
                 TodayView(
                     model: model,
-                    isActive: selectedSection == .today && todayPath.isEmpty,
                     primaryNavigationClearance: primaryNavigationHeight
                 )
                     .accessibilityHidden(!todayPath.isEmpty)
@@ -133,7 +132,7 @@ struct RootView: View {
                 PulsePrimaryNavigation(
                     selection: $selectedSection,
                     todayDayNumber: model.today?.day,
-                    historyMonthDayCount: historyMonthDayCount,
+                    historyMonthNumber: model.today?.month,
                     isTodayChecked: model.todayRecord != nil
                 )
                 .onGeometryChange(for: CGFloat.self) { proxy in
@@ -159,11 +158,6 @@ struct RootView: View {
             SettingsView(model: model)
                 .id(model.settings.language)
         }
-    }
-
-    private var historyMonthDayCount: Int? {
-        guard let today = model.today, let timeZone = model.timeZone else { return nil }
-        return PulseFormatting.numberOfDaysInMonth(today, timeZone: timeZone)
     }
 
     private var primaryContentAnimation: Animation? {

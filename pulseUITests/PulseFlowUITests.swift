@@ -50,7 +50,7 @@ final class PulseFlowUITests: XCTestCase {
         checkInButton.tap()
 
         XCTAssertFalse(checkInButton.isEnabled)
-        XCTAssertTrue(checkInButton.label.contains("已签到"))
+        XCTAssertTrue(checkInButton.label.contains("已留印"))
         assertRhythmStatus(equals: "连续 1 天")
         assertWeekRailGeometry()
         assertObsoleteTodayDesignIsAbsent()
@@ -64,7 +64,7 @@ final class PulseFlowUITests: XCTestCase {
         let persistedCheckInButton = app.buttons["today.checkin.button"]
         XCTAssertTrue(persistedCheckInButton.waitForExistence(timeout: 5))
         XCTAssertFalse(persistedCheckInButton.isEnabled)
-        XCTAssertTrue(persistedCheckInButton.label.contains("已签到"))
+        XCTAssertTrue(persistedCheckInButton.label.contains("已留印"))
         assertRhythmStatus(equals: "连续 1 天")
         assertObsoleteTodayDesignIsAbsent()
         assertHeroGeometry()
@@ -100,21 +100,36 @@ final class PulseFlowUITests: XCTestCase {
         launchAndConfirmDefaultCommitment()
 
         app.buttons["today.checkin.button"].tap()
-        let mediaCard = app.descendants(matching: .any)["today.media.card"]
-        for _ in 0..<3 where !mediaCard.exists {
+        let mediaStrip = app.descendants(matching: .any)["today.media.strip"]
+        for _ in 0..<3 where !mediaStrip.exists {
             app.swipeUp()
         }
-        XCTAssertTrue(mediaCard.waitForExistence(timeout: 3))
+        XCTAssertTrue(mediaStrip.waitForExistence(timeout: 3))
 
         let captureButton = app.buttons["today.media.capture.button"]
         XCTAssertTrue(captureButton.waitForExistence(timeout: 3))
-        XCTAssertTrue(captureButton.label.contains("留一张今天"))
+        XCTAssertTrue(captureButton.label.contains("拍下今天"))
         XCTAssertFalse(app.navigationBars["照片"].exists)
 
         let attachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
         attachment.name = "Today with optional media invitation"
         attachment.lifetime = .keepAlways
         add(attachment)
+    }
+
+    func testLongPressCommitsCheckInBeforeRequestingCamera() throws {
+        configureApp()
+        launchAndConfirmDefaultCommitment()
+
+        let checkInButton = app.buttons["today.checkin.button"]
+        XCTAssertTrue(checkInButton.waitForExistence(timeout: 5))
+        checkInButton.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
+            .press(forDuration: 0.6)
+
+        let completed = NSPredicate(format: "isEnabled == false")
+        expectation(for: completed, evaluatedWith: checkInButton)
+        waitForExpectations(timeout: 3)
+        XCTAssertTrue(checkInButton.label.contains("已留印"))
     }
 
     func testSettingsHidesPrimaryNavigationUntilClosed() throws {
@@ -154,26 +169,37 @@ final class PulseFlowUITests: XCTestCase {
 
         app.buttons["settings.navigation.open.today"].tap()
 
-        let purchaseButton = app.buttons["settings.purchase.buy"]
-        XCTAssertTrue(purchaseButton.waitForExistence(timeout: 3))
         XCTAssertTrue(
             app.descendants(matching: .any)["settings.reminder.toggle"]
                 .waitForExistence(timeout: 3)
         )
 
+        let storeLink = app.descendants(matching: .any)["settings.store.link"]
+        XCTAssertTrue(storeLink.waitForExistence(timeout: 3))
+        storeLink.tap()
+
+        let purchaseButton = app.buttons["store.buy"]
+        XCTAssertTrue(purchaseButton.waitForExistence(timeout: 3))
+
+        let storeAttachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
+        storeAttachment.name = "Wild Imprint before purchase"
+        storeAttachment.lifetime = .keepAlways
+        add(storeAttachment)
+
         purchaseButton.tap()
 
         XCTAssertTrue(
-            app.descendants(matching: .any)["settings.purchase.status"]
+            app.descendants(matching: .any)["store.status"]
                 .waitForExistence(timeout: 3)
         )
-        XCTAssertTrue(app.descendants(matching: .any)["settings.reminder.toggle"].exists)
 
         let purchasedSettingsAttachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
         purchasedSettingsAttachment.name = "Purchased enhancement with free reminder retained"
         purchasedSettingsAttachment.lifetime = .keepAlways
         add(purchasedSettingsAttachment)
 
+        app.buttons["navigation.back"].tap()
+        XCTAssertTrue(app.descendants(matching: .any)["settings.reminder.toggle"].exists)
         app.buttons["navigation.back"].tap()
         XCTAssertTrue(app.buttons["today.checkin.button"].waitForExistence(timeout: 3))
     }
@@ -184,25 +210,19 @@ final class PulseFlowUITests: XCTestCase {
 
         app.buttons["settings.navigation.open.today"].tap()
 
-        let picker = app.descendants(matching: .any)["settings.widget.style.picker"]
-        for _ in 0..<4 where !picker.isHittable {
+        let galleryLink = app.descendants(matching: .any)["settings.widget.gallery.link"]
+        for _ in 0..<4 where !galleryLink.isHittable {
             app.swipeUp()
         }
-        XCTAssertTrue(picker.waitForExistence(timeout: 3))
-        XCTAssertTrue(picker.isHittable)
-        XCTAssertTrue(picker.label.contains("承诺宣言"))
-        picker.tap()
+        XCTAssertTrue(galleryLink.waitForExistence(timeout: 3))
+        galleryLink.tap()
 
-        let includedOption = app.descendants(matching: .any)
-            .matching(NSPredicate(format: "label CONTAINS %@", "承诺宣言"))
-            .firstMatch
-        let premiumOption = app.descendants(matching: .any)
-            .matching(NSPredicate(format: "label CONTAINS %@", "错版撕页"))
-            .firstMatch
+        let includedOption = app.buttons["widget.gallery.style.commitmentManifesto"]
+        let premiumOption = app.buttons["widget.gallery.style.tearOffCalendar"]
         XCTAssertTrue(includedOption.waitForExistence(timeout: 3))
         XCTAssertTrue(premiumOption.waitForExistence(timeout: 3))
-        XCTAssertTrue(includedOption.label.contains("免费"))
-        XCTAssertTrue(premiumOption.label.contains("增强版"))
+        XCTAssertTrue(includedOption.label.contains("已选择"))
+        XCTAssertTrue(premiumOption.label.contains("野印"))
 
         let optionsAttachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
         optionsAttachment.name = "Free and enhancement widget style disclosure"
@@ -210,13 +230,7 @@ final class PulseFlowUITests: XCTestCase {
         add(optionsAttachment)
 
         premiumOption.tap()
-
-        let accessMessage = app.staticTexts.matching(
-            NSPredicate(format: "label CONTAINS %@", "承诺宣言样式和基础提醒无需购买")
-        ).firstMatch
-        XCTAssertTrue(accessMessage.waitForExistence(timeout: 3))
-        app.buttons["好"].tap()
-        XCTAssertTrue(picker.label.contains("承诺宣言"))
+        XCTAssertTrue(app.buttons["store.buy"].waitForExistence(timeout: 3))
     }
 
     func testSettingsExposesPrivacyAndSupportLinks() throws {
@@ -249,7 +263,7 @@ final class PulseFlowUITests: XCTestCase {
             app.swipeUp()
         }
         XCTAssertTrue(resetButton.waitForExistence(timeout: 3))
-        XCTAssertTrue(app.descendants(matching: .any)["settings.data.note"].exists)
+        XCTAssertTrue(resetButton.isHittable)
         resetButton.tap()
 
         let confirmButton = app.buttons
@@ -396,26 +410,24 @@ final class PulseFlowUITests: XCTestCase {
         XCTAssertTrue(settingsButton.waitForExistence(timeout: 5))
         settingsButton.tap()
 
-        let stylePicker = app.descendants(matching: .any)["settings.widget.style.picker"]
-        for _ in 0..<4 where !stylePicker.exists {
+        let galleryLink = app.descendants(matching: .any)["settings.widget.gallery.link"]
+        for _ in 0..<4 where !galleryLink.exists {
             app.swipeUp()
         }
-        XCTAssertTrue(stylePicker.waitForExistence(timeout: 3))
-        stylePicker.tap()
+        XCTAssertTrue(galleryLink.waitForExistence(timeout: 3))
+        galleryLink.tap()
 
-        let styleNames = ["断层双色", "越界巨环", "承诺宣言", "错版撕页"]
-        for styleName in styleNames {
-            let option = app.descendants(matching: .any)
-                .matching(NSPredicate(format: "label CONTAINS %@", styleName))
-                .firstMatch
-            XCTAssertTrue(option.waitForExistence(timeout: 3))
+        let styleIdentifiers = ["faultField", "oversizedRing", "commitmentManifesto", "tearOffCalendar"]
+        for identifier in styleIdentifiers {
+            XCTAssertTrue(
+                app.buttons["widget.gallery.style.\(identifier)"].waitForExistence(timeout: 3)
+            )
         }
 
-        app.descendants(matching: .any)
-            .matching(NSPredicate(format: "label CONTAINS %@", "错版撕页"))
-            .firstMatch
-            .tap()
-        XCTAssertTrue(stylePicker.label.contains("错版撕页"))
+        app.buttons["widget.gallery.style.tearOffCalendar"].tap()
+        XCTAssertTrue(
+            app.buttons["widget.gallery.style.tearOffCalendar"].label.contains("已选择")
+        )
 
         app.terminate()
         app.launchEnvironment.removeValue(forKey: "PULSE_UI_TEST_RESET")
@@ -425,14 +437,12 @@ final class PulseFlowUITests: XCTestCase {
         XCTAssertTrue(persistedSettingsButton.waitForExistence(timeout: 5))
         persistedSettingsButton.tap()
 
-        let persistedStylePicker = app.descendants(matching: .any)[
-            "settings.widget.style.picker"
-        ]
-        for _ in 0..<4 where !persistedStylePicker.exists {
+        let persistedGalleryLink = app.descendants(matching: .any)["settings.widget.gallery.link"]
+        for _ in 0..<4 where !persistedGalleryLink.exists {
             app.swipeUp()
         }
-        XCTAssertTrue(persistedStylePicker.waitForExistence(timeout: 3))
-        XCTAssertTrue(persistedStylePicker.label.contains("错版撕页"))
+        XCTAssertTrue(persistedGalleryLink.waitForExistence(timeout: 3))
+        XCTAssertTrue(persistedGalleryLink.label.contains("错版撕页"))
     }
 
     func testRecordDetailUsesSheetDismissalAndSourceAnchoredDeleteConfirmation() throws {
@@ -740,18 +750,20 @@ final class PulseFlowUITests: XCTestCase {
 
     private func assertHeroGeometry() {
         let dayNumber = app.staticTexts["today.day.number"]
-        let kicker = app.staticTexts["today.hero.kicker"]
-        let commitmentCue = app.descendants(matching: .any)["today.commitment.name"]
+        let kicker = app.descendants(matching: .any)
+            .matching(identifier: "today.hero.kicker")
+            .firstMatch
+        let commitmentCue = app.descendants(matching: .any)
+            .matching(identifier: "today.commitment.name")
+            .firstMatch
         let checkInButton = app.buttons["today.checkin.button"]
         XCTAssertTrue(dayNumber.exists)
         XCTAssertTrue(kicker.exists)
         XCTAssertTrue(commitmentCue.waitForExistence(timeout: 3))
         XCTAssertTrue(checkInButton.exists)
         XCTAssertTrue(kicker.label.contains("星期"))
-        XCTAssertEqual(dayNumber.frame.midX, kicker.frame.midX, accuracy: 1)
-        XCTAssertEqual(dayNumber.frame.midX, commitmentCue.frame.midX, accuracy: 1)
-        XCTAssertLessThan(kicker.frame.maxY, dayNumber.frame.minY)
-        XCTAssertLessThanOrEqual(dayNumber.frame.maxY, commitmentCue.frame.minY)
+        XCTAssertGreaterThanOrEqual(kicker.frame.minX, dayNumber.frame.maxX)
+        XCTAssertLessThanOrEqual(max(dayNumber.frame.maxY, kicker.frame.maxY), commitmentCue.frame.minY)
         XCTAssertLessThanOrEqual(commitmentCue.frame.maxY, checkInButton.frame.minY)
     }
 
@@ -760,7 +772,7 @@ final class PulseFlowUITests: XCTestCase {
         let rhythmStatus = app.staticTexts["today.rhythm.status"]
         XCTAssertTrue(weekRail.exists)
         XCTAssertTrue(rhythmStatus.exists)
-        XCTAssertEqual(rhythmStatus.frame.midX, weekRail.frame.midX, accuracy: 1)
+        XCTAssertEqual(rhythmStatus.frame.minX, weekRail.frame.minX, accuracy: 12)
         XCTAssertGreaterThanOrEqual(rhythmStatus.frame.minY, weekRail.frame.maxY)
     }
 

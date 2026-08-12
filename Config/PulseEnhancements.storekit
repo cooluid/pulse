@@ -10,18 +10,18 @@
       "internalID" : "14CFA85B-CCDF-48DB-BD52-E4C92F402A29",
       "localizations" : [
         {
-          "description" : "Unlock scheduled Live Activities and three additional Home Screen widget styles.",
-          "displayName" : "Pulse Enhancements",
+          "description" : "Unlock every Wild Imprint capability currently released, including scheduled Live Activities and advanced Widget compositions.",
+          "displayName" : "Pulse · Wild Imprint",
           "locale" : "en_US"
         },
         {
-          "description" : "解锁定时实时活动与三种额外主屏幕小组件样式。",
-          "displayName" : "一日一印增强",
+          "description" : "一次买断野印当前已发布的全部增强能力，包括定时实时活动与高级小组件构图。",
+          "displayName" : "一日一印 · 野印",
           "locale" : "zh_CN"
         }
       ],
       "productID" : "co.fanr.pulse.enhancement.lifetime",
-      "referenceName" : "Pulse Enhancements Lifetime",
+      "referenceName" : "Pulse Wild Imprint Lifetime",
       "type" : "NonConsumable"
     }
   ],

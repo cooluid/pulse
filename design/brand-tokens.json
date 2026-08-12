@@ -1,44 +1,44 @@
 {
   "light" : {
-    "action" : "#1F5E34",
+    "action" : "#C7351A",
     "actionForeground" : "#FFFFFF",
-    "background" : "#EDF5E7",
-    "field" : "#68B33F",
-    "grass" : "#68B33F",
+    "background" : "#F2F0E6",
+    "field" : "#D9EBCF",
+    "grass" : "#74D13F",
     "grassForeground" : "#102013",
-    "ink" : "#172119",
-    "navigationGlyphSurface" : "#F7FBF2",
-    "secondary" : "#667064",
-    "separator" : "#D3D9CF",
-    "shadow" : "#182D1D",
-    "surface" : "#F6FAEF",
-    "tint" : "#1F5E34"
+    "ink" : "#141712",
+    "navigationGlyphSurface" : "#F7F3E8",
+    "secondary" : "#5B6258",
+    "separator" : "#C9C7BD",
+    "shadow" : "#141712",
+    "surface" : "#FBF8EC",
+    "tint" : "#C7351A"
   },
   "dark" : {
-    "action" : "#276D3D",
-    "actionForeground" : "#F7FBF2",
-    "background" : "#07120A",
-    "field" : "#91D55B",
-    "grass" : "#91D55B",
-    "grassForeground" : "#0C1A0E",
-    "ink" : "#F0F5EC",
-    "navigationGlyphSurface" : "#F7FBF2",
-    "secondary" : "#A6B0A2",
-    "separator" : "#3D4B3E",
+    "action" : "#FF6A3D",
+    "actionForeground" : "#10120E",
+    "background" : "#0B0D0A",
+    "field" : "#21341C",
+    "grass" : "#94E653",
+    "grassForeground" : "#0B1209",
+    "ink" : "#F3F1E8",
+    "navigationGlyphSurface" : "#10120E",
+    "secondary" : "#A9ADA3",
+    "separator" : "#394035",
     "shadow" : "#000000",
-    "surface" : "#0D1C10",
-    "tint" : "#91D55B"
+    "surface" : "#151912",
+    "tint" : "#FF6A3D"
   },
   "icon" : {
-    "darkMark" : "#91D55B",
-    "defaultBackground" : "#1F5E34",
+    "darkMark" : "#FF6A3D",
+    "defaultBackground" : "#C7351A",
     "defaultMark" : "#FFFFFF",
-    "darkPreviewBackground" : "#07120A"
+    "darkPreviewBackground" : "#0B0D0A"
   },
   "review" : {
-    "canvas" : "#EEF0E8",
-    "ink" : "#172119",
-    "secondary" : "#667064",
-    "tintedPreviewBackground" : "#68B33F"
+    "canvas" : "#F2F0E6",
+    "ink" : "#141712",
+    "secondary" : "#5B6258",
+    "tintedPreviewBackground" : "#C7351A"
   }
 }

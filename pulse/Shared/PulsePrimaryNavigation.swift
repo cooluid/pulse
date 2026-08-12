@@ -10,259 +10,94 @@ enum PulsePrimarySection: String, CaseIterable, Identifiable {
 struct PulsePrimaryNavigation: View {
     @Binding var selection: PulsePrimarySection
     let todayDayNumber: Int?
-    let historyMonthDayCount: Int?
+    let historyMonthNumber: Int?
     let isTodayChecked: Bool
 
-    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @ScaledMetric(relativeTo: .body) private var navigationHeight = PulseDesign.primaryNavigationHeight
-    @ScaledMetric(relativeTo: .body) private var glyphSize = PulseDesign.primaryNavigationGlyph
-    @Namespace private var selectionNamespace
 
     var body: some View {
-        navigationLayout
-            .frame(
-                maxWidth: dynamicTypeSize.isAccessibilitySize
-                    ? .infinity
-                    : PulseDesign.primaryNavigationMaxWidth
-            )
-            .background {
-                RoundedRectangle(
-                    cornerRadius: PulseDesign.primaryNavigationCornerRadius,
-                    style: .continuous
-                )
-                .fill(.ultraThinMaterial)
-                .overlay {
-                    RoundedRectangle(
-                        cornerRadius: PulseDesign.primaryNavigationCornerRadius,
-                        style: .continuous
-                    )
-                    .fill(PulseDesign.surface.opacity(PulseDesign.navigationSurfaceOpacity))
-                }
-            }
-            .clipShape(
-                RoundedRectangle(
-                    cornerRadius: PulseDesign.primaryNavigationCornerRadius,
-                    style: .continuous
-                )
-            )
-            .overlay {
-                RoundedRectangle(
-                    cornerRadius: PulseDesign.primaryNavigationCornerRadius,
-                    style: .continuous
-                )
-                .stroke(PulseDesign.separator, lineWidth: PulseDesign.thinLineWidth)
-            }
-            .shadow(
-                color: PulseDesign.shadow.opacity(PulseDesign.navigationShadowOpacity),
-                radius: PulseDesign.navigationShadowRadius,
-                y: PulseDesign.navigationShadowY
-            )
-            .padding(.horizontal, PulseDesign.primaryNavigationHorizontalInset)
-            .padding(.vertical, PulseDesign.spacing8)
-            .frame(maxWidth: .infinity)
-    }
-
-    @ViewBuilder
-    private var navigationLayout: some View {
-        if dynamicTypeSize.isAccessibilitySize {
-            accessibilityNavigation
-        } else {
-            standardNavigation
-                .frame(height: navigationHeight)
+        HStack(spacing: 0) {
+            navigationButton(for: .today)
+            navigationButton(for: .history)
         }
-    }
-
-    private var standardNavigation: some View {
-        GeometryReader { proxy in
-            let contentWidth = proxy.size.width
-                - PulseDesign.primaryNavigationPadding * 2
-                - PulseDesign.primaryNavigationGap
-            let ratioTotal = PulseDesign.primaryNavigationSelectedRatio
-                + PulseDesign.primaryNavigationUnselectedRatio
-            let todayRatio = selection == .today
-                ? PulseDesign.primaryNavigationSelectedRatio
-                : PulseDesign.primaryNavigationUnselectedRatio
-            let historyRatio = selection == .history
-                ? PulseDesign.primaryNavigationSelectedRatio
-                : PulseDesign.primaryNavigationUnselectedRatio
-
-            HStack(spacing: PulseDesign.primaryNavigationGap) {
-                navigationButton(for: .today)
-                    .frame(
-                        width: contentWidth
-                            * todayRatio
-                            / ratioTotal
-                    )
-
-                navigationButton(for: .history)
-                    .frame(
-                        width: contentWidth
-                            * historyRatio
-                            / ratioTotal
-                    )
-            }
-            .padding(PulseDesign.primaryNavigationPadding)
+        .frame(
+            height: dynamicTypeSize.isAccessibilitySize
+                ? PulseDesign.accessibilityNavigationMinimumHeight
+                : navigationHeight
+        )
+        .background(PulseDesign.surface)
+        .overlay(alignment: .top) {
+            Rectangle()
+                .fill(PulseDesign.ink)
+                .frame(height: PulseDesign.emphasisLineWidth)
         }
-    }
-
-    private var accessibilityNavigation: some View {
-        HStack(spacing: PulseDesign.primaryNavigationGap) {
-            accessibilityNavigationButton(for: .today)
-            accessibilityNavigationButton(for: .history)
-        }
-        .padding(PulseDesign.primaryNavigationPadding)
     }
 
     private func navigationButton(for section: PulsePrimarySection) -> some View {
         let isSelected = selection == section
+        let isCompletedToday = section == .today && isTodayChecked
+        let selectedBackground = isCompletedToday ? PulseDesign.grass : PulseDesign.action
+        let selectedForeground = isCompletedToday
+            ? PulseDesign.grassForeground
+            : PulseDesign.actionForeground
 
         return Button {
             select(section)
         } label: {
-            HStack(spacing: PulseDesign.spacing12) {
-                navigationGlyph(for: section, isSelected: isSelected)
-
-                VStack(alignment: .leading, spacing: PulseDesign.spacing4) {
-                    Text(section == .today ? "tab.today" : "tab.history")
-                        .font(.caption.bold())
-                        .lineLimit(1)
-
-                    if isSelected, !dynamicTypeSize.isAccessibilitySize {
-                        Text(subtitleKey(for: section))
-                            .font(.caption2)
-                            .opacity(PulseDesign.navigationSubtitleOpacity)
-                            .lineLimit(1)
-                    }
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-            }
-            .padding(.horizontal, PulseDesign.spacing12)
-            .frame(
-                maxWidth: .infinity,
-                minHeight: navigationHeight - PulseDesign.primaryNavigationPadding * 2
-            )
-            .foregroundStyle(isSelected ? PulseDesign.grassForeground : PulseDesign.secondary)
-            .background {
-                selectionBackground(isSelected: isSelected)
-            }
-            .clipShape(
-                RoundedRectangle(
-                    cornerRadius: PulseDesign.primaryNavigationItemCornerRadius,
-                    style: .continuous
-                )
-            )
-            .contentShape(Rectangle())
-        }
-        .buttonStyle(.plain)
-        .accessibilityIdentifier("primary.navigation.\(section.rawValue)")
-        .accessibilityValue(isSelected ? Text(subtitleKey(for: section)) : Text(verbatim: ""))
-        .accessibilityAddTraits(isSelected ? .isSelected : [])
-    }
-
-    private func accessibilityNavigationButton(for section: PulsePrimarySection) -> some View {
-        let isSelected = selection == section
-
-        return Button {
-            select(section)
-        } label: {
-            VStack(spacing: PulseDesign.spacing4) {
+            HStack(alignment: .firstTextBaseline, spacing: PulseDesign.spacing8) {
                 if let value = glyphValue(for: section) {
                     Text(value, format: .number)
-                        .font(.body.bold())
+                        .font(.title2.weight(.black))
                         .monospacedDigit()
+                        .lineLimit(1)
                 }
 
                 Text(section == .today ? "tab.today" : "tab.history")
-                    .font(.caption.bold())
-                    .lineLimit(1)
+                    .font(.caption.weight(.black))
+                    .textCase(.uppercase)
+                    .lineLimit(dynamicTypeSize.isAccessibilitySize ? 2 : 1)
             }
-            .multilineTextAlignment(.center)
             .padding(.horizontal, PulseDesign.spacing12)
-            .padding(.vertical, PulseDesign.spacing8)
-            .frame(
-                maxWidth: .infinity,
-                minHeight: PulseDesign.accessibilityNavigationMinimumHeight
-            )
-            .foregroundStyle(isSelected ? PulseDesign.grassForeground : PulseDesign.secondary)
-            .background {
-                selectionBackground(isSelected: isSelected)
-            }
-            .clipShape(
-                RoundedRectangle(
-                    cornerRadius: PulseDesign.primaryNavigationItemCornerRadius,
-                    style: .continuous
-                )
-            )
+            .padding(.vertical, PulseDesign.spacing12)
+            .frame(maxWidth: .infinity)
+            .foregroundStyle(isSelected ? selectedForeground : PulseDesign.ink)
+            .background(isSelected ? selectedBackground : PulseDesign.surface)
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .accessibilityIdentifier("primary.navigation.\(section.rawValue)")
-        .accessibilityValue(isSelected ? Text(subtitleKey(for: section)) : Text(verbatim: ""))
-        .accessibilityAddTraits(isSelected ? .isSelected : [])
-    }
-
-    @ViewBuilder
-    private func selectionBackground(isSelected: Bool) -> some View {
-        if isSelected {
-            RoundedRectangle(
-                cornerRadius: PulseDesign.primaryNavigationItemCornerRadius,
-                style: .continuous
-            )
-            .fill(PulseDesign.grass)
-            .matchedGeometryEffect(
-                id: "primary.navigation.selection",
-                in: selectionNamespace
-            )
+        .overlay(alignment: .leading) {
+            if section == .history {
+                Rectangle()
+                    .fill(PulseDesign.ink)
+                    .frame(width: PulseDesign.thinLineWidth)
+            }
         }
+        .accessibilityIdentifier("primary.navigation.\(section.rawValue)")
+        .accessibilityValue(isSelected ? Text(selectedStateKey(for: section)) : Text(verbatim: ""))
+        .accessibilityAddTraits(isSelected ? .isSelected : [])
     }
 
     private func select(_ section: PulsePrimarySection) {
         guard selection != section else { return }
-        guard !reduceMotion else {
+        if reduceMotion {
             selection = section
-            return
-        }
-        withAnimation(
-            .smooth(duration: PulseDesign.primaryNavigationSelectionDuration)
-        ) {
-            selection = section
-        }
-    }
-
-    @ViewBuilder
-    private func navigationGlyph(for section: PulsePrimarySection, isSelected: Bool) -> some View {
-        ZStack {
-            Circle()
-                .fill(isSelected ? PulseDesign.navigationGlyphSurface : Color.clear)
-            Circle()
-                .stroke(
-                    isSelected ? PulseDesign.navigationGlyphSurface : PulseDesign.secondary,
-                    lineWidth: PulseDesign.thinLineWidth
-                )
-
-            if let value = glyphValue(for: section) {
-                Text(value, format: .number)
-                    .font(.caption2.bold())
-                    .monospacedDigit()
+        } else {
+            withAnimation(.easeOut(duration: PulseDesign.primaryContentTransitionDuration)) {
+                selection = section
             }
         }
-        .frame(
-            width: glyphSize,
-            height: glyphSize
-        )
-        .foregroundStyle(isSelected ? PulseDesign.grassForeground : PulseDesign.secondary)
-        .accessibilityHidden(true)
     }
 
     private func glyphValue(for section: PulsePrimarySection) -> Int? {
         switch section {
         case .today: todayDayNumber
-        case .history: historyMonthDayCount
+        case .history: historyMonthNumber
         }
     }
 
-    private func subtitleKey(for section: PulsePrimarySection) -> LocalizedStringKey {
+    private func selectedStateKey(for section: PulsePrimarySection) -> LocalizedStringKey {
         switch section {
         case .today:
             isTodayChecked ? "today.navigation.checked" : "today.navigation.pending"

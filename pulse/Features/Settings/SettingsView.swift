@@ -17,12 +17,9 @@ struct SettingsView: View {
     var body: some View {
         Form {
             commitmentSection
-            reminderSection
-            enhancementSection
-            personalizationSection
-            widgetSection
-            experienceSection
-            memorySection
+            dailySection
+            storeSection
+            appearanceSection
             dataSection
             aboutSection
         }
@@ -86,7 +83,7 @@ struct SettingsView: View {
         }
     }
 
-    private var personalizationSection: some View {
+    private var appearanceSection: some View {
         Section("settings.personalization.section") {
             Picker(
                 "settings.theme",
@@ -115,10 +112,20 @@ struct SettingsView: View {
             }
             .accessibilityIdentifier("settings.language.picker")
             .id("settings.language.\(locale.identifier)")
+
+            NavigationLink {
+                WidgetStyleGalleryView(model: model)
+            } label: {
+                LabeledContent("settings.widget.style") {
+                    Text(model.settings.widgetStyle.localizedName(locale: locale))
+                        .foregroundStyle(PulseDesign.secondary)
+                }
+            }
+            .accessibilityIdentifier("settings.widget.gallery.link")
         }
     }
 
-    private var reminderSection: some View {
+    private var dailySection: some View {
         Section {
             Toggle(
                 isOn: Binding(
@@ -128,16 +135,9 @@ struct SettingsView: View {
                     }
                 )
             ) {
-                VStack(alignment: .leading, spacing: PulseDesign.spacing4) {
-                    Text("settings.reminder.toggle")
-                    Text("settings.reminder.footer")
-                        .font(.footnote)
-                        .foregroundStyle(PulseDesign.secondary)
-                        .fixedSize(horizontal: false, vertical: true)
-                }
+                Text("settings.reminder.toggle")
             }
             .accessibilityLabel("settings.reminder.toggle")
-            .accessibilityHint("settings.reminder.footer")
             .accessibilityIdentifier("settings.reminder.toggle")
 
             if model.displayedReminderEnabled {
@@ -173,162 +173,15 @@ struct SettingsView: View {
                         .foregroundStyle(PulseDesign.action)
                 }
             }
-        } header: {
-            Text("settings.reminder.section")
-        }
-    }
 
-    private var enhancementSection: some View {
-        Section {
-            if model.featureAccess.hasEnhancement {
-                Label {
-                    VStack(alignment: .leading, spacing: PulseDesign.spacing4) {
-                        Text("settings.purchase.purchased")
-                        Text("settings.enhancement.purchased_footer")
-                            .font(.footnote)
-                            .foregroundStyle(PulseDesign.secondary)
-                            .fixedSize(horizontal: false, vertical: true)
-                    }
-                } icon: {
-                    Image(systemName: "checkmark.seal.fill")
-                        .foregroundStyle(PulseDesign.grass)
-                }
-                .accessibilityIdentifier("settings.purchase.status")
-            } else {
-                Label {
-                    VStack(alignment: .leading, spacing: PulseDesign.spacing4) {
-                        Text(
-                            verbatim: model.featureAccess.product?.displayName
-                                ?? PulseLocalization.string(
-                                    "settings.purchase.title",
-                                    locale: locale
-                                )
-                        )
-                        Text("settings.purchase.description")
-                            .font(.footnote)
-                            .foregroundStyle(PulseDesign.secondary)
-                            .fixedSize(horizontal: false, vertical: true)
-                    }
-                } icon: {
-                    Image(systemName: "sparkles.rectangle.stack")
-                        .foregroundStyle(PulseDesign.action)
-                }
-
-                purchaseControl
-            }
-
-            Button("settings.purchase.restore") {
-                Task { await model.restoreEnhancement() }
-            }
-            .disabled(model.featureAccess.operation != nil)
-            .accessibilityIdentifier("settings.purchase.restore")
-        } header: {
-            Text("settings.enhancement.section")
-        }
-    }
-
-    @ViewBuilder
-    private var purchaseControl: some View {
-        if let operation = model.featureAccess.operation {
-            switch operation {
-            case .purchasing, .restoring:
-                ProgressView("settings.purchase.processing")
-                    .accessibilityIdentifier("settings.purchase.processing")
-            case .pending:
-                Label("settings.purchase.pending", systemImage: "hourglass")
-                    .foregroundStyle(PulseDesign.secondary)
-                    .accessibilityIdentifier("settings.purchase.pending")
-            }
-        } else {
-            switch model.featureAccess.productState {
-            case .loading:
-                ProgressView("settings.purchase.loading")
-            case .available:
-                if let product = model.featureAccess.product {
-                    Button {
-                        Task { await model.purchaseEnhancement() }
-                    } label: {
-                        Text(
-                            String(
-                                format: PulseLocalization.string(
-                                    "settings.purchase.buy_format",
-                                    locale: locale
-                                ),
-                                product.displayPrice
-                            )
-                        )
-                    }
-                    .accessibilityIdentifier("settings.purchase.buy")
-                }
-            case .unavailable:
-                Label("settings.purchase.unavailable", systemImage: "exclamationmark.triangle")
-                    .foregroundStyle(PulseDesign.secondary)
-                    .accessibilityIdentifier("settings.purchase.unavailable")
-            }
-        }
-    }
-
-    private var reminderDeliveryDescriptionKey: LocalizedStringKey {
-        switch model.reminderDeliveryMode {
-        case .disabled:
-            "settings.reminder.delivery.disabled"
-        case .localNotification:
-            "settings.reminder.delivery.notification"
-        case .scheduledLiveActivity:
-            "settings.reminder.delivery.live_activity"
-        }
-    }
-
-    private var reminderDeliveryIcon: String {
-        switch model.reminderDeliveryMode {
-        case .disabled:
-            "exclamationmark.triangle"
-        case .localNotification:
-            "bell.badge"
-        case .scheduledLiveActivity:
-            "waveform.path.ecg.rectangle"
-        }
-    }
-
-    private var widgetSection: some View {
-        Section {
-            Picker(
-                "settings.widget.style",
-                selection: Binding(
-                    get: { model.settings.widgetStyle },
-                    set: { model.requestWidgetStyle($0) }
+            Toggle(
+                "settings.media.invitation",
+                isOn: Binding(
+                    get: { model.settings.mediaInvitationEnabled },
+                    set: { model.settings.mediaInvitationEnabled = $0 }
                 )
-            ) {
-                ForEach(PulseWidgetStyle.allCases) { style in
-                    if PulseWidgetStyleAccessPolicy.requiresEnhancement(style),
-                       !model.featureAccess.hasEnhancement {
-                        Label(widgetStyleOptionLabel(style), systemImage: "lock.fill")
-                            .tag(style)
-                    } else {
-                        Text(widgetStyleOptionLabel(style))
-                            .tag(style)
-                    }
-                }
-            }
-            .accessibilityIdentifier("settings.widget.style.picker")
-            .id("settings.widget.style.\(locale.identifier)")
+            )
 
-            Label {
-                Text("settings.widget.footer")
-                    .fixedSize(horizontal: false, vertical: true)
-            } icon: {
-                Image(systemName: "square.grid.2x2")
-            }
-            .font(.footnote)
-            .foregroundStyle(PulseDesign.secondary)
-            .accessibilityIdentifier("settings.widget.style.note")
-        } header: {
-            Text("settings.widget.section")
-        }
-    }
-
-    private var experienceSection: some View {
-        Section("settings.experience.section") {
             Toggle(
                 "settings.haptics",
                 isOn: Binding(
@@ -359,6 +212,60 @@ struct SettingsView: View {
                         .lineLimit(1)
                 }
             }
+        } header: {
+            Text("settings.daily.section")
+        }
+    }
+
+    private var storeSection: some View {
+        Section("settings.store.section") {
+            NavigationLink {
+                EnhancementStoreView(model: model)
+            } label: {
+                HStack(spacing: PulseDesign.spacing12) {
+                    PulseBrandMark(size: 44)
+                    VStack(alignment: .leading, spacing: PulseDesign.spacing4) {
+                        Text("store.title")
+                            .font(.headline.weight(.black))
+                            .foregroundStyle(PulseDesign.ink)
+                        Text(
+                            model.featureAccess.hasEnhancement
+                                ? "settings.store.unlocked"
+                                : "settings.store.open"
+                        )
+                        .font(.footnote)
+                        .foregroundStyle(
+                            model.featureAccess.hasEnhancement
+                                ? PulseDesign.grass
+                                : PulseDesign.secondary
+                        )
+                    }
+                }
+                .padding(.vertical, PulseDesign.spacing8)
+            }
+            .accessibilityIdentifier("settings.store.link")
+        }
+    }
+
+    private var reminderDeliveryDescriptionKey: LocalizedStringKey {
+        switch model.reminderDeliveryMode {
+        case .disabled:
+            "settings.reminder.delivery.disabled"
+        case .localNotification:
+            "settings.reminder.delivery.notification"
+        case .scheduledLiveActivity:
+            "settings.reminder.delivery.live_activity"
+        }
+    }
+
+    private var reminderDeliveryIcon: String {
+        switch model.reminderDeliveryMode {
+        case .disabled:
+            "exclamationmark.triangle"
+        case .localNotification:
+            "bell.badge"
+        case .scheduledLiveActivity:
+            "waveform.path.ecg.rectangle"
         }
     }
 
@@ -366,31 +273,6 @@ struct SettingsView: View {
         Section {
             exportButton
             importButton
-            resetButton
-
-            Label {
-                Text("settings.data.footer")
-                    .fixedSize(horizontal: false, vertical: true)
-            } icon: {
-                Image(systemName: "externaldrive")
-            }
-            .font(.footnote)
-            .foregroundStyle(PulseDesign.secondary)
-            .accessibilityIdentifier("settings.data.note")
-        } header: {
-            Text("settings.data.section")
-        }
-    }
-
-    private var memorySection: some View {
-        Section {
-            Toggle(
-                "settings.media.invitation",
-                isOn: Binding(
-                    get: { model.settings.mediaInvitationEnabled },
-                    set: { model.settings.mediaInvitationEnabled = $0 }
-                )
-            )
             LabeledContent(
                 "settings.media.storage",
                 value: ByteCountFormatter.string(
@@ -398,16 +280,10 @@ struct SettingsView: View {
                     countStyle: .file
                 )
             )
-            Label {
-                Text("settings.media.privacy_note")
-                    .fixedSize(horizontal: false, vertical: true)
-            } icon: {
-                Image(systemName: "camera.aperture")
-            }
-            .font(.footnote)
-            .foregroundStyle(PulseDesign.secondary)
+            resetButton
+
         } header: {
-            Text("settings.media.section")
+            Text("settings.data.section")
         }
     }
 
@@ -525,16 +401,6 @@ struct SettingsView: View {
                 }
                 model.requestReminderTime(reminderTime)
             }
-        )
-    }
-
-    private func widgetStyleOptionLabel(_ style: PulseWidgetStyle) -> String {
-        let formatKey = PulseWidgetStyleAccessPolicy.requiresEnhancement(style)
-            ? "settings.widget.style.enhancement_format"
-            : "settings.widget.style.free_format"
-        return String(
-            format: PulseLocalization.string(formatKey, locale: locale),
-            style.localizedName(locale: locale)
         )
     }
 

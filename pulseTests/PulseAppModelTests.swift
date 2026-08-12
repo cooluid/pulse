@@ -408,7 +408,12 @@ private final class MutablePulseClock: PulseClock {
 
 @MainActor
 private final class TestHaptics: HapticFeedbackProviding {
+    private(set) var holdReadyCount = 0
     private(set) var successCount = 0
+
+    func notifyHoldReady() {
+        holdReadyCount += 1
+    }
 
     func notifySuccess() {
         successCount += 1

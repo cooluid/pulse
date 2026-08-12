@@ -376,13 +376,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Allow camera access in Settings to take today’s photo. Your check-in is already saved."
+            "value" : "Camera access is off. Your check-in is saved."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "请在系统设置中允许相机权限后再拍摄；你的签到已经保存，不受影响。"
+            "value" : "相机权限已关闭。签到已完成。"
           }
         }
       }
@@ -419,34 +419,18 @@
         }
       }
     },
-    "commitment.fields.footer" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "You can change these later without changing any check-in history."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "以后可以随时修改，不会改变任何签到历史。"
-          }
-        }
-      }
-    },
     "commitment.name.placeholder" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "My commitment"
+            "value" : "My one thing"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "我的主承诺"
+            "value" : "我的一件事"
           }
         }
       }
@@ -483,22 +467,6 @@
         }
       }
     },
-    "commitment.onboarding.message" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Choose the one commitment you want to honor each day. The default is ready if you want to begin immediately."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "确认你每天想守住的一件事。如果现在就想开始，可以直接使用默认名称。"
-          }
-        }
-      }
-    },
     "commitment.onboarding.navigation_title" : {
       "localizations" : {
         "en" : {
@@ -520,13 +488,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "One meaningful commitment."
+            "value" : "ONE DAY. ONE MARK."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "为一件重要的事，留下一枚印记。"
+            "value" : "每天，留一印。"
           }
         }
       }
@@ -536,13 +504,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Your commitment stays on this device and in exports you create. It is not included in notification text."
+            "value" : "Stored on this device."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "主承诺只保存在本机和你主动创建的导出文件中，不会出现在通知文案里。"
+            "value" : "只保存在本机。"
           }
         }
       }
@@ -553,13 +521,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "No reason added"
+            "value" : "No note"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "尚未填写为什么重要"
+            "value" : "无备注"
           }
         }
       }
@@ -569,13 +537,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Why it matters (optional)"
+            "value" : "Note (optional)"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "为什么重要（可选）"
+            "value" : "备注（可选）"
           }
         }
       }
@@ -754,13 +722,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "This widget style is part of Pulse Enhancements. Commitment Manifesto and basic reminders remain available without a purchase."
+            "value" : "This widget composition belongs to Wild Imprint. Commitment Manifesto and basic reminders stay available without a purchase."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "这个小组件样式属于一日一印增强；承诺宣言样式和基础提醒无需购买即可使用。"
+            "value" : "这个小组件构图属于野印；承诺宣言和基础提醒无需购买。"
           }
         }
       }
@@ -788,13 +756,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Enter a valid commitment name and keep the optional reason within the displayed limit."
+            "value" : "Enter a valid commitment name and keep the optional note within the displayed limit."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "请输入有效的主承诺名称，并让可选说明保持在显示的字数范围内。"
+            "value" : "请输入有效的主承诺名称，并让可选备注保持在显示的字数范围内。"
           }
         }
       }
@@ -924,13 +892,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "No previous Pulse Enhancements purchase was found for this Apple Account."
+            "value" : "No previous Wild Imprint purchase was found for this Apple Account."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "当前 Apple 账户没有可恢复的一日一印增强购买记录。"
+            "value" : "当前 Apple 账户没有可恢复的野印购买记录。"
           }
         }
       }
@@ -941,13 +909,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Pulse Enhancements is temporarily unavailable from the App Store. No price or purchase was assumed."
+            "value" : "Wild Imprint is temporarily unavailable from the App Store. No price or purchase was assumed."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "App Store 暂时无法提供一日一印增强，没有使用虚构价格或完成购买。"
+            "value" : "App Store 暂时无法提供野印；当前未展示虚构价格，也没有完成购买。"
           }
         }
       }
@@ -958,13 +926,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "The purchase could not be verified, so Pulse Enhancements remains locked."
+            "value" : "The purchase could not be verified, so Wild Imprint remains locked."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "购买验证失败，一日一印增强仍保持锁定。"
+            "value" : "购买验证失败，野印仍保持锁定。"
           }
         }
       }
@@ -1076,13 +1044,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Daily Check-in"
+            "value" : "My One Thing"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "每日签到"
+            "value" : "我的一件事"
           }
         }
       }
@@ -1572,18 +1540,19 @@
         }
       }
     },
-    "settings.data.footer" : {
+    "settings.daily.section" : {
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Pulse protects check-ins on this device. Create an encrypted backup before deleting the app; its password cannot be recovered."
+            "value" : "Daily"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "一日一印会保护保存在本机的签到记录。删除 App 前请先创建加密备份；备份密码无法找回。"
+            "value" : "每天"
           }
         }
       }
@@ -1600,56 +1569,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "数据"
-          }
-        }
-      }
-    },
-    "settings.enhancement.purchased_footer" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Scheduled Live Activities and all four Home Screen widget styles are unlocked. Basic reminders remain the same for everyone."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "已解锁定时实时活动与全部四种主屏幕小组件样式；基础提醒对所有用户保持一致。"
-          }
-        }
-      }
-    },
-    "settings.enhancement.section" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Pulse Enhancements"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "一日一印增强"
-          }
-        }
-      }
-    },
-    "settings.experience.section" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Experience"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "使用体验"
           }
         }
       }
@@ -1753,38 +1672,6 @@
         }
       }
     },
-    "settings.media.privacy_note" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Photos stay on this device and appear only inside Pulse. Encrypted backups include them."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "照片只保存在本机且仅在一日一印内显示；加密备份会完整包含照片。"
-          }
-        }
-      }
-    },
-    "settings.media.section" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Daily Memory"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "每日记忆"
-          }
-        }
-      }
-    },
     "settings.media.storage" : {
       "localizations" : {
         "en" : {
@@ -1865,172 +1752,19 @@
         }
       }
     },
-    "settings.purchase.buy_format" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Buy once · %@"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "一次买断 · %@"
-          }
-        }
-      }
-    },
-    "settings.purchase.description" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Unlock scheduled Live Activities on supported systems and three additional Home Screen widget styles. Basic local reminders and Commitment Manifesto remain free."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "解锁受支持系统上的定时实时活动，以及三种额外主屏幕小组件样式。基础本地提醒与承诺宣言样式始终免费。"
-          }
-        }
-      }
-    },
-    "settings.purchase.loading" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Loading App Store product…"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "正在读取 App Store 商品…"
-          }
-        }
-      }
-    },
-    "settings.purchase.pending" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Purchase pending approval"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "购买正在等待批准"
-          }
-        }
-      }
-    },
-    "settings.purchase.processing" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Contacting the App Store…"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "正在连接 App Store…"
-          }
-        }
-      }
-    },
-    "settings.purchase.purchased" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Pulse Enhancements purchased"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "一日一印增强已购买"
-          }
-        }
-      }
-    },
-    "settings.purchase.restore" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Restore Purchase"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "恢复购买"
-          }
-        }
-      }
-    },
-    "settings.purchase.title" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Pulse Enhancements"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "一日一印增强"
-          }
-        }
-      }
-    },
-    "settings.purchase.unavailable" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "The App Store product is temporarily unavailable."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "App Store 商品暂时不可用。"
-          }
-        }
-      }
-    },
     "settings.reminder.delivery.disabled" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "No reminder channel is active."
+            "value" : "Unavailable"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "当前没有可用提醒通道。"
+            "value" : "提醒不可用"
           }
         }
       }
@@ -2041,13 +1775,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Enhanced delivery uses scheduled Live Activities. Dynamic Island presentation depends on the iPhone model and system settings."
+            "value" : "Scheduled Live Activity"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "增强触达正在使用定时实时活动；是否显示灵动岛取决于 iPhone 型号与系统设置。"
+            "value" : "定时实时活动"
           }
         }
       }
@@ -2058,46 +1792,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Basic delivery uses a free local notification. It is available to every user."
+            "value" : "Local notification"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "基础触达使用免费本地通知，面向所有用户开放。"
-          }
-        }
-      }
-    },
-    "settings.reminder.footer" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "One private, low-pressure reminder per eligible day, free for everyone. It never includes your commitment text and stops after you check in."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "每个符合条件的日期提供一次私密、低压力提醒，面向所有用户免费；不显示主承诺正文，完成签到后不再触达。"
-          }
-        }
-      }
-    },
-    "settings.reminder.section" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Reminder"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "签到提醒"
+            "value" : "本地通知"
           }
         }
       }
@@ -2260,6 +1961,57 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "本机存储"
+          }
+        }
+      }
+    },
+    "settings.store.open" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "See what Wild Imprint unlocks"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "看看野印解锁什么"
+          }
+        }
+      }
+    },
+    "settings.store.section" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wild Imprint"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "野印"
+          }
+        }
+      }
+    },
+    "settings.store.unlocked" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unlocked"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已解锁"
           }
         }
       }
@@ -2493,38 +2245,6 @@
         }
       }
     },
-    "settings.widget.footer" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Commitment Manifesto is included for everyone. Pulse Enhancements unlocks the other three compositions; check-in facts stay identical in every style."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "承诺宣言面向所有用户开放；一日一印增强解锁其余三种构图。所有样式展示的签到事实完全一致。"
-          }
-        }
-      }
-    },
-    "settings.widget.section" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Home Screen Widget"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "主屏幕小组件"
-          }
-        }
-      }
-    },
     "settings.widget.style" : {
       "localizations" : {
         "en" : {
@@ -2558,23 +2278,6 @@
         }
       }
     },
-    "settings.widget.style.enhancement_format" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ · Enhancement"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ · 增强版"
-          }
-        }
-      }
-    },
     "settings.widget.style.fault_field" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -2588,23 +2291,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "断层双色"
-          }
-        }
-      }
-    },
-    "settings.widget.style.free_format" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ · Free"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ · 免费"
           }
         }
       }
@@ -2723,6 +2409,312 @@
         }
       }
     },
+    "store.buy_format" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "UNLOCK FOREVER · %@"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "永久解锁 · %@"
+          }
+        }
+      }
+    },
+    "store.capabilities.section" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Included Now"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "现在就有"
+          }
+        }
+      }
+    },
+    "store.capability.live_activity.detail" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Put today’s pending mark on supported system surfaces at your chosen time."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "按你设定的时间，让今天的待留印状态出现在受支持的系统表面。"
+          }
+        }
+      }
+    },
+    "store.capability.live_activity.title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scheduled Live Activity"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "定时实时活动"
+          }
+        }
+      }
+    },
+    "store.capability.widgets.detail" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unlock Fault Field, Oversized Ring, and Tear-Off Calendar compositions."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "解锁断层双色、越界巨环与错版撕页构图。"
+          }
+        }
+      }
+    },
+    "store.capability.widgets.title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Advanced Widget Compositions"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "高级小组件构图"
+          }
+        }
+      }
+    },
+    "store.hero.promise" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "One purchase unlocks every released Wild Imprint capability. New capabilities join this page only when they ship."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "一次买断，解锁所有已发布的野印能力。新能力真正上线后才会加入这里。"
+          }
+        }
+      }
+    },
+    "store.hero.tagline" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "MAKE THE MARK LOUDER."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "让这一印，响一点。"
+          }
+        }
+      }
+    },
+    "store.loading" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Loading App Store product…"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "读取 App Store 商品…"
+          }
+        }
+      }
+    },
+    "store.navigation_title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wild Imprint"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "野印"
+          }
+        }
+      }
+    },
+    "store.pending" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Awaiting approval"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "等待批准"
+          }
+        }
+      }
+    },
+    "store.preview.section" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Four Compositions"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "四式日印"
+          }
+        }
+      }
+    },
+    "store.processing" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Contacting the App Store…"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "连接 App Store…"
+          }
+        }
+      }
+    },
+    "store.purchased" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "WILD IMPRINT UNLOCKED"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "野印已解锁"
+          }
+        }
+      }
+    },
+    "store.restore" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restore Purchase"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "恢复购买"
+          }
+        }
+      }
+    },
+    "store.retry" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Try Again"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "重试"
+          }
+        }
+      }
+    },
+    "store.title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "WILD IMPRINT"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "野印"
+          }
+        }
+      }
+    },
+    "store.unavailable" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store product unavailable"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Store 商品不可用"
+          }
+        }
+      }
+    },
     "tab.history" : {
       "localizations" : {
         "en" : {
@@ -2772,6 +2764,23 @@
         }
       }
     },
+    "today.accessibility.check_in_and_photo" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Check In and Take Photo"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "签到并拍照"
+          }
+        }
+      }
+    },
     "today.accessibility.checked" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -2812,13 +2821,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Double-tap to save today’s check-in."
+            "value" : "Double-tap to check in. Use Check In and Take Photo to open the camera after saving."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "轻点两下保存今天的签到。"
+            "value" : "轻点两下留印；使用“签到并拍照”可在完成后打开相机。"
           }
         }
       }
@@ -2828,13 +2837,30 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Check In Today"
+            "value" : "MARK"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "今日待签到"
+            "value" : "留印"
+          }
+        }
+      }
+    },
+    "today.check_in_hint_visible" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "TAP TO MARK · HOLD FOR CAMERA"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "轻点留印 · 按住入镜"
           }
         }
       }
@@ -2845,13 +2871,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%@ checked in"
+            "value" : "%@ · MARKED"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%@已签到"
+            "value" : "%@ · 已留印"
           }
         }
       }
@@ -2873,51 +2899,18 @@
         }
       }
     },
-    "today.commitment.cue" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Today’s Commitment"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "今天守住"
-          }
-        }
-      }
-    },
-    "today.kicker_with_weekday_format" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ / %@"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ / %@"
-          }
-        }
-      }
-    },
     "today.media.capture" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Keep One from Today"
+            "value" : "Take Today’s Photo"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "留一张今天"
+            "value" : "拍下今天"
           }
         }
       }
@@ -2959,29 +2952,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Securing today’s photo…"
+            "value" : "Saving photo…"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "正在安全保存今天的照片…"
-          }
-        }
-      }
-    },
-    "today.media.subtitle" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Not proof for a score—a private fragment that can grow with time."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "不是为了打分作证，而是留下一块会随时间生长的私人切片。"
+            "value" : "保存照片…"
           }
         }
       }
@@ -3080,6 +3057,57 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "连续 %lld 天"
+          }
+        }
+      }
+    },
+    "widget.gallery.locked" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wild Imprint"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "野印"
+          }
+        }
+      }
+    },
+    "widget.gallery.navigation_title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Widget Compositions"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "小组件构图"
+          }
+        }
+      }
+    },
+    "widget.gallery.selected" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Selected"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已选择"
           }
         }
       }

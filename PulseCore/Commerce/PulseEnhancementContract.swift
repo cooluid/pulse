@@ -1,9 +1,20 @@
 import Foundation
 import StoreKit
 
+public enum PulseEnhancementCapability: String, CaseIterable, Identifiable, Sendable {
+    case advancedWidgetCompositions
+    case scheduledLiveActivity
+
+    public var id: String { rawValue }
+}
+
 public enum PulseEnhancementContract {
     public static let productIdentifier = "co.fanr.pulse.enhancement.lifetime"
     public static let entitlementRefreshInterval: TimeInterval = 15 * 60
+    public static let currentCapabilities: [PulseEnhancementCapability] = [
+        .advancedWidgetCompositions,
+        .scheduledLiveActivity,
+    ]
 }
 
 @MainActor

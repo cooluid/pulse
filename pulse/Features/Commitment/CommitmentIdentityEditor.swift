@@ -36,7 +36,7 @@ struct CommitmentIdentityEditor: View {
             identityFields
         }
         .scrollContentBackground(.hidden)
-        .background(PulseScreenBackground())
+        .background(PulsePosterBackground())
         .foregroundStyle(PulseDesign.ink)
         .tint(PulseDesign.tint)
         .navigationTitle(navigationTitle)
@@ -54,11 +54,8 @@ struct CommitmentIdentityEditor: View {
                 PulseBrandMark(size: PulseDesign.recordDetailBrandMarkSize)
 
                 Text("commitment.onboarding.title")
-                    .font(.title.bold())
-
-                Text("commitment.onboarding.message")
-                    .font(.body)
-                    .foregroundStyle(PulseDesign.secondary)
+                    .font(.system(size: 48, weight: .black))
+                    .tracking(-1.5)
                     .fixedSize(horizontal: false, vertical: true)
             }
             .padding(.vertical, PulseDesign.spacing16)
@@ -110,8 +107,6 @@ struct CommitmentIdentityEditor: View {
                 .fixedSize(horizontal: false, vertical: true)
         } header: {
             Text("commitment.section")
-        } footer: {
-            Text("commitment.fields.footer")
         }
     }
 
@@ -135,7 +130,7 @@ struct CommitmentIdentityEditor: View {
                             .tint(PulseDesign.actionForeground)
                     } else {
                         Text(saveButtonTitle)
-                            .font(.headline)
+                            .font(.headline.weight(.black))
                     }
                     Spacer()
                 }

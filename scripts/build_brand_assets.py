@@ -10,7 +10,7 @@ import os
 from pathlib import Path
 import tempfile
 
-from PIL import Image
+from PIL import Image, ImageDraw
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -19,7 +19,9 @@ MASK_PATH = ROOT / "design" / "app-icon-source" / "open-day-ring-mask.png"
 ASSET_CATALOG = ROOT / "pulse" / "Assets.xcassets"
 APP_ICON_OUTPUT = ASSET_CATALOG / "AppIcon.appiconset"
 BRAND_MARK_OUTPUT = ASSET_CATALOG / "PulseMark.imageset"
+APP_ICON_REVIEW_OUTPUT = ROOT / "design" / "app-icon-review.png"
 SIZE = (1024, 1024)
+REVIEW_SIZE = (1600, 1230)
 
 COLOR_ASSETS = {
     "AccentColor": "tint",
@@ -83,6 +85,100 @@ def color_asset(light: str, dark: str) -> bytes:
     )
 
 
+def paste_rounded_preview(
+    canvas: Image.Image,
+    source: Image.Image,
+    origin: tuple[int, int],
+    size: int,
+    *,
+    resample: Image.Resampling = Image.Resampling.LANCZOS,
+) -> None:
+    preview = source.resize((size, size), resample=resample)
+    corner_mask = Image.new("L", (size, size), 0)
+    ImageDraw.Draw(corner_mask).rounded_rectangle(
+        (0, 0, size - 1, size - 1),
+        radius=max(1, round(size * 0.22)),
+        fill=255,
+    )
+    canvas.paste(preview, origin, corner_mask)
+
+
+def build_icon_review(
+    tokens: dict[str, object],
+    mask: Image.Image,
+    default_icon: Image.Image,
+    dark_icon: Image.Image,
+) -> Image.Image:
+    review = tokens["review"]
+    icon = tokens["icon"]
+    expected_review_roles = {"canvas", "ink", "secondary", "tintedPreviewBackground"}
+    if set(review) != expected_review_roles:
+        missing = sorted(expected_review_roles - set(review))
+        extra = sorted(set(review) - expected_review_roles)
+        raise ValueError(f"Invalid review roles; missing={missing}, extra={extra}")
+
+    canvas_color = parse_hex(review["canvas"])
+    ink_color = parse_hex(review["ink"])
+    secondary_color = parse_hex(review["secondary"])
+    tinted_background_color = parse_hex(review["tintedPreviewBackground"])
+    canvas = Image.new("RGB", REVIEW_SIZE, canvas_color)
+    draw = ImageDraw.Draw(canvas)
+
+    dark_background = Image.new("RGB", SIZE, parse_hex(icon["darkPreviewBackground"]))
+    dark_background.paste(dark_icon, (0, 0), dark_icon.getchannel("A"))
+    tinted_background = Image.new("RGB", SIZE, tinted_background_color)
+    tinted_mark = Image.new("RGB", SIZE, ink_color)
+    tinted_preview = Image.composite(tinted_mark, tinted_background, mask)
+
+    top_size = 320
+    top_y = 92
+    top_origins = ((96, top_y), (640, top_y), (1184, top_y))
+    top_sources = (default_icon, dark_background, tinted_preview)
+    top_bars = (
+        parse_hex(icon["defaultBackground"]),
+        parse_hex(icon["darkMark"]),
+        tinted_background_color,
+    )
+    for origin, source, bar_color in zip(top_origins, top_sources, top_bars, strict=True):
+        paste_rounded_preview(canvas, source, origin, top_size)
+        draw.rectangle(
+            (origin[0], top_y + top_size + 32, origin[0] + top_size, top_y + top_size + 48),
+            fill=bar_color,
+        )
+
+    draw.rectangle((72, 530, REVIEW_SIZE[0] - 72, 533), fill=secondary_color)
+
+    baseline_y = 790
+    size_specs = ((180, 112), (60, 526), (40, 790), (29, 1038))
+    for icon_size, x in size_specs:
+        paste_rounded_preview(
+            canvas,
+            default_icon,
+            (x, baseline_y - icon_size),
+            icon_size,
+        )
+
+    draw.rectangle((72, 842, REVIEW_SIZE[0] - 72, 845), fill=secondary_color)
+
+    enlarged_size = 240
+    enlarged_y = 918
+    paste_rounded_preview(canvas, default_icon, (112, enlarged_y), enlarged_size)
+    for source_size, x in ((60, 498), (40, 790), (29, 1082)):
+        reduced = default_icon.resize(
+            (source_size, source_size),
+            resample=Image.Resampling.LANCZOS,
+        )
+        paste_rounded_preview(
+            canvas,
+            reduced,
+            (x, enlarged_y),
+            enlarged_size,
+            resample=Image.Resampling.NEAREST,
+        )
+
+    return canvas
+
+
 def build_outputs() -> dict[Path, bytes]:
     tokens = json.loads(TOKEN_PATH.read_text())
     expected_roles = set(COLOR_ASSETS.values())
@@ -105,16 +201,28 @@ def build_outputs() -> dict[Path, bytes]:
         )
 
     icon = tokens["icon"]
+    expected_icon_roles = {
+        "darkMark",
+        "defaultBackground",
+        "defaultMark",
+        "darkPreviewBackground",
+    }
+    if set(icon) != expected_icon_roles:
+        missing = sorted(expected_icon_roles - set(icon))
+        extra = sorted(set(icon) - expected_icon_roles)
+        raise ValueError(f"Invalid icon roles; missing={missing}, extra={extra}")
     default_background = Image.new("RGB", SIZE, parse_hex(icon["defaultBackground"]))
     default_mark = Image.new("RGB", SIZE, parse_hex(icon["defaultMark"]))
-    outputs[APP_ICON_OUTPUT / "AppIcon-Any.png"] = png_bytes(
-        Image.composite(default_mark, default_background, mask)
-    )
+    default_icon = Image.composite(default_mark, default_background, mask)
+    outputs[APP_ICON_OUTPUT / "AppIcon-Any.png"] = png_bytes(default_icon)
 
     dark_mark = Image.new("RGBA", SIZE, (*parse_hex(icon["darkMark"]), 255))
     dark_mark.putalpha(mask)
     outputs[APP_ICON_OUTPUT / "AppIcon-Dark.png"] = png_bytes(dark_mark)
     outputs[APP_ICON_OUTPUT / "AppIcon-Tinted.png"] = png_bytes(mask)
+    outputs[APP_ICON_REVIEW_OUTPUT] = png_bytes(
+        build_icon_review(tokens, mask, default_icon, dark_mark)
+    )
 
     runtime_mark = Image.new("RGBA", SIZE, (255, 255, 255, 255))
     runtime_mark.putalpha(mask)

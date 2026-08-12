@@ -7,6 +7,6 @@
 - [`brand-tokens.json`](./brand-tokens.json)：所有正式颜色的唯一真源。
 - `app-icon-source/`：正式开放日环遮罩真源。
 
-当前唯一视觉方向为“草野脉冲”：脉冲场今日页 × 状态式底栏。正式 SwiftUI 界面、AccentColor、品牌标记和 AppIcon 共用一份品牌令牌与同一开放日环遮罩，并由 `scripts/build_brand_assets.py` 生成。生成检查按 JSON 字节与 PNG 解码像素判断一致性，不受本机 PNG 压缩器版本影响。
+当前唯一视觉方向为“断层海报”：巨型日期 × 越界日印 × 贴边双页签。正式 SwiftUI 界面、AccentColor、品牌标记和 AppIcon 共用一份品牌令牌与同一开放日环遮罩，并由 `scripts/build_brand_assets.py` 生成。生成检查按 JSON 字节与 PNG 解码像素判断一致性，不受本机 PNG 压缩器版本影响。
 
 生产合同只认 `BRAND_SPEC.md`、`brand-tokens.json`、`app-icon-source/` 与对应 SwiftUI 实现。方向候选和旧实现已经退出仓库；历史由版本控制承担，不能成为第二套设计真源。最终界面视觉验收与 App Store 素材验收仍是独立门禁。
