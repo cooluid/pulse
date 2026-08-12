@@ -36,6 +36,12 @@ enum PulseErrorPresentation {
                 "error.backup_version"
             case .invalidBackup:
                 "error.backup_invalid"
+            case .invalidMedia:
+                "error.media_invalid"
+            case .mediaFileUnavailable:
+                "error.media_file_unavailable"
+            case .mediaStorageUnavailable:
+                "error.media_storage_unavailable"
             }
             return PulseLocalization.string(key, locale: locale)
         }

@@ -4,7 +4,7 @@
 状态：Canonical Implemented Contract
 更新日期：2026-08-12
 
-本文定义 1.0 Widget、共享 store、跨进程签到和系统表面边界。签到日期与唯一性仍只以 [DOMAIN_CONTRACT.md](./DOMAIN_CONTRACT.md) 为准。
+本文定义 1.1 Widget、共享 store、跨进程签到和系统表面边界。签到日期与唯一性仍只以 [DOMAIN_CONTRACT.md](./DOMAIN_CONTRACT.md) 为准。
 
 ## 1. 产品边界
 
@@ -37,7 +37,7 @@ FileManager.containerURL(forSecurityApplicationGroupIdentifier:)
 ```
 
 - `PulseStoreLocator` 是相对路径唯一实现，只接受系统提供的 App Group container。
-- `PersistenceController` 使用唯一 `PulseSchema 1.0.0` 创建目录并打开 store。
+- `PersistenceController` 使用唯一 `PulseSchema 1.1.0` 创建目录并打开 store；schema 含媒体元数据，但 Widget 不查询、读取或显示照片。
 - App 首次启动建立 store 和未确认主承诺；Widget 不建立默认项目。
 - Widget 打开 ModelContainer 前必须确认主 store 文件存在；不存在时显示“打开 Pulse 完成设置”。
 - 不存在 App 私有 store、旧库迁移、journal、staging、fallback 或双写。
@@ -59,7 +59,7 @@ Core 不含 SwiftUI 页面、WidgetKit 布局、通知调度、触觉或宿主�
 
 ## 5. 跨进程签到
 
-App 与 Widget 的签到都通过 `SwiftDataCheckInRepository.checkIn`：
+App 与 Widget 的签到都通过 `SwiftDataPulseRepository.checkIn`：
 
 1. Repository 使用注入 Clock 和主项目时区计算逻辑日；
 2. 按唯一 `recordKey` 查询当天事实；
@@ -82,6 +82,8 @@ Widget 不能调用删除、清除、导入、修改时区或编辑承诺。
 - 快照生成时间和项目时区的下一个零点。
 
 Home Screen 可以显示已确认名称；Lock Screen、StandBy 和 Always-On 不显示名称；任何 Widget 都不显示可选说明。样式偏好只选择 Home Screen 构图，不改变事实和 Accessory 结构。
+
+`ImprintMedia`、原图、缩略图、照片数量与路径永不进入 Widget 快照。照片存在与否也不改变 Widget 的签到语义。
 
 store 缺失或身份未确认显示“打开 App”；store 打不开、偏好损坏或快照损坏显示明确不可用态。读取失败不能显示成待签到。
 

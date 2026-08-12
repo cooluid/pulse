@@ -210,8 +210,8 @@ final class PulseWidgetSnapshotTests: XCTestCase {
 
     private func makeRepository(
         clock: MutableWidgetClock
-    ) throws -> SwiftDataCheckInRepository {
-        SwiftDataCheckInRepository(
+    ) throws -> SwiftDataPulseRepository {
+        SwiftDataPulseRepository(
             container: try PersistenceController.makeInMemoryContainer(),
             clock: clock,
             primaryHabitProvisioning: .createIfMissing(

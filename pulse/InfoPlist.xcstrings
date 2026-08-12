@@ -35,6 +35,23 @@
         }
       }
     },
+    "NSCameraUsageDescription" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pulse uses the camera only when you choose to keep a private photo with today’s imprint."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "仅当你主动为今日印记留存私人照片时，一日一印才会使用相机。"
+          }
+        }
+      }
+    },
     "Pulse Encrypted Backup" : {
 
     }

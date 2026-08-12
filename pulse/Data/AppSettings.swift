@@ -75,6 +75,7 @@ final class AppSettings {
         static let weekStart = "settings.weekStart"
         static let theme = "settings.theme"
         static let resetPending = "maintenance.resetPending"
+        static let mediaInvitationEnabled = "settings.mediaInvitationEnabled"
     }
 
     @ObservationIgnored private let defaults: UserDefaults
@@ -99,6 +100,10 @@ final class AppSettings {
 
     var theme: AppTheme {
         didSet { persist(StorageKey.theme, value: theme.rawValue) }
+    }
+
+    var mediaInvitationEnabled: Bool {
+        didSet { persist(StorageKey.mediaInvitationEnabled, value: mediaInvitationEnabled) }
     }
 
     var language: PulseInterfaceLanguage {
@@ -128,7 +133,8 @@ final class AppSettings {
             StorageKey.reminderEnabled: false,
             StorageKey.reminderTimeMinutes: ReminderTime.standard.minutesFromMidnight,
             StorageKey.weekStart: WeekStart.monday.rawValue,
-            StorageKey.theme: AppTheme.system.rawValue
+            StorageKey.theme: AppTheme.system.rawValue,
+            StorageKey.mediaInvitationEnabled: true
         ])
         let loadedLanguage: PulseInterfaceLanguage
         let loadedWidgetStyle: PulseWidgetStyle
@@ -150,6 +156,7 @@ final class AppSettings {
         reminderTime = loadedReminderTime
         weekStart = loadedWeekStart
         theme = loadedTheme
+        mediaInvitationEnabled = defaults.bool(forKey: StorageKey.mediaInvitationEnabled)
         language = loadedLanguage
         widgetStyle = loadedWidgetStyle
         isLoading = false
@@ -171,6 +178,7 @@ final class AppSettings {
         reminderTime = .standard
         weekStart = .monday
         theme = .system
+        mediaInvitationEnabled = true
         language = .system
         widgetStyle = PulseSharedInterfacePreferences.defaultWidgetStyle
         isLoading = false
@@ -197,7 +205,8 @@ final class AppSettings {
             StorageKey.reminderEnabled,
             StorageKey.reminderTimeMinutes,
             StorageKey.weekStart,
-            StorageKey.theme
+            StorageKey.theme,
+            StorageKey.mediaInvitationEnabled
         ].forEach(defaults.removeObject(forKey:))
         sharedInterfacePreferences.reset()
     }

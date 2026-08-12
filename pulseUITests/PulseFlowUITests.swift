@@ -95,6 +95,28 @@ final class PulseFlowUITests: XCTestCase {
         add(attachment)
     }
 
+    func testCheckInRevealsOptionalMediaInvitation() throws {
+        configureApp()
+        launchAndConfirmDefaultCommitment()
+
+        app.buttons["today.checkin.button"].tap()
+        let mediaCard = app.descendants(matching: .any)["today.media.card"]
+        for _ in 0..<3 where !mediaCard.exists {
+            app.swipeUp()
+        }
+        XCTAssertTrue(mediaCard.waitForExistence(timeout: 3))
+
+        let captureButton = app.buttons["today.media.capture.button"]
+        XCTAssertTrue(captureButton.waitForExistence(timeout: 3))
+        XCTAssertTrue(captureButton.label.contains("留一张今天"))
+        XCTAssertFalse(app.navigationBars["照片"].exists)
+
+        let attachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
+        attachment.name = "Today with optional media invitation"
+        attachment.lifetime = .keepAlways
+        add(attachment)
+    }
+
     func testSettingsHidesPrimaryNavigationUntilClosed() throws {
         configureApp()
         launchAndConfirmDefaultCommitment()

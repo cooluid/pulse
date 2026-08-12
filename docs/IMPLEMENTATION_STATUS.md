@@ -1,98 +1,69 @@
-# Pulse 实现与验收状态
+# Pulse 1.1 实现与验收状态
 
 更新时间：2026-08-12
-当前 checkout 结论：**BUILD 3 ENGINEERING GO / DISTRIBUTION NO-GO**。产品边界已经收敛为“免费基础本地提醒 + 一日一印增强”：增强只解锁 iOS 26 scheduled Live Activity 与三种额外 Home Screen Widget 构图；当前尚未形成不可变提交、正式 Archive、Sandbox/TestFlight 购买或真机灵动岛证据。
-历史 Build 2 结论：**INTERNAL TESTFLIGHT CORE HUMAN GO / READY TO SUBMIT（只对 Build 2 有效）**。正式 Archive 与 IPA 已从干净提交生成、核验并上传，Apple Delivery UUID 为 `0373b760-05e0-4299-bb50-6bd6ec3d2959`；App Store Connect 已显示 `Ready to Submit`、`Expires in 90 days`。产品负责人随后确认内部 TestFlight 的 Build 2 核心流程通过；该构建不包含本轮 StoreKit / ActivityKit 能力，证据不得外推到 Build 3。
-当前公开发布结论：**NO-GO**。Build 3 仍缺 App Store Connect 正式商品、签名 Archive、Sandbox/TestFlight 购买恢复、iOS 26 真机 scheduled Activity / Dynamic Island、iOS 18–25 免费本地通知、增强通道切换、无障碍与系统压力矩阵，也未提交 App Store Review。
 
-Build 1 的上传证据保留在 [Pulse 1.0 (1) 发布候选证据](./RELEASE_CANDIDATE_1_0_1.md)，但该构建不包含当前加密合同，已被 Build 2 工程基线取代，不得继续作为下一轮测试或发布候选。
+当前 checkout 结论：**1.1 (4) ENGINEERING GO / DISTRIBUTION NO-GO**。
 
-## Build 3 免费提醒与一日一印增强受控变更
-
-- App 与 Widget 统一递增为 `1.0 (3)`；Build 2 的 Archive、IPA、签名、上传和人工结论保持不可变历史，不冒充 Build 3 证据。
-- 唯一非消耗型商品 ID 为 `co.fanr.pulse.enhancement.lifetime`，只由 `PulseEnhancementContract` 定义。`FeatureAccessController` 只消费 StoreKit 2 验证后的当前 entitlement 与交易更新；不保存 `isPro`、价格或购买状态副本。
-- `ReminderDeliveryPolicy` 是唯一通道裁决：提醒关闭才为 disabled；未购买、iOS 18–25 或 iOS 26 关闭 Live Activities 时使用免费本地通知；已购买且 iOS 26 允许 Live Activities 时使用本地 scheduled transient Live Activity。
-- `ReminderScheduler` 每次协调先取消 Pulse 的旧通知与旧 Activity，再只安排一个通道。iOS 26 滚动最多 7 个 scheduled Activity，系统容量不足时保留已接受前缀；第一个请求失败且通知已授权时切换同一基础本地通知，两个正式通道都不可用才失败。通知通道保留 60 日计划。
-- Widget extension 提供 Lock Screen、Dynamic Island Compact / Minimal / Expanded 视图，统一深链到 `pulse://today`；Activity 不保存签到事实，也不显示主承诺正文。`NSSupportsLiveActivities=true` 已进入 App 产物。
-- `PulseWidgetStyleAccessPolicy` 把“承诺宣言”定义为唯一免费 Home Screen 构图；另外三种构图使用同一增强 entitlement。App 写入与 Widget extension timeline 各自检查 StoreKit 当前权益；撤销、未验证、读取失败或共享偏好被篡改时统一渲染承诺宣言。
-- StoreKit Configuration 提供本地开发商品；其中测试价格只用于本地 fixture，不是生产定价。购买状态机使用注入 client 自动化，Sandbox/TestFlight/生产仍保持独立 NO-GO。
-- 设置页始终提供基础提醒开关和时间，并把免费边界直接写入说明；增强商品作为独立区块展示 scheduled Live Activity 与三种额外 Widget 样式。商品展示名称与价格取 StoreKit 本地化返回值；加载失败、待处理、无可恢复购买和验证失败均有诚实状态。
-- 公开支持/隐私站点是正式 submodule，但当前 checkout 未初始化，记录的远端在本轮拉取时要求不可用的凭据。本轮新的“免费基础提醒 / 承诺宣言 + 付费系统呈现 / 三种额外构图”文案尚未同步或部署；站点恢复可访问并完成一致性检查前，分发保持 NO-GO。
+“今日入镜”领域、文件、界面、归档与自动化已经进入当前唯一生产基线；真实相机、低存储、真机无障碍、签名 Archive、TestFlight 清洁安装和 App Store Connect 仍没有本轮证据，因此不能把工程完成写成公开发布 GO。
 
 ## 当前唯一生产基线
 
-- 最低部署版本统一为 iOS / iPadOS 18.0；App、Widget、单元测试与 UI 测试 target 不保留 17.x 分支。
-- `CheckInRecord` 是签到事实唯一来源；`SwiftDataCheckInRepository` 独占 SwiftData 写入，页面与 Widget 只消费不可变快照。
-- SwiftData 只有 `PulseSchema` 1.0.0；正式 store 只有 App Group 容器下 `Library/Application Support/Pulse/Pulse.store`。
-- App 与 Widget 的默认 Data Protection entitlement 统一为 `NSFileProtectionCompleteUntilFirstUserAuthentication`；store 目录、SQLite 主文件和 sidecar 在打开前后都由同一保护入口校验并设置。
-- 正式外部备份格式只有 `co.fanr.pulse.backup` v1，扩展名只有 `.pulsebackup`；旧明文 JSON 不再是可导入、可导出或可兼容的产品格式。
-- 备份使用 PBKDF2-HMAC-SHA256（600,000 次）派生 AES-256 密钥，再以 AES-256-GCM 加密并认证容器头、盐、nonce 和载荷；任一字节被篡改、密码错误、版本未知或长度异常都失败关闭。
-- 密码只在一次加密/解密操作的内存生命周期内存在；App 不保存、不上传、不可恢复密码，也不存在空密码、设备密钥或明文 fallback。
-- 备份恢复会先完成容器认证、解密、payload 版本检查和领域校验，再显示全量替换确认；失败不会修改正式 store。
-- 加密备份与恢复属于用户数据可携带权，首版免费，未来不得由 StoreKit / Plus 权益门禁包围。
-- App Group `PulseSharedInterfacePreferences.interface.language` 是 App 与 Widget 内容语言唯一持久化状态；加密备份界面和错误已提供 English / 简体中文本地化。
-- Widget 只读取同一 App Group SwiftData 事实，不另建业务状态副本，也不获得第二条数据写入路径；默认并免费渲染“承诺宣言”，购买状态只在渲染时读取 StoreKit 当前 entitlement，不写入 App Group。
+- 最低部署版本为 iOS / iPadOS 18.0；App 与 Widget 版本统一为 `1.1 (4)`。
+- `PulseRepository` 独占 Habit、CheckInRecord 与 ImprintMedia 的事实写入；页面和 Widget 只消费不可变快照。
+- SwiftData 只接受 `PulseSchema 1.1.0` 精确 marker。当前仍处于首次公开发布前，旧内部安装要求清洁安装，不保留 schema 1.0 迁移分支或双轨消费者。
+- 正式 store 只有 App Group 下 `Library/Application Support/Pulse/Pulse.store`；媒体只有 `Media/originals`、`Media/thumbnails` 与事务用 `Media/staging`。
+- 每个逻辑日最多一条媒体。签到与媒体是独立事实：删除媒体不影响签到；删除签到保留媒体并解除关联；同日重新签到重新关联。
+- 图片处理只接受用户主动拍摄，统一去元数据并生成 JPEG 原图与缩略图；相机不可用、拒绝或失败时明确报错，不回退相册、样例图或占位图。
+- 原图和缩略图各自保存 byteCount 与 SHA-256；不可变 UUID 路径、路径穿越、符号链接、尺寸上限、孤儿文件与损坏文件都由正式仓储和启动审计处理。
+- `.pulsebackup` 只有 container v2 / payload v2。Manifest、签到、原图与缩略图逐条 AES-256-GCM 认证；错误口令、篡改、缺失、额外、重复、未知版本或超限均失败关闭，v1 不读取。
+- 恢复先在受保护隔离目录完成解密和全部身份验证，再经用户确认替换正式数据；提交前失败回收新文件，提交后的孤儿清理由启动审计收敛，不能误删已提交文件。
+- 照片从不进入 Widget、Live Activity、Lock Screen、StandBy、通知或共享偏好。
 
-权威合同为 [数据加密合同](./DATA_ENCRYPTION_CONTRACT.md)、[领域合同](./DOMAIN_CONTRACT.md)、[技术设计](./TECHNICAL_DESIGN.md)、[Widget 共享 Store 合同](./WIDGET_SHARED_STORE_CONTRACT.md) 和 [测试计划](./TEST_PLAN.md)。
+权威合同为 [1.1 发布范围](./RELEASE_SCOPE_1_1.md)、[产品需求](./PRODUCT_REQUIREMENTS.md)、[领域合同](./DOMAIN_CONTRACT.md)、[数据加密合同](./DATA_ENCRYPTION_CONTRACT.md)、[技术设计](./TECHNICAL_DESIGN.md)、[路线图](./PRODUCT_ROADMAP.md) 与 [测试计划](./TEST_PLAN.md)。
+
+## 产品与收费边界
+
+- 永久免费：签到、拍摄、查看、重拍、删除、关闭邀请、原图单独导出、照片空间查看，以及包含全部原图/缩略图的加密备份与完整恢复。
+- 当前一次买断“一日一印增强”仍只授予高级 Widget 构图和支持设备上的 scheduled Live Activity，不把用户自己的照片或数据主权重新收费。
+- 未来可收费：本地智能对齐、长区间岁月流影、年度影片、4K、跨阶段比较与高级档案排版；权益结束不能锁住、删除或降质既有原图和已导出成果。
+- 不做考勤证明、补签照片、位置水印、年龄/颜值/身份/健康推断，也不静默上传面貌照片。
 
 ## 本轮 clean break
 
-- 删除 `PulseExportContract`、`PulseExportDocument`、`PulseExportPayload`、`co.fanr.pulse.export` 和对应明文 JSON 测试入口。
-- 建立一个 `PulseBackupContract` / `PulseEncryptedBackupCodec` / `PulseBackupDocument` 正式路径，不保留双格式、旧格式探测、自动升级或兼容读取。
-- App 与 Widget 同步递增为 `1.0 (2)`；导出配置禁止 Xcode 静默修改版本号。
-- 设置页统一为一个强类型密码 sheet 状态，避免多个 `.sheet` 竞争；导出要求二次确认，恢复只要求一次密码。
-- 密码输入使用安全字段、明确标签和不可找回说明；不匹配、提交、取消或失败后清除敏感输入。
-- PBKDF2、加密和解密在高优先级后台任务执行，避免阻塞主线程；进度显示有统一延迟策略，避免快速操作闪烁。
-- `ITSAppUsesNonExemptEncryption=false` 同步进入 App 与 Widget 产物；当前只调用 Apple 平台内置加密能力，不提交自研/第三方密码模块。
+- 删除旧 `CheckInRepositoryProtocol` / `SwiftDataCheckInRepository` 名称，统一为 `PulseRepositoryProtocol` / `SwiftDataPulseRepository`。
+- 删除旧 `PulseBackupDocument` 路径，系统导出统一使用 `PulseBackupExport: Transferable`；单张原图导出使用独立 JPEG Transferable。
+- 删除 1.0 发布范围与“1.0 后再说”的路线图权威，建立 1.1 发布合同和连续产品路线图。
+- schema 1.0、备份 v1、旧内部 store、旧 decoder 和旧生成物不承担兼容责任；首次公开发布 1.1 后才建立显式迁移合同与兼容测试。
+- 开发和确定性工程门禁不依赖“先完成 30 名用户”。真实用户用于验证理解、留存与付费价值，样本按决策、风险、最小有意义效应和停止规则预登记。
 
-这是上线前 clean break。Build 1 和旧开发样本不是当前生产输入；首个公开版本发布后，当前 schema、store 和 `.pulsebackup` v1 才成为必须迁移的生产基线，届时不得继续采用删除式升级。
-
-## 自动化与构建证据
+## 当前自动化与构建证据
 
 验证环境：macOS 26.6、Xcode 26.6（17F113）、iPhone 17 Pro / iOS 26.5 Simulator（arm64）。
 
-- 全量 `xcodebuild test`：133/133 通过，0 失败；其中单元/集成 116 项，UI 17 项。
-- 自动化覆盖 StoreKit entitlement / 购买恢复状态机、免费本地通知与增强通道裁决、scheduled Activity 七日滚动预算、容量不足保留已接受前缀、首请求失败后有权限时切换免费通知，以及两个正式通道均不可用时失败关闭。
-- 加密测试覆盖 PBKDF2 官方向量、随机盐/nonce、往返、明文泄露检查、错误密码、头/盐/密文/tag 篡改、截断、尾随数据、未知算法/版本、敌意长度、Unicode 精确性和 32 MiB 输入上限。
-- UI 自动化覆盖加密导出的产品级密码规则、二次确认和不匹配错误，以及免费提醒始终可用、承诺宣言标记为免费、另外三种构图带锁并标记为增强版、免费用户越权失败、已购用户选择与重启持久化；运行截图已人工检查。购买与 Widget 样式截图只属于 Simulator **INTERFACE CANDIDATE**，不是 StoreKit Sandbox、真实 Widget host 或真机系统表面证据。
-- Debug Simulator 构建、Release `generic/platform=iOS` 构建、Release 静态分析均通过；Swift 编译警告按错误处理。
-- 18 项品牌资产生成检查通过；App、InfoPlist 与 Widget String Catalog 均可解析且所有生产键具有 English / 简体中文值。
-- 先前 Build 3 站点源文件曾有 lint 与 3/3 测试证据，但本轮无法拉取 submodule，也尚未同步新的免费/付费边界；该旧证据不能覆盖当前文案。干净提交、线上 HTTP 证据和正式分发产物仍只属于 Build 2 历史，不能外推到当前 checkout。
+- 全量 `xcodebuild test`：**134/134 通过**，0 失败；其中单元/集成 116 项，UI 18 项。
+- 媒体自动化覆盖独立删除/重新关联、同日替换、文件安装/读取/审计、缩略图损坏、无相册回退、v2 归档往返、随机性、错误口令、篡改、v1 拒绝、缺条目与缩略图身份不匹配。
+- UI 自动化确认签到成功后才出现可选“今日入镜”入口；Simulator 截图发现并关闭了 prominent 按钮隐式前景造成的低对比问题，修正后的深绿/白字截图已审阅为 **INTERFACE CANDIDATE**，不是相机真机、视觉全矩阵或人体体验 GO。
+- Release `generic/platform=iOS` 无签名构建通过；Release 静态分析通过；Swift 警告按错误处理。
+- 18 项品牌生成资产检查通过；App、InfoPlist 与 Widget String Catalog 可解析；App/Widget plist 可解析。
+- `git diff --check` 通过；生产 Swift 源码没有 TODO/FIXME/HACK、相册回退、样例照片或演示数据路径。
 
-## Build 2 分发产物证据
+## 仍为 NO-GO 的证据
 
-完整记录见 [Pulse 1.0 (2) 发布候选与 TestFlight 交付证据](./RELEASE_CANDIDATE_1_0_2.md)。
+- 真实 iPhone：首次授权、拒绝后从设置恢复、前后镜头、方向、取消、重拍、低存储、写入中断、杀进程、重启、跨日与设备锁定。
+- 真实 iPad：相机能力差异、横竖屏、分屏、大字号和文件导入/导出。
+- 数据恢复：从真实设备导出带多张原图的 v2 归档，在另一清洁安装恢复并逐张核对；清除与卸载后确认无非预期残留。
+- 系统与无障碍：真人 VoiceOver、最大 Dynamic Type、Reduce Motion、提高对比度、通知、Widget host、iOS 26 Live Activity / Dynamic Island 和 StoreKit Sandbox/TestFlight。
+- 分发：当前源码的不可变提交、Apple Distribution Archive、签名/entitlement/dSYM/隐私清单核验、TestFlight 处理与清洁安装、App Store 商品/隐私答案/截图/文案和公开支持/隐私站点一致性。
 
-- 证据根目录：`/Users/fanr/Documents/work/pulse-release-artifacts/Pulse-1.0.2-17f2ef44-formal`。
-- 签名 Archive：`Pulse-1.0.2-17f2ef44.xcarchive`。
-- App Store Connect IPA：`AppStoreExport/pulse.ipa`。
-- IPA SHA-256：`7944287f128bcd8a64ae6bff077c3ddac6701861ea95e702fe43fde93dc1e6cc`。
-- App 与 Widget 均由 Cloud Managed Apple Distribution 重签名，Store profile 有效至 2027-08-12。
-- App 与 Widget 均为 `get-task-allow=false`、`beta-reports-active=true`，且都包含 `NSFileProtectionCompleteUntilFirstUserAuthentication` 和唯一 App Group `group.co.fanr.pulse`。
-- App 与 Widget 均为 `1.0 (2)`、arm64、最低 iOS 18.0；嵌套签名严格校验通过。
-- App / Widget 二进制 UUID 分别与对应 dSYM 一致，两个 dSYM 均通过结构校验；隐私清单与源码 SHA-256 一致。
-- App 与 Widget 的 `ITSAppUsesNonExemptEncryption` 均为 `false`；App 只声明 `.pulsebackup` / `co.fanr.pulse.backup` 正式文档类型。
-- Xcode 上传成功，Apple Delivery UUID 为 `0373b760-05e0-4299-bb50-6bd6ec3d2959`；App Store Connect 随后显示 `Ready to Submit`、`Expires in 90 days`。
+## 历史证据边界
 
-## 设计与人工证据边界
+Build 2 曾生成、上传并由内部 TestFlight 验证；Apple Delivery UUID 为 `0373b760-05e0-4299-bb50-6bd6ec3d2959`。该证据只属于 Pulse 1.0 (2)，不包含 schema 1.1、媒体仓储或归档 v2，不得外推到当前 checkout。
 
-- 加密密码 sheet 的简体中文、Dark、iPhone 16 Pro、iOS 18.6 Simulator 状态为 **INTERFACE / EXPERIENCE CANDIDATE**：信息层级、显式标签、不可找回说明、错误状态和清理行为成立。
-- 产品负责人于 2026-08-12 确认内部 TestFlight Build 2 的 English / 简体中文、Light / Dark、iPhone / iPad 基本布局、文件导出器、错误密码失败关闭及清除后完整恢复均通过，记为范围受限的 **HUMAN GO**。
-- 本次人工证据没有设备型号、精确 OS、截图或逐项日志，不得外推到最大动态字体、真人 VoiceOver、最旧 iOS 18.x、篡改文件真机导入、通知和完整 Widget 压力矩阵。
-
-## 分层结论
-
-- **工程 GO**：当前 checkout 的单一事实源、加密格式、失败语义、Data Protection、内购边界、全量测试、Release 构建和静态分析成立。
-- **安全实现 GO**：在已定义威胁模型内，设备内文件保护与口令加密备份已落地；不宣称防越狱、运行时注入、截屏、键盘记录或用户弱密码。
-- **Apple Distribution artifact GO**：Build 2 的 App Store Connect IPA 已成功生成，最终分发签名、Store profile 与 entitlement 已核验。
-- **Release candidate GO**：源码、线上政策、测试、Archive、IPA、签名、符号、隐私清单和唯一构建身份已形成可追溯闭环。
-- **TestFlight delivery GO**：Build 2 已上传、Apple 处理完成并由内部测试员安装；这不等于已通过外部 Beta App Review 或已提交面向用户的 App Store Review。
-- **Internal TestFlight core HUMAN GO**：Build 2 全新安装、核心事实、Widget 一致性、加密导出、错误密码失败关闭、完整恢复及基础本地化/主题/双设备布局由产品负责人确认通过。
-- **公开发布 NO-GO**：未记录的真机/无障碍/系统压力门禁及商店材料仍未完成，也未提交 App Store Review。
+历史记录见 [Pulse 1.0 (2) 发布候选证据](./RELEASE_CANDIDATE_1_0_2.md)。
 
 ## 下一步顺序
 
-1. 在 App Store Connect 创建并配置非消耗型商品 `co.fanr.pulse.enhancement.lifetime`，决定真实价格并关闭协议/税务/商品审核材料门禁；商品文案不得把基础本地提醒或承诺宣言写成付费权益。
-2. 分别完成 StoreKit Sandbox、TestFlight 和换机恢复购买；验证取消、待处理、退款/撤销、离线启动和商品加载失败，不把本地 StoreKit Configuration 当成生产证据。
-3. 真机验证 iOS 26 scheduled transient Live Activity、支持设备 Dynamic Island、无灵动岛/iPad 系统表面、Live Activities 关闭后切换免费通知，以及 iOS 18–25 免费通知实际到达与取消。
-4. 完成 Build 3 签名 Archive、隐私答案、商店文案/截图、最大动态字体、真人 VoiceOver、最旧 iOS 18.x 与 Widget 压力矩阵；产品负责人审阅后再单独授权上传或提交 App Store Review。
+1. 在真实 iPhone / iPad 关闭媒体、权限、低存储、恢复和无障碍门禁，记录设备、系统版本、步骤与结果。
+2. 回归通知、Widget、scheduled Live Activity 与 StoreKit Sandbox；这些能力与照片事实互不兜底。
+3. 完成当前 `1.1 (4)` 的签名 Archive 和完整产物审计，再进入 TestFlight 清洁安装。
+4. 用小规模真实使用先发现理解和摩擦问题；留存或“岁月流影”付费判断按预登记实验扩大样本，不等待某个通用整数才继续工程开发。

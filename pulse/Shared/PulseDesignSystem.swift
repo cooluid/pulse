@@ -63,6 +63,9 @@ enum PulseDesign {
     static let calendarDayVisualSize: CGFloat = 34
     static let calendarDayHitSize: CGFloat = minimumHitTarget
     static let recordDetailBrandMarkSize: CGFloat = 64
+    static let mediaCardMaxWidth: CGFloat = 420
+    static let mediaPreviewHeight: CGFloat = 220
+    static let mediaCornerRadius: CGFloat = 24
     static let thinLineWidth: CGFloat = 1
     static let emphasisLineWidth: CGFloat = 2
     static let fieldBandWidth: CGFloat = 38

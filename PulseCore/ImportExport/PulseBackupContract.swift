@@ -4,8 +4,8 @@ public enum PulseBackupContract {
     public static let contentTypeIdentifier = "co.fanr.pulse.backup"
     public static let fileExtension = "pulsebackup"
     public static let payloadFormatIdentifier = "co.fanr.pulse.payload"
-    public static let payloadSchemaVersion = 1
-    public static let containerVersion: UInt16 = 1
+    public static let payloadSchemaVersion = 2
+    public static let containerVersion: UInt16 = 2
     public static let keyDerivationIdentifier: UInt8 = 1
     public static let cipherIdentifier: UInt8 = 1
     public static let keyDerivationIterations: UInt32 = 600_000
@@ -15,15 +15,13 @@ public enum PulseBackupContract {
     public static let minimumPassphraseCharacterCount = 12
     public static let maximumPassphraseByteCount = 1_024
     public static let maximumRecordCount = 50_000
-    public static let maximumBackupBytes = 32 * 1_024 * 1_024
+    public static let maximumMediaCount = 20_000
+    public static let maximumManifestBytes = 16 * 1_024 * 1_024
+    public static let maximumBackupBytes: UInt64 = 512 * 1_024 * 1_024 * 1_024
 
     static let magic = Data("PULSEBKP".utf8)
-    static let fixedHeaderByteCount = 28
-    static let maximumPayloadBytes = maximumBackupBytes
-        - fixedHeaderByteCount
-        - saltByteCount
-        - nonceByteCount
-        - authenticationTagByteCount
+    public static let fixedHeaderByteCount = 24
+    static let entryFixedHeaderByteCount = 24
 
     public static func filename(day: String?) -> String {
         "pulse-\(day ?? "backup").\(fileExtension)"
@@ -84,24 +82,97 @@ public struct PulseBackupPayload: Codable, Sendable {
         }
     }
 
+    public struct MediaPayload: Codable, Sendable {
+        public let id: UUID
+        public let recordID: UUID?
+        public let logicalDay: String
+        public let capturedAt: Date
+        public let createdAt: Date
+        public let modifiedAt: Date
+        public let originalRelativePath: String
+        public let thumbnailRelativePath: String
+        public let byteCount: Int64
+        public let thumbnailByteCount: Int64
+        public let pixelWidth: Int
+        public let pixelHeight: Int
+        public let sha256: String
+        public let thumbnailSHA256: String
+        public let cameraPosition: String
+
+        public init(snapshot: ImprintMediaSnapshot) {
+            id = snapshot.id
+            recordID = snapshot.recordID
+            logicalDay = snapshot.logicalDay.storageValue
+            capturedAt = snapshot.capturedAt
+            createdAt = snapshot.createdAt
+            modifiedAt = snapshot.modifiedAt
+            originalRelativePath = snapshot.originalRelativePath
+            thumbnailRelativePath = snapshot.thumbnailRelativePath
+            byteCount = snapshot.byteCount
+            thumbnailByteCount = snapshot.thumbnailByteCount
+            pixelWidth = snapshot.pixelWidth
+            pixelHeight = snapshot.pixelHeight
+            sha256 = snapshot.sha256
+            thumbnailSHA256 = snapshot.thumbnailSHA256
+            cameraPosition = snapshot.cameraPosition.rawValue
+        }
+
+        public init(
+            id: UUID,
+            recordID: UUID?,
+            logicalDay: String,
+            capturedAt: Date,
+            createdAt: Date,
+            modifiedAt: Date,
+            originalRelativePath: String,
+            thumbnailRelativePath: String,
+            byteCount: Int64,
+            thumbnailByteCount: Int64,
+            pixelWidth: Int,
+            pixelHeight: Int,
+            sha256: String,
+            thumbnailSHA256: String,
+            cameraPosition: String
+        ) {
+            self.id = id
+            self.recordID = recordID
+            self.logicalDay = logicalDay
+            self.capturedAt = capturedAt
+            self.createdAt = createdAt
+            self.modifiedAt = modifiedAt
+            self.originalRelativePath = originalRelativePath
+            self.thumbnailRelativePath = thumbnailRelativePath
+            self.byteCount = byteCount
+            self.thumbnailByteCount = thumbnailByteCount
+            self.pixelWidth = pixelWidth
+            self.pixelHeight = pixelHeight
+            self.sha256 = sha256
+            self.thumbnailSHA256 = thumbnailSHA256
+            self.cameraPosition = cameraPosition
+        }
+    }
+
     public let format: String
     public let schemaVersion: Int
     public let exportedAt: Date
     public let habit: HabitPayload
     public let records: [RecordPayload]
+    public let media: [MediaPayload]
 
     public init(
         format: String,
         schemaVersion: Int,
         exportedAt: Date,
         habit: HabitPayload,
-        records: [RecordPayload]
+        records: [RecordPayload],
+        media: [MediaPayload]
     ) {
         self.format = format
         self.schemaVersion = schemaVersion
         self.exportedAt = exportedAt
         self.habit = habit
         self.records = records
+        self.media = media
     }
 }
 
@@ -113,14 +184,14 @@ public enum PulseBackupPayloadCodec {
         }
         _ = try PulseDataValidator.validate(payload)
         let data = try encoder.encode(payload)
-        guard data.count <= PulseBackupContract.maximumPayloadBytes else {
+        guard data.count <= PulseBackupContract.maximumManifestBytes else {
             throw PulseCoreError.backupUnavailable
         }
         return data
     }
 
     public static func decode(_ data: Data) throws -> PulseBackupPayload {
-        guard data.count <= PulseBackupContract.maximumPayloadBytes else {
+        guard data.count <= PulseBackupContract.maximumManifestBytes else {
             throw PulseCoreError.invalidBackup
         }
         let envelope: PulseBackupPayloadEnvelope

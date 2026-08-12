@@ -7,13 +7,13 @@
 | 文档 | 唯一职责 | 主要读者 |
 | --- | --- | --- |
 | [PRODUCT_REQUIREMENTS.md](./PRODUCT_REQUIREMENTS.md) | 定义用户价值、功能范围、交互状态和产品验收 | 产品、设计、开发、测试 |
-| [RELEASE_SCOPE_1_0.md](./RELEASE_SCOPE_1_0.md) | 冻结 1.0 正式范围、排除项、发布身份和上线门禁 | 产品、发布负责人、开发、测试 |
-| [DOMAIN_CONTRACT.md](./DOMAIN_CONTRACT.md) | 定义逻辑日、签到唯一性、连续天数和删除语义 | 开发、测试 |
+| [RELEASE_SCOPE_1_1.md](./RELEASE_SCOPE_1_1.md) | 冻结 1.1 正式范围、排除项、发布身份和上线门禁 | 产品、发布负责人、开发、测试 |
+| [DOMAIN_CONTRACT.md](./DOMAIN_CONTRACT.md) | 定义逻辑日、签到/影像事实、唯一性、连续天数和删除语义 | 开发、测试 |
 | [TECHNICAL_DESIGN.md](./TECHNICAL_DESIGN.md) | 定义架构、数据模型、服务边界和失败处理 | 开发、评审 |
 | [TEST_PLAN.md](./TEST_PLAN.md) | 定义自动化、手工、设备与发布前验证 | 开发、测试 |
 | [IMPLEMENTATION_STATUS.md](./IMPLEMENTATION_STATUS.md) | 记录当前实现范围、验证证据和发布门槛 | 全员 |
-| [PRODUCT_STRATEGY_2_X.md](./PRODUCT_STRATEGY_2_X.md) | 提出 1.0 之后的定位、功能组合、收费边界与验证门槛，不改变 1.0 冻结范围 | 产品、设计、商业、开发 |
-| [POST_1_0_ROADMAP.md](./POST_1_0_ROADMAP.md) | 将后续战略拆成带证据门禁的发布、实验、Plus、影像、系统入口与智能阶段 | 产品、开发、测试、发布负责人 |
+| [PRODUCT_STRATEGY_2_X.md](./PRODUCT_STRATEGY_2_X.md) | 定义长期定位、功能组合、收费边界与验证方法 | 产品、设计、商业、开发 |
+| [PRODUCT_ROADMAP.md](./PRODUCT_ROADMAP.md) | 将当前 1.1 与后续 Plus、岁月流影、系统入口和智能阶段拆成证据门禁 | 产品、开发、测试、发布负责人 |
 | [PULSE_RITUAL_CONTRACT.md](./PULSE_RITUAL_CONTRACT.md) | 定义 Widget、Live Activity、灵动岛、锁屏、Apple Watch、系统动效和提醒通道的统一产品语义 | 产品、设计、开发、测试 |
 | [WIDGET_SHARED_STORE_CONTRACT.md](./WIDGET_SHARED_STORE_CONTRACT.md) | 定义基础 Widget、唯一 App Group store、跨进程签到、隐私与能力准入门禁 | 产品、开发、测试、发布负责人 |
 | [DATA_ENCRYPTION_CONTRACT.md](./DATA_ENCRYPTION_CONTRACT.md) | 定义设备内文件保护、加密备份容器、口令/KDF、失败语义与内购边界 | 产品、安全、开发、测试、发布负责人 |
@@ -29,7 +29,7 @@
 ## 当前已确认的产品假设
 
 - 首版服务单用户、单签到项目。
-- 首版不需要账号和网络即可完整签到。
+- 首版不需要账号和网络即可完整签到、拍照、查看和备份。
 - 签到是个人记录，不承担考勤、防作弊或合规证明用途。
 - 首版不支持补签，但允许用户删除错误记录。
 - 历史、首页和统计全部从持久化签到记录派生。
@@ -37,10 +37,10 @@
 
 ## 发布前仍需确认
 
-功能范围已在 `RELEASE_SCOPE_1_0.md` 冻结。以下发布身份与验收项必须在对外发布前关闭：
+功能范围已在 `RELEASE_SCOPE_1_1.md` 冻结。以下发布身份与验收项必须在对外发布前关闭：
 
 1. 当前最低系统版本统一为 18.0；发布前必须完成 iOS / iPadOS 18 可用最旧运行时与对应真机覆盖，不能只验证较新系统。
-2. 1.0 已选择本地优先、iOS Data Protection 与口令加密备份恢复；发布文案必须明确卸载和密码不可找回边界，CloudKit 不进入 1.0。
+2. 1.1 已选择本地优先、iOS Data Protection 与包含照片的口令加密备份恢复；发布文案必须明确卸载和密码不可找回边界，CloudKit 不进入 1.1。
 3. App 的正式版本号、商店文案与截图；Bundle ID、中英文显示名称、隐私说明和支持入口已经冻结。
 
 生产设计合同位于 [`design`](../design/README.md)。当前唯一方向是“草野脉冲”系统；界面、AccentColor、品牌标记与 AppIcon 由同一品牌令牌生成，最终界面与商店素材仍需独立验收。
@@ -48,7 +48,7 @@
 ## 变更规则
 
 - 签到规则发生变化时，先修改 `DOMAIN_CONTRACT.md`，再改实现和测试。
-- 产品范围发生变化时，先修改 `PRODUCT_REQUIREMENTS.md` 与 `RELEASE_SCOPE_1_0.md`。
+- 产品范围发生变化时，先修改 `PRODUCT_REQUIREMENTS.md` 与 `RELEASE_SCOPE_1_1.md`。
 - Widget、Live Activity、灵动岛、Apple Watch 或提醒通道语义变化时，先修改 `PULSE_RITUAL_CONTRACT.md`，再映射路线图、实现和测试。
 - Widget 的共享数据位置、schema 或跨进程写入变化时，先修改 `WIDGET_SHARED_STORE_CONTRACT.md`，不得在 Widget target 内另建数据路径。
 - 不在多个文档复制完整算法；其他文档通过链接引用业务规则。

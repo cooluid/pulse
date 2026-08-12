@@ -4,17 +4,22 @@ public enum PulseStoreContract {
     public static let storeName = "Pulse"
     public static let storeFilename = "Pulse.store"
     public static let productDirectoryName = "Pulse"
+    public static let mediaDirectoryName = "Media"
+    public static let archiveWorkingDirectoryName = "ArchiveWork"
 }
 
 public enum PulseStoreLocationError: Error, Equatable, Sendable {
     case invalidApplicationGroupIdentifier
     case applicationGroupContainerUnavailable
     case invalidDirectoryURL
+    case incompatibleStoreVersion
 }
 
 public struct PulseStoreLocation: Equatable, Sendable {
     public let directoryURL: URL
     public let storeURL: URL
+    public let mediaDirectoryURL: URL
+    public let archiveWorkingDirectoryURL: URL
 
     public init(directoryURL: URL) throws {
         guard directoryURL.isFileURL,
@@ -27,6 +32,14 @@ public struct PulseStoreLocation: Equatable, Sendable {
         storeURL = standardizedDirectoryURL.appendingPathComponent(
             PulseStoreContract.storeFilename,
             isDirectory: false
+        )
+        mediaDirectoryURL = standardizedDirectoryURL.appendingPathComponent(
+            PulseStoreContract.mediaDirectoryName,
+            isDirectory: true
+        )
+        archiveWorkingDirectoryURL = standardizedDirectoryURL.appendingPathComponent(
+            PulseStoreContract.archiveWorkingDirectoryName,
+            isDirectory: true
         )
     }
 }

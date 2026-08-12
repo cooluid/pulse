@@ -9,10 +9,10 @@ struct SettingsView: View {
     @State private var showsResetConfirmation = false
     @State private var passphraseRequest: BackupPassphraseMode?
     @State private var showsExporter = false
-    @State private var exportDocument: PulseBackupDocument?
+    @State private var exportFile: PulseBackupExport?
     @State private var showsImporter = false
     @State private var selectedBackupURL: URL?
-    @State private var pendingRestore: PulseBackupPayload?
+    @State private var pendingRestore: PulseDecodedBackup?
 
     var body: some View {
         Form {
@@ -22,6 +22,7 @@ struct SettingsView: View {
             personalizationSection
             widgetSection
             experienceSection
+            memorySection
             dataSection
             aboutSection
         }
@@ -39,7 +40,7 @@ struct SettingsView: View {
             BackupPassphraseView(mode: mode, locale: locale) { passphrase in
                 switch mode {
                 case .export:
-                    exportDocument = try await model.makeBackupDocument(passphrase: passphrase)
+                    exportFile = try await model.makeBackupExport(passphrase: passphrase)
                 case .restore:
                     guard let selectedBackupURL else {
                         throw PulseCoreError.invalidBackup
@@ -53,14 +54,14 @@ struct SettingsView: View {
         }
         .fileExporter(
             isPresented: $showsExporter,
-            document: exportDocument,
-            contentType: .pulseBackup,
+            item: exportFile,
+            contentTypes: [.pulseBackup],
             defaultFilename: backupFilename
         ) { result in
             if case .failure(let error) = result {
                 model.errorMessage = error.localizedDescription
             }
-            exportDocument = nil
+            exportFile = nil
         }
     }
 
@@ -381,9 +382,38 @@ struct SettingsView: View {
         }
     }
 
+    private var memorySection: some View {
+        Section {
+            Toggle(
+                "settings.media.invitation",
+                isOn: Binding(
+                    get: { model.settings.mediaInvitationEnabled },
+                    set: { model.settings.mediaInvitationEnabled = $0 }
+                )
+            )
+            LabeledContent(
+                "settings.media.storage",
+                value: ByteCountFormatter.string(
+                    fromByteCount: model.mediaStorageByteCount,
+                    countStyle: .file
+                )
+            )
+            Label {
+                Text("settings.media.privacy_note")
+                    .fixedSize(horizontal: false, vertical: true)
+            } icon: {
+                Image(systemName: "camera.aperture")
+            }
+            .font(.footnote)
+            .foregroundStyle(PulseDesign.secondary)
+        } header: {
+            Text("settings.media.section")
+        }
+    }
+
     private var exportButton: some View {
         Button {
-            exportDocument = nil
+            exportFile = nil
             passphraseRequest = .export
         } label: {
             Label("settings.backup.export", systemImage: "lock.doc")
@@ -400,7 +430,7 @@ struct SettingsView: View {
         .accessibilityIdentifier("settings.backup.restore.button")
         .fileImporter(
             isPresented: $showsImporter,
-            allowedContentTypes: PulseBackupDocument.readableContentTypes
+            allowedContentTypes: [.pulseBackup]
         ) { result in
             do {
                 selectedBackupURL = try result.get()
@@ -437,7 +467,8 @@ struct SettingsView: View {
                         "settings.backup.restore_confirmation.message",
                         locale: locale
                     ),
-                    pendingRestore?.records.count ?? 0
+                    pendingRestore?.payload.records.count ?? 0,
+                    pendingRestore?.payload.media.count ?? 0
                 )
             )
         }
@@ -513,7 +544,7 @@ struct SettingsView: View {
 
     private func finishPassphraseRequest() {
         selectedBackupURL = nil
-        if exportDocument != nil {
+        if exportFile != nil {
             showsExporter = true
         }
     }

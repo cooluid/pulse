@@ -45,4 +45,17 @@ final class ImprintRitualContractTests: XCTestCase {
 
         XCTAssertEqual(offenders, [], "Unbounded production motion found in: \(offenders)")
     }
+
+    func testImprintCaptureHasNoPhotoLibraryFallback() throws {
+        let repositoryRoot = URL(fileURLWithPath: #filePath)
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+        let sourceURL = repositoryRoot.appending(
+            path: "pulse/Features/Today/ImprintCameraView.swift"
+        )
+        let source = try String(contentsOf: sourceURL, encoding: .utf8)
+        XCTAssertTrue(source.contains("controller.sourceType = .camera"))
+        XCTAssertFalse(source.contains(".photoLibrary"))
+        XCTAssertFalse(source.contains(".savedPhotosAlbum"))
+    }
 }

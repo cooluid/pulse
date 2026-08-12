@@ -2,14 +2,17 @@ import Foundation
 import SwiftData
 
 enum PulseSchema: VersionedSchema {
-    static let versionIdentifier = Schema.Version(1, 0, 0)
+    static let versionIdentifier = Schema.Version(1, 1, 0)
 
     static var models: [any PersistentModel.Type] {
-        [Habit.self, CheckInRecord.self]
+        [Habit.self, CheckInRecord.self, ImprintMedia.self]
     }
 }
 
 public enum PersistenceController {
+    private static let schemaMarkerFilename = ".pulse-schema-version"
+    private static let schemaMarkerValue = "1.1.0"
+
     public static func makeContainer(
         storeName: String = PulseStoreContract.storeName,
         storeURL: URL
@@ -17,12 +20,20 @@ public enum PersistenceController {
         let schema = Schema(versionedSchema: PulseSchema.self)
         let directoryURL = storeURL.deletingLastPathComponent()
         try PulseStoreProtection.enforce(in: directoryURL)
+        let markerURL = directoryURL.appendingPathComponent(schemaMarkerFilename)
+        if FileManager.default.fileExists(atPath: storeURL.path) {
+            guard let marker = try? String(contentsOf: markerURL, encoding: .utf8),
+                  marker == schemaMarkerValue else {
+                throw PulseStoreLocationError.incompatibleStoreVersion
+            }
+        }
         let configuration = ModelConfiguration(
             storeName,
             schema: schema,
             url: storeURL
         )
         let container = try ModelContainer(for: schema, configurations: [configuration])
+        try schemaMarkerValue.write(to: markerURL, atomically: true, encoding: .utf8)
         try PulseStoreProtection.enforce(in: directoryURL)
         return container
     }

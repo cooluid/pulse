@@ -1,5 +1,7 @@
+import AVFoundation
 import SwiftUI
 import PulseCore
+import UIKit
 
 struct TodayView: View {
     @Bindable var model: PulseAppModel
@@ -10,6 +12,7 @@ struct TodayView: View {
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @Environment(\.locale) private var locale
+    @Environment(\.openURL) private var openURL
     @ScaledMetric(relativeTo: .largeTitle) private var dayNumberSize = PulseDesign.dayNumberBaseSize
     @State private var showsSavingIndicator = false
     @State private var imprintRitualPhase: ImprintRitualPhase = .ready
@@ -17,6 +20,9 @@ struct TodayView: View {
     @State private var imprintGlyphScale: CGFloat = 1
     @State private var completionRippleVisible = false
     @State private var completionRippleExpanded = false
+    @State private var showsCamera = false
+    @State private var showsCameraPermissionAlert = false
+    @State private var showsMediaDeleteConfirmation = false
 
     var body: some View {
         ZStack {
@@ -53,6 +59,24 @@ struct TodayView: View {
             }
         }
         .toolbar(.hidden, for: .navigationBar)
+        .fullScreenCover(isPresented: $showsCamera) {
+            ImprintCameraView { image, position in
+                showsCamera = false
+                Task { _ = await model.saveTodayMedia(image: image, cameraPosition: position) }
+            } onCancel: {
+                showsCamera = false
+            }
+            .ignoresSafeArea()
+        }
+        .alert("camera.permission.title", isPresented: $showsCameraPermissionAlert) {
+            Button("camera.permission.open_settings") {
+                guard let url = URL(string: UIApplication.openSettingsURLString) else { return }
+                openURL(url)
+            }
+            Button("action.cancel", role: .cancel) {}
+        } message: {
+            Text("camera.permission.message")
+        }
     }
 
     @ViewBuilder
@@ -63,6 +87,8 @@ struct TodayView: View {
                     dayHero
                     checkInControl
                         .padding(.top, PulseDesign.checkInHeroSpacing)
+                    mediaMemory
+                        .padding(.top, PulseDesign.spacing24)
                 }
                 .frame(maxWidth: .infinity)
 
@@ -78,6 +104,8 @@ struct TodayView: View {
                 dayHero
                 checkInControl
                     .padding(.top, PulseDesign.checkInHeroSpacing)
+                mediaMemory
+                    .padding(.top, PulseDesign.spacing24)
                 weekRail
                     .padding(.top, PulseDesign.checkInOuterHalo + PulseDesign.spacing12)
                 rhythmStatus
@@ -471,6 +499,120 @@ struct TodayView: View {
                 value: model.statistics.currentStreak
             )
             .accessibilityIdentifier("today.rhythm.status")
+    }
+
+    @ViewBuilder
+    private var mediaMemory: some View {
+        if model.todayRecord != nil,
+           model.settings.mediaInvitationEnabled || model.todayMedia != nil {
+            VStack(spacing: PulseDesign.spacing16) {
+                HStack(alignment: .firstTextBaseline) {
+                    VStack(alignment: .leading, spacing: PulseDesign.spacing4) {
+                        Text("today.media.title")
+                            .font(.headline.bold())
+                            .foregroundStyle(PulseDesign.ink)
+                        Text("today.media.subtitle")
+                            .font(.footnote)
+                            .foregroundStyle(PulseDesign.secondary)
+                    }
+                    Spacer(minLength: PulseDesign.spacing16)
+                    Image(systemName: "camera.aperture")
+                        .foregroundStyle(PulseDesign.grass)
+                        .accessibilityHidden(true)
+                }
+
+                if let media = model.todayMedia {
+                    ImprintMediaPreview(media: media, load: model.thumbnailData)
+
+                    HStack(spacing: PulseDesign.spacing12) {
+                        Button {
+                            requestCamera()
+                        } label: {
+                            Label("today.media.retake", systemImage: "camera.rotate")
+                                .foregroundStyle(PulseDesign.actionForeground)
+                        }
+                        .buttonStyle(.borderedProminent)
+                        .tint(PulseDesign.action)
+                        .accessibilityIdentifier("today.media.retake.button")
+
+                        Button(role: .destructive) {
+                            showsMediaDeleteConfirmation = true
+                        } label: {
+                            Label("today.media.delete", systemImage: "trash")
+                        }
+                        .buttonStyle(.bordered)
+                        .accessibilityIdentifier("today.media.delete.button")
+                    }
+                    .confirmationDialog(
+                        "media.delete_confirmation.title",
+                        isPresented: $showsMediaDeleteConfirmation,
+                        titleVisibility: .visible
+                    ) {
+                        Button("media.delete_confirmation.action", role: .destructive) {
+                            Task { _ = await model.deleteMedia(id: media.id) }
+                        }
+                        Button("action.cancel", role: .cancel) {}
+                    } message: {
+                        Text("media.delete_confirmation.message")
+                    }
+                } else {
+                    Button {
+                        requestCamera()
+                    } label: {
+                        Label("today.media.capture", systemImage: "camera.fill")
+                            .foregroundStyle(PulseDesign.actionForeground)
+                            .frame(maxWidth: .infinity, minHeight: PulseDesign.minimumHitTarget)
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .tint(PulseDesign.action)
+                    .accessibilityIdentifier("today.media.capture.button")
+                }
+
+                if model.operation == .saveMedia {
+                    ProgressView("today.media.saving")
+                        .font(.footnote)
+                }
+            }
+            .padding(PulseDesign.spacing20)
+            .frame(maxWidth: PulseDesign.mediaCardMaxWidth)
+            .background(PulseDesign.surface, in: RoundedRectangle(
+                cornerRadius: PulseDesign.mediaCornerRadius,
+                style: .continuous
+            ))
+            .overlay {
+                RoundedRectangle(
+                    cornerRadius: PulseDesign.mediaCornerRadius,
+                    style: .continuous
+                )
+                    .stroke(PulseDesign.separator, lineWidth: PulseDesign.thinLineWidth)
+            }
+            .accessibilityElement(children: .contain)
+            .accessibilityIdentifier("today.media.card")
+        }
+    }
+
+    private func requestCamera() {
+        guard UIImagePickerController.isSourceTypeAvailable(.camera) else {
+            model.errorMessage = PulseLocalization.string("error.camera_unavailable", locale: locale)
+            return
+        }
+        switch AVCaptureDevice.authorizationStatus(for: .video) {
+        case .authorized:
+            showsCamera = true
+        case .notDetermined:
+            Task {
+                let granted = await AVCaptureDevice.requestAccess(for: .video)
+                if granted {
+                    showsCamera = true
+                } else {
+                    showsCameraPermissionAlert = true
+                }
+            }
+        case .denied, .restricted:
+            showsCameraPermissionAlert = true
+        @unknown default:
+            model.errorMessage = PulseLocalization.string("error.camera_unavailable", locale: locale)
+        }
     }
 
     private var rhythmStatusText: String {

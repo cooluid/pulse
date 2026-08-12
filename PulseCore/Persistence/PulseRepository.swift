@@ -2,13 +2,16 @@ import Foundation
 import SwiftData
 
 @MainActor
-public protocol CheckInRepositoryProtocol: AnyObject {
+public protocol PulseRepositoryProtocol: AnyObject {
     func existingPrimaryHabit() throws -> HabitSnapshot?
     func primaryHabit(systemTimeZone: TimeZone) throws -> HabitSnapshot
     func allRecords(habitID: UUID) throws -> [CheckInRecordSnapshot]
+    func allMedia(habitID: UUID) throws -> [ImprintMediaSnapshot]
     func updateIdentity(habitID: UUID, identity: HabitIdentity) throws -> HabitSnapshot
     func checkIn(habitID: UUID) throws -> CheckInCommitReceipt
     func delete(recordID: UUID) throws
+    func upsertMedia(_ draft: ImprintMediaDraft) throws -> ImprintMediaSnapshot
+    func deleteMedia(id: UUID) throws
     func updateTimeZone(habitID: UUID, identifier: String) throws
     func resetAll(systemTimeZone: TimeZone) throws -> HabitSnapshot
     func replaceAll(with payload: PulseBackupPayload) throws -> HabitSnapshot
@@ -20,7 +23,7 @@ public enum PrimaryHabitProvisioning: Sendable {
 }
 
 @MainActor
-public final class SwiftDataCheckInRepository: CheckInRepositoryProtocol {
+public final class SwiftDataPulseRepository: PulseRepositoryProtocol {
     private let container: ModelContainer
     private var context: ModelContext
     private let clock: any PulseClock
@@ -89,6 +92,20 @@ public final class SwiftDataCheckInRepository: CheckInRepositoryProtocol {
         )
     }
 
+    public func allMedia(habitID: UUID) throws -> [ImprintMediaSnapshot] {
+        let persistedHabit = try requirePrimaryHabit(id: habitID)
+        let descriptor = FetchDescriptor<ImprintMedia>(
+            predicate: #Predicate { media in
+                media.habitID == habitID
+            },
+            sortBy: [SortDescriptor(\ImprintMedia.capturedAt)]
+        )
+        return try validatedMediaSnapshots(
+            try context.fetch(descriptor),
+            habit: persistedHabit
+        )
+    }
+
     public func updateIdentity(habitID: UUID, identity: HabitIdentity) throws -> HabitSnapshot {
         let persistedHabit = try requirePrimaryHabit(id: habitID)
         guard persistedHabit.name != identity.name
@@ -122,6 +139,11 @@ public final class SwiftDataCheckInRepository: CheckInRepositoryProtocol {
                 sameDayRecords,
                 habit: persistedHabit
             )
+            try attachMediaIfNeeded(
+                habitID: persistedHabit.id,
+                day: day,
+                recordID: sameDayRecord.id
+            )
             return try commitReceipt(
                 for: sameDayRecord,
                 habitID: persistedHabit.id,
@@ -138,6 +160,12 @@ public final class SwiftDataCheckInRepository: CheckInRepositoryProtocol {
             timeZoneIdentifier: persistedHabit.timeZoneIdentifier
         )
         context.insert(newRecord)
+        try attachMediaIfNeeded(
+            habitID: persistedHabit.id,
+            day: day,
+            recordID: newRecord.id,
+            savesChanges: false
+        )
         return try saveNewCheckInOrResolveConcurrentWriter(
             newRecord,
             habitID: persistedHabit.id,
@@ -166,6 +194,11 @@ public final class SwiftDataCheckInRepository: CheckInRepositoryProtocol {
             guard let concurrentRecord else {
                 throw saveError
             }
+            try attachMediaIfNeeded(
+                habitID: habitID,
+                day: day,
+                recordID: concurrentRecord.id
+            )
             return try commitReceipt(
                 for: concurrentRecord,
                 habitID: habitID,
@@ -226,6 +259,25 @@ public final class SwiftDataCheckInRepository: CheckInRepositoryProtocol {
         )
     }
 
+    private func attachMediaIfNeeded(
+        habitID: UUID,
+        day: LogicalDay,
+        recordID: UUID,
+        savesChanges: Bool = true
+    ) throws {
+        let mediaKey = ImprintMediaKey.make(habitID: habitID, logicalDay: day)
+        var descriptor = FetchDescriptor<ImprintMedia>(
+            predicate: #Predicate { media in media.mediaKey == mediaKey }
+        )
+        descriptor.fetchLimit = 1
+        guard let media = try context.fetch(descriptor).first,
+              media.recordID != recordID else { return }
+        media.recordID = recordID
+        if savesChanges {
+            try saveOrRollback()
+        }
+    }
+
     public func delete(recordID: UUID) throws {
         var descriptor = FetchDescriptor<CheckInRecord>(
             predicate: #Predicate { record in
@@ -235,7 +287,52 @@ public final class SwiftDataCheckInRepository: CheckInRepositoryProtocol {
         descriptor.fetchLimit = 1
 
         guard let record = try context.fetch(descriptor).first else { return }
+        let recordID = record.id
+        let media = try context.fetch(
+            FetchDescriptor<ImprintMedia>(
+                predicate: #Predicate { media in
+                    media.recordID == recordID
+                }
+            )
+        )
+        media.forEach { $0.recordID = nil }
         context.delete(record)
+        try saveOrRollback()
+    }
+
+    public func upsertMedia(_ draft: ImprintMediaDraft) throws -> ImprintMediaSnapshot {
+        let habit = try requirePrimaryHabit(id: draft.habitID)
+        guard let record = try record(habitID: draft.habitID, day: draft.logicalDay),
+              draft.recordID == record.id else {
+            throw PulseCoreError.invalidMedia
+        }
+
+        let mediaKey = ImprintMediaKey.make(
+            habitID: draft.habitID,
+            logicalDay: draft.logicalDay
+        )
+        var descriptor = FetchDescriptor<ImprintMedia>(
+            predicate: #Predicate { media in
+                media.mediaKey == mediaKey
+            }
+        )
+        descriptor.fetchLimit = 1
+        if let existing = try context.fetch(descriptor).first {
+            context.delete(existing)
+        }
+        let media = ImprintMedia(draft: draft, modifiedAt: clock.now)
+        context.insert(media)
+        try saveOrRollback()
+        return try validatedMediaSnapshots([media], habit: habit)[0]
+    }
+
+    public func deleteMedia(id: UUID) throws {
+        var descriptor = FetchDescriptor<ImprintMedia>(
+            predicate: #Predicate { media in media.id == id }
+        )
+        descriptor.fetchLimit = 1
+        guard let media = try context.fetch(descriptor).first else { return }
+        context.delete(media)
         try saveOrRollback()
     }
 
@@ -262,7 +359,9 @@ public final class SwiftDataCheckInRepository: CheckInRepositoryProtocol {
             throw PulseCoreError.primaryHabitUnavailable
         }
         let records = try context.fetch(FetchDescriptor<CheckInRecord>())
+        let media = try context.fetch(FetchDescriptor<ImprintMedia>())
         let habits = try context.fetch(FetchDescriptor<Habit>())
+        media.forEach(context.delete)
         records.forEach(context.delete)
         habits.forEach(context.delete)
 
@@ -292,7 +391,9 @@ public final class SwiftDataCheckInRepository: CheckInRepositoryProtocol {
         let validated = try PulseDataValidator.validate(payload)
 
         let currentRecords = try context.fetch(FetchDescriptor<CheckInRecord>())
+        let currentMedia = try context.fetch(FetchDescriptor<ImprintMedia>())
         let currentHabits = try context.fetch(FetchDescriptor<Habit>())
+        currentMedia.forEach(context.delete)
         currentRecords.forEach(context.delete)
         currentHabits.forEach(context.delete)
 
@@ -318,6 +419,15 @@ public final class SwiftDataCheckInRepository: CheckInRepositoryProtocol {
                     checkedAt: record.checkedAt,
                     createdAt: record.createdAt,
                     timeZoneIdentifier: record.timeZoneIdentifier
+                )
+            )
+        }
+
+        for validatedMedia in validated.media {
+            context.insert(
+                ImprintMedia(
+                    draft: validatedMedia.draft,
+                    modifiedAt: validatedMedia.modifiedAt
                 )
             )
         }
@@ -402,6 +512,77 @@ public final class SwiftDataCheckInRepository: CheckInRepositoryProtocol {
                 timeZone: recordTimeZone
             )
         }
+    }
+
+    private func validatedMediaSnapshots(
+        _ mediaItems: [ImprintMedia],
+        habit: Habit
+    ) throws -> [ImprintMediaSnapshot] {
+        guard let habitStartDay = habit.startLogicalDay else {
+            throw PulseCoreError.invalidRecordDate(habit.startLogicalDayValue)
+        }
+        var days = Set<LogicalDay>()
+        return try mediaItems.map { media in
+            guard media.habitID == habit.id,
+                  let logicalDay = media.logicalDay,
+                  logicalDay >= habitStartDay,
+                  media.mediaKey == ImprintMediaKey.make(
+                    habitID: habit.id,
+                    logicalDay: logicalDay
+                  ),
+                  media.mediaType == "image/jpeg",
+                  media.byteCount > 0,
+                  media.byteCount <= PulseMediaFileStore.maximumOriginalBytes,
+                  media.thumbnailByteCount > 0,
+                  media.thumbnailByteCount <= PulseMediaFileStore.maximumThumbnailBytes,
+                  media.pixelWidth > 0,
+                  media.pixelHeight > 0,
+                  media.sha256.count == 64,
+                  media.sha256.allSatisfy({ $0.isHexDigit && !$0.isUppercase }),
+                  media.thumbnailSHA256.count == 64,
+                  media.thumbnailSHA256.allSatisfy({ $0.isHexDigit && !$0.isUppercase }),
+                  isValidMediaPath(media.originalRelativePath, prefix: "originals/"),
+                  isValidMediaPath(media.thumbnailRelativePath, prefix: "thumbnails/"),
+                  media.capturedAt >= habit.createdAt,
+                  media.createdAt >= media.capturedAt,
+                  media.modifiedAt >= media.createdAt,
+                  let cameraPosition = media.cameraPosition,
+                  days.insert(logicalDay).inserted else {
+                throw PulseCoreError.invalidMedia
+            }
+            if let recordID = media.recordID {
+                guard try record(habitID: habit.id, day: logicalDay)?.id == recordID else {
+                    throw PulseCoreError.invalidMedia
+                }
+            }
+            return ImprintMediaSnapshot(
+                id: media.id,
+                habitID: media.habitID,
+                recordID: media.recordID,
+                logicalDay: logicalDay,
+                capturedAt: media.capturedAt,
+                createdAt: media.createdAt,
+                modifiedAt: media.modifiedAt,
+                originalRelativePath: media.originalRelativePath,
+                thumbnailRelativePath: media.thumbnailRelativePath,
+                mediaType: media.mediaType,
+                byteCount: media.byteCount,
+                thumbnailByteCount: media.thumbnailByteCount,
+                pixelWidth: media.pixelWidth,
+                pixelHeight: media.pixelHeight,
+                sha256: media.sha256,
+                thumbnailSHA256: media.thumbnailSHA256,
+                cameraPosition: cameraPosition
+            )
+        }
+    }
+
+    private func isValidMediaPath(_ path: String, prefix: String) -> Bool {
+        path.hasPrefix(prefix)
+            && !path.contains("..")
+            && !path.contains("\\")
+            && path.split(separator: "/").count == 2
+            && path.hasSuffix(".jpg")
     }
 
     private func saveOrRollback() throws {

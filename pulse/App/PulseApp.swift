@@ -11,15 +11,25 @@ private enum StartupFailure: Equatable {
 
 private enum PulseBootstrap {
     private enum RuntimeStore {
-        case inMemory(name: String)
-        case disk(name: String, url: URL)
+        case inMemory(name: String, workingDirectoryURL: URL)
+        case disk(name: String, location: PulseStoreLocation)
 
         func makeContainer() throws -> ModelContainer {
             switch self {
-            case .inMemory(let name):
+            case .inMemory(let name, _):
                 try PersistenceController.makeInMemoryContainer(storeName: name)
-            case .disk(let name, let url):
-                try PersistenceController.makeContainer(storeName: name, storeURL: url)
+            case .disk(let name, let location):
+                try PersistenceController.makeContainer(
+                    storeName: name,
+                    storeURL: location.storeURL
+                )
+            }
+        }
+
+        var workingDirectoryURL: URL {
+            switch self {
+            case .inMemory(_, let workingDirectoryURL): workingDirectoryURL
+            case .disk(_, let location): location.directoryURL
             }
         }
     }
@@ -45,11 +55,22 @@ private enum PulseBootstrap {
             )
             let store = try runtimeStore()
             let container = try store.makeContainer()
-            let repository = SwiftDataCheckInRepository(
+            let repository = SwiftDataPulseRepository(
                 container: container,
                 clock: clock,
                 primaryHabitProvisioning: .createIfMissing(initialIdentity)
             )
+            let mediaFileStore = try PulseMediaFileStore(
+                rootURL: store.workingDirectoryURL.appendingPathComponent(
+                    PulseStoreContract.mediaDirectoryName,
+                    isDirectory: true
+                )
+            )
+            let archiveWorkingDirectoryURL = store.workingDirectoryURL.appendingPathComponent(
+                PulseStoreContract.archiveWorkingDirectoryName,
+                isDirectory: true
+            )
+            try prepareArchiveWorkingDirectory(archiveWorkingDirectoryURL)
             let settings = try AppSettings(
                 sharedInterfacePreferences: try PulseSharedInterfacePreferences(
                     appGroupIdentifier: PulseRuntimeIdentity.appGroupIdentifier
@@ -57,6 +78,12 @@ private enum PulseBootstrap {
             )
             let model = PulseAppModel(
                 repository: repository,
+                mediaService: ImprintMediaService(
+                    repository: repository,
+                    fileStore: mediaFileStore,
+                    clock: clock
+                ),
+                archiveWorkingDirectoryURL: archiveWorkingDirectoryURL,
                 settings: settings,
                 featureAccess: runtimeFeatureAccess(),
                 reminderScheduler: ReminderScheduler(),
@@ -74,6 +101,25 @@ private enum PulseBootstrap {
             logger.fault("Failed to initialize the persistent store: \(error.localizedDescription, privacy: .private)")
             return .failed(.persistence)
         }
+    }
+
+    private static func prepareArchiveWorkingDirectory(_ directoryURL: URL) throws {
+        guard directoryURL.isFileURL,
+              directoryURL.lastPathComponent == PulseStoreContract.archiveWorkingDirectoryName else {
+            throw PulseStoreLocationError.invalidDirectoryURL
+        }
+        try FileManager.default.createDirectory(
+            at: directoryURL,
+            withIntermediateDirectories: true
+        )
+        let staleItems = try FileManager.default.contentsOfDirectory(
+            at: directoryURL,
+            includingPropertiesForKeys: nil
+        )
+        for item in staleItems {
+            try FileManager.default.removeItem(at: item)
+        }
+        try PulseStoreProtection.enforce(in: directoryURL)
     }
 
     @MainActor
@@ -125,20 +171,21 @@ private enum PulseBootstrap {
                 .appendingPathComponent(identifier.uuidString, isDirectory: true)
             return .disk(
                 name: "PulseUITest-\(identifier.uuidString)",
-                url: directoryURL.appendingPathComponent(PulseStoreContract.storeFilename)
+                location: try PulseStoreLocation(directoryURL: directoryURL)
             )
         }
         if ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil {
-            return .inMemory(name: "PulseUnitTests")
+            return .inMemory(
+                name: "PulseUnitTests",
+                workingDirectoryURL: FileManager.default.temporaryDirectory
+                    .appendingPathComponent("PulseUnitTests-\(UUID().uuidString)", isDirectory: true)
+            )
         }
 #endif
         let sharedLocation = try PulseStoreLocator().appGroupLocation(
             identifier: PulseRuntimeIdentity.appGroupIdentifier
         )
-        return .disk(
-            name: PulseStoreContract.storeName,
-            url: sharedLocation.storeURL
-        )
+        return .disk(name: PulseStoreContract.storeName, location: sharedLocation)
     }
 }
 

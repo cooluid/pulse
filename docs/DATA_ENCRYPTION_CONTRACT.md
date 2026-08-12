@@ -1,109 +1,71 @@
-# Pulse 数据加密合同
+# Pulse 1.1 数据保护与加密归档合同
 
-版本：1.0  
-状态：1.0 发布前正式合同  
-适用范围：iOS App、Widget、PulseCore、用户主动创建的备份文件
+版本：2.0
+状态：Canonical Contract
+更新时间：2026-08-12
 
-## 1. 安全目标与非目标
+## 1. 安全目标
 
-安全目标：
+- App Group 的 SwiftData store、sidecar、媒体与归档工作目录统一使用 `NSFileProtectionCompleteUntilFirstUserAuthentication`。
+- 用户导出的 `.pulsebackup` 离开设备后仍具备机密性、完整性、条目身份和格式认证。
+- 错误口令、篡改、截断、尾随、未知版本/算法、超限、路径穿越、缺失或额外媒体条目全部失败关闭，且不先修改当前数据。
+- 不保存口令、派生密钥或明文归档，不提供默认密码、找回、后门或降级 decoder。
 
-- 设备内的 SwiftData store、WAL 和 SHM 由 iOS Data Protection 保护；设备重启后首次解锁前不可读。
-- 用户主动导出的备份在离开设备后仍保持机密性、完整性和来源格式可验证。
-- 错误口令、文件篡改、截断、未知算法、未知版本、超限数据和无效业务事实一律失败关闭，且绝不先删除当前数据。
-- 密码、派生密钥、明文备份和解密中的临时内容不得写入 UserDefaults、Keychain、日志、诊断、通知或持久化临时目录。
+不承诺设备已解锁且系统/进程被攻破时仍能保护使用中的内容；不用混淆替代密码学。
 
-非目标：
+## 2. 本地文件保护
 
-- 不承诺在设备已解锁且系统、进程或用户会话已经被攻破时保护正在使用的数据。
-- 不用自研算法、字段级可逆混淆、代码混淆或隐藏文件名替代密码学。
-- 不提供密码找回、默认密码、设备绑定密钥、后门或跳过校验的恢复路径。
-- 1.0 备份只包含结构化事实，不包含未来可能加入的照片或其他媒体。
+`Pulse.store` 与 `Media/{originals,thumbnails,staging}` 是唯一持久化位置。图片不进入 UserDefaults、Widget 快照或第二数据库。选择“首次解锁后可用”是为了 Widget 在首次解锁后的后台读取签到；真实照片仍只由 App 打开。
 
-## 2. 设备内数据保护
+原图和缩略图分别以 SHA-256 和 byteCount 校验。启动审计删除未被元数据引用的不可变文件，并把被引用文件缺失视为错误；不得生成占位图冒充原图或缩略图。
 
-- 唯一事实源仍是 App Group 中的 SwiftData store；`CheckInRecord` 仍是唯一签到事实，所有写入仍由 `SwiftDataCheckInRepository` 所有。
-- App 与 Widget 的默认数据保护等级统一为 `NSFileProtectionCompleteUntilFirstUserAuthentication`。
-- `PersistenceController` 在打开 store 前为专用目录及已有 store 文件设置同一保护等级，并在容器建立后再次核验新建 sidecar 文件。
-- 选择“首次解锁后可用”是明确的产品权衡：重启后首次解锁前保护数据；首次解锁后允许 Widget 在锁屏及后台读取当天状态。不得把 Widget 复制到 UserDefaults 或第二份明文缓存以绕过保护。
+## 3. 唯一归档协议
 
-## 3. 加密备份唯一协议
+文件类型 `co.fanr.pulse.backup`，扩展名 `.pulsebackup`；container `2`，payload `2`。v1 与预发布明文格式不是兼容输入。
 
-1.0 正式备份只接受 `co.fanr.pulse.backup`，扩展名为 `.pulsebackup`。预发布明文 JSON 不属于公开协议，必须删除其文件导入、导出和兼容升级路径。
+### 3.1 固定头（大端序）
 
-### 3.1 明文负载
-
-- 加密前的内部负载仍使用确定性的 UTF-8 JSON，完整表达 `PulseBackupPayload`。
-- 内部负载标识为 `co.fanr.pulse.payload`，`schemaVersion == 1`。
-- 负载在加密前和解密后都必须经过 `PulseDataValidator`；记录数量上限为 50,000。
-- 内部 JSON 只存在于内存，不作为用户可选文件类型，也不得写入持久化临时文件。
-
-### 3.2 二进制容器 v1
-
-所有多字节整数使用大端序。文件按以下顺序组成：
-
-| 字段 | 长度 | v1 约束 |
+| 字段 | 长度 | v2 约束 |
 | --- | ---: | --- |
-| Magic | 8 bytes | ASCII `PULSEBKP` |
-| Container version | UInt16 | `1` |
-| KDF identifier | UInt8 | `1` = PBKDF2-HMAC-SHA256 |
-| Cipher identifier | UInt8 | `1` = AES-256-GCM |
-| KDF iterations | UInt32 | `600000` |
+| Magic | 8 | `PULSEBKP` |
+| Container version | UInt16 | `2` |
+| KDF identifier | UInt8 | `1` |
+| Cipher identifier | UInt8 | `1` |
+| PBKDF2 iterations | UInt32 | `600000` |
 | Salt length | UInt16 | `16` |
-| Nonce length | UInt16 | `12` |
-| Tag length | UInt16 | `16` |
-| Reserved | UInt16 | 必须为 `0` |
-| Ciphertext length | UInt32 | 不得超过合同上限 |
-| Salt | 16 bytes | 每个文件由系统安全随机源生成 |
-| Nonce | 12 bytes | 每个文件由系统安全随机源生成 |
-| Ciphertext | variable | AES-GCM 密文 |
-| Authentication tag | 16 bytes | AES-GCM tag |
+| Entry count | UInt32 | `1 + mediaCount * 2` |
+| Reserved | UInt16 | `0` |
+| Salt | 16 | 系统安全随机 |
 
-从 Magic 到 Nonce 的全部字节作为 AES-GCM authenticated data。任何元数据变化都必须导致认证失败。
+### 3.2 条目
 
-### 3.3 密钥与口令
+第一条必须是 `manifest.json`，随后每个媒体恰有 original/thumbnail 两条。每条固定头包含 kind、UTF-8 名称长度、明文/密文 UInt64 长度、nonce/tag 长度和保留位；名称、随机 12-byte nonce、密文与 16-byte tag 紧随其后。
 
-- 使用系统 CommonCrypto 的 PBKDF2-HMAC-SHA256，从用户口令 UTF-8 字节和文件随机 salt 派生 32-byte 密钥。
-- 使用系统 CryptoKit 的 AES-256-GCM 加密和认证。
-- 导出口令至少 12 个字符、UTF-8 不超过 1,024 bytes，并要求二次输入完全一致。
-- 口令按用户实际输入的 Unicode 标量精确处理，不 trim、不大小写折叠、不做 Unicode normalization；导入规则与导出完全相同。
-- 不保存口令或派生密钥。视图取消、成功、失败或离开流程时必须清空输入状态。
+固定头 + salt + 条目头 + 条目名称全部作为 AES-GCM authenticated data。每个条目使用同一派生密钥、独立随机 nonce 和 AES-256-GCM 密封。解析按条目有界读取和解密，不把整个多年归档加载到内存。
 
-### 3.4 解析与资源上限
+Manifest 是确定性 sorted-key UTF-8 JSON，包含 Habit、Records 和全部 Media 元数据；上限 16 MiB、记录 50,000、媒体 20,000。单原图最大 24 MiB、缩略图最大 2 MiB、归档文件最大 512 GiB。所有 UInt64 到内存长度的转换必须先受当前条目上限约束。
 
-- 解析器必须先验证固定头和精确长度，再分配或解密可变内容。
-- 加密文件最大 32 MiB；明文负载、密文长度和记录数量分别受限，整数运算必须检查溢出。
-- v1 不尝试其他算法、其他迭代次数、其他 nonce/tag 长度或明文 JSON decoder。
-- 对外不区分“口令错误”和“文件被篡改”，避免暴露认证细节；未知容器版本可以单独提示需要更新 App。
+### 3.3 KDF 与口令
 
-## 4. 用户流程
+- CommonCrypto PBKDF2-HMAC-SHA256，600,000 次，随机 16-byte salt，派生 32-byte key。
+- CryptoKit AES-256-GCM；每个条目独立随机 12-byte nonce / 16-byte tag。
+- 口令至少 12 个字符、UTF-8 最多 1,024 bytes；导出要求二次一致。
+- 口令不 trim、不大小写折叠、不 Unicode normalization；UI 流程结束即释放。
 
-### 4.1 导出
+## 4. 导出与恢复
 
-1. 用户选择“导出加密备份”。
-2. App 显示安全输入界面，说明密码无法找回；验证长度及两次输入一致。
-3. App 在内存生成、验证并加密负载，然后交给系统文件导出器保存 `.pulsebackup`。
-4. 导出器完成、失败或取消后，App 释放文档并清空口令。
+导出先验证 manifest，再写相邻随机 `.writing` 文件、同步、施加文件保护并原子移动为最终工作文件；SwiftUI 通过 `Transferable` 交给系统导出器，不构造全量 `Data` 或 `FileDocument`。
 
-### 4.2 恢复
+恢复通过安全作用域打开用户文件，在隔离受保护目录逐条认证并落盘。Manifest、entry count、名称集合、kind、原图与缩略图各自的 bytes/SHA-256 必须完全一一对应。认证失败统一提示“密码错误或文件损坏”；未知版本可提示需要兼容版本。用户二次确认后才进入领域替换事务。
 
-1. 用户只可选择 `.pulsebackup`。
-2. App 请求口令后以 32 MiB 硬上限有界读取文件，并在内存解密、认证、解析和校验；不能只依赖可竞态的文件元数据检查。
-3. 只有全部校验成功后才显示记录数量及“替换当前数据”的不可撤销确认。
-4. 用户确认后才通过 Repository 原子替换事实；任何此前失败都不得改变当前数据。
+## 5. 免费数据主权
 
-## 5. 内购边界
+拍摄、查看、删除、存储占用、完整加密导出和恢复永久免费；归档不携带购买状态、transaction、receipt、Apple ID 或服务器凭证。权益到期或离线不得阻止用户访问或备份自己的照片。
 
-- 加密备份、恢复、已有事实的读取、删除和再次导出永久属于免费数据主权能力。
-- StoreKit 权益只能通过统一的 `PulseEnhancementContract` 及其提醒/Widget 访问策略控制可选价值，不能在备份或 Repository 中读取可变 `isPro` 标记。
-- 订阅到期、收据暂不可用或离线时，不得阻止用户访问、备份或恢复既有事实。
-- 加密格式不携带购买状态，不把 StoreKit transaction、receipt、Apple ID 或服务器凭证写入备份。
+## 6. 验收
 
-## 6. 验收门槛
-
-- PBKDF2 官方测试向量通过；同一负载和口令两次导出产生不同 salt、nonce 和文件字节。
-- 正确口令完整 round-trip；错误口令以及 header、salt、nonce、ciphertext、tag 任一位变化均失败关闭。
-- 未知版本、算法、保留位、非合同参数、截断、尾随字节、超限长度和明文 JSON 均拒绝。
-- 中英文界面完整，SecureField 不泄漏输入；VoiceOver 能理解密码要求、不可找回、错误和替换风险。
-- App/Widget Release entitlement 与真实 store 文件保护等级一致；重启后首次解锁边界和 Widget 真机行为单独验收。
-- Release Archive 明确声明 `ITSAppUsesNonExemptEncryption = NO`；该声明以“仅调用 Apple OS 提供的标准密码学能力”为事实基础，若未来引入第三方/自带密码学实现必须重新审查出口合规。
+- 同一 payload/口令两次文件字节不同；正确口令可完整 round-trip。
+- header、salt、entry header/name/nonce/ciphertext/tag 任一变化失败；缺条目、重条目、额外条目、路径穿越、超限和尾随失败。
+- 多媒体归档以逐文件内存峰值运行；低空间写入不覆盖旧归档或当前媒体。
+- 清除/恢复中断后数据库不指向半文件；下次启动审计收敛孤儿。
+- 真机验证首次解锁前后文件保护、后台/Widget 边界和导出到文件提供器。

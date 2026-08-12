@@ -143,7 +143,7 @@ public enum PulseWidgetProjector {
 @MainActor
 public enum PulseWidgetSnapshotReader {
     public static func readTimelinePlan(
-        repository: any CheckInRepositoryProtocol,
+        repository: any PulseRepositoryProtocol,
         at date: Date
     ) throws -> PulseWidgetTimelinePlan? {
         guard let habit = try repository.existingPrimaryHabit() else { return nil }

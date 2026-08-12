@@ -1,6 +1,7 @@
 import Foundation
 import Observation
 import PulseCore
+import UIKit
 
 enum AppLoadState: Equatable {
     case loading
@@ -15,6 +16,10 @@ enum AppOperation: Equatable {
     case resetData
     case restoreBackup
     case updateTimeZone
+    case saveMedia
+    case deleteMedia
+    case exportBackup
+    case exportMedia
 }
 
 enum ReminderSyncState: Equatable {
@@ -27,7 +32,9 @@ enum ReminderSyncState: Equatable {
 @MainActor
 @Observable
 final class PulseAppModel {
-    private let repository: any CheckInRepositoryProtocol
+    private let repository: any PulseRepositoryProtocol
+    private let mediaService: ImprintMediaService
+    private let archiveWorkingDirectoryURL: URL
     private let reminderScheduler: any ReminderScheduling
     private let clock: any PulseClock
     private let hapticFeedback: any HapticFeedbackProviding
@@ -39,6 +46,7 @@ final class PulseAppModel {
     private var reminderEnabledIntent: Bool?
     private var hasAppliedUITestReset = false
     private var recordsByDay: [LogicalDay: CheckInRecordSnapshot] = [:]
+    private var mediaByDay: [LogicalDay: ImprintMediaSnapshot] = [:]
 
     let settings: AppSettings
     let featureAccess: FeatureAccessController
@@ -46,6 +54,8 @@ final class PulseAppModel {
     private(set) var loadState: AppLoadState = .loading
     private(set) var habit: HabitSnapshot?
     private(set) var records: [CheckInRecordSnapshot] = []
+    private(set) var media: [ImprintMediaSnapshot] = []
+    private(set) var mediaStorageByteCount: Int64 = 0
     private(set) var timeZone: TimeZone?
     private(set) var today: LogicalDay?
     private(set) var habitStartDay: LogicalDay?
@@ -60,7 +70,9 @@ final class PulseAppModel {
     var errorMessage: String?
 
     init(
-        repository: any CheckInRepositoryProtocol,
+        repository: any PulseRepositoryProtocol,
+        mediaService: ImprintMediaService,
+        archiveWorkingDirectoryURL: URL,
         settings: AppSettings,
         featureAccess: FeatureAccessController,
         reminderScheduler: any ReminderScheduling,
@@ -69,6 +81,8 @@ final class PulseAppModel {
         widgetTimelineReloader: any WidgetTimelineReloading = WidgetTimelineReloader()
     ) {
         self.repository = repository
+        self.mediaService = mediaService
+        self.archiveWorkingDirectoryURL = archiveWorkingDirectoryURL
         self.settings = settings
         self.featureAccess = featureAccess
         self.reminderScheduler = reminderScheduler
@@ -107,6 +121,11 @@ final class PulseAppModel {
     var todayRecord: CheckInRecordSnapshot? {
         guard let today else { return nil }
         return recordsByDay[today]
+    }
+
+    var todayMedia: ImprintMediaSnapshot? {
+        guard let today else { return nil }
+        return mediaByDay[today]
     }
 
     var recentDays: [CalendarDayItem] {
@@ -153,6 +172,7 @@ final class PulseAppModel {
         await featureAccessTask.value
         enforceWidgetStyleAccess()
         if loadState == .ready {
+            await auditMediaStorage()
             await enqueueReminderReconciliation().value
         }
     }
@@ -162,6 +182,7 @@ final class PulseAppModel {
         await reload(reconcileReminders: false)
         await featureAccess.refresh()
         if loadState == .ready {
+            await auditMediaStorage()
             await enqueueReminderReconciliation().value
         }
     }
@@ -229,6 +250,73 @@ final class PulseAppModel {
         }
     }
 
+    func saveTodayMedia(
+        image: UIImage,
+        cameraPosition: ImprintCameraPosition
+    ) async -> Bool {
+        guard operation == nil, let habit, let record = todayRecord else { return false }
+        operation = .saveMedia
+        defer { operation = nil }
+        do {
+            _ = try await mediaService.save(
+                image: image,
+                habit: habit,
+                record: record,
+                cameraPosition: cameraPosition
+            )
+            try loadSnapshot()
+            mediaStorageByteCount = try await mediaService.storageByteCount()
+            if settings.hapticsEnabled {
+                hapticFeedback.notifySuccess()
+            }
+            return true
+        } catch {
+            present(error)
+            return false
+        }
+    }
+
+    func deleteMedia(id: UUID) async -> Bool {
+        guard operation == nil, let item = media.first(where: { $0.id == id }) else {
+            return false
+        }
+        operation = .deleteMedia
+        defer { operation = nil }
+        do {
+            try await mediaService.delete(item)
+            try loadSnapshot()
+            mediaStorageByteCount = try await mediaService.storageByteCount()
+            return true
+        } catch {
+            present(error)
+            return false
+        }
+    }
+
+    func thumbnailData(for item: ImprintMediaSnapshot) async throws -> Data {
+        try await mediaService.thumbnailData(for: item)
+    }
+
+    func originalDataForExport(for item: ImprintMediaSnapshot) async -> Data? {
+        guard operation == nil else { return nil }
+        operation = .exportMedia
+        defer { operation = nil }
+        do {
+            return try await mediaService.originalData(for: item)
+        } catch {
+            present(error)
+            return nil
+        }
+    }
+
+    func media(for day: LogicalDay) -> ImprintMediaSnapshot? {
+        mediaByDay[day]
+    }
+
+    func hasMedia(for day: LogicalDay) -> Bool {
+        mediaByDay[day] != nil
+    }
+
     func resetAllData() async -> Bool {
         guard operation == nil else { return false }
         operation = .resetData
@@ -237,6 +325,7 @@ final class PulseAppModel {
         do {
             settings.markResetPending()
             let newHabit = try repository.resetAll(systemTimeZone: .autoupdatingCurrent)
+            try await mediaService.removeAllFiles()
             settings.reset()
             await reminderReconcileTask?.value
             await reminderScheduler.removeAllPulseNotifications()
@@ -379,10 +468,13 @@ final class PulseAppModel {
         }
     }
 
-    func makeBackupDocument(passphrase: String) async throws -> PulseBackupDocument {
+    func makeBackupExport(passphrase: String) async throws -> PulseBackupExport {
         guard let habit else {
             throw PulseCoreError.backupUnavailable
         }
+        guard operation == nil else { throw PulseCoreError.backupUnavailable }
+        operation = .exportBackup
+        defer { operation = nil }
         let startLogicalDay = habit.startLogicalDay
         let payload = PulseBackupPayload(
             format: PulseBackupContract.payloadFormatIdentifier,
@@ -406,14 +498,26 @@ final class PulseAppModel {
                     createdAt: $0.createdAt,
                     timeZoneIdentifier: $0.timeZoneIdentifier
                 )
-            }
+            },
+            media: media.map(PulseBackupPayload.MediaPayload.init(snapshot:))
         )
-        return try await Task.detached(priority: .userInitiated) {
-            try PulseBackupDocument(payload: payload, passphrase: passphrase)
-        }.value
+        try FileManager.default.createDirectory(
+            at: archiveWorkingDirectoryURL,
+            withIntermediateDirectories: true
+        )
+        try PulseStoreProtection.enforce(in: archiveWorkingDirectoryURL)
+        let destinationURL = archiveWorkingDirectoryURL.appendingPathComponent(
+            "export-\(UUID().uuidString).\(PulseBackupContract.fileExtension)"
+        )
+        try await mediaService.writeArchive(
+            payload: payload,
+            to: destinationURL,
+            passphrase: passphrase
+        )
+        return PulseBackupExport(fileURL: destinationURL)
     }
 
-    func decodeBackup(from url: URL, passphrase: String) async throws -> PulseBackupPayload {
+    func decodeBackup(from url: URL, passphrase: String) async throws -> PulseDecodedBackup {
         let isSecurityScoped = url.startAccessingSecurityScopedResource()
         defer {
             if isSecurityScoped {
@@ -421,19 +525,26 @@ final class PulseAppModel {
             }
         }
 
-        let data = try PulseBackupDocument.readEncryptedData(from: url)
+        let stagingURL = archiveWorkingDirectoryURL.appendingPathComponent(
+            "restore-\(UUID().uuidString)",
+            isDirectory: true
+        )
         return try await Task.detached(priority: .userInitiated) {
-            try PulseBackupDocument.decode(data, passphrase: passphrase)
+            try PulseEncryptedBackupCodec.read(
+                from: url,
+                stagingDirectoryURL: stagingURL,
+                passphrase: passphrase
+            )
         }.value
     }
 
-    func restoreBackup(_ payload: PulseBackupPayload) async -> Bool {
+    func restoreBackup(_ decoded: PulseDecodedBackup) async -> Bool {
         guard operation == nil else { return false }
         operation = .restoreBackup
         invalidateReminderIntents()
         defer { operation = nil }
         do {
-            habit = try repository.replaceAll(with: payload)
+            habit = try await mediaService.restore(decoded)
             selectedMonth = nil
             try loadSnapshot()
             await enqueueReminderReconciliation().value
@@ -505,6 +616,7 @@ final class PulseAppModel {
         let resolvedToday = currentHabit.logicalDay(at: referenceNow)
         let resolvedStartDay = currentHabit.startLogicalDay
         let fetchedRecords = try repository.allRecords(habitID: currentHabit.id)
+        let fetchedMedia = try repository.allMedia(habitID: currentHabit.id)
 
         let resolvedRecordsByDay = Dictionary(
             uniqueKeysWithValues: fetchedRecords.map { ($0.logicalDay, $0) }
@@ -513,11 +625,13 @@ final class PulseAppModel {
 
         habit = currentHabit
         records = fetchedRecords
+        media = fetchedMedia
         timeZone = resolvedTimeZone
         today = resolvedToday
         habitStartDay = resolvedStartDay
         checkedDays = resolvedCheckedDays
         recordsByDay = resolvedRecordsByDay
+        mediaByDay = Dictionary(uniqueKeysWithValues: fetchedMedia.map { ($0.logicalDay, $0) })
         statistics = CheckInStatistics.calculate(
             checkedDays: Set(resolvedCheckedDays.filter { $0 <= resolvedToday }),
             today: resolvedToday,
@@ -525,6 +639,17 @@ final class PulseAppModel {
         )
         if wasShowingCurrentMonth {
             selectedMonth = resolvedToday.firstDayOfMonth()
+        }
+    }
+
+    private func auditMediaStorage() async {
+        guard let habit else { return }
+        do {
+            try await mediaService.audit(habitID: habit.id)
+            mediaStorageByteCount = try await mediaService.storageByteCount()
+        } catch {
+            loadState = .failed
+            present(error)
         }
     }
 

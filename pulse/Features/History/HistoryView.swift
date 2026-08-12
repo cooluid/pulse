@@ -1,5 +1,6 @@
 import SwiftUI
 import PulseCore
+import UniformTypeIdentifiers
 
 struct HistoryView: View {
     @Bindable var model: PulseAppModel
@@ -9,7 +10,7 @@ struct HistoryView: View {
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @Environment(\.locale) private var locale
-    @State private var selectedRecord: CheckInRecordSnapshot?
+    @State private var selectedDay: LogicalDay?
     @State private var monthTransitionDirection = -1
 
     private let columns = Array(
@@ -52,9 +53,9 @@ struct HistoryView: View {
             }
         }
         .toolbar(.hidden, for: .navigationBar)
-        .sheet(item: $selectedRecord) { record in
-            RecordDetailView(record: record, model: model)
-                .presentationDetents([.medium])
+        .sheet(item: $selectedDay) { day in
+            DayArchiveDetailView(day: day, model: model)
+                .presentationDetents([.medium, .large])
                 .presentationDragIndicator(.visible)
         }
     }
@@ -228,15 +229,24 @@ struct HistoryView: View {
             }
 
             ForEach(model.calendarItemsForSelectedMonth()) { item in
-                if item.status == .checked {
+                let hasMedia = model.hasMedia(for: item.day)
+                if item.status == .checked || hasMedia {
                     Button {
-                        selectedRecord = model.record(for: item.day)
+                        selectedDay = item.day
                     } label: {
-                        CalendarDayCell(item: item, isToday: item.day == model.today)
+                        CalendarDayCell(
+                            item: item,
+                            isToday: item.day == model.today,
+                            hasMedia: hasMedia
+                        )
                     }
                     .buttonStyle(.plain)
                 } else {
-                    CalendarDayCell(item: item, isToday: item.day == model.today)
+                    CalendarDayCell(
+                        item: item,
+                        isToday: item.day == model.today,
+                        hasMedia: false
+                    )
                 }
             }
         }
@@ -334,6 +344,7 @@ private struct StatisticTile: View {
 private struct CalendarDayCell: View {
     let item: CalendarDayItem
     let isToday: Bool
+    let hasMedia: Bool
     @Environment(\.locale) private var locale
 
     var body: some View {
@@ -384,6 +395,15 @@ private struct CalendarDayCell: View {
                     )
             }
         }
+        .overlay(alignment: .bottomTrailing) {
+            if hasMedia {
+                Image(systemName: "camera.fill")
+                    .font(.system(size: 8, weight: .bold))
+                    .foregroundStyle(PulseDesign.action)
+                    .padding(PulseDesign.spacing4)
+                    .accessibilityHidden(true)
+            }
+        }
         .contentShape(Rectangle())
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(accessibilityLabel)
@@ -404,10 +424,15 @@ private struct CalendarDayCell: View {
         case .beforeHabit:
             state = PulseLocalization.string("calendar.status.before_habit", locale: locale)
         }
-        return String(
+        let base = String(
             format: PulseLocalization.string("accessibility.date_status_format", locale: locale),
             item.day.storageValue,
             state
+        )
+        guard hasMedia else { return base }
+        return String(
+            format: PulseLocalization.string("calendar.status.with_media_format", locale: locale),
+            base
         )
     }
 
@@ -416,52 +441,130 @@ private struct CalendarDayCell: View {
     }
 }
 
-private struct RecordDetailView: View {
-    let record: CheckInRecordSnapshot
+private struct DayArchiveDetailView: View {
+    let day: LogicalDay
     @Bindable var model: PulseAppModel
     @Environment(\.dismiss) private var dismiss
     @Environment(\.locale) private var locale
     @State private var showsDeleteConfirmation = false
+    @State private var showsMediaDeleteConfirmation = false
+    @State private var photoDocument: ImprintPhotoDocument?
+    @State private var showsPhotoExporter = false
+    @State private var isPreparingPhotoExport = false
+
+    private var record: CheckInRecordSnapshot? { model.record(for: day) }
+    private var media: ImprintMediaSnapshot? { model.media(for: day) }
 
     var body: some View {
         ZStack {
             PulseScreenBackground()
 
-            VStack(spacing: PulseDesign.spacing24) {
-                PulseBrandMark(size: PulseDesign.recordDetailBrandMarkSize)
+            ScrollView {
+                VStack(spacing: PulseDesign.spacing24) {
+                    PulseBrandMark(size: PulseDesign.recordDetailBrandMarkSize)
 
-                VStack(spacing: PulseDesign.spacing8) {
-                    Text(
-                        PulseFormatting.fullDate(
-                            record.logicalDay,
-                            timeZone: record.timeZone,
-                            locale: locale
-                        )
-                    )
-                        .font(.title3.bold())
-                        .foregroundStyle(PulseDesign.ink)
-                    Text(
-                        String(
-                            format: PulseLocalization.string(
-                                "history.checked_at",
-                                locale: locale
-                            ),
-                            PulseFormatting.time(
-                                record.checkedAt,
-                                timeZone: record.timeZone,
+                    VStack(spacing: PulseDesign.spacing8) {
+                        Text(
+                            PulseFormatting.fullDate(
+                                day,
+                                timeZone: model.timeZone ?? .autoupdatingCurrent,
                                 locale: locale
                             )
                         )
-                    )
-                    .foregroundStyle(PulseDesign.secondary)
-                }
+                        .font(.title3.bold())
+                        .foregroundStyle(PulseDesign.ink)
+                        if let record {
+                            Text(
+                                String(
+                                    format: PulseLocalization.string(
+                                        "history.checked_at",
+                                        locale: locale
+                                    ),
+                                    PulseFormatting.time(
+                                        record.checkedAt,
+                                        timeZone: record.timeZone,
+                                        locale: locale
+                                    )
+                                )
+                            )
+                            .foregroundStyle(PulseDesign.secondary)
+                        } else {
+                            Text("history.record_deleted_media_retained")
+                                .foregroundStyle(PulseDesign.secondary)
+                                .multilineTextAlignment(.center)
+                        }
+                    }
 
-                deleteButton
+                    if let media {
+                        ImprintMediaPreview(media: media, load: model.thumbnailData)
+                            .frame(maxWidth: PulseDesign.mediaCardMaxWidth)
+                        photoExportButton(media)
+                        mediaDeleteButton(media)
+                    }
+
+                    if record != nil {
+                        deleteButton
+                    }
+                }
+                .frame(maxWidth: .infinity)
+                .padding(PulseDesign.spacing24)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .padding(PulseDesign.spacing24)
         }
         .tint(PulseDesign.tint)
+        .fileExporter(
+            isPresented: $showsPhotoExporter,
+            document: photoDocument,
+            contentType: .jpeg,
+            defaultFilename: "pulse-\(day.storageValue).jpg"
+        ) { _ in
+            photoDocument = nil
+        }
+    }
+
+    private func photoExportButton(_ media: ImprintMediaSnapshot) -> some View {
+        Button {
+            guard !isPreparingPhotoExport else { return }
+            isPreparingPhotoExport = true
+            Task {
+                defer { isPreparingPhotoExport = false }
+                guard let data = await model.originalDataForExport(for: media) else { return }
+                photoDocument = ImprintPhotoDocument(data: data)
+                showsPhotoExporter = true
+            }
+        } label: {
+            if isPreparingPhotoExport {
+                ProgressView()
+            } else {
+                Label("media.export_original", systemImage: "square.and.arrow.up")
+            }
+        }
+        .buttonStyle(.bordered)
+        .disabled(isPreparingPhotoExport)
+        .accessibilityIdentifier("history.media.export.button")
+    }
+
+    private func mediaDeleteButton(_ media: ImprintMediaSnapshot) -> some View {
+        Button("today.media.delete", role: .destructive) {
+            showsMediaDeleteConfirmation = true
+        }
+        .buttonStyle(.bordered)
+        .confirmationDialog(
+            "media.delete_confirmation.title",
+            isPresented: $showsMediaDeleteConfirmation,
+            titleVisibility: .visible
+        ) {
+            Button("media.delete_confirmation.action", role: .destructive) {
+                Task {
+                    if await model.deleteMedia(id: media.id), record == nil {
+                        dismiss()
+                    }
+                }
+            }
+            Button("action.cancel", role: .cancel) {}
+        } message: {
+            Text("media.delete_confirmation.message")
+        }
     }
 
     private var deleteButton: some View {
@@ -477,7 +580,7 @@ private struct RecordDetailView: View {
         ) {
             Button("history.delete_confirmation.action", role: .destructive) {
                 Task {
-                    if await model.delete(recordID: record.id) {
+                    if let record, await model.delete(recordID: record.id), media == nil {
                         dismiss()
                     }
                 }

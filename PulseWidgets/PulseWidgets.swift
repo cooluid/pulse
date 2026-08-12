@@ -343,8 +343,8 @@ private enum PulseWidgetRuntime {
     private static func makeRepository(
         at location: PulseStoreLocation,
         clock: any PulseClock
-    ) throws -> SwiftDataCheckInRepository {
-        SwiftDataCheckInRepository(
+    ) throws -> SwiftDataPulseRepository {
+        SwiftDataPulseRepository(
             container: try PersistenceController.makeContainer(
                 storeName: PulseStoreContract.storeName,
                 storeURL: location.storeURL

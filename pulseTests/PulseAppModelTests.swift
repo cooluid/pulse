@@ -306,12 +306,26 @@ final class PulseAppModelTests: XCTestCase {
         initialWidgetStyle: PulseWidgetStyle = .commitmentManifesto
     ) throws -> TestContext {
         let clock = MutablePulseClock(now: makeDate(day: 10, hour: 12))
-        let repository = SwiftDataCheckInRepository(
+        let repository = SwiftDataPulseRepository(
             container: try PersistenceController.makeInMemoryContainer(),
             clock: clock,
             primaryHabitProvisioning: .createIfMissing(
                 try HabitIdentity(userName: "Test Habit", userPurpose: nil)
             )
+        )
+        let workingDirectory = FileManager.default.temporaryDirectory
+            .appendingPathComponent("PulseAppModelTests-\(UUID().uuidString)", isDirectory: true)
+        try FileManager.default.createDirectory(
+            at: workingDirectory,
+            withIntermediateDirectories: true
+        )
+        addTeardownBlock { try? FileManager.default.removeItem(at: workingDirectory) }
+        let mediaService = ImprintMediaService(
+            repository: repository,
+            fileStore: try PulseMediaFileStore(
+                rootURL: workingDirectory.appendingPathComponent("Media", isDirectory: true)
+            ),
+            clock: clock
         )
         let suiteName = "PulseAppModelTests.\(UUID().uuidString)"
         let defaults = UserDefaults(suiteName: suiteName)!
@@ -335,6 +349,11 @@ final class PulseAppModelTests: XCTestCase {
         let widgetReloader = TestWidgetTimelineReloader()
         let model = PulseAppModel(
             repository: repository,
+            mediaService: mediaService,
+            archiveWorkingDirectoryURL: workingDirectory.appendingPathComponent(
+                "ArchiveWork",
+                isDirectory: true
+            ),
             settings: settings,
             featureAccess: featureAccess,
             reminderScheduler: scheduler,

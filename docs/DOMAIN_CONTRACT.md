@@ -1,101 +1,88 @@
-# Pulse 签到业务合同
+# Pulse 1.1 领域合同
 
-文档版本：1.6<br>
+文档版本：2.0
 状态：Canonical Contract
+更新时间：2026-08-12
 
-本文档是日期、签到事实和加密备份恢复的唯一业务规则来源。
+本文是主承诺、逻辑日、签到事实、影像事实、删除和恢复语义的唯一来源。
 
-## 1. 数据事实
+## 1. 事实模型
 
-Pulse 1.0 只有一个主签到项目。`Habit.slotKey == "primary"` 是结构唯一键，不能依赖“数据库碰巧只有一行”。
+### 1.1 Habit
 
-`Habit` 保存：
+Pulse 只有一个 `slotKey == "primary"` 的主承诺。名称规范化后为 1...80 个 Swift `Character`；可选说明为空时为 `nil`，非空最多 160 个字符；拒绝控制字符、换行和不可见格式控制符。`createdAt`、`startLogicalDay`、创建时区和当前签到时区是稳定事实，页面或 UserDefaults 不保存副本。
 
-- 稳定 ID、名称、可选的主承诺说明、身份确认状态和绝对创建时间 `createdAt`；
-- 创建当时计算并永久保存的 `startLogicalDay`；
-- 创建时区 `creationTimeZoneIdentifier`，用于证明起始日来源；
-- 当前签到时区 `timeZoneIdentifier`，只影响当前日期和后续签到。
+### 1.2 CheckInRecord
 
-`CheckInRecord` 是签到事实的唯一来源，保存项目 ID、逻辑日、实际签到时间、写入时间，以及该记录生成时使用的时区。历史记录的逻辑日和记录时区永不随当前项目时区重写。Repository 在模型越过 `PulseCore` 边界前统一验证身份规范、起始日来源、时区、recordKey、时间顺序和逻辑日唯一性；损坏事实必须失败，不能降级成可空快照或由页面自行猜测。对外不可变快照只是当前 store 的值投影，不具备写入能力，也不构成第二份持久化事实。
+`CheckInRecord` 是签到与统计的唯一事实。唯一键为 `lowercased(habitID) + ":" + logicalDay`；保存项目 ID、逻辑日、签到时间、写入时间和当时使用的时区。统计、连续天数、今天状态和月历都是重建投影。
 
-不保存 `isCheckedToday`、连续天数、累计数、月历状态等派生值。
+### 1.3 ImprintMedia
 
-### 1.1 主承诺身份
+`ImprintMedia` 是私人影像索引事实，不是签到事实。唯一键为 `lowercased(habitID) + "|" + logicalDay`，每个逻辑日最多一个。它保存：
 
-Pulse 只有一个 `primary` 主承诺。名称、说明和确认状态属于该 `Habit`，不得在 `UserDefaults`、页面状态或通知配置中保存第二份。
+- 稳定媒体 ID、项目 ID、逻辑日与可空 `recordID`；
+- 拍摄/创建/修改时间；
+- 原图和缩略图的安全相对路径；
+- 固定 `image/jpeg` 类型、原图与缩略图各自的 bytes/SHA-256、原图像素尺寸和前/后镜头来源。
 
-- 名称经首尾空白规范化后必须包含 1...80 个 Swift `Character`；拒绝控制字符、换行和不可见格式控制符，但允许 Emoji 序列与语言连接所需的 ZWJ/ZWNJ。
-- “为什么重要”为可选单句说明；空白输入规范化为 `nil`，非空时最多 160 个 `Character`，字符安全规则与名称一致。
-- UI 输入在提交时执行一次确定性首尾空白规范化；持久化模型和导入文件必须已经是规范形式，不允许读取时静默修补。
-- 首次创建和完整清除后的主承诺均为未确认；确认成功后才能进入主界面。
-- 首次确认和后续编辑只调用 Repository 的同一个身份更新命令。保存成功后才更新页面；失败时回滚并保留输入。
-- 修改名称或说明不得改变 `Habit.id`、`slotKey`、`createdAt`、`startLogicalDay`、时区或任何 `CheckInRecord`，也不得触发补签或重算历史事实。
-- 1.0 的本地通知保持通用隐私文案，不把主承诺名称或说明复制进通知请求。
+二进制文件只存在 `Pulse/Media/originals` 与 `Pulse/Media/thumbnails`，不作为 SwiftData Blob。路径只能是两段相对路径，拒绝绝对路径、`..`、反斜杠、符号链接和未知扩展名。
 
-## 2. 逻辑日与时区
+## 2. 逻辑日与签到
 
-逻辑日是一个绝对时间在指定 IANA 时区下的 Gregorian 年、月、日，存储格式固定为 `yyyy-MM-dd`。1.0 的日界线只有当地 00:00；领域模型不提供非零日界线字段、参数或兼容路径。
+- 逻辑日是绝对时间在项目 IANA 时区下的 Gregorian 日期，存储为 `yyyy-MM-dd`，日界线只允许 00:00。
+- Repository 使用注入的 `PulseClock` 计算当前日，不接受调用方日期，因此没有补签或伪造历史入口。
+- 同日重复签到返回 `alreadyPresent` 回执；App/Widget 并发由数据库唯一约束、rollback 和正式回读裁决。
+- 修改当前时区不重写项目起始日或历史记录；若新时区的今天早于起始日则拒绝。
+- 日期加减必须使用 `Calendar`，不得假定一天恒为 86,400 秒。
 
-- 首次创建项目时，以系统时区同时初始化创建时区和当前签到时区。
-- 设备时区变化不会自动改变项目时区。
-- 用户主动修改项目时区时，`startLogicalDay` 和所有历史记录保持不变。
-- 如果新时区下的“今天”早于项目起始日，修改失败并保留原时区。
-- 日期加减使用 `Calendar`，不得假定一天恒为 86,400 秒。
+## 3. 影像事务与独立性
 
-## 3. 唯一性、签到与删除
+### 3.1 创建与重拍
 
-唯一业务键为：
+影像只能在当天已有正式签到记录后创建。处理管线唯一：规范方向与尺寸、黑色不透明底合成、去来源元数据、原图 JPEG 0.90、缩略图 JPEG 0.82。原图最大边 4096 px，缩略图最大边 720 px；编码失败、空数据或超限一律拒绝。
 
-```text
-recordKey = lowercased(habitID) + ":" + logicalDay
-```
+写入顺序必须保持“数据库永不指向未完成文件”：
 
-- 同一项目同一逻辑日最多一条记录；数据库唯一约束是最终防线。
-- Repository 使用自己注入的权威 Clock 计算当前日，不接受调用方传日期，因此没有补签或伪造历史日期入口。
-- 同日重复调用返回正式提交回执，明确区分 `created` 与 `alreadyPresent`；回执只携带记录 ID、逻辑日、签到时间和处置结果，不是第二份持久化事实。
-- 只有新记录持久化成功或幂等回读到当天既有正式记录后才能返回提交回执；UI 的实心落印只消费该回执或当前记录快照，不消费按钮点击本身。
-- App 与 Widget 同时写入时不能依赖进程内锁：若插入保存失败，Repository 必须 rollback 并按同一 `recordKey` 回读；只有读到正式记录才能返回 `alreadyPresent`，否则报告原始持久化失败。
-- 当前日早于项目起始日时拒绝签到。
-- 删除只删除明确 ID；失败时保留页面和详情，不提前关闭界面。
-- 所有写入只经过 `SwiftDataCheckInRepository`，保存失败回滚 `ModelContext`。
+1. 原图和缩略图写入受保护 staging；
+2. 两个文件以随机 UUID 不可变路径安装到正式目录；
+3. 原图和缩略图各自的 size/SHA-256 与元数据一起提交 Repository；
+4. 重拍提交成功后才清理旧文件；数据库失败则删除新文件。
 
-## 4. 统计与月历
+进程在步骤 2 后退出只会产生孤儿文件；启动审计根据正式 `ImprintMedia` 引用删除孤儿。任何缺失的被引用文件是完整性错误，不能显示“影像已保存”。
 
-- 项目开始前：不计入统计。
-- 未来：不计入统计。
-- 今天未签到：待签到，不提前记为漏签。
-- 当前连续天数：今天已签到则从今天向前；今天未签到则从昨天向前。
-- 最长连续与累计数从有效逻辑日集合计算，删除后重算。
-- 内存快照同时建立按逻辑日索引，页面查询不重复线性扫描全量记录。
+### 3.2 删除
 
-## 5. 清除全部数据
+- 删除照片：先删除 `ImprintMedia` 索引，再清理文件；签到与统计不变。
+- 删除签到：只删除 `CheckInRecord`，把同日媒体的 `recordID` 置空；照片仍可从历史日期访问。
+- 用户再次在同日签到时，Repository 把现存同日媒体重新关联到新记录。
+- 清除全部数据：删除 Habit、CheckInRecord、ImprintMedia、原图、缩略图、staging、偏好和 Pulse 通知，随后创建新的未确认主承诺。
 
-清除包括项目、记录、应用偏好和 Pulse 创建的通知，完成后创建新的空主项目并将所有根导航复位。
+## 4. 单一所有权
 
-跨 SwiftData、UserDefaults 和通知中心无法形成单一数据库事务，因此开始前写入持久化的 `maintenance.resetPending` 操作日志。任一步骤中断时，下次启动会幂等地完成清除；只有全部完成后才删除日志并向 UI 报告成功。
+所有领域写入只通过 `SwiftDataPulseRepository`。SwiftData managed object 不越过 `PulseCore`，App、Widget 和页面只消费不可变快照。`PulseAppModel` 串行化用户操作；UI 不直接拼路径、保存图像或计算事实。
 
-## 6. 加密备份 v1 恢复合同
+Widget/AppIntent 只消费 Habit/CheckInRecord，不读影像，不创建影像，也不把照片投射到系统表面。
 
-恢复文件首先必须通过 [DATA_ENCRYPTION_CONTRACT.md](./DATA_ENCRYPTION_CONTRACT.md) 定义的二进制容器、PBKDF2-HMAC-SHA256、AES-256-GCM 认证、大小上限和口令边界。只有认证解密成功后，内存中的负载才进入以下业务校验：
+## 5. 统计
 
-- `format == "co.fanr.pulse.payload"` 且 `schemaVersion == 1`；
-- 文件不超过 32 MiB，记录不超过 50,000 条；
-- 项目名称、可选说明和身份确认状态满足第 1.1 节；
-- 当前时区和创建时区都有效；
-- `startLogicalDay` 必须等于 `createdAt` 在创建时区下的日期；
-- `exportedAt` 在当前时区下的日期不得早于项目起始日；
-- 每条记录的逻辑日必须等于 `checkedAt` 在记录时区下的日期；
-- 记录不早于项目创建/起始日，写入时间不早于签到时间且不晚于导出时间；
-- 记录 ID 和逻辑日都唯一。
+- 项目开始前和未来日期不计入统计；今天未签到为待签到，不提前记漏签。
+- 当前连续：今天已签到从今天向前，否则从昨天向前；最长连续和累计从有效签到日集合计算。
+- `ImprintMedia` 的存在、删除、脱离记录或归档恢复都不得增加累计数或延续连续天数。
 
-完整验证成功并经用户再次确认后才全量替换；任一认证、校验或保存失败都不修改现有事实。恢复不覆盖设备偏好，完成后重新协调提醒。
+## 6. 清除与恢复
 
-`PulseEncryptedBackupCodec` 是唯一容器密码学入口，`PulseBackupPayloadCodec` 是认证后负载的唯一编解码与校验入口；只接受完整 v1 后再进入 Repository 替换路径。除此之外不猜参数、不尝试多解码器碰运气、不持久化双版本模型，也不升级预发布文件。
+清除继续使用 `maintenance.resetPending` 跨 SwiftData、文件、偏好和通知进行幂等恢复；只有全部完成才清日志。
 
-文件选择器只消费 `PulseBackupDocument.readableContentTypes` 声明的 `.pulsebackup` 类型，并通过安全作用域读取文件提供器 URL。App 必须声明 `LSSupportsOpeningDocumentsInPlace`，确保 iCloud Drive 等文件提供器可交付原文件；扩展名与提供器元数据只负责筛选，容器头、认证 tag、内部格式标识和 schema 校验才是恢复权威边界。
+恢复只接受 [DATA_ENCRYPTION_CONTRACT.md](./DATA_ENCRYPTION_CONTRACT.md) 的 container v2 / payload v2。解密到隔离 staging 后必须验证：
 
-预发布明文 JSON、未知容器参数、版本不等于 1 或缺少当前字段的负载不是发布合同，必须明确拒绝。Pulse 1.0 发布后，`PulseSchema 1.0.0` 与加密备份 v1 成为必须长期保留的公开基线；后续任何 schema 或文件协议变化都必须新增显式迁移、上一公开版本 fixture 和失败恢复测试，不能再次清洁断代。
+- Habit、Record 满足本合同；记录 ID/逻辑日唯一；
+- Media ID、逻辑日、两个路径唯一；可空 `recordID` 若存在必须准确指向同日记录；
+- 时间顺序、尺寸、bytes、SHA-256、镜头枚举与全部媒体条目一致；无缺失、额外或重复条目。
 
-## 7. 范围变更
+恢复先把解密媒体安装到新的随机正式路径，再一次性替换数据库；失败删除新文件并保留现有事实，成功后审计清除旧孤儿。恢复不覆盖设备偏好。
 
-补签、多项目、非零日界线、云同步、删除审计和服务端防作弊都属于新业务规则。进入范围前必须先修改本合同、数据迁移策略和测试矩阵。Widget 不改变本合同，只增加共享容器与跨进程消费者；其正式迁移和能力门禁以 [WIDGET_SHARED_STORE_CONTRACT.md](./WIDGET_SHARED_STORE_CONTRACT.md) 为准。
+旧 container/payload v1、预发布 JSON/CSV、未知参数和字段缺失都明确拒绝；不存在试探 decoder、自动补字段或双版本模型。
+
+## 7. 公开基线
+
+Pulse 尚未公开发布，`PulseSchema 1.1.0` 与 backup v2 是首次公开候选的干净基线。存在旧 store 但没有精确 `1.1.0` marker 时启动失败并要求清洁安装。1.1 首次公开发布后，未来版本必须从这个基线显式迁移，不得再次断代。

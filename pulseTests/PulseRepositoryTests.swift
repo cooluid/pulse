@@ -4,7 +4,7 @@ import XCTest
 @testable import pulse
 
 @MainActor
-final class CheckInRepositoryTests: XCTestCase {
+final class PulseRepositoryTests: XCTestCase {
     private let timeZone = TimeZone(identifier: "Asia/Shanghai")!
 
     func testExistingPrimaryHabitIsAReadOnlyLookup() throws {
@@ -20,7 +20,7 @@ final class CheckInRepositoryTests: XCTestCase {
     }
 
     func testExistingStoreOnlyProvisioningNeverCreatesAPrimaryHabit() throws {
-        let repository = SwiftDataCheckInRepository(
+        let repository = SwiftDataPulseRepository(
             container: try PersistenceController.makeInMemoryContainer(),
             clock: MutableRepositoryClock(now: makeDate(day: 10, hour: 12)),
             primaryHabitProvisioning: .existingStoreOnly
@@ -116,7 +116,7 @@ final class CheckInRepositoryTests: XCTestCase {
 
         let storeURL = directory.appendingPathComponent("Pulse.store")
         let clock = MutableRepositoryClock(now: makeDate(day: 10, hour: 9))
-        let firstRepository = SwiftDataCheckInRepository(
+        let firstRepository = SwiftDataPulseRepository(
             container: try PersistenceController.makeContainer(
                 storeName: "PulseConcurrentStore",
                 storeURL: storeURL
@@ -126,7 +126,7 @@ final class CheckInRepositoryTests: XCTestCase {
         )
         let firstHabit = try firstRepository.primaryHabit(systemTimeZone: timeZone)
 
-        let secondRepository = SwiftDataCheckInRepository(
+        let secondRepository = SwiftDataPulseRepository(
             container: try PersistenceController.makeContainer(
                 storeName: "PulseConcurrentStore",
                 storeURL: storeURL
@@ -141,7 +141,7 @@ final class CheckInRepositoryTests: XCTestCase {
         let firstReceipt = try firstRepository.checkIn(habitID: firstHabit.id)
         let secondReceipt = try secondRepository.checkIn(habitID: secondHabit.id)
 
-        let verificationRepository = SwiftDataCheckInRepository(
+        let verificationRepository = SwiftDataPulseRepository(
             container: try PersistenceController.makeContainer(
                 storeName: "PulseConcurrentStore",
                 storeURL: storeURL
@@ -415,11 +415,12 @@ final class CheckInRepositoryTests: XCTestCase {
                 creationTimeZoneIdentifier: timeZone.identifier,
                 timeZoneIdentifier: timeZone.identifier
             ),
-            records: records
+            records: records,
+            media: []
         )
     }
 
-    private func makeRepository(clock: MutableRepositoryClock) throws -> SwiftDataCheckInRepository {
+    private func makeRepository(clock: MutableRepositoryClock) throws -> SwiftDataPulseRepository {
         try makeRepository(
             container: PersistenceController.makeInMemoryContainer(),
             clock: clock
@@ -429,8 +430,8 @@ final class CheckInRepositoryTests: XCTestCase {
     private func makeRepository(
         container: ModelContainer,
         clock: MutableRepositoryClock
-    ) throws -> SwiftDataCheckInRepository {
-        SwiftDataCheckInRepository(
+    ) throws -> SwiftDataPulseRepository {
+        SwiftDataPulseRepository(
             container: container,
             clock: clock,
             primaryHabitProvisioning: .createIfMissing(try makeInitialIdentity())
