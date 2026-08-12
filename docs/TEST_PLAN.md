@@ -27,11 +27,11 @@
 | Store | 只解析 App Group 正式路径；非法 group ID、group URL 缺失失败；目录/store/sidecar 统一文件保护；不得存在私有路径、事实缓存、journal、staging 或 fallback |
 | 设置 | 主题、周起始日、触觉、提醒时间；App Group 中 `interface.language` / `widget.style` 单一持久化、默认值、重置与损坏值失败关闭；App 私有设置不得复制语言 |
 | StoreKit / 权益 | 非消耗型商品 ID 单一来源；加载失败、购买成功/取消/待处理、恢复、无可恢复购买、未验证/撤销失败关闭；价格只来自 StoreKit；不得持久化 `isPro` |
-| 提醒策略 | 未购买关闭；已购买 iOS 26 + Live Activities 可用选择定时 Activity；iOS 18–25 与 iOS 26 撤权选择本地通知；任何状态只允许一个通道 |
-| 本地通知 | 60 日计划、平台预算、DST、已签到跳过、revision 竞态、关闭/清除取消、切语言与权益变化重新协调；只在该通道请求通知权限 |
-| Live Activity | iOS 26 `start:` 调度、transient 系统收口、最多 7 个滚动入口、首个失败诚实报错、部分容量保留前缀、关闭/签到/清除取消；Lock Screen / Compact / Minimal / Expanded 使用同一状态且不保存签到事实 |
+| 提醒策略 | 未购买仍选择免费本地通知；已购买且 iOS 26 + Live Activities 可用选择定时 Activity；旧系统与 Live Activities 关闭时选择本地通知；关闭提醒才为 disabled；任何状态只允许一个通道 |
+| 本地通知 | 60 日计划、平台预算、DST、已签到跳过、revision 竞态、关闭/清除取消、切语言与权益变化重新协调；免费用户可完整启用，外部撤权保留开关意图并显示失败 |
+| Live Activity | iOS 26 `start:` 调度、transient 系统收口、最多 7 个滚动入口、首个失败时已授权通知接续、两个通道均不可用才报错、部分容量保留前缀、关闭/签到/清除取消；Lock Screen / Compact / Minimal / Expanded 使用同一状态且不保存签到事实 |
 | AppModel | 操作互斥、失败不提前改 UI、成功后刷新、导航复位、清除恢复日志 |
-| Widget | store 缺失/身份未确认不可写；七日投影、跨午夜刷新、共享语言/样式偏好、隐私裁决、AppIntent 成功后刷新 |
+| Widget | store 缺失/身份未确认不可写；七日投影、跨午夜刷新、共享语言/样式偏好、隐私裁决、AppIntent 成功后刷新；承诺宣言唯一免费，App 写入与 extension timeline 双重权益检查，撤权失败关闭到免费样式 |
 | 本地化 | English/简体中文即时切换且重启保持；App 与 Widget 内容消费同一 Locale；切语言刷新 timeline；中文历史标题和二级返回按钮跟随语言；Widget 日期/月份/数字/VoiceOver 不使用固定或存储格式 |
 | 品牌资产 | token schema、18 项正式资产、解码像素、AppIcon alpha、生成器幂等、仓库 diff |
 
@@ -45,9 +45,9 @@
 - English Settings 的返回按钮必须为 `Back`，不得出现 `返回`；中文对应 `返回`；
 - 中文 History 年度标题必须为 `记录 / 年份`，不得出现 `ARCHIVE`；
 - Dynamic Type/布局几何、底部导航、Today 主动作、History 月历和详情；
-- Widget 四种样式可选择并持久化。
+- 免费用户可选择并持久化“承诺宣言”；购买增强后可选择其余三种样式，未购买选择、篡改偏好与权益撤销都必须解析回免费样式。
 - App 切换 English / 简体中文后 Widget timeline 各刷新一次，重启后 App 与 Widget 内容继续消费同一共享语言。
-- 未购买设置页只显示基础体验和真实商品入口，不出现提醒开关；测试购买成功后在同一会话解锁提醒设置，恢复/待处理/商品不可用有独立可识别状态。
+- 未购买设置页仍显示并可启用基础提醒，同时显示真实增强商品入口；测试购买成功后基础提醒保持不变，并在同一会话解锁 scheduled Live Activity 与三种额外 Widget 样式。恢复/待处理/商品不可用有独立可识别状态。
 
 UI 测试使用固定 Clock 与 UUID 隔离磁盘 store；无效测试配置直接失败。截图 attachment 是指定运行环境的证据，不替代真机验收。
 
@@ -86,7 +86,7 @@ git diff --check
 - iPhone / iPad iOS 18 可用最旧运行时上的安装、启动、签到、设置、历史、重启、加密备份、恢复和清除；
 - 设备重启后首次解锁前 store 不可读；首次解锁后 App 与锁屏 Widget 能按合同恢复读取；
 - 通知首次授权、拒绝后恢复、实际到达、签到后取消和修改时间无旧请求；
-- iOS 26 真机验证提醒时间前的 pending Activity、实际锁屏显示、支持设备 Dynamic Island 的 Compact/Minimal/Expanded、无灵动岛设备的 Lock Screen、关闭 Live Activities 后通知回退，以及系统容量/多 Activity 竞争；
+- iOS 26 真机验证提醒时间前的 pending Activity、实际锁屏显示、支持设备 Dynamic Island 的 Compact/Minimal/Expanded、无灵动岛设备的 Lock Screen、关闭 Live Activities 后切换基础通知，以及系统容量/多 Activity 竞争；
 - StoreKit Configuration 只作为本地开发 fixture；Sandbox、TestFlight 与生产商品分别验证购买、恢复、取消、Ask to Buy/待处理、退款/撤销和换机，商品价格与 App Store Connect 一致；
 - 跟随系统/浅色/深色与 English/简体中文组合；
 - Dynamic Type 到最大 Accessibility 字号、VoiceOver、提高对比度、降低透明度、Reduce Motion；

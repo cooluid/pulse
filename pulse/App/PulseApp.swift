@@ -79,7 +79,7 @@ private enum PulseBootstrap {
     @MainActor
     private static func runtimeFeatureAccess() -> FeatureAccessController {
 #if DEBUG
-        if let value = ProcessInfo.processInfo.environment["PULSE_UI_TEST_REMINDER_PURCHASED"] {
+        if let value = ProcessInfo.processInfo.environment["PULSE_UI_TEST_ENHANCEMENT_PURCHASED"] {
             return FeatureAccessController(
                 client: UITestStoreKitAccessClient(hasEntitlement: value == "1"),
                 listensForTransactionUpdates: false

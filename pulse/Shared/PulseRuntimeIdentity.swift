@@ -21,5 +21,4 @@ enum PulseRuntimeIdentity {
     }()
 
     static let reminderRequestPrefix = "\(bundleIdentifier).daily-reminder."
-    static let reminderEnhancementProductIdentifier = "co.fanr.pulse.reminder.lifetime"
 }

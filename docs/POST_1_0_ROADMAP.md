@@ -1,7 +1,7 @@
 # 一日一印（Pulse）1.0 之后开发路线图
 
 文档版本：0.9<br>
-状态：Proposed Execution Plan；已纳入 2026-08-12 的 1.0 提醒增强受控变更
+状态：Proposed Execution Plan；已纳入 2026-08-12 的 1.0 免费提醒与一日一印增强受控变更
 评审日期：2026-08-12
 
 本计划落实 [PRODUCT_STRATEGY_2_X.md](./PRODUCT_STRATEGY_2_X.md)。原则是一次只验证一个最大风险：先发布可靠性，再验证留存，再建立可收费价值，最后扩大平台与智能能力。
@@ -10,7 +10,7 @@
 
 | 阶段 | 目标 | 商业状态 | 进入下一阶段的必要证据 |
 | --- | --- | --- | --- |
-| R0：1.0 发布闭环 | 把当前免费核心、基础 Widget 与一次买断提醒增强真实交付 | 核心免费；提醒增强永久买断 | 1.0、StoreKit 与 iOS 18/26 系统表面门禁关闭 |
+| R0：1.0 发布闭环 | 把当前免费核心、免费基础提醒、承诺宣言 Widget 与一次买断增强真实交付 | 基础提醒与承诺宣言免费；系统呈现和三种额外构图永久买断 | 1.0、StoreKit 与 iOS 18/26 系统表面门禁关闭 |
 | R1：1.1 个性与日印仪式扩展 | 在可靠基础上验证隐私锁、有限系统仪式与反馈机制 | 免费 | 留存、隐私锁可靠性与日印仪式视觉达到门槛 |
 | W0：Watch 可行性轨 | 在 R1 统一命令与 App Group 稳定后，尽早验证配对真机、WatchConnectivity 和手腕交互 | 不收费、不进生产历史 | 待同步/已保存语义、断联恢复和跨午夜裁决通过 |
 | R2：1.2 真实上下文 | 验证缺席说明、回归力和轻量回响是否有价值 | TestFlight 免费实验 | 使用率和访谈证明高阶价值 |
@@ -27,7 +27,7 @@
 
 ### 2.1 范围
 
-本阶段包含已经写入 1.0 合同的免费基础 Widget，以及 2026-08-12 受控加入的一次买断提醒增强：iOS 26 本地 scheduled Live Activity、iOS 18–25 / Live Activities 关闭时的本地通知与唯一 StoreKit entitlement。除此之外不加入其他 Live Activity、Watch、CloudKit、备注、补签或多项目。
+本阶段包含已经写入 1.0 合同的免费基础本地提醒、免费“承诺宣言”Home Screen Widget 与 Lock Screen Widget，以及一次买断“一日一印增强”：iOS 26 本地 scheduled Live Activity、三种额外 Home Screen 构图与唯一 StoreKit entitlement。除此之外不加入其他 Live Activity、Watch、CloudKit、备注、补签或多项目。
 
 按当前发布合同完成：
 
@@ -217,13 +217,13 @@ Plus 不能只包含主题和统计图。首发至少同时具备：
 ### 6.2 StoreKit 实施
 
 - 一个权益组 `Pulse Plus`，年付与永久版授予相同能力；
-- 已购买 `co.fanr.pulse.reminder.lifetime` 的用户永久保留现有本地提醒能力；Pulse Plus 只能授予新增的持续服务/高级能力，不得要求重复购买同一提醒；
+- 已购买 `co.fanr.pulse.enhancement.lifetime` 的用户永久保留现有 scheduled Live Activity 与三种额外 Widget 构图；基础本地提醒和承诺宣言始终免费；Pulse Plus 只能授予新增的持续服务/高级能力，不得要求重复购买同一增强；
 - 产品 ID、权益映射、文案和测试 fixture 集中管理；
 - 价格从 StoreKit 读取，不硬编码；
 - 付费页必须展示核心免费能力不会消失；
 - 提供试用条款、自动续期说明、隐私、使用条款、恢复购买和管理订阅；
 - 验证购买中断、待处理、取消、退款、撤销、过期、离线启动和商品加载失败；
-- Entitlement 变化触发 FeatureAccessPolicy 刷新，但不删除用户内容。
+- Entitlement 变化触发统一提醒与 Widget 访问策略刷新，但不删除用户内容。
 
 ### 6.3 远程留印窗口原型
 
@@ -296,7 +296,7 @@ Plus 不能只包含主题和统计图。首发至少同时具备：
 
 ## 8. WX0：微信提醒资格轨
 
-微信资格轨与产品版本并行，但在通过前不占用正式发布日期，也不进入付费页。已购买用户的 iOS Live Activity / 本地通知始终保留为离线可用的主通道。
+微信资格轨与产品版本并行，但在通过前不占用正式发布日期，也不进入付费页。免费本地通知与已购买用户的 iOS Live Activity 始终保留为离线可用的 iOS 通道。
 
 ### 8.1 资格预检
 

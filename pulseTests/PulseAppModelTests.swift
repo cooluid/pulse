@@ -21,6 +21,7 @@ final class PulseAppModelTests: XCTestCase {
     func testIdentityUpdateRefreshesSnapshotWithoutChangingFacts() async throws {
         let context = try makeContext()
         await context.model.start()
+        let initialWidgetReloadCount = context.widgetReloader.reloadCount
         await context.model.checkIn()
         let habitID = context.model.habit?.id
         let recordID = context.model.todayRecord?.id
@@ -37,7 +38,7 @@ final class PulseAppModelTests: XCTestCase {
         XCTAssertTrue(context.model.habit?.isIdentityConfirmed ?? false)
         XCTAssertEqual(context.model.todayRecord?.id, recordID)
         XCTAssertEqual(context.model.statistics.totalCount, 1)
-        XCTAssertEqual(context.widgetReloader.reloadCount, 2)
+        XCTAssertEqual(context.widgetReloader.reloadCount, initialWidgetReloadCount + 2)
     }
 
     func testInvalidIdentityDoesNotMutateHabit() async throws {
@@ -56,6 +57,7 @@ final class PulseAppModelTests: XCTestCase {
     func testCheckInUpdatesAllDerivedStateAndHapticsOnce() async throws {
         let context = try makeContext()
         await context.model.start()
+        let initialWidgetReloadCount = context.widgetReloader.reloadCount
 
         let first = await context.model.checkIn()
         let second = await context.model.checkIn()
@@ -67,7 +69,7 @@ final class PulseAppModelTests: XCTestCase {
         XCTAssertEqual(context.model.statistics.longestStreak, 1)
         XCTAssertEqual(context.model.statistics.totalCount, 1)
         XCTAssertEqual(context.haptics.successCount, 1)
-        XCTAssertEqual(context.widgetReloader.reloadCount, 1)
+        XCTAssertEqual(context.widgetReloader.reloadCount, initialWidgetReloadCount + 1)
         await waitUntil { context.scheduler.snapshots.last?.checkedDays == context.model.checkedDays }
         XCTAssertEqual(context.scheduler.snapshots.last?.checkedDays, context.model.checkedDays)
     }
@@ -75,6 +77,7 @@ final class PulseAppModelTests: XCTestCase {
     func testRejectedCheckInReturnsNoReceiptOrSuccessFeedback() async throws {
         let context = try makeContext()
         await context.model.start()
+        let initialWidgetReloadCount = context.widgetReloader.reloadCount
         let reminderSnapshotCount = context.scheduler.snapshots.count
         context.clock.now = makeDate(day: 9, hour: 12)
 
@@ -84,7 +87,7 @@ final class PulseAppModelTests: XCTestCase {
         XCTAssertNil(context.model.todayRecord)
         XCTAssertEqual(context.model.statistics, .empty)
         XCTAssertEqual(context.haptics.successCount, 0)
-        XCTAssertEqual(context.widgetReloader.reloadCount, 0)
+        XCTAssertEqual(context.widgetReloader.reloadCount, initialWidgetReloadCount)
         XCTAssertEqual(context.scheduler.snapshots.count, reminderSnapshotCount)
         XCTAssertNotNil(context.model.errorMessage)
     }
@@ -132,24 +135,28 @@ final class PulseAppModelTests: XCTestCase {
         XCTAssertNotNil(context.model.errorMessage)
     }
 
-    func testUnpurchasedUserCannotEnableOrScheduleReminder() async throws {
+    func testUnpurchasedUserCanEnableAndScheduleFreeLocalNotification() async throws {
         let context = try makeContext(
             notificationPermission: .authorized,
-            hasReminderEnhancement: false
+            hasEnhancement: false
         )
         await context.model.start()
 
         context.model.requestReminderEnabled(true)
+        await waitUntil {
+            context.model.reminderSyncState == .synced
+                && context.model.settings.reminderEnabled
+        }
 
-        XCTAssertFalse(context.model.settings.reminderEnabled)
-        XCTAssertFalse(context.model.displayedReminderEnabled)
-        XCTAssertEqual(context.model.reminderDeliveryMode, .disabled)
-        XCTAssertEqual(context.scheduler.snapshots.last?.deliveryMode, .disabled)
+        XCTAssertTrue(context.model.settings.reminderEnabled)
+        XCTAssertTrue(context.model.displayedReminderEnabled)
+        XCTAssertEqual(context.model.reminderDeliveryMode, .localNotification)
+        XCTAssertEqual(context.scheduler.snapshots.last?.deliveryMode, .localNotification)
         XCTAssertEqual(context.scheduler.permissionRequestCount, 0)
-        XCTAssertNotNil(context.model.errorMessage)
+        XCTAssertNil(context.model.errorMessage)
     }
 
-    func testPurchasedIOS26PathDoesNotRequestNotificationPermission() async throws {
+    func testPurchasedIOS26PathRequestsBasicNotificationPermissionButUsesLiveActivity() async throws {
         let context = try makeContext(
             notificationPermission: .notDetermined,
             deliveryCapabilities: ReminderDeliveryCapabilities(
@@ -170,7 +177,7 @@ final class PulseAppModelTests: XCTestCase {
             context.scheduler.snapshots.last?.deliveryMode,
             .scheduledLiveActivity
         )
-        XCTAssertEqual(context.scheduler.permissionRequestCount, 0)
+        XCTAssertEqual(context.scheduler.permissionRequestCount, 1)
         XCTAssertEqual(context.model.notificationPermission, .notDetermined)
     }
 
@@ -190,7 +197,7 @@ final class PulseAppModelTests: XCTestCase {
         XCTAssertFalse(context.scheduler.snapshots.last?.enabled ?? true)
     }
 
-    func testExternallyRevokedPermissionFailsClosedInsteadOfLeavingToggleEnabled() async throws {
+    func testExternallyRevokedPermissionKeepsIntentVisibleAndReportsSyncFailure() async throws {
         let context = try makeContext(notificationPermission: .authorized)
         await context.model.start()
         context.model.requestReminderEnabled(true)
@@ -202,8 +209,8 @@ final class PulseAppModelTests: XCTestCase {
         context.scheduler.permission = .denied
         await context.model.handleSceneActivation()
 
-        XCTAssertFalse(context.model.settings.reminderEnabled)
-        XCTAssertFalse(context.model.displayedReminderEnabled)
+        XCTAssertTrue(context.model.settings.reminderEnabled)
+        XCTAssertTrue(context.model.displayedReminderEnabled)
         XCTAssertEqual(context.model.notificationPermission, .denied)
         XCTAssertEqual(context.model.reminderSyncState, .failed)
         XCTAssertNotNil(context.model.errorMessage)
@@ -212,6 +219,7 @@ final class PulseAppModelTests: XCTestCase {
     func testChangingLanguageReschedulesReminderContentWithSelectedLocale() async throws {
         let context = try makeContext(notificationPermission: .authorized)
         await context.model.start()
+        let initialWidgetReloadCount = context.widgetReloader.reloadCount
         context.model.requestReminderEnabled(true)
         await waitUntil {
             context.model.reminderSyncState == .synced
@@ -227,22 +235,48 @@ final class PulseAppModelTests: XCTestCase {
         XCTAssertEqual(context.model.settings.language, .english)
         XCTAssertEqual(context.scheduler.snapshots.last?.localeIdentifier, "en")
         XCTAssertTrue(context.scheduler.snapshots.last?.enabled ?? false)
-        XCTAssertEqual(context.widgetReloader.reloadCount, 1)
+        XCTAssertEqual(context.widgetReloader.reloadCount, initialWidgetReloadCount + 1)
 
         context.model.requestLanguage(.english)
-        XCTAssertEqual(context.widgetReloader.reloadCount, 1)
+        XCTAssertEqual(context.widgetReloader.reloadCount, initialWidgetReloadCount + 1)
     }
 
-    func testChangingWidgetStylePersistsAndReloadsTimelineOnce() throws {
+    func testPurchasedUserCanPersistPremiumWidgetStyle() async throws {
         let context = try makeContext()
+        await context.model.start()
+        let initialWidgetReloadCount = context.widgetReloader.reloadCount
 
         context.model.requestWidgetStyle(.oversizedRing)
 
         XCTAssertEqual(context.model.settings.widgetStyle, .oversizedRing)
-        XCTAssertEqual(context.widgetReloader.reloadCount, 1)
+        XCTAssertEqual(context.widgetReloader.reloadCount, initialWidgetReloadCount + 1)
 
         context.model.requestWidgetStyle(.oversizedRing)
-        XCTAssertEqual(context.widgetReloader.reloadCount, 1)
+        XCTAssertEqual(context.widgetReloader.reloadCount, initialWidgetReloadCount + 1)
+    }
+
+    func testFreeUserCannotPersistPremiumWidgetStyle() async throws {
+        let context = try makeContext(hasEnhancement: false)
+        await context.model.start()
+        let initialWidgetReloadCount = context.widgetReloader.reloadCount
+
+        context.model.requestWidgetStyle(.tearOffCalendar)
+
+        XCTAssertEqual(context.model.settings.widgetStyle, .commitmentManifesto)
+        XCTAssertEqual(context.widgetReloader.reloadCount, initialWidgetReloadCount)
+        XCTAssertNotNil(context.model.errorMessage)
+    }
+
+    func testFreeUserStartNormalizesPersistedPremiumWidgetStyle() async throws {
+        let context = try makeContext(
+            hasEnhancement: false,
+            initialWidgetStyle: .faultField
+        )
+
+        await context.model.start()
+
+        XCTAssertEqual(context.model.settings.widgetStyle, .commitmentManifesto)
+        XCTAssertNil(context.model.errorMessage)
     }
 
     func testPendingResetJournalIsRecoveredOnStart() async throws {
@@ -264,11 +298,12 @@ final class PulseAppModelTests: XCTestCase {
 
     private func makeContext(
         notificationPermission: NotificationPermissionState = .authorized,
-        hasReminderEnhancement: Bool = true,
+        hasEnhancement: Bool = true,
         deliveryCapabilities: ReminderDeliveryCapabilities = .init(
             supportsScheduledLiveActivities: false,
             liveActivitiesEnabled: false
-        )
+        ),
+        initialWidgetStyle: PulseWidgetStyle = .commitmentManifesto
     ) throws -> TestContext {
         let clock = MutablePulseClock(now: makeDate(day: 10, hour: 12))
         let repository = SwiftDataCheckInRepository(
@@ -285,13 +320,14 @@ final class PulseAppModelTests: XCTestCase {
             sharedInterfacePreferences: PulseSharedInterfacePreferences(defaults: defaults),
             defaults: defaults
         )
+        settings.widgetStyle = initialWidgetStyle
         let scheduler = TestReminderScheduler(
             permission: notificationPermission,
             deliveryCapabilities: deliveryCapabilities
         )
         let featureAccess = FeatureAccessController(
             client: UITestStoreKitAccessClient(
-                hasEntitlement: hasReminderEnhancement
+                hasEntitlement: hasEnhancement
             ),
             listensForTransactionUpdates: false
         )
@@ -411,13 +447,14 @@ private final class TestReminderScheduler: ReminderScheduling {
         permissionContinuation = nil
     }
 
-    func reconcile(_ snapshot: ReminderScheduleSnapshot) async throws {
+    func reconcile(_ snapshot: ReminderScheduleSnapshot) async throws -> ReminderDeliveryMode {
         snapshots.append(snapshot)
         if snapshot.enabled,
            snapshot.deliveryMode == .localNotification,
            permission != .authorized {
             throw PulseAppError.notificationPermissionDenied
         }
+        return snapshot.deliveryMode
     }
 
     func removeAllPulseNotifications() async {

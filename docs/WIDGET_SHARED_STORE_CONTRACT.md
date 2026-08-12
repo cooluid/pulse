@@ -43,7 +43,7 @@ FileManager.containerURL(forSecurityApplicationGroupIdentifier:)
 - 不存在 App 私有 store、旧库迁移、journal、staging、fallback 或双写。
 - 旧开发安装不属于公开数据合同，进入此首发基线时必须清洁安装。
 
-App Group UserDefaults 只允许 `PulseSharedInterfacePreferences` 管理的 `interface.language` 与 `widget.style`。缺失键分别表示 `system` / `faultField`，未知值必须失败关闭；不得保存任何业务事实或可反向覆盖 store 的投影。
+App Group UserDefaults 只允许 `PulseSharedInterfacePreferences` 管理的 `interface.language` 与 `widget.style`。缺失键分别表示 `system` / `commitmentManifesto`，未知值必须失败关闭；不得保存任何业务事实或可反向覆盖 store 的投影。`commitmentManifesto` 是唯一免费 Home Screen 构图，其余三种需要统一增强 entitlement；App 与 Widget extension 分别在写入和渲染边界检查当前 StoreKit 权益，未验证、撤销或读取失败都解析为免费构图。
 
 ## 4. 共享代码边界
 

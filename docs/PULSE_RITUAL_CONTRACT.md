@@ -27,8 +27,8 @@ Pulse 不把系统表面当作更多通知位，而把它们组织成一套有�
 | Apple Watch 高级节律与长期档案 | GO，Plus 候选 | 28/90/365 日节律、印期与年轮会随数据持续产生新价值 |
 | 签到成功的系统落印动效 | GO，免费 | 形成 Pulse 的品牌签名，但不替代 App 内反馈 |
 | 签到后的今日影像窗口 | GO，影像实验通过后免费 | 把“完成今天”自然延伸为“留下今天” |
-| iOS 26 提醒时间自动出现的本地留印窗口 | GO，一次买断 | 必须用户购买并主动开启；使用 iOS 26 本地 scheduled Live Activity，不需要把 APNs/后端伪装成前置条件 |
-| iOS 18–25 本地通知提醒 | GO，同一买断权益的降级通道 | Live Activity 本地定时 API 不存在，只允许通知单通道，不复制提醒 |
+| iOS 26 提醒时间自动出现的本地留印窗口 | GO，一次买断增强 | 必须用户购买并主动开启；使用 iOS 26 本地 scheduled Live Activity，不需要把 APNs/后端伪装成前置条件 |
+| 本地通知提醒 | GO，永久免费 | 所有用户都应获得可靠基础提醒；同一逻辑日只允许一个正式通道，不复制提醒 |
 | 回归与里程碑变体 | GO，免费 | 只在用户本来就签到的时刻出现，不额外打扰 |
 | 岁月流影生成进度 | GO，随 Plus 渲染能力提供 | 属于真实、持续变化、可取消的任务 |
 | 全天常驻“今日未签到” | NO-GO | 没有合适的开始/结束，制造压力并长期占用系统表面 |
@@ -54,7 +54,7 @@ stateDiagram-v2
     state "已结束" as Ended
 
     [*] --> Inactive
-    Inactive --> ReminderWindow: "iOS 26 已购买用户的本地定时 Activity 到达"
+    Inactive --> ReminderWindow: "iOS 26 增强权益用户的本地定时 Activity 到达"
     Inactive --> Saving: "从 App 或系统入口发起签到"
     ReminderWindow --> Saving: "用户选择留下今天"
     Saving --> Imprinted: "Repository 保存成功"
@@ -83,13 +83,13 @@ preparing → aligning → blending → encoding → completed / failed / cancel
 
 ### 3.1 Widget：长期可扫视状态
 
-首批免费范围：
+首批正式范围：
 
 - Lock Screen 圆形：今日开放环与实心完成印内部都显示由当前 `LogicalDay` 派生的本地化纯数字，不带“日”等日期后缀；待签到开放环不得带有会被误读为勾形的斜线，完成态以实心内核替代勾；
 - Lock Screen 矩形：使用唯一“节律汇印”语法；左上显示今日短状态，过去六日节点上方显示不带日期后缀的本地化纯数字并以真实连接线汇入右侧唯一今日印记，今天数字显示在大印内部，不显示主承诺文本、星期或第七个今日小节点；
-- Home Screen 小号/中号：免费提供“断层双色 / 越界巨环 / 承诺宣言 / 错版撕页”四种构图；四式共用日/月日期、七日节律、当前主承诺名称、今日状态和同一个单向签到按钮，可见品牌与文字状态按各自原型取舍。默认“断层双色”遵循用户在原型后的明确修订，把七日圆点固定在左下；系统默认内容边距正式关闭，背景色场和巨环可抵达容器边缘，文字与普通控件按原型安全区定位。
+- Home Screen 小号/中号：“承诺宣言”是唯一面向所有用户的免费构图，也是首次安装默认值；一次买断增强解锁“断层双色 / 越界巨环 / 错版撕页”。四式共用日/月日期、七日节律、当前主承诺名称、今日状态和同一个单向签到按钮，可见品牌与文字状态按各自原型取舍。系统默认内容边距正式关闭，背景色场和巨环可抵达容器边缘，文字与普通控件按原型安全区定位。
 
-四式只是呈现选择：App Group 只保存同一 `PulseSharedInterfacePreferences` 下类型化的 `interface.language` 与 `widget.style`，不得复制签到记录、连续天数、日期或主承诺。Lock Screen / StandBy / Always-On 继续使用唯一 Accessory 语法，不消费 Home Screen 样式，也不显示主承诺正文。App 与 Widget 内容消费同一语言；未知语言或样式值失败关闭，不能以系统语言或另一套构图伪装成功。
+四式只是呈现选择：App Group 只保存同一 `PulseSharedInterfacePreferences` 下类型化的 `interface.language` 与 `widget.style`，不得复制签到记录、连续天数、日期、主承诺或购买状态。App 在写入样式前检查 StoreKit entitlement；Widget extension 在生成每个 snapshot/timeline 时独立验证同一 entitlement。未验证、撤销或偏好被外部写成收费样式时统一渲染“承诺宣言”。Lock Screen / StandBy / Always-On 继续使用唯一 Accessory 语法，永久免费，不消费 Home Screen 样式，也不显示主承诺正文。App 与 Widget 内容消费同一语言；未知语言或样式值失败关闭，不能以系统语言或另一套构图伪装成功。
 
 Widget 的未签到操作使用 `Button`，不使用可以反向切换的 `Toggle`。Accessory 待签到时整块系统分配区域都是同一按钮，不能只让图形局部可点；完成态静态。签到可从系统入口创建，但删除仍只在 App 内二次确认。设备锁定时交互遵循系统认证，不绕过锁屏。
 
@@ -103,16 +103,15 @@ Compact、Minimal、Expanded 和 Lock Screen 必须都能独立理解；有灵�
 
 ### 3.3 通知：一次到达
 
-提醒增强是一次买断权益，但签到核心永久免费。已购买用户在 iOS 26 优先使用本地定时 Live Activity；iOS 18–25 或 iOS 26 关闭 Live Activities 时使用本地通知。未来远程 Live Activity 和微信提醒仍是后续候选，不能与当前主通道同时表达同一逻辑日的同一提醒。
+基础本地通知提醒永久免费。已购买增强的用户在支持且允许 Live Activities 的 iOS 26 系统上使用本地定时 Live Activity；未购买、iOS 18–25 或 iOS 26 关闭 Live Activities 时使用免费本地通知。未来远程 Live Activity 和微信提醒仍是后续候选，不能与当前主通道同时表达同一逻辑日的同一提醒。
 
-唯一 `ReminderPolicy` 决定主通道和显式回退：
+唯一 `ReminderDeliveryPolicy` 决定正式通道：
 
 ```text
-primaryChannel = none | localNotification | liveActivity | weChat
-fallbackChannel = none | localNotification
+deliveryMode = disabled | localNotification | scheduledLiveActivity
 ```
 
-未购买时主通道为 `none`。已购买 iOS 26 设备在 Live Activities 被关闭时自动落入本地通知，并只在用户主动开启提醒时请求通知权限；iOS 26 不因设备没有灵动岛而降级，Lock Screen Live Activity 仍是正式表面。通道协调使用单调 revision；旧任务、旧权限结果和迟到回调不能恢复已经关闭的提醒。
+只有用户关闭提醒时才为 `disabled`。未购买时主通道是 `localNotification`；已购买 iOS 26 设备在 Live Activities 被关闭时也选择本地通知。仅在用户主动开启提醒时请求通知权限，为免费基础触达和增强通道失效时的连续性服务；拒绝通知不能阻止仍可用的 scheduled Live Activity。iOS 26 不因设备没有灵动岛而改变通道，Lock Screen Live Activity 仍是正式表面。通道协调使用单调 revision；旧任务、旧权限结果和迟到回调不能恢复已经关闭的提醒。
 
 ## 4. 日印仪式场景
 
@@ -143,7 +142,7 @@ App 内页面只保存短暂的呈现阶段和动画进度，不持久化 `activ
 
 ### 4.2 留印提醒窗口
 
-只有 StoreKit 已验证“提醒增强”权益且用户主动开启提醒后，才允许在提醒时间自动启动。首版使用 transient Live Activity，每个逻辑日最多自动启动一次；它会在用户锁屏、收起扩展灵动岛或点按外部等系统定义的交互后结束，Pulse 不用 `staleDate` 伪造定时结束。设置页不能把 Live Activity 写成“仅灵动岛”，因为无灵动岛设备仍使用 Lock Screen 表面。
+只有 StoreKit 已验证“一日一印增强”权益且用户主动开启提醒后，才允许在提醒时间自动启动 Live Activity；未购买用户在同一提醒时间使用免费本地通知。首版使用 transient Live Activity，每个逻辑日最多自动启动一次；它会在用户锁屏、收起扩展灵动岛或点按外部等系统定义的交互后结束，Pulse 不用 `staleDate` 伪造定时结束。设置页不能把 Live Activity 写成“仅灵动岛”，因为无灵动岛设备仍使用 Lock Screen 表面。
 
 Compact 示例：
 
@@ -260,14 +259,15 @@ render       = 实际进度环，用于岁月流影生成
 - App 内落印动画和系统落印语言；
 - 用户在 App 完成签到后的短暂 Live Activity 回声；
 - 回归与里程碑变体；
-- 基础 Home / Lock Screen Widget 与幂等签到；
+- 基础本地通知提醒；
+- Home Screen“承诺宣言”、全部 Lock Screen Widget 与幂等签到；
 - 影像功能进入生产后的签到后拍照窗口。
 
-一次买断“提醒增强”：
+一次买断“一日一印增强”：
 
 - iOS 26 本地定时 transient Live Activity；支持设备由系统同时提供 Dynamic Island，其他设备显示 Lock Screen 表面；
-- iOS 18–25 的本地通知，以及 iOS 26 关闭 Live Activities 时的通知回退；
-- 一个商品、一个永久 entitlement、一个提醒主通道；商品价格从 StoreKit 返回值读取，不持久化购买布尔副本。
+- Home Screen“断层双色 / 越界巨环 / 错版撕页”三种额外构图；
+- 一个商品、一个永久 entitlement；商品价格从 StoreKit 返回值读取，不持久化购买布尔副本。
 
 Pulse Plus 候选：
 
@@ -279,7 +279,7 @@ Pulse Plus 候选：
 - Apple Watch 上的 28/90/365 日节律、回归力、印期、年轮和往年今日抽象回看；
 - 将来经用户需求验证的专注印刻 Live Activity。
 
-本轮一次买断收费对象是“可靠的系统提醒入口”，不是单独售卖灵动岛皮肤；同一权益在无灵动岛设备仍有 Lock Screen / 本地通知价值。权益不可用或被撤销时只取消提醒计划，不删除签到、照片、影片、报告、备份或 Widget；未来 Plus 不得要求既有买断用户为同一提醒能力重复付费。
+本轮一次买断收费对象是“增强系统呈现 + 三种额外构图”，不是基础提醒可靠性。无灵动岛设备仍可获得 Lock Screen Live Activity 表面，所有用户都保留本地通知与承诺宣言。权益不可用或被撤销时，提醒继续按基础本地通知策略协调，Home Screen 样式解析为承诺宣言；不得删除签到、照片、影片、报告、备份或 Widget。未来 Plus 不得要求既有买断用户为同一增强能力重复付费。
 
 ## 9. Apple Watch 子系统
 
@@ -400,8 +400,8 @@ Watch 默认隐私等级高于 App 前台：
 - 逻辑日、提醒窗口和 Activity 结束全部使用项目签到时区；
 - 每日自动启动上限、关闭后不重启、签到后取消和跨日换代均通过竞态测试；
 - iOS 26 本地 scheduled Activity 的容量拒绝、部分成功、撤权和重新协调不会恢复旧任务或产生双通道；
-- iOS / iPadOS 18–25 与 26 分别验证本地通知、scheduled Activity、Live Activities 关闭后的通知降级；
-- 不支持灵动岛、未授权、Always-On、Reduce Motion、设备锁定和系统压缩呈现均有完整降级；
+- iOS / iPadOS 18–25 与 26 分别验证免费本地通知、scheduled Activity、Live Activities 关闭后的通道切换；
+- 不支持灵动岛、未授权、Always-On、Reduce Motion、设备锁定和系统压缩呈现均有正式定义；
 - 本地通知、灵动岛和微信仲裁不会重复触达；
 - Activity 失败只影响系统仪式，不阻塞签到、照片和导出事实。
 
@@ -421,7 +421,7 @@ Watch 默认隐私等级高于 App 前台：
 
 | 阶段 | 日印仪式范围 |
 | --- | --- |
-| R0.5 | 首版买断提醒增强：StoreKit 2 单一 entitlement、iOS 26 本地 scheduled Live Activity、iOS 18–25 通知回退与单通道仲裁 |
+| R0.5 | 首版免费基础提醒 + 一日一印增强：StoreKit 2 单一 entitlement、iOS 26 本地 scheduled Live Activity、三种额外 Home Screen Widget 样式与单通道仲裁 |
 | R1 | App Group 正式 store、基础 Widget、Widget AppIntent、免费落印语言与后续系统仪式原型 |
 | W0 | R1 稳定后提前验证配对真机、WatchConnectivity、`pendingSync` 与跨午夜命令；不写生产历史 |
 | R2.5 | 签到成功后的今日影像窗口，不单独追拍照提醒 |

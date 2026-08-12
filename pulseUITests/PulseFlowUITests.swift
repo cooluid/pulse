@@ -11,7 +11,7 @@ final class PulseFlowUITests: XCTestCase {
         app.launchEnvironment["PULSE_UI_TEST_RESET"] = "1"
         app.launchEnvironment["PULSE_UI_TEST_STORE_ID"] = UUID().uuidString
         app.launchEnvironment["PULSE_UI_TEST_NOW"] = "2026-08-10T04:00:00Z"
-        app.launchEnvironment["PULSE_UI_TEST_REMINDER_PURCHASED"] = "0"
+        app.launchEnvironment["PULSE_UI_TEST_ENHANCEMENT_PURCHASED"] = "0"
     }
 
     private func launchAndConfirmDefaultCommitment() {
@@ -126,7 +126,7 @@ final class PulseFlowUITests: XCTestCase {
         XCTAssertTrue(app.buttons["primary.navigation.history"].exists)
     }
 
-    func testReminderEnhancementPurchaseUnlocksReminderWithoutChangingCheckIn() throws {
+    func testEnhancementPurchaseLeavesFreeReminderAvailableAndUnlocksEnhancement() throws {
         configureApp()
         launchAndConfirmDefaultCommitment()
 
@@ -134,7 +134,10 @@ final class PulseFlowUITests: XCTestCase {
 
         let purchaseButton = app.buttons["settings.purchase.buy"]
         XCTAssertTrue(purchaseButton.waitForExistence(timeout: 3))
-        XCTAssertFalse(app.switches["settings.reminder.toggle"].exists)
+        XCTAssertTrue(
+            app.descendants(matching: .any)["settings.reminder.toggle"]
+                .waitForExistence(timeout: 3)
+        )
 
         purchaseButton.tap()
 
@@ -142,18 +145,56 @@ final class PulseFlowUITests: XCTestCase {
             app.descendants(matching: .any)["settings.purchase.status"]
                 .waitForExistence(timeout: 3)
         )
-        XCTAssertTrue(
-            app.descendants(matching: .any)["settings.reminder.toggle"]
-                .waitForExistence(timeout: 3)
-        )
+        XCTAssertTrue(app.descendants(matching: .any)["settings.reminder.toggle"].exists)
 
         let purchasedSettingsAttachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
-        purchasedSettingsAttachment.name = "Purchased reminder settings"
+        purchasedSettingsAttachment.name = "Purchased enhancement with free reminder retained"
         purchasedSettingsAttachment.lifetime = .keepAlways
         add(purchasedSettingsAttachment)
 
         app.buttons["navigation.back"].tap()
         XCTAssertTrue(app.buttons["today.checkin.button"].waitForExistence(timeout: 3))
+    }
+
+    func testFreeWidgetStyleDisclosesIncludedAndEnhancementOptions() throws {
+        configureApp()
+        launchAndConfirmDefaultCommitment()
+
+        app.buttons["settings.navigation.open.today"].tap()
+
+        let picker = app.descendants(matching: .any)["settings.widget.style.picker"]
+        for _ in 0..<4 where !picker.isHittable {
+            app.swipeUp()
+        }
+        XCTAssertTrue(picker.waitForExistence(timeout: 3))
+        XCTAssertTrue(picker.isHittable)
+        XCTAssertTrue(picker.label.contains("承诺宣言"))
+        picker.tap()
+
+        let includedOption = app.descendants(matching: .any)
+            .matching(NSPredicate(format: "label CONTAINS %@", "承诺宣言"))
+            .firstMatch
+        let premiumOption = app.descendants(matching: .any)
+            .matching(NSPredicate(format: "label CONTAINS %@", "错版撕页"))
+            .firstMatch
+        XCTAssertTrue(includedOption.waitForExistence(timeout: 3))
+        XCTAssertTrue(premiumOption.waitForExistence(timeout: 3))
+        XCTAssertTrue(includedOption.label.contains("免费"))
+        XCTAssertTrue(premiumOption.label.contains("增强版"))
+
+        let optionsAttachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
+        optionsAttachment.name = "Free and enhancement widget style disclosure"
+        optionsAttachment.lifetime = .keepAlways
+        add(optionsAttachment)
+
+        premiumOption.tap()
+
+        let accessMessage = app.staticTexts.matching(
+            NSPredicate(format: "label CONTAINS %@", "承诺宣言样式和基础提醒无需购买")
+        ).firstMatch
+        XCTAssertTrue(accessMessage.waitForExistence(timeout: 3))
+        app.buttons["好"].tap()
+        XCTAssertTrue(picker.label.contains("承诺宣言"))
     }
 
     func testSettingsExposesPrivacyAndSupportLinks() throws {
@@ -324,8 +365,9 @@ final class PulseFlowUITests: XCTestCase {
         )
     }
 
-    func testAllWidgetStylesAreSelectableAndPersistAcrossRelaunch() throws {
+    func testPurchasedUserCanSelectAllWidgetStylesAndPersistAcrossRelaunch() throws {
         configureApp()
+        app.launchEnvironment["PULSE_UI_TEST_ENHANCEMENT_PURCHASED"] = "1"
         launchAndConfirmDefaultCommitment()
 
         let settingsButton = app.buttons["settings.navigation.open.today"]
@@ -342,13 +384,13 @@ final class PulseFlowUITests: XCTestCase {
         let styleNames = ["断层双色", "越界巨环", "承诺宣言", "错版撕页"]
         for styleName in styleNames {
             let option = app.descendants(matching: .any)
-                .matching(NSPredicate(format: "label == %@", styleName))
+                .matching(NSPredicate(format: "label CONTAINS %@", styleName))
                 .firstMatch
             XCTAssertTrue(option.waitForExistence(timeout: 3))
         }
 
         app.descendants(matching: .any)
-            .matching(NSPredicate(format: "label == %@", "错版撕页"))
+            .matching(NSPredicate(format: "label CONTAINS %@", "错版撕页"))
             .firstMatch
             .tap()
         XCTAssertTrue(stylePicker.label.contains("错版撕页"))

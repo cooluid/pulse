@@ -18,6 +18,7 @@ struct SettingsView: View {
         Form {
             commitmentSection
             reminderSection
+            enhancementSection
             personalizationSection
             widgetSection
             experienceSection
@@ -118,52 +119,46 @@ struct SettingsView: View {
 
     private var reminderSection: some View {
         Section {
-            if model.featureAccess.hasReminderEnhancement {
-                Label {
-                    VStack(alignment: .leading, spacing: PulseDesign.spacing4) {
-                        Text("settings.purchase.purchased")
-                        Text(reminderDeliveryDescriptionKey)
-                            .font(.footnote)
-                            .foregroundStyle(PulseDesign.secondary)
-                            .fixedSize(horizontal: false, vertical: true)
+            Toggle(
+                isOn: Binding(
+                    get: { model.displayedReminderEnabled },
+                    set: { enabled in
+                        model.requestReminderEnabled(enabled)
                     }
-                } icon: {
-                    Image(systemName: "checkmark.seal.fill")
-                        .foregroundStyle(PulseDesign.grass)
+                )
+            ) {
+                VStack(alignment: .leading, spacing: PulseDesign.spacing4) {
+                    Text("settings.reminder.toggle")
+                    Text("settings.reminder.footer")
+                        .font(.footnote)
+                        .foregroundStyle(PulseDesign.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
-                .accessibilityIdentifier("settings.purchase.status")
+            }
+            .accessibilityLabel("settings.reminder.toggle")
+            .accessibilityHint("settings.reminder.footer")
+            .accessibilityIdentifier("settings.reminder.toggle")
 
-                Toggle(
-                    isOn: Binding(
-                        get: { model.displayedReminderEnabled },
-                        set: { enabled in
-                            model.requestReminderEnabled(enabled)
-                        }
-                    )
-                ) {
-                    VStack(alignment: .leading, spacing: PulseDesign.spacing4) {
-                        Text("settings.reminder.toggle")
-                        Text("settings.reminder.purchased_footer")
-                            .font(.footnote)
-                            .foregroundStyle(PulseDesign.secondary)
-                            .fixedSize(horizontal: false, vertical: true)
-                    }
-                }
-                .accessibilityLabel("settings.reminder.toggle")
-                .accessibilityHint("settings.reminder.purchased_footer")
-                .accessibilityIdentifier("settings.reminder.toggle")
+            if model.displayedReminderEnabled {
+                DatePicker(
+                    "settings.reminder.time",
+                    selection: reminderTimeBinding,
+                    displayedComponents: .hourAndMinute
+                )
+                .environment(\.timeZone, TimeZone.gmt)
 
-                if model.settings.reminderEnabled {
-                    DatePicker(
-                        "settings.reminder.time",
-                        selection: reminderTimeBinding,
-                        displayedComponents: .hourAndMinute
-                    )
-                    .environment(\.timeZone, TimeZone.gmt)
+                if model.reminderSyncState == .syncing {
+                    ProgressView("settings.reminder.syncing")
+                        .accessibilityIdentifier("settings.reminder.syncing")
+                } else {
+                    Label(reminderDeliveryDescriptionKey, systemImage: reminderDeliveryIcon)
+                        .font(.footnote)
+                        .foregroundStyle(PulseDesign.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .accessibilityIdentifier("settings.reminder.delivery")
                 }
 
-                if model.reminderDeliveryMode == .localNotification,
-                   model.notificationPermission == .denied {
+                if model.notificationPermission == .denied {
                     Button("settings.notification.open_system_settings") {
                         guard let url = URL(
                             string: UIApplication.openNotificationSettingsURLString
@@ -176,6 +171,28 @@ struct SettingsView: View {
                     Label("settings.reminder.sync_failed", systemImage: "exclamationmark.triangle")
                         .foregroundStyle(PulseDesign.action)
                 }
+            }
+        } header: {
+            Text("settings.reminder.section")
+        }
+    }
+
+    private var enhancementSection: some View {
+        Section {
+            if model.featureAccess.hasEnhancement {
+                Label {
+                    VStack(alignment: .leading, spacing: PulseDesign.spacing4) {
+                        Text("settings.purchase.purchased")
+                        Text("settings.enhancement.purchased_footer")
+                            .font(.footnote)
+                            .foregroundStyle(PulseDesign.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                } icon: {
+                    Image(systemName: "checkmark.seal.fill")
+                        .foregroundStyle(PulseDesign.grass)
+                }
+                .accessibilityIdentifier("settings.purchase.status")
             } else {
                 Label {
                     VStack(alignment: .leading, spacing: PulseDesign.spacing4) {
@@ -192,7 +209,7 @@ struct SettingsView: View {
                             .fixedSize(horizontal: false, vertical: true)
                     }
                 } icon: {
-                    Image(systemName: "bell.badge")
+                    Image(systemName: "sparkles.rectangle.stack")
                         .foregroundStyle(PulseDesign.action)
                 }
 
@@ -200,12 +217,12 @@ struct SettingsView: View {
             }
 
             Button("settings.purchase.restore") {
-                Task { await model.restoreReminderEnhancement() }
+                Task { await model.restoreEnhancement() }
             }
             .disabled(model.featureAccess.operation != nil)
             .accessibilityIdentifier("settings.purchase.restore")
         } header: {
-            Text("settings.reminder.section")
+            Text("settings.enhancement.section")
         }
     }
 
@@ -228,7 +245,7 @@ struct SettingsView: View {
             case .available:
                 if let product = model.featureAccess.product {
                     Button {
-                        Task { await model.purchaseReminderEnhancement() }
+                        Task { await model.purchaseEnhancement() }
                     } label: {
                         Text(
                             String(
@@ -261,6 +278,17 @@ struct SettingsView: View {
         }
     }
 
+    private var reminderDeliveryIcon: String {
+        switch model.reminderDeliveryMode {
+        case .disabled:
+            "exclamationmark.triangle"
+        case .localNotification:
+            "bell.badge"
+        case .scheduledLiveActivity:
+            "waveform.path.ecg.rectangle"
+        }
+    }
+
     private var widgetSection: some View {
         Section {
             Picker(
@@ -271,7 +299,14 @@ struct SettingsView: View {
                 )
             ) {
                 ForEach(PulseWidgetStyle.allCases) { style in
-                    Text(style.localizedName(locale: locale)).tag(style)
+                    if PulseWidgetStyleAccessPolicy.requiresEnhancement(style),
+                       !model.featureAccess.hasEnhancement {
+                        Label(widgetStyleOptionLabel(style), systemImage: "lock.fill")
+                            .tag(style)
+                    } else {
+                        Text(widgetStyleOptionLabel(style))
+                            .tag(style)
+                    }
                 }
             }
             .accessibilityIdentifier("settings.widget.style.picker")
@@ -459,6 +494,16 @@ struct SettingsView: View {
                 }
                 model.requestReminderTime(reminderTime)
             }
+        )
+    }
+
+    private func widgetStyleOptionLabel(_ style: PulseWidgetStyle) -> String {
+        let formatKey = PulseWidgetStyleAccessPolicy.requiresEnhancement(style)
+            ? "settings.widget.style.enhancement_format"
+            : "settings.widget.style.free_format"
+        return String(
+            format: PulseLocalization.string(formatKey, locale: locale),
+            style.localizedName(locale: locale)
         )
     }
 

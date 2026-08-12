@@ -95,7 +95,7 @@
 ## 5. 内购边界
 
 - 加密备份、恢复、已有事实的读取、删除和再次导出永久属于免费数据主权能力。
-- 后续 StoreKit 权益只能通过统一 `FeatureAccessPolicy` 控制新增的可选价值，不能在备份或 Repository 中读取可变 `isPro` 标记。
+- StoreKit 权益只能通过统一的 `PulseEnhancementContract` 及其提醒/Widget 访问策略控制可选价值，不能在备份或 Repository 中读取可变 `isPro` 标记。
 - 订阅到期、收据暂不可用或离线时，不得阻止用户访问、备份或恢复既有事实。
 - 加密格式不携带购买状态，不把 StoreKit transaction、receipt、Apple ID 或服务器凭证写入备份。
 

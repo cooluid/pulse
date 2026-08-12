@@ -11,13 +11,15 @@ struct ReminderDeliveryCapabilities: Equatable, Sendable {
     let liveActivitiesEnabled: Bool
 }
 
-enum FeatureAccessPolicy {
-    static func reminderDeliveryMode(
-        hasReminderEnhancement: Bool,
+enum ReminderDeliveryPolicy {
+    static func deliveryMode(
+        reminderEnabled: Bool,
+        hasEnhancementEntitlement: Bool,
         capabilities: ReminderDeliveryCapabilities
     ) -> ReminderDeliveryMode {
-        guard hasReminderEnhancement else { return .disabled }
-        guard capabilities.supportsScheduledLiveActivities,
+        guard reminderEnabled else { return .disabled }
+        guard hasEnhancementEntitlement,
+              capabilities.supportsScheduledLiveActivities,
               capabilities.liveActivitiesEnabled else {
             return .localNotification
         }

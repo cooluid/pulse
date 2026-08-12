@@ -1,8 +1,31 @@
 import XCTest
+@testable import PulseCore
 @testable import pulse
 
 @MainActor
 final class FeatureAccessControllerTests: XCTestCase {
+    func testStoreKitFixtureMatchesTheSharedEnhancementContract() throws {
+        let projectRoot = URL(fileURLWithPath: #filePath)
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+        let data = try Data(
+            contentsOf: projectRoot
+                .appendingPathComponent("Config", isDirectory: true)
+                .appendingPathComponent("PulseEnhancements.storekit")
+        )
+        let root = try XCTUnwrap(
+            JSONSerialization.jsonObject(with: data) as? [String: Any]
+        )
+        let products = try XCTUnwrap(root["products"] as? [[String: Any]])
+
+        XCTAssertEqual(products.count, 1)
+        XCTAssertEqual(
+            products.first?["productID"] as? String,
+            PulseEnhancementContract.productIdentifier
+        )
+        XCTAssertEqual(products.first?["type"] as? String, "NonConsumable")
+    }
+
     func testPurchaseDerivesEntitlementWithoutPersistingAProFlag() async throws {
         let client = TestStoreKitAccessClient()
         let controller = FeatureAccessController(
@@ -14,14 +37,14 @@ final class FeatureAccessControllerTests: XCTestCase {
         XCTAssertEqual(controller.productState, .available)
         XCTAssertEqual(
             controller.product?.identifier,
-            PulseRuntimeIdentity.reminderEnhancementProductIdentifier
+            PulseEnhancementContract.productIdentifier
         )
-        XCTAssertFalse(controller.hasReminderEnhancement)
+        XCTAssertFalse(controller.hasEnhancement)
 
         let outcome = try await controller.purchase()
 
         XCTAssertEqual(outcome, .purchased)
-        XCTAssertTrue(controller.hasReminderEnhancement)
+        XCTAssertTrue(controller.hasEnhancement)
         XCTAssertEqual(client.purchaseCount, 1)
     }
 
@@ -56,7 +79,7 @@ final class FeatureAccessControllerTests: XCTestCase {
 
         try await controller.restore()
 
-        XCTAssertTrue(controller.hasReminderEnhancement)
+        XCTAssertTrue(controller.hasEnhancement)
         XCTAssertEqual(client.synchronizationCount, 1)
     }
 
@@ -72,7 +95,7 @@ final class FeatureAccessControllerTests: XCTestCase {
 
         XCTAssertEqual(outcome, .pending)
         XCTAssertEqual(controller.operation, .pending)
-        XCTAssertFalse(controller.hasReminderEnhancement)
+        XCTAssertFalse(controller.hasEnhancement)
     }
 
     func testCancelledPurchaseDoesNotUnlockEntitlement() async throws {
@@ -87,7 +110,7 @@ final class FeatureAccessControllerTests: XCTestCase {
 
         XCTAssertEqual(outcome, .cancelled)
         XCTAssertNil(controller.operation)
-        XCTAssertFalse(controller.hasReminderEnhancement)
+        XCTAssertFalse(controller.hasEnhancement)
     }
 
     func testRestoreWithoutAnEntitlementReportsNothingToRestore() async {
@@ -105,7 +128,7 @@ final class FeatureAccessControllerTests: XCTestCase {
             XCTAssertEqual(error as? StoreAccessError, .nothingToRestore)
         }
 
-        XCTAssertFalse(controller.hasReminderEnhancement)
+        XCTAssertFalse(controller.hasEnhancement)
         XCTAssertNil(controller.operation)
     }
 }
@@ -121,8 +144,8 @@ private final class TestStoreKitAccessClient: StoreKitAccessClient {
 
     init(
         product: StoreProductPresentation? = StoreProductPresentation(
-            identifier: PulseRuntimeIdentity.reminderEnhancementProductIdentifier,
-            displayName: "Reminder Enhancement",
+            identifier: PulseEnhancementContract.productIdentifier,
+            displayName: "Pulse Enhancements",
             description: "Test product",
             displayPrice: "¥18.00"
         ),

@@ -175,20 +175,38 @@ private struct PulseWidgetProvider: TimelineProvider {
             completion(placeholder(in: context))
             return
         }
-        completion(PulseWidgetRuntime.loadEntry(at: .now).entry)
+        Task { @MainActor in
+            let hasEnhancement = await PulseStoreKitEntitlementReader.hasCurrentEntitlement(
+                for: PulseEnhancementContract.productIdentifier
+            )
+            completion(
+                PulseWidgetRuntime.loadEntry(
+                    at: .now,
+                    hasEnhancementEntitlement: hasEnhancement
+                ).entry
+            )
+        }
     }
 
     func getTimeline(
         in context: Context,
         completion: @escaping (Timeline<PulseWidgetEntry>) -> Void
     ) {
-        let result = PulseWidgetRuntime.loadEntry(at: .now)
-        completion(
-            Timeline(
-                entries: [result.entry],
-                policy: .after(result.refreshAfter)
+        Task { @MainActor in
+            let hasEnhancement = await PulseStoreKitEntitlementReader.hasCurrentEntitlement(
+                for: PulseEnhancementContract.productIdentifier
             )
-        )
+            let result = PulseWidgetRuntime.loadEntry(
+                at: .now,
+                hasEnhancementEntitlement: hasEnhancement
+            )
+            completion(
+                Timeline(
+                    entries: [result.entry],
+                    policy: .after(result.refreshAfter)
+                )
+            )
+        }
     }
 }
 
@@ -205,7 +223,10 @@ private enum PulseWidgetRuntime {
         case missingPrimaryHabit
     }
 
-    static func loadEntry(at date: Date) -> LoadResult {
+    static func loadEntry(
+        at date: Date,
+        hasEnhancementEntitlement: Bool
+    ) -> LoadResult {
         let context: RuntimeContext
         let language: PulseInterfaceLanguage
         do {
@@ -228,7 +249,11 @@ private enum PulseWidgetRuntime {
                 at: context.location,
                 clock: FixedPulseClock(now: date)
             )
-            let style = try context.interfacePreferences.loadWidgetStyle()
+            let preferredStyle = try context.interfacePreferences.loadWidgetStyle()
+            let style = PulseWidgetStyleAccessPolicy.resolvedStyle(
+                preferredStyle: preferredStyle,
+                hasEnhancementEntitlement: hasEnhancementEntitlement
+            )
             guard let plan = try PulseWidgetSnapshotReader.readTimelinePlan(
                 repository: repository,
                 at: date
@@ -241,7 +266,14 @@ private enum PulseWidgetRuntime {
                     state: .ready(plan.snapshot, style),
                     language: language
                 ),
-                refreshAfter: plan.refreshAfter
+                refreshAfter: PulseWidgetStyleAccessPolicy.requiresEnhancement(style)
+                    ? min(
+                        plan.refreshAfter,
+                        date.addingTimeInterval(
+                            PulseEnhancementContract.entitlementRefreshInterval
+                        )
+                    )
+                    : plan.refreshAfter
             )
         } catch RuntimeError.sharedStoreMissing, RuntimeError.missingPrimaryHabit {
             return LoadResult(

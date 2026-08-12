@@ -6,10 +6,15 @@ import PulseCore
 final class ReminderSchedulerLiveActivityTests: XCTestCase {
     func testScheduledLiveActivityUsesTheBoundedRollingBudget() async throws {
         let client = TestReminderLiveActivityScheduler()
-        let scheduler = ReminderScheduler(liveActivityScheduler: client)
+        let notifications = TestReminderNotificationScheduler(permission: .authorized)
+        let scheduler = ReminderScheduler(
+            notificationScheduler: notifications,
+            liveActivityScheduler: client
+        )
 
-        try await scheduler.reconcile(makeSnapshot())
+        let mode = try await scheduler.reconcile(makeSnapshot())
 
+        XCTAssertEqual(mode, .scheduledLiveActivity)
         XCTAssertEqual(
             client.scheduledReminders.count,
             PulseReminderActivityContract.maximumScheduledActivities
@@ -19,27 +24,52 @@ final class ReminderSchedulerLiveActivityTests: XCTestCase {
 
     func testCapacityFailureKeepsAnAlreadyAcceptedPrefix() async throws {
         let client = TestReminderLiveActivityScheduler(failingCall: 3)
-        let scheduler = ReminderScheduler(liveActivityScheduler: client)
+        let notifications = TestReminderNotificationScheduler(permission: .authorized)
+        let scheduler = ReminderScheduler(
+            notificationScheduler: notifications,
+            liveActivityScheduler: client
+        )
 
-        try await scheduler.reconcile(makeSnapshot())
+        let mode = try await scheduler.reconcile(makeSnapshot())
 
+        XCTAssertEqual(mode, .scheduledLiveActivity)
         XCTAssertEqual(client.scheduledReminders.count, 3)
         XCTAssertEqual(client.removeAllCount, 1)
     }
 
-    func testFirstSchedulingFailureFailsClosedAndRemovesThePlan() async {
+    func testFirstSchedulingFailureUsesAuthorizedBasicLocalNotification() async throws {
         let client = TestReminderLiveActivityScheduler(failingCall: 1)
-        let scheduler = ReminderScheduler(liveActivityScheduler: client)
+        let notifications = TestReminderNotificationScheduler(permission: .authorized)
+        let scheduler = ReminderScheduler(
+            notificationScheduler: notifications,
+            liveActivityScheduler: client
+        )
 
-        do {
-            try await scheduler.reconcile(makeSnapshot())
-            XCTFail("Expected the first ActivityKit rejection to fail reconciliation.")
-        } catch {
-            XCTAssertEqual(error as? TestReminderLiveActivityScheduler.Failure, .rejected)
-        }
+        let mode = try await scheduler.reconcile(makeSnapshot())
 
+        XCTAssertEqual(mode, .localNotification)
         XCTAssertEqual(client.scheduledReminders.count, 1)
         XCTAssertEqual(client.removeAllCount, 2)
+        XCTAssertEqual(notifications.addedIdentifiers.count, 60)
+    }
+
+    func testFirstSchedulingFailureReportsUnavailableWhenBasicNotificationsAreDenied() async {
+        let client = TestReminderLiveActivityScheduler(failingCall: 1)
+        let notifications = TestReminderNotificationScheduler(permission: .denied)
+        let scheduler = ReminderScheduler(
+            notificationScheduler: notifications,
+            liveActivityScheduler: client
+        )
+
+        do {
+            _ = try await scheduler.reconcile(makeSnapshot())
+            XCTFail("Expected all unavailable delivery channels to fail reconciliation.")
+        } catch {
+            XCTAssertEqual(error as? PulseAppError, .liveActivitySchedulingFailed)
+        }
+
+        XCTAssertEqual(client.removeAllCount, 3)
+        XCTAssertTrue(notifications.addedIdentifiers.isEmpty)
     }
 
     private func makeSnapshot() -> ReminderScheduleSnapshot {
@@ -60,6 +90,52 @@ final class ReminderSchedulerLiveActivityTests: XCTestCase {
         return calendar.date(
             from: DateComponents(year: 2026, month: 8, day: 10, hour: 12)
         )!
+    }
+}
+
+@MainActor
+private final class TestReminderNotificationScheduler: ReminderNotificationScheduling {
+    var permission: NotificationPermissionState
+    private(set) var addedIdentifiers: [String] = []
+    private(set) var pendingIdentifiers: [String] = []
+    private(set) var deliveredIdentifiers: [String] = []
+
+    init(permission: NotificationPermissionState) {
+        self.permission = permission
+    }
+
+    func permissionState() async -> NotificationPermissionState {
+        permission
+    }
+
+    func requestPermission() async throws -> Bool {
+        permission == .authorized
+    }
+
+    func pendingRequestIdentifiers() async -> [String] {
+        pendingIdentifiers
+    }
+
+    func deliveredRequestIdentifiers() async -> [String] {
+        deliveredIdentifiers
+    }
+
+    func add(
+        identifier: String,
+        title: String,
+        body: String,
+        triggerComponents: DateComponents
+    ) async throws {
+        addedIdentifiers.append(identifier)
+        pendingIdentifiers.append(identifier)
+    }
+
+    func removePendingRequests(identifiers: [String]) {
+        pendingIdentifiers.removeAll { identifiers.contains($0) }
+    }
+
+    func removeDeliveredNotifications(identifiers: [String]) {
+        deliveredIdentifiers.removeAll { identifiers.contains($0) }
     }
 }
 

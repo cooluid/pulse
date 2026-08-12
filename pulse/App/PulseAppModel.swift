@@ -54,6 +54,7 @@ final class PulseAppModel {
     private(set) var operation: AppOperation?
     private(set) var notificationPermission: NotificationPermissionState = .notDetermined
     private(set) var reminderSyncState: ReminderSyncState = .idle
+    private(set) var reminderDeliveryMode: ReminderDeliveryMode = .disabled
     private(set) var navigationResetToken = UUID()
     var selectedMonth: LogicalDay?
     var errorMessage: String?
@@ -76,6 +77,8 @@ final class PulseAppModel {
         self.widgetTimelineReloader = widgetTimelineReloader
         featureAccess.accessDidChange = { [weak self] _ in
             guard let self else { return }
+            self.enforceWidgetStyleAccess()
+            self.widgetTimelineReloader.reloadDailyImprint()
             _ = self.enqueueReminderReconciliation()
         }
     }
@@ -85,13 +88,13 @@ final class PulseAppModel {
     }
 
     var displayedReminderEnabled: Bool {
-        featureAccess.hasReminderEnhancement
-            && (reminderEnabledIntent ?? settings.reminderEnabled)
+        reminderEnabledIntent ?? settings.reminderEnabled
     }
 
-    var reminderDeliveryMode: ReminderDeliveryMode {
-        FeatureAccessPolicy.reminderDeliveryMode(
-            hasReminderEnhancement: featureAccess.hasReminderEnhancement,
+    private var preferredReminderDeliveryMode: ReminderDeliveryMode {
+        ReminderDeliveryPolicy.deliveryMode(
+            reminderEnabled: displayedReminderEnabled,
+            hasEnhancementEntitlement: featureAccess.hasEnhancement,
             capabilities: reminderScheduler.deliveryCapabilities
         )
     }
@@ -148,6 +151,7 @@ final class PulseAppModel {
             await reload(reconcileReminders: false)
         }
         await featureAccessTask.value
+        enforceWidgetStyleAccess()
         if loadState == .ready {
             await enqueueReminderReconciliation().value
         }
@@ -240,6 +244,7 @@ final class PulseAppModel {
             selectedMonth = nil
             try loadSnapshot()
             notificationPermission = await reminderScheduler.permissionState()
+            reminderDeliveryMode = .disabled
             reminderSyncState = .synced
             settings.finishReset()
             loadState = .ready
@@ -254,10 +259,6 @@ final class PulseAppModel {
     }
 
     func requestReminderEnabled(_ enabled: Bool) {
-        guard featureAccess.hasReminderEnhancement else {
-            present(PulseAppError.reminderEnhancementRequired)
-            return
-        }
         reminderIntentRevision += 1
         let revision = reminderIntentRevision
         reminderEnabledIntent = enabled
@@ -270,16 +271,16 @@ final class PulseAppModel {
     private func applyReminderEnabled(_ enabled: Bool, revision: Int) async {
         if enabled {
             do {
-                guard featureAccess.hasReminderEnhancement else {
-                    throw PulseAppError.reminderEnhancementRequired
-                }
-                let deliveryMode = reminderDeliveryMode
+                let deliveryMode = preferredReminderDeliveryMode
                 guard deliveryMode != .disabled else {
-                    throw PulseAppError.reminderEnhancementRequired
+                    throw PulseAppError.reminderUnavailable
                 }
 
                 let allowed: Bool
                 if deliveryMode == .scheduledLiveActivity {
+                    if await reminderScheduler.permissionState() == .notDetermined {
+                        _ = try? await reminderScheduler.requestPermission()
+                    }
                     allowed = true
                 } else {
                     switch await reminderScheduler.permissionState() {
@@ -325,21 +326,17 @@ final class PulseAppModel {
         _ = enqueueReminderReconciliation()
     }
 
-    func purchaseReminderEnhancement() async {
+    func purchaseEnhancement() async {
         do {
-            let outcome = try await featureAccess.purchase()
-            if outcome == .purchased {
-                await enqueueReminderReconciliation().value
-            }
+            _ = try await featureAccess.purchase()
         } catch {
             present(error)
         }
     }
 
-    func restoreReminderEnhancement() async {
+    func restoreEnhancement() async {
         do {
             try await featureAccess.restore()
-            await enqueueReminderReconciliation().value
         } catch {
             present(error)
         }
@@ -353,6 +350,13 @@ final class PulseAppModel {
     }
 
     func requestWidgetStyle(_ style: PulseWidgetStyle) {
+        guard PulseWidgetStyleAccessPolicy.isAvailable(
+            style,
+            hasEnhancementEntitlement: featureAccess.hasEnhancement
+        ) else {
+            present(PulseAppError.enhancementRequired)
+            return
+        }
         guard settings.widgetStyle != style else { return }
         settings.widgetStyle = style
         widgetTimelineReloader.reloadDailyImprint()
@@ -538,8 +542,12 @@ final class PulseAppModel {
         }
 
         let snapshot = ReminderScheduleSnapshot(
-            enabled: settings.reminderEnabled && featureAccess.hasReminderEnhancement,
-            deliveryMode: reminderDeliveryMode,
+            enabled: settings.reminderEnabled,
+            deliveryMode: ReminderDeliveryPolicy.deliveryMode(
+                reminderEnabled: settings.reminderEnabled,
+                hasEnhancementEntitlement: featureAccess.hasEnhancement,
+                capabilities: reminderScheduler.deliveryCapabilities
+            ),
             time: settings.reminderTime,
             timeZoneIdentifier: habit.timeZoneIdentifier,
             localeIdentifier: settings.locale.identifier,
@@ -552,19 +560,19 @@ final class PulseAppModel {
             await previousTask?.value
             guard let self, revision == self.reminderReconcileRevision else { return }
             do {
-                try await self.reminderScheduler.reconcile(snapshot)
+                let deliveryMode = try await self.reminderScheduler.reconcile(snapshot)
                 guard revision == self.reminderReconcileRevision else { return }
+                self.reminderDeliveryMode = deliveryMode
                 self.reminderSyncState = .synced
             } catch {
                 guard revision == self.reminderReconcileRevision else { return }
                 if snapshot.enabled {
                     let permission = await self.reminderScheduler.permissionState()
                     guard revision == self.reminderReconcileRevision else { return }
-                    self.settings.setReminderEnabled(false)
-                    self.reminderEnabledIntent = nil
                     self.notificationPermission = permission
                     self.present(error)
                 }
+                self.reminderDeliveryMode = .disabled
                 self.reminderSyncState = .failed
             }
         }
@@ -576,6 +584,15 @@ final class PulseAppModel {
         reminderIntentRevision += 1
         reminderEnabledIntent = nil
         reminderReconcileRevision += 1
+    }
+
+    private func enforceWidgetStyleAccess() {
+        let resolvedStyle = PulseWidgetStyleAccessPolicy.resolvedStyle(
+            preferredStyle: settings.widgetStyle,
+            hasEnhancementEntitlement: featureAccess.hasEnhancement
+        )
+        guard settings.widgetStyle != resolvedStyle else { return }
+        settings.widgetStyle = resolvedStyle
     }
 
     private func scheduleDateBoundaryRefresh() {

@@ -26,7 +26,7 @@ public enum PulseSharedInterfacePreferenceError: Error, Equatable, Sendable {
 
 public struct PulseSharedInterfacePreferences {
     public static let defaultLanguage = PulseInterfaceLanguage.system
-    public static let defaultWidgetStyle = PulseWidgetStyle.faultField
+    public static let defaultWidgetStyle = PulseWidgetStyleAccessPolicy.freeStyle
     public static let languageStorageKey = "interface.language"
     public static let widgetStyleStorageKey = "widget.style"
 

@@ -1,5 +1,6 @@
 import Foundation
 import Observation
+import PulseCore
 import StoreKit
 
 struct StoreProductPresentation: Equatable, Sendable {
@@ -63,19 +64,7 @@ final class StoreKit2AccessClient: StoreKitAccessClient {
     }
 
     func hasCurrentEntitlement(identifier: String) async -> Bool {
-        guard let result = await Transaction.currentEntitlement(for: identifier) else {
-            return false
-        }
-        guard case .verified(let transaction) = result,
-              transaction.productID == identifier,
-              transaction.revocationDate == nil,
-              !transaction.isUpgraded else {
-            return false
-        }
-        if let expirationDate = transaction.expirationDate {
-            return expirationDate > .now
-        }
-        return true
+        await PulseStoreKitEntitlementReader.hasCurrentEntitlement(for: identifier)
     }
 
     func purchase(identifier: String) async throws -> StorePurchaseOutcome {
@@ -116,7 +105,7 @@ final class FeatureAccessController {
     private(set) var productState: StoreProductLoadState = .loading
     private(set) var product: StoreProductPresentation?
     private(set) var operation: StorePurchaseOperation?
-    private(set) var hasReminderEnhancement = false
+    private(set) var hasEnhancement = false
 
     @ObservationIgnored var accessDidChange: (@MainActor (Bool) -> Void)?
 
@@ -142,7 +131,7 @@ final class FeatureAccessController {
         productState = .loading
         do {
             product = try await client.loadProduct(
-                identifier: PulseRuntimeIdentity.reminderEnhancementProductIdentifier
+                identifier: PulseEnhancementContract.productIdentifier
             )
             productState = product == nil ? .unavailable : .available
         } catch {
@@ -158,7 +147,7 @@ final class FeatureAccessController {
         operation = .purchasing
         do {
             let outcome = try await client.purchase(
-                identifier: PulseRuntimeIdentity.reminderEnhancementProductIdentifier
+                identifier: PulseEnhancementContract.productIdentifier
             )
             switch outcome {
             case .purchased:
@@ -182,7 +171,7 @@ final class FeatureAccessController {
             try await client.synchronize()
             await refreshEntitlement()
             operation = nil
-            guard hasReminderEnhancement else {
+            guard hasEnhancement else {
                 throw StoreAccessError.nothingToRestore
             }
         } catch {
@@ -193,10 +182,10 @@ final class FeatureAccessController {
 
     private func refreshEntitlement() async {
         let entitlement = await client.hasCurrentEntitlement(
-            identifier: PulseRuntimeIdentity.reminderEnhancementProductIdentifier
+            identifier: PulseEnhancementContract.productIdentifier
         )
-        guard entitlement != hasReminderEnhancement else { return }
-        hasReminderEnhancement = entitlement
+        guard entitlement != hasEnhancement else { return }
+        hasEnhancement = entitlement
         if entitlement {
             operation = nil
         }
@@ -209,7 +198,7 @@ final class FeatureAccessController {
             for await result in Transaction.updates {
                 guard !Task.isCancelled, let self else { return }
                 if case .verified(let transaction) = result,
-                   transaction.productID == PulseRuntimeIdentity.reminderEnhancementProductIdentifier {
+                   transaction.productID == PulseEnhancementContract.productIdentifier {
                     await transaction.finish()
                 }
                 await self.refreshEntitlement()
@@ -230,8 +219,8 @@ final class UITestStoreKitAccessClient: StoreKitAccessClient {
     func loadProduct(identifier: String) async throws -> StoreProductPresentation? {
         StoreProductPresentation(
             identifier: identifier,
-            displayName: "提醒增强",
-            description: "One-time reminder enhancement purchase",
+            displayName: "一日一印增强",
+            description: "One-time system presentation and widget style enhancement",
             displayPrice: "¥18.00"
         )
     }

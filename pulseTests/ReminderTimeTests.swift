@@ -85,13 +85,13 @@ final class AppSettingsTests: XCTestCase {
         XCTAssertEqual(reloaded.locale.identifier, "en")
     }
 
-    func testWidgetStyleDefaultsToFaultFieldAndPersistsEveryOfficialStyle() throws {
+    func testWidgetStyleDefaultsToIncludedStyleAndPersistsEveryOfficialStyle() throws {
         let suiteName = "AppSettingsTests.WidgetStyle.\(UUID().uuidString)"
         let defaults = try XCTUnwrap(UserDefaults(suiteName: suiteName))
         defer { defaults.removePersistentDomain(forName: suiteName) }
 
         let settings = try makeSettings(defaults: defaults)
-        XCTAssertEqual(settings.widgetStyle, .faultField)
+        XCTAssertEqual(settings.widgetStyle, .commitmentManifesto)
 
         for style in PulseWidgetStyle.allCases {
             settings.widgetStyle = style
@@ -143,11 +143,11 @@ final class AppSettingsTests: XCTestCase {
 
         XCTAssertEqual(settings.theme, .system)
         XCTAssertEqual(settings.language, .system)
-        XCTAssertEqual(settings.widgetStyle, .faultField)
+        XCTAssertEqual(settings.widgetStyle, .commitmentManifesto)
         let reloaded = try makeSettings(defaults: defaults)
         XCTAssertEqual(reloaded.theme, .system)
         XCTAssertEqual(reloaded.language, .system)
-        XCTAssertEqual(reloaded.widgetStyle, .faultField)
+        XCTAssertEqual(reloaded.widgetStyle, .commitmentManifesto)
     }
 
     func testInvalidPersistedReminderTimeFailsInitialization() throws {

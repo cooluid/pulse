@@ -44,7 +44,7 @@ final class PulseWidgetSnapshotTests: XCTestCase {
         let preferences = PulseSharedInterfacePreferences(defaults: defaults)
 
         XCTAssertEqual(try preferences.loadLanguage(), .system)
-        XCTAssertEqual(try preferences.loadWidgetStyle(), .faultField)
+        XCTAssertEqual(try preferences.loadWidgetStyle(), .commitmentManifesto)
 
         for language in PulseInterfaceLanguage.allCases {
             preferences.saveLanguage(language)
@@ -58,7 +58,7 @@ final class PulseWidgetSnapshotTests: XCTestCase {
 
         preferences.reset()
         XCTAssertEqual(try preferences.loadLanguage(), .system)
-        XCTAssertEqual(try preferences.loadWidgetStyle(), .faultField)
+        XCTAssertEqual(try preferences.loadWidgetStyle(), .commitmentManifesto)
     }
 
     func testSharedInterfacePreferencesRejectUnknownStoredValues() throws {

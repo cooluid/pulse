@@ -101,7 +101,7 @@
          </BuildableReference>
       </BuildableProductRunnable>
       <StoreKitConfigurationFileReference
-         identifier = "../../Config/PulseReminder.storekit">
+         identifier = "../../Config/PulseEnhancements.storekit">
       </StoreKitConfigurationFileReference>
    </LaunchAction>
    <ProfileAction

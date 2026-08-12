@@ -6,7 +6,8 @@ enum PulseAppError: Error, Equatable {
     case notificationPermissionDenied
     case liveActivitiesUnavailable
     case liveActivitySchedulingFailed
-    case reminderEnhancementRequired
+    case reminderUnavailable
+    case enhancementRequired
 }
 
 enum PulseErrorPresentation {
@@ -49,8 +50,10 @@ enum PulseErrorPresentation {
                 "error.live_activities_unavailable"
             case .liveActivitySchedulingFailed:
                 "error.live_activity_scheduling"
-            case .reminderEnhancementRequired:
-                "error.reminder_purchase_required"
+            case .reminderUnavailable:
+                "error.reminder_unavailable"
+            case .enhancementRequired:
+                "error.enhancement_required"
             }
             return PulseLocalization.string(key, locale: locale)
         }

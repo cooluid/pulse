@@ -1,7 +1,7 @@
 # 一日一印（Pulse）1.x–3.0 产品战略与商业化规划
 
 文档版本：0.5<br>
-状态：Proposed Strategy；已纳入 2026-08-12 的 1.0 提醒增强受控变更
+状态：Proposed Strategy；已纳入 2026-08-12 的 1.0 免费提醒与一日一印增强受控变更
 评审日期：2026-08-12
 
 本文回答四个问题：这个项目是否值得继续、应该成为什么、哪些能力适合收费、以什么证据决定继续或停止。具体实施顺序见 [POST_1_0_ROADMAP.md](./POST_1_0_ROADMAP.md)。
@@ -23,7 +23,7 @@ Pulse 值得继续，但前提不是“继续堆功能”，而是守住并放�
 | 工程基础 | GO | 事实模型、写入入口、测试与失败处理已成体系 |
 | 1.0 公开发布 | NO-GO | 真机、通知、最终视觉、签名分发与连续使用门禁未关闭 |
 | 产品差异化 | CONDITIONAL GO | “一个承诺、一次真实留印、无压力恢复”有空间，但尚未经用户验证 |
-| 提醒增强买断实现 | ENGINEERING CANDIDATE / RELEASE NO-GO | 单一 StoreKit entitlement 与本地调度已进入 Build 3；生产商品、真机系统表面、Sandbox/TestFlight 与付费意愿尚未验证 |
+| 一日一印增强买断实现 | ENGINEERING CANDIDATE / RELEASE NO-GO | 免费基础提醒、scheduled Live Activity、三种额外 Widget 构图与单一 StoreKit entitlement 已进入 Build 3；生产商品、真机系统表面、Sandbox/TestFlight 与付费意愿尚未验证 |
 | Pulse Plus 上线 | NO-GO | 还没有被验证的长期价值与订阅功能组合 |
 | 持续投入 | GO，带阶段门槛 | 先发布与验证，再依证据投入 Widget、Plus、同步和 Watch |
 
@@ -144,14 +144,14 @@ flowchart LR
 - 删除、清除、加密备份导出和恢复；
 - 所有已有数据的阅读和再次导出；
 - 主承诺命名与一句“为什么重要”；
-- 基础 Home / Lock Screen Widget；
+- Home Screen“承诺宣言”与基础 Lock Screen Widget；
 - 若 Watch 阶段通过真机门禁并进入生产：基础 Watch App、表盘印记、Smart Stack 和可靠签到；
 - App 内落印动效、用户签到后的短暂系统落印回声，以及回归和事实里程碑变体；
 - 基础缺席说明：说明事实，但不把缺席改成完成；
 - 一张带最小品牌署名、默认不暴露私密内容的基础分享卡。
 - 若影像实验通过并进入生产：每日一张今日影像的拍摄、本地查看、删除和原图导出。
 
-把导出、读取历史、无障碍或隐私锁放到付费层，会直接削弱信任。2026-08-12 的受控例外是一个单独的永久买断“提醒增强”：未购买只失去系统提醒入口，不影响签到闭环、历史、Widget、备份或数据控制；是否有足够付费价值必须用真实转化与退款证据审查，不能因为已经实现就视为产品验证通过。
+把基础提醒、导出、读取历史、无障碍或隐私锁放到付费层，会直接削弱信任。2026-08-12 的受控付费范围是一个单独的永久买断“一日一印增强”：解锁 iOS 26 scheduled Live Activity 和三种额外 Home Screen Widget 构图；未购买用户仍保留本地通知、承诺宣言、签到闭环、历史、备份与数据控制。是否有足够付费价值必须用真实转化与退款证据审查，不能因为已经实现就视为产品验证通过。
 
 ### 6.2 Pulse Plus 应售卖的高阶价值
 
@@ -186,7 +186,7 @@ flowchart LR
 
 ### 6.4 微信提醒资格合同
 
-微信不是 iOS 本地提醒的替代品。买断权益内的 Live Activity / 本地通知继续作为离线可用的 iOS 通道；微信只能作为用户主动绑定、可随时解绑的附加通道。
+微信不是 iOS 本地提醒的替代品。免费本地通知与买断权益内的 Live Activity 继续作为离线可用的 iOS 通道；微信只能作为用户主动绑定、可随时解绑的附加通道。
 
 产品不得采用个人微信机器人、客户端 Hook、模拟点击、文件传输助手自动化、托管用户 Cookie 或来源不明的代发平台。进入工程实现前必须依次取得并保存证据：
 
@@ -204,7 +204,7 @@ flowchart LR
 
 Widget、Live Activity、灵动岛、锁屏、StandBy、Apple Watch、Control、Action Button 与提醒通道共同遵循 [PULSE_RITUAL_CONTRACT.md](./PULSE_RITUAL_CONTRACT.md)。它们不是新的签到真源，而是同一签到事实的系统级入口与反馈。
 
-日印仪式以“呼吸、落印、年轮”为唯一动作语言：基础 Widget、签到成功后的两秒落印、回归与事实里程碑免费；影像进入生产后，签到成功可转入一次短暂拍照窗口。买断提醒在 iOS 26 使用本地 scheduled Live Activity，在 iOS 18–25 或 Live Activities 关闭时使用本地通知；每个逻辑日最多一次，并与未来远程/微信提醒只选一个主通道。全天常驻未签到、重复触达、照片默认上锁屏和成功先于持久化均为 `NO-GO`。
+日印仪式以“呼吸、落印、年轮”为唯一动作语言：免费本地通知、承诺宣言与 Lock Screen Widget、签到成功后的两秒落印、回归与事实里程碑免费；影像进入生产后，签到成功可转入一次短暂拍照窗口。买断增强在 iOS 26 使用本地 scheduled Live Activity，并解锁三种额外 Home Screen 构图；iOS 18–25 或 Live Activities 关闭时仍使用免费本地通知。每个逻辑日最多一次，并与未来远程/微信提醒只选一个主通道。全天常驻未签到、重复触达、照片默认上锁屏和成功先于持久化均为 `NO-GO`。
 
 ### 6.6 建议暂缓或拒绝
 
@@ -360,7 +360,7 @@ Widget 扩展需要跨进程读取或写入数据，不能把 `isCheckedToday` �
 ### 10.4 StoreKit 权益
 
 - `FeatureAccessController` 只从 StoreKit 验证交易派生当前权益，不把 `isPro=true` 作为可手工篡改的业务真相持久化。
-- `FeatureAccessPolicy` 统一决定能力可用性；页面和写入入口都检查，不能只隐藏按钮。
+- `PulseEnhancementContract` 集中商品 ID，`ReminderDeliveryPolicy` 与 `PulseWidgetStyleAccessPolicy` 分别统一决定提醒和样式能力；页面、写入入口和 Widget extension 渲染边界都检查，不能只隐藏按钮。
 - 商品 ID、权益和展示文案集中定义；价格永远来自 StoreKit 本地化商品。
 - 使用 StoreKit Configuration、Sandbox、TestFlight 和生产四层验证购买、取消、退款、续费、过期、家庭共享决策与恢复购买。
 - 初期不需要引入第三方付费墙 SDK；原生 StoreKit 已能满足单一权益，避免增加账号、分析和第二套商品真源。
@@ -385,8 +385,8 @@ Widget 扩展需要跨进程读取或写入数据，不能把 `isCheckedToday` �
 
 - `DailyImprintActivity` 只表达提醒窗口、正在保存、保存成功和可选影像窗口；`ImprintRenderActivity` 只表达真实渲染进度，两者都不能持久化签到真相。
 - App、Widget、Live Activity、Control 与 Action Button 复用同一个 Repository / command service；保存成功或幂等回读前不能显示实心落印。
-- iOS 26 本地灵动岛/锁屏提醒使用 ActivityKit `start:` 调度，不以定时器或后台任务假装启动；iOS 18–25 回退本地通知。只有未来的远程、跨设备或个性调度才需要 push-to-start、APNs 和最小后端证据链。
-- 每日触发上限、提醒主通道、回退、关闭后不重启、签到后取消、照片邀请和渲染生命周期只以 [PULSE_RITUAL_CONTRACT.md](./PULSE_RITUAL_CONTRACT.md) 为准。
+- iOS 26 增强版灵动岛/锁屏提醒使用 ActivityKit `start:` 调度，不以定时器或后台任务假装启动；未购买、iOS 18–25 或 Live Activities 关闭时选择免费本地通知。只有未来的远程、跨设备或个性调度才需要 push-to-start、APNs 和最小后端证据链。
+- 每日触发上限、提醒主通道、正式通道切换、关闭后不重启、签到后取消、照片邀请和渲染生命周期只以 [PULSE_RITUAL_CONTRACT.md](./PULSE_RITUAL_CONTRACT.md) 为准。
 
 ### 10.8 Apple Watch
 

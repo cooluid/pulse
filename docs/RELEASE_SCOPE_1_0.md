@@ -17,12 +17,12 @@ Pulse 1.0 只解决一个问题：让单个用户每天可靠地记录一次签�
 - 固定签到时区和 00:00 日界线。
 - 今日签到、当日唯一性、重复点击保护和跨日刷新。
 - App 内有限日印仪式：待签到只进行一次有限呼吸，保存成功后完成空心到实心落印，Reduce Motion 使用静态等价表达。
-- 免费基础 Widget：Home Screen 小号/中号、Lock Screen 圆形/矩形；Home Screen 免费提供“断层双色 / 越界巨环 / 承诺宣言 / 错版撕页”四种构图。Widget 事实只读取同一个 App Group SwiftData store，未签到时提供单向签到 AppIntent；App Group 只保存类型化的 `interface.language` 与 `widget.style` 展示偏好。Home Screen 显示当前主承诺名称，Lock Screen 只显示品牌“印记”和抽象状态，任何 Widget 都不显示“为什么重要”。
+- 基础 Widget：Home Screen 小号/中号、Lock Screen 圆形/矩形；Home Screen 的“承诺宣言”构图与全部 Lock Screen 构图面向所有用户。Widget 事实只读取同一个 App Group SwiftData store，未签到时提供单向签到 AppIntent；App Group 只保存类型化的 `interface.language` 与 `widget.style` 展示偏好，不保存购买副本。Home Screen 显示当前主承诺名称，Lock Screen 只显示品牌“印记”和抽象状态，任何 Widget 都不显示“为什么重要”。
 - 最近 7 天、月历历史、当前连续、最长连续和累计签到。
 - 删除单条签到记录和清除全部数据。
-- 一次买断的“提醒增强”权益；权益只来自 StoreKit 2 已验证的非消耗型购买 `co.fanr.pulse.reminder.lifetime`，不保存 `isPro` 或其他购买事实副本。商品展示名称、价格与可用性只显示 App Store 返回值；版本通道说明由本合同与 App String Catalog 统一提供。
-- 已购买的提醒遵循签到项目固定时区，且同一逻辑日只使用一个通道：iOS / iPadOS 26 及以后、系统允许 Live Activities 时滚动安排最多 7 个 transient Live Activity；支持灵动岛的 iPhone 同时获得 Dynamic Island 表面，其他设备使用 Lock Screen 表面。iOS / iPadOS 18–25，或 iOS 26 关闭 Live Activities 时，回退为滚动 60 个日历日的一次性本地通知。
-- 未购买时不请求通知权限、不安排本地通知或 Live Activity，今日签到、历史、统计、Widget、加密备份恢复和其他基础体验不受影响。
+- 面向所有用户的免费基础提醒：用户主动开启后，按签到项目固定时区滚动安排 60 个日历日的一次性本地通知；同一逻辑日签到后不再触达。
+- 一次买断的“一日一印增强”权益；权益只来自 StoreKit 2 已验证的非消耗型购买 `co.fanr.pulse.enhancement.lifetime`，不保存 `isPro` 或其他购买事实副本。商品展示名称、价格与可用性只显示 App Store 返回值；增强解锁 iOS / iPadOS 26 scheduled Live Activity 与三种额外 Home Screen Widget 构图“断层双色 / 越界巨环 / 错版撕页”。
+- 已购买且系统允许 Live Activities 时滚动安排最多 7 个 transient Live Activity；支持灵动岛的 iPhone 可由系统同时显示 Dynamic Island 表面，其他设备使用 Lock Screen 表面。iOS / iPadOS 18–25、iOS 26 关闭 Live Activities，或首个 Activity 被拒绝且通知已授权时，使用同一个免费本地通知通道；不得重复触达。
 - 一周起始日、触觉反馈和签到时区设置。
 - Pulse 加密备份 v1 导出和校验后的全量恢复；用户设置独立口令，密码无法找回。
 - English / 简体中文应用内切换并同步 App 与 Widget 内容；跟随系统 / 浅色 / 深色主题模式，动态字体、VoiceOver、iPhone 和 iPad 布局。Widget Gallery 与 AppIntent 等系统托管元数据仍按 iOS 的语言规则显示。
@@ -48,7 +48,7 @@ Pulse 1.0 只解决一个问题：让单个用户每天可靠地记录一次签�
 - 用户主动创建的备份使用独立口令加密；App 不保存或上传口令。导出后，备份文件和密码的保管责任转移给用户。
 - 未启用云同步时，卸载应用会删除沙盒内数据；发布文案必须明确说明。
 - 应用不上传签到记录，不集成广告或第三方分析 SDK。
-- 只有已购买用户在实际落入本地通知通道并主动开启提醒时才请求通知权限；iOS 26 定时 Live Activity 不触发通知权限请求。Pulse 不请求与核心功能无关的权限。
+- 只有用户主动开启提醒时才请求通知权限，用于所有用户的基础本地提醒及增强通道不可用时的连续性；首次启动不请求。拒绝通知不能阻止仍可用的 scheduled Live Activity。Pulse 不请求与核心功能无关的权限。
 - App 内设置页与 App Store Connect 必须引用同一份公开隐私政策，并提供公开产品支持入口。
 
 ## 5. 当前发布参数
@@ -59,7 +59,7 @@ Pulse 1.0 只解决一个问题：让单个用户每天可靠地记录一次签�
 | Bundle ID | `co.fanr.pulse` | 已确认；命名空间来自用户持有的 `fanr.co` |
 | Marketing Version | `1.0` | 可作为首版候选 |
 | Build Number | `3` | 当前源码开发候选；App 与 Widget 已统一递增。已上传并完成内部 TestFlight 核心验收的 Build 2 是不含本轮内购/定时 Live Activity 的历史候选，不能代表 Build 3，也不能复用其分发证据 |
-| 最低系统版本 | iOS / iPadOS 18.0 | 已在全部 target 统一；当前 iOS 18.6 Simulator 工程验证通过，可用最旧 18.x 与真机仍是发布门禁 |
+| 最低系统版本 | iOS / iPadOS 18.0 | 已在全部 target 统一；Build 3 当前全量回归运行于 iOS 26.5 Simulator，最旧可用 18.x 的当前构建运行与真机仍是发布门禁 |
 | Development Team | `6N3D8YA2FY` | Build 2 的正式 Archive、Cloud Managed Apple Distribution、Store profile、App Group、Data Protection entitlement、`get-task-allow=false`、出口合规声明和上传结果均已核验；Delivery UUID 为 `0373b760-05e0-4299-bb50-6bd6ec3d2959` |
 | Widget 身份 | `co.fanr.pulse.widgets` / `group.co.fanr.pulse` | 两个开发描述文件均含正式 App Group；当前共享 store 已重定为首发唯一 schema，既有真机证据不能自动转移到本次 clean-break 候选，必须刷新系统表面与压力矩阵 |
 | 数据策略 | iOS Data Protection + Pulse 加密备份恢复 | 1.0 正式方案；备份/恢复不进入未来付费墙 |
@@ -85,7 +85,7 @@ Bundle ID 一旦用于正式分发，就成为安装、钥匙串、通知和后�
 7. 至少完成一轮跨多个自然日的内部试用。
 8. 真实设备覆盖 Widget 清洁安装、Widget 先于 App 加载、App 未运行、锁屏、跨午夜、快速双击和 App/Widget 同日竞争；任何失败都不能显示虚假完成态、创建空白第二库或产生重复记录。
 9. App Store Connect 中非消耗型商品 ID 与工程一致，商品、价格、税务/协议、商店文案和审核状态有效；StoreKit Configuration、Sandbox、TestFlight 与生产购买/恢复/撤销链分别通过。
-10. 真机分别验证 iOS 18–25 本地通知、iOS 26 无灵动岛 Lock Screen Live Activity、iOS 26 支持设备 Dynamic Island、关闭 Live Activities 的通知回退，以及签到/关提醒/清数据后的取消。系统是否实际展示由 iOS 决定，产品不得承诺“到点必现”。
+10. 真机分别验证 iOS 18–25 免费本地通知、iOS 26 无灵动岛 Lock Screen Live Activity、iOS 26 支持设备 Dynamic Island、关闭 Live Activities 后切换基础通知，以及签到/关提醒/清数据后的取消。系统是否实际展示由 iOS 决定，产品不得承诺“到点必现”。
 
 ## 7. 变更控制
 

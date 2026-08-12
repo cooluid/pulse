@@ -1,5 +1,5 @@
 {
-  "identifier" : "50E6B9E0-9F95-4F15-A0D3-D2CA7FC2DD1A",
+  "identifier" : "C141905F-BDA6-42D2-A8C8-BDA80F258D35",
   "nonRenewingSubscriptions" : [
 
   ],
@@ -7,21 +7,21 @@
     {
       "displayPrice" : "18",
       "familyShareable" : false,
-      "internalID" : "A8A5DF21-4EC4-4EB4-A885-6E48E39513DD",
+      "internalID" : "14CFA85B-CCDF-48DB-BD52-E4C92F402A29",
       "localizations" : [
         {
-          "description" : "A one-time purchase for scheduled Live Activity or local notification reminders.",
-          "displayName" : "Reminder Enhancement",
+          "description" : "Unlock scheduled Live Activities and three additional Home Screen widget styles.",
+          "displayName" : "Pulse Enhancements",
           "locale" : "en_US"
         },
         {
-          "description" : "一次买断定时实时活动或本地通知提醒。",
-          "displayName" : "提醒增强",
+          "description" : "解锁定时实时活动与三种额外主屏幕小组件样式。",
+          "displayName" : "一日一印增强",
           "locale" : "zh_CN"
         }
       ],
-      "productID" : "co.fanr.pulse.reminder.lifetime",
-      "referenceName" : "Pulse Reminder Enhancement Lifetime",
+      "productID" : "co.fanr.pulse.enhancement.lifetime",
+      "referenceName" : "Pulse Enhancements Lifetime",
       "type" : "NonConsumable"
     }
   ],
