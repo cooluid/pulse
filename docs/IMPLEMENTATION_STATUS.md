@@ -46,9 +46,9 @@
 
 验证环境：macOS 26.6、Xcode 26.6（17F113）、iPhone 17 Pro / iOS 26.5 Simulator（arm64）。
 
-- 上一轮 119 项单元/集成测试与 19 项 Simulator UI 测试全量通过；本轮高阶权益命名、六式 Widget 与今日潮面改动必须重新取得全量自动化证据，不能沿用旧总数宣布完成。当前改动尚未形成不可变提交，因此状态保持 **ENGINEERING CANDIDATE**，不写成最终 GO。
+- 当前 120 项单元/集成测试与 19 项 Simulator UI 测试全量通过，共 139 项、0 失败；UI 回归逐一覆盖六式 Widget 滚动、末张卡完整露出、选择后重启持久化，以及权益末项与恢复购买滚到固定购买条上方。当前改动尚未形成不可变提交，因此状态保持 **ENGINEERING CANDIDATE**，不写成最终 GO。
 - 媒体自动化覆盖独立删除/重新关联、同日替换、文件安装/读取/审计、缩略图损坏、无相册回退、v2 归档往返、随机性、错误口令、篡改、v1 拒绝、缺条目与缩略图身份不匹配。
-- 上一轮 Simulator 截图已复审待签到、已签到、记录、独立权益页与 Widget 画廊；本轮新构图、等宽权益项与潮面可见性需要新的截图和连续录屏。旧证据不能外推到当前修改。当前结果保持 **INTERFACE CANDIDATE**；它仍不是相机真机、真实 Home Screen Widget host、Reduce Motion 系统切换、完整视觉矩阵或人体体验 GO。
+- 当前 Simulator 原始像素截图已复审六式 Widget 画廊与等宽权益项；今日页另取得 15.27 秒连续录屏，并抽检 1、5、9 秒帧确认潮面位置持续变化且不遮挡日期、承诺、签到或底栏。当前结果保持 **INTERFACE CANDIDATE**；它仍不是相机真机、真实 Home Screen Widget host、Reduce Motion 系统切换、完整视觉矩阵或人体体验 GO。
 - Release `generic/platform=iOS` 无签名构建通过；Release 静态分析通过；Swift 警告按错误处理。
 - 19 项品牌生成资产检查通过，包含由同一令牌确定性产出的 AppIcon 三外观与小尺寸评审图；App、InfoPlist 与 Widget String Catalog 可解析；App/Widget plist 可解析。
 - `git diff --check` 通过；生产 Swift 源码没有 TODO/FIXME/HACK、相册回退、样例照片或演示数据路径。
