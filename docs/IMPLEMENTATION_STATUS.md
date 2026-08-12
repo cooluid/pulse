@@ -2,8 +2,8 @@
 
 更新时间：2026-08-12
 当前工程结论：**GO（提交 `cabde80`、iOS 18.6 Simulator、Release 构建与静态分析）**。
-当前候选结论：**RELEASE CANDIDATE GO**。正式 Archive 与 App Store Connect IPA 已生成并核验。
-当前公开发布结论：**NO-GO**。App Store Connect 上传/处理、TestFlight 安装回归和商店版本提交尚未执行。
+当前候选结论：**RELEASE CANDIDATE GO / UPLOAD SUCCEEDED**。正式 Archive 与 App Store Connect IPA 已核验，`1.0 (1)` 已上传并进入 Apple 处理队列。
+当前公开发布结论：**NO-GO**。Apple 构建处理、TestFlight 安装回归和商店版本提交尚未完成。
 
 ## 当前唯一生产基线
 
@@ -51,6 +51,8 @@
 - 提交 `cabde80` 已位于 `main` 与 `origin/main`；正式 Archive 生成成功。
 - App Store Connect 导出成功：App 与 Widget 均使用 Cloud Managed Apple Distribution 和 Store profile，`get-task-allow=false`、`beta-reports-active=true`，嵌套签名严格校验通过。
 - 导出 IPA SHA-256：`729ad834049ade944c02e03af22a82b705f5896a2439d86ecc82f16de0f673696`；完整证据见 [Pulse 1.0 (1) 发布候选证据](./RELEASE_CANDIDATE_1_0_1.md)。
+- App Store Connect 正式 App 记录已创建：名称 `Pulse: One Daily Mark`、Apple ID `6800603164`、Bundle ID `co.fanr.pulse`、主语言 English (U.S.)、SKU `co.fanr.pulse.ios`。
+- 2026-08-12 14:45:12（GMT+8），`xcodebuild -exportArchive` 返回 `Upload succeeded`；Delivery UUID 为 `701f3d3b-aeab-4404-a084-5e3bbe742ea4`，交付响应中 errors 与 warnings 均为空。TestFlight 的 Build Uploads 已显示 `Version 1.0, Build (1) / Processing / Aug 12, 2026 2:45 PM`，可测试构建列表仍为 `No Builds`，不视为 TestFlight 可测。
 - 产品负责人于 2026-08-12 确认真机与其余人工验收无问题；该确认作为人工验收来源记录，不伪造成设备日志或自动化证据。
 - 产品、隐私和支持页面在候选生成时均返回 HTTPS 200。
 
@@ -71,12 +73,13 @@ UI 运行证据另行人工检查了四张截图：
 - **最低系统 ACCEPTED BY OWNER**：工程目标为 18.0，产品负责人确认其余验收无问题；当前自动化机器证据仍来自 18.6 Simulator。
 - **视觉与可访问性 ACCEPTED BY OWNER**：产品负责人确认相关人工验收无问题；自动化与此前截图证据范围保持原样。
 - **Archive / Apple Distribution GO**：正式 Archive 与 App Store Connect IPA 已成功生成并完成身份、权限、隐私清单、dSYM 和签名核验。
-- **外部分发 NO-GO**：IPA 尚未上传 App Store Connect，尚无 Apple 处理结果、TestFlight 安装/升级/恢复记录和商店版本提交结果。
+- **App Store Connect 上传 GO**：`1.0 (1)` 已由 Apple 接收，上传工具明确返回成功；构建内容仍与已核验 IPA 一致。
+- **外部分发 NO-GO**：Apple 尚未完成构建处理，TestFlight 仍未出现可用构建；尚无安装/升级/恢复记录和商店版本提交结果。
 
 ## 下一步顺序
 
-1. 经产品负责人明确授权，将候选 `pulse.ipa` 上传 App Store Connect；上传前确认 `1.0 (1)` 尚未被占用。
-2. 等待 Apple 处理完成并关闭构建警告、出口合规与隐私提示。
-3. 分配 TestFlight 内部测试，验证安装、升级、JSON 导出/恢复和 Widget 数据连续性。
+1. 等待 Apple 处理 `1.0 (1)` 完成，并关闭构建警告、出口合规与隐私提示。
+2. 建立正式内部测试组并分配该构建。
+3. 从 TestFlight 验证安装、升级、JSON 导出/恢复和 Widget 数据连续性。
 4. 完成并复核商店文案、截图、年龄分级、App Privacy、审核联系信息和版本提交。
 5. 只有 Apple 处理、TestFlight 与商店提交门禁全部通过后，才把公开发布结论改为 GO。

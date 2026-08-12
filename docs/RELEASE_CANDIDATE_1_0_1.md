@@ -1,8 +1,8 @@
 # Pulse 1.0 (1) 发布候选证据
 
-状态：**RELEASE CANDIDATE GO / EXTERNAL SUBMISSION PENDING**  
+状态：**RELEASE CANDIDATE GO / APP STORE CONNECT UPLOAD SUCCEEDED / APPLE PROCESSING PENDING**
 生成日期：2026-08-12  
-源码提交：`cabde80`（`main` 与 `origin/main` 一致）
+二进制源码提交：`cabde80`；当前 `main` 与 `origin/main` 为仅补充发布文档的 `b8b546a`，不改变本候选二进制
 
 ## 1. 候选身份
 
@@ -70,14 +70,20 @@ IPA SHA-256：`729ad834049ade944c02e03af22a82b705f5896a2439d86ecc82f16de0f673696
 - `https://fanr.co/pulse/privacy/`
 - `https://fanr.co/pulse/support/`
 
-## 6. 尚未执行的外部状态变更
+## 6. App Store Connect 上传证据与剩余门禁
 
-以下操作没有在本轮自动执行：
+产品负责人明确授权上传后，本轮完成了以下外部状态变更：
 
-1. 将 `pulse.ipa` 上传到 App Store Connect。
-2. 等待 Apple 完成构建处理并检查警告、出口合规和隐私问题。
-3. 将构建分配给 TestFlight 内部测试组。
-4. 从 TestFlight 安装并验证安装、升级、JSON 导出/恢复和 Widget 数据连续性。
-5. 完成 App Store Connect 的商店文案、截图、年龄分级、App Privacy、审核联系信息和版本提交。
+- 创建正式 App 记录：名称 `Pulse: One Daily Mark`、Apple ID `6800603164`、Bundle ID `co.fanr.pulse`、主语言 English (U.S.)、SKU `co.fanr.pulse.ios`。
+- 使用与本文件第 4 节相同 Archive 上传 `1.0 (1)`；`manageAppVersionAndBuildNumber=false`，未由工具改写版本号或构建号。
+- 2026-08-12 14:45:12（GMT+8），上传命令返回 `Upload succeeded`；Delivery UUID 为 `701f3d3b-aeab-4404-a084-5e3bbe742ea4`，交付响应中 errors 与 warnings 均为空，最终上传状态为 `PROCESSING`。
+- 正式 TestFlight 页面归属 Apple ID `6800603164`；Build Uploads 已显示 `Version 1.0, Build (1) / Processing / Aug 12, 2026 2:45 PM`，可测试构建列表仍为 `No Builds`。Apple 尚未完成处理，不能把上传成功写成构建已可测试。
 
-这些步骤会改变 Apple 外部状态，必须由产品负责人明确授权后执行。上传与处理成功之前，不能把“可导出的 IPA”写成“TestFlight 已通过”或“已可公开发布”。
+仍未完成：
+
+1. 等待 Apple 完成构建处理并检查警告、出口合规和隐私问题。
+2. 将构建分配给正式 TestFlight 内部测试组。
+3. 从 TestFlight 安装并验证安装、升级、JSON 导出/恢复和 Widget 数据连续性。
+4. 完成 App Store Connect 的商店文案、截图、年龄分级、App Privacy、审核联系信息和版本提交。
+
+上传成功只证明 Apple 已接收该候选包；在处理、TestFlight 回归和商店提交完成前，仍不能写成“TestFlight 已通过”或“已可公开发布”。

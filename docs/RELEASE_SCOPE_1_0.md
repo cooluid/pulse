@@ -56,9 +56,9 @@ JSON 是 1.0 唯一恢复协议。CSV 不承担恢复职责，也不进入 1.0�
 | 显示名称 | 简体中文 `一日一印`；英文及其他语言 `Pulse` | 已确认并由系统本地化 |
 | Bundle ID | `co.fanr.pulse` | 已确认；命名空间来自用户持有的 `fanr.co` |
 | Marketing Version | `1.0` | 可作为首版候选 |
-| Build Number | `1` | 当前首个候选；上传前确认 App Store Connect 未占用，若冲突则在源码统一递增 App 与 Widget 后重新走完整候选流程 |
+| Build Number | `1` | 当前首个候选；App Store Connect 已接受上传。后续构建必须在源码统一递增 App 与 Widget build number，并重新走完整候选流程 |
 | 最低系统版本 | iOS / iPadOS 18.0 | 已在全部 target 统一；当前 iOS 18.6 Simulator 工程验证通过，可用最旧 18.x 与真机仍是发布门禁 |
-| Development Team | `6N3D8YA2FY` | App 与 Widget 的正式 Archive 和 App Store Connect 导出已通过；Cloud Managed Apple Distribution、Store profile、App Group 与 `get-task-allow=false` 已核验，TestFlight/商店提交仍待执行 |
+| Development Team | `6N3D8YA2FY` | App 与 Widget 的正式 Archive、App Store Connect 导出与上传已通过；Cloud Managed Apple Distribution、Store profile、App Group 与 `get-task-allow=false` 已核验，Apple 处理、TestFlight 回归与商店提交仍待完成 |
 | Widget 身份 | `co.fanr.pulse.widgets` / `group.co.fanr.pulse` | 两个开发描述文件均含正式 App Group；当前共享 store 已重定为首发唯一 schema，既有真机证据不能自动转移到本次 clean-break 候选，必须刷新系统表面与压力矩阵 |
 | 数据策略 | 本地优先 + Pulse JSON 恢复 | 1.0 推荐方案 |
 | AppIcon | “开放日环”，草绿 Default / Dark / Tinted | 几何与生成合同已录用；当前版本待最终视觉确认 |
@@ -68,7 +68,7 @@ JSON 是 1.0 唯一恢复协议。CSV 不承担恢复职责，也不进入 1.0�
 
 Bundle ID 一旦用于正式分发，就成为安装、钥匙串、通知和后续升级身份的一部分，不能把临时字符串带入发布后再随意更换。
 
-历史人工验收只证明当时构建中明确观察到的结果。本次候选的产品负责人确认、自动化、Archive 与 Apple Distribution 证据分别记录在 `IMPLEMENTATION_STATUS.md` 和 `RELEASE_CANDIDATE_1_0_1.md`；它们仍不能替代尚未执行的 App Store Connect 处理、TestFlight 和商店提交。
+历史人工验收只证明当时构建中明确观察到的结果。本次候选的产品负责人确认、自动化、Archive、Apple Distribution 与上传证据分别记录在 `IMPLEMENTATION_STATUS.md` 和 `RELEASE_CANDIDATE_1_0_1.md`；它们仍不能替代尚未完成的 Apple 构建处理、TestFlight 回归和商店提交。
 
 ## 6. 1.0 发布门禁
 
