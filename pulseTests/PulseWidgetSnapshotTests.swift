@@ -1,9 +1,38 @@
 import SwiftData
 import XCTest
 @testable import PulseCore
+@testable import pulse
 
 @MainActor
 final class PulseWidgetSnapshotTests: XCTestCase {
+    func testWidgetAppIntentsAreSharedWithTheContainerApp() throws {
+        let projectRoot = URL(fileURLWithPath: #filePath)
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+        let sharedSourceDirectory = projectRoot
+            .appendingPathComponent("PulseWidgetUI", isDirectory: true)
+        let extensionSourceDirectory = projectRoot
+            .appendingPathComponent("PulseWidgets", isDirectory: true)
+        let projectSource = try String(
+            contentsOf: projectRoot
+                .appendingPathComponent("pulse.xcodeproj", isDirectory: true)
+                .appendingPathComponent("project.pbxproj", isDirectory: false),
+            encoding: .utf8
+        )
+        let sharedSource = try swiftSource(in: sharedSourceDirectory)
+        let extensionSource = try swiftSource(in: extensionSourceDirectory)
+
+        for typeName in ["PulseWidgetConfigurationIntent", "PulseCheckInIntent"] {
+            XCTAssertTrue(sharedSource.contains("struct \(typeName)"))
+            XCTAssertFalse(extensionSource.contains("struct \(typeName)"))
+        }
+        XCTAssertGreaterThanOrEqual(
+            projectSource.components(separatedBy: "/* PulseWidgetUI */").count - 1,
+            3,
+            "PulseWidgetUI must remain a synchronized source group of both the app and widget-extension targets."
+        )
+    }
+
     func testWidgetStringCatalogHasEnglishAndSimplifiedChineseForEveryKey() throws {
         let projectRoot = URL(fileURLWithPath: #filePath)
             .deletingLastPathComponent()
@@ -11,14 +40,20 @@ final class PulseWidgetSnapshotTests: XCTestCase {
         let catalogURL = projectRoot
             .appendingPathComponent("PulseWidgets", isDirectory: true)
             .appendingPathComponent("Localizable.xcstrings", isDirectory: false)
-        let widgetSourceURL = projectRoot
-            .appendingPathComponent("PulseWidgets", isDirectory: true)
-            .appendingPathComponent("PulseWidgets.swift", isDirectory: false)
+        let widgetSourceURLs = ["PulseWidgets", "PulseWidgetUI"].flatMap { directory in
+            let directoryURL = projectRoot.appendingPathComponent(directory, isDirectory: true)
+            return (try? FileManager.default.contentsOfDirectory(
+                at: directoryURL,
+                includingPropertiesForKeys: nil
+            ))?.filter { $0.pathExtension == "swift" } ?? []
+        }
         let catalog = try JSONDecoder().decode(
             WidgetStringCatalog.self,
             from: Data(contentsOf: catalogURL)
         )
-        let widgetSource = try String(contentsOf: widgetSourceURL, encoding: .utf8)
+        let widgetSource = try widgetSourceURLs
+            .map { try String(contentsOf: $0, encoding: .utf8) }
+            .joined(separator: "\n")
 
         XCTAssertEqual(catalog.sourceLanguage, "en")
         XCTAssertFalse(catalog.strings.isEmpty)
@@ -192,6 +227,84 @@ final class PulseWidgetSnapshotTests: XCTestCase {
         XCTAssertNil(try repository.existingPrimaryHabit())
     }
 
+    func testSharedWidgetRuntimeWritesOneAuthoritativeCheckInAndIsIdempotent() throws {
+        let timeZone = try XCTUnwrap(TimeZone(identifier: "Asia/Shanghai"))
+        let now = makeDate(2026, 8, 14, 8, timeZone: timeZone)
+        let directoryURL = FileManager.default.temporaryDirectory
+            .appendingPathComponent("PulseWidgetRuntimeTests", isDirectory: true)
+            .appendingPathComponent(UUID().uuidString, isDirectory: true)
+        let location = try PulseStoreLocation(directoryURL: directoryURL)
+        defer { try? FileManager.default.removeItem(at: directoryURL) }
+
+        let repository = SwiftDataPulseRepository(
+            container: try PersistenceController.makeContainer(
+                storeName: PulseStoreContract.storeName,
+                storeURL: location.storeURL
+            ),
+            clock: FixedPulseClock(now: now),
+            primaryHabitProvisioning: .createIfMissing(
+                try HabitIdentity(userName: "默认承诺", userPurpose: nil)
+            )
+        )
+        let initialHabit = try repository.primaryHabit(systemTimeZone: timeZone)
+        let habit = try repository.updateIdentity(
+            habitID: initialHabit.id,
+            identity: HabitIdentity(userName: "每天留印", userPurpose: nil)
+        )
+
+        let first = try PulseWidgetSharedRuntime.checkIn(
+            at: location,
+            clock: FixedPulseClock(now: now)
+        )
+        let second = try PulseWidgetSharedRuntime.checkIn(
+            at: location,
+            clock: FixedPulseClock(now: now.addingTimeInterval(60))
+        )
+        let records = try repository.allRecords(habitID: habit.id)
+
+        XCTAssertEqual(first.disposition, .created)
+        XCTAssertEqual(second.disposition, .alreadyPresent)
+        XCTAssertEqual(first.recordID, second.recordID)
+        XCTAssertEqual(records.count, 1)
+        XCTAssertEqual(records.first?.logicalDay, first.logicalDay)
+    }
+
+    func testSharedWidgetRuntimeRejectsAnUnconfirmedIdentity() throws {
+        let timeZone = try XCTUnwrap(TimeZone(identifier: "Asia/Shanghai"))
+        let now = makeDate(2026, 8, 14, 8, timeZone: timeZone)
+        let directoryURL = FileManager.default.temporaryDirectory
+            .appendingPathComponent("PulseWidgetRuntimeTests", isDirectory: true)
+            .appendingPathComponent(UUID().uuidString, isDirectory: true)
+        let location = try PulseStoreLocation(directoryURL: directoryURL)
+        defer { try? FileManager.default.removeItem(at: directoryURL) }
+
+        let repository = SwiftDataPulseRepository(
+            container: try PersistenceController.makeContainer(
+                storeName: PulseStoreContract.storeName,
+                storeURL: location.storeURL
+            ),
+            clock: FixedPulseClock(now: now),
+            primaryHabitProvisioning: .createIfMissing(
+                try HabitIdentity(userName: "默认承诺", userPurpose: nil)
+            )
+        )
+        _ = try repository.primaryHabit(systemTimeZone: timeZone)
+
+        XCTAssertThrowsError(
+            try PulseWidgetSharedRuntime.checkIn(
+                at: location,
+                clock: FixedPulseClock(now: now)
+            )
+        ) { error in
+            guard case PulseWidgetSharedRuntime.RuntimeError.missingPrimaryHabit = error else {
+                return XCTFail("Unexpected error: \(error)")
+            }
+        }
+        XCTAssertTrue(try repository.allRecords(
+            habitID: try XCTUnwrap(repository.existingPrimaryHabit()).id
+        ).isEmpty)
+    }
+
     private func makeRepository(
         clock: MutableWidgetClock
     ) throws -> SwiftDataPulseRepository {
@@ -202,6 +315,16 @@ final class PulseWidgetSnapshotTests: XCTestCase {
                 try HabitIdentity(userName: "默认承诺", userPurpose: nil)
             )
         )
+    }
+
+    private func swiftSource(in directoryURL: URL) throws -> String {
+        try FileManager.default.contentsOfDirectory(
+            at: directoryURL,
+            includingPropertiesForKeys: nil
+        )
+        .filter { $0.pathExtension == "swift" }
+        .map { try String(contentsOf: $0, encoding: .utf8) }
+        .joined(separator: "\n")
     }
 
     private func makeDate(

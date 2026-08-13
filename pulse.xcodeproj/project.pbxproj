@@ -83,6 +83,11 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		A1D000000000000000000002 /* PulseWidgetUI */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = PulseWidgetUI;
+			sourceTree = "<group>";
+		};
 		B9538A843029A88800432B53 /* pulse */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = pulse;
@@ -106,11 +111,6 @@
 		F0D000000000000000000002 /* PulseWidgets */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = PulseWidgets;
-			sourceTree = "<group>";
-		};
-		A1D000000000000000000002 /* PulseWidgetUI */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = PulseWidgetUI;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -210,8 +210,8 @@
 				F0D00000000000000000000E /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
-				B9538A843029A88800432B53 /* pulse */,
 				A1D000000000000000000002 /* PulseWidgetUI */,
+				B9538A843029A88800432B53 /* pulse */,
 			);
 			name = pulse;
 			packageProductDependencies = (
@@ -302,8 +302,8 @@
 				F0D00000000000000000000B /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
-				F0D000000000000000000002 /* PulseWidgets */,
 				A1D000000000000000000002 /* PulseWidgetUI */,
+				F0D000000000000000000002 /* PulseWidgets */,
 			);
 			name = PulseWidgetsExtension;
 			packageProductDependencies = (

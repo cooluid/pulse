@@ -164,32 +164,6 @@ struct PulseAccessoryRhythmWidget: Widget {
     }
 }
 
-extension PulseWidgetStyle: AppEnum {
-    static let typeDisplayRepresentation: TypeDisplayRepresentation =
-        "widget.configuration.style.title"
-
-    static let caseDisplayRepresentations: [PulseWidgetStyle: DisplayRepresentation] = [
-        .seal: "widget.configuration.style.seal",
-        .stack: "widget.configuration.style.stack",
-        .bleed: "widget.configuration.style.bleed",
-        .letter: "widget.configuration.style.letter",
-        .field: "widget.configuration.style.field",
-        .path: "widget.configuration.style.path",
-        .tide: "widget.configuration.style.tide",
-    ]
-}
-
-struct PulseWidgetConfigurationIntent: WidgetConfigurationIntent {
-    static let title: LocalizedStringResource = "widget.configuration.intent.title"
-    static let description = IntentDescription("widget.configuration.intent.description")
-
-    @Parameter(
-        title: "widget.configuration.style.parameter",
-        default: .seal
-    )
-    var style: PulseWidgetStyle
-}
-
 private enum PulseWidgetEntryState {
     case ready(PulseWidgetSnapshot, PulseWidgetStyle)
     case enhancementRequired
@@ -296,21 +270,15 @@ private enum PulseWidgetRuntime {
         let refreshAfter: Date
     }
 
-    enum RuntimeError: Error {
-        case missingAppGroupIdentifier
-        case sharedStoreMissing
-        case missingPrimaryHabit
-    }
-
     static func loadEntry(
         at date: Date,
         requestedStyle: PulseWidgetStyle,
         hasEnhancementEntitlement: Bool
     ) -> LoadResult {
-        let context: RuntimeContext
+        let context: PulseWidgetSharedRuntime.Context
         let language: PulseInterfaceLanguage
         do {
-            context = try makeLocationContext()
+            context = try PulseWidgetSharedRuntime.makeContext()
             language = try context.interfacePreferences.loadLanguage()
         } catch {
             return LoadResult(
@@ -324,8 +292,8 @@ private enum PulseWidgetRuntime {
         }
 
         do {
-            try requireExistingStore(at: context.location)
-            let repository = try makeRepository(
+            try PulseWidgetSharedRuntime.requireExistingStore(at: context.location)
+            let repository = try PulseWidgetSharedRuntime.makeRepository(
                 at: context.location,
                 clock: FixedPulseClock(now: date)
             )
@@ -348,7 +316,7 @@ private enum PulseWidgetRuntime {
                 repository: repository,
                 at: date
             ) else {
-                throw RuntimeError.missingPrimaryHabit
+                throw PulseWidgetSharedRuntime.RuntimeError.missingPrimaryHabit
             }
             return LoadResult(
                 entry: PulseWidgetEntry(
@@ -365,7 +333,8 @@ private enum PulseWidgetRuntime {
                     )
                     : plan.refreshAfter
             )
-        } catch RuntimeError.sharedStoreMissing, RuntimeError.missingPrimaryHabit {
+        } catch PulseWidgetSharedRuntime.RuntimeError.sharedStoreMissing,
+                PulseWidgetSharedRuntime.RuntimeError.missingPrimaryHabit {
             return LoadResult(
                 entry: PulseWidgetEntry(
                     date: date,
@@ -395,74 +364,6 @@ private enum PulseWidgetRuntime {
         }
     }
 
-    static func checkIn() throws {
-        let clock = SystemPulseClock()
-        let context = try makeLocationContext()
-        try requireExistingStore(at: context.location)
-        let repository = try makeRepository(at: context.location, clock: clock)
-        guard let habit = try repository.existingPrimaryHabit(),
-              habit.isIdentityConfirmed else {
-            throw RuntimeError.missingPrimaryHabit
-        }
-        _ = try repository.checkIn(habitID: habit.id)
-    }
-
-    private static func makeLocationContext() throws -> RuntimeContext {
-        guard let identifier = Bundle.main.object(
-            forInfoDictionaryKey: "PulseAppGroupIdentifier"
-        ) as? String,
-        identifier.hasPrefix("group."),
-        !identifier.contains("$(") else {
-            throw RuntimeError.missingAppGroupIdentifier
-        }
-        let location = try PulseStoreLocator().appGroupLocation(identifier: identifier)
-        return RuntimeContext(
-            location: location,
-            interfacePreferences: try PulseSharedInterfacePreferences(
-                appGroupIdentifier: identifier
-            )
-        )
-    }
-
-    private static func requireExistingStore(at location: PulseStoreLocation) throws {
-        guard FileManager.default.fileExists(atPath: location.storeURL.path) else {
-            throw RuntimeError.sharedStoreMissing
-        }
-    }
-
-    private static func makeRepository(
-        at location: PulseStoreLocation,
-        clock: any PulseClock
-    ) throws -> SwiftDataPulseRepository {
-        SwiftDataPulseRepository(
-            container: try PersistenceController.makeContainer(
-                storeName: PulseStoreContract.storeName,
-                storeURL: location.storeURL
-            ),
-            clock: clock,
-            primaryHabitProvisioning: .existingStoreOnly
-        )
-    }
-
-    private struct RuntimeContext {
-        let location: PulseStoreLocation
-        let interfacePreferences: PulseSharedInterfacePreferences
-    }
-}
-
-struct PulseCheckInIntent: AppIntent {
-    static let title: LocalizedStringResource = "widget.intent.check_in.title"
-    static let description = IntentDescription("widget.intent.check_in.description")
-    static let openAppWhenRun = false
-
-    @MainActor
-    func perform() async throws -> some IntentResult {
-        try PulseWidgetRuntime.checkIn()
-        for kind in PulseWidgetContract.allKinds {
-            WidgetCenter.shared.reloadTimelines(ofKind: kind)
-        }
-        return .result()
-    }
 }
 
 private struct PulseWidgetView: View {
@@ -559,17 +460,15 @@ private struct PulseLocalizedWidgetView: View {
                 .accessibilityElement(children: .ignore)
                 .accessibilityLabel("widget.accessibility.checked")
         } else {
-            Button(intent: PulseCheckInIntent()) {
+            ZStack {
                 content
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                     .invalidatableContent()
+                    .allowsHitTesting(false)
+
+                PulseWidgetCheckInHitTarget()
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .buttonStyle(.plain)
-            .contentShape(Rectangle())
-            .accessibilityElement(children: .ignore)
-            .accessibilityLabel("widget.action.check_in")
-            .accessibilityHint("widget.action.check_in.hint")
         }
     }
 
@@ -580,13 +479,13 @@ private struct PulseLocalizedWidgetView: View {
                 .accessibilityElement(children: .ignore)
                 .accessibilityLabel("widget.accessibility.checked")
         } else {
-            Button(intent: PulseCheckInIntent()) {
+            ZStack {
                 accessoryCircularContent(snapshot)
+                    .invalidatableContent()
+                    .allowsHitTesting(false)
+
+                PulseWidgetCheckInHitTarget()
             }
-            .buttonStyle(.plain)
-            .accessibilityElement(children: .ignore)
-            .accessibilityLabel("widget.action.check_in")
-            .accessibilityHint("widget.action.check_in.hint")
         }
     }
 
@@ -611,13 +510,15 @@ private struct PulseLocalizedWidgetView: View {
                 .accessibilityElement(children: .ignore)
                 .accessibilityLabel(Text(verbatim: accessorySummary(snapshot)))
         } else {
-            Button(intent: PulseCheckInIntent()) {
+            ZStack {
                 accessoryRectangularContent(snapshot)
+                    .invalidatableContent()
+                    .allowsHitTesting(false)
+
+                PulseWidgetCheckInHitTarget(
+                    label: Text(verbatim: accessorySummary(snapshot))
+                )
             }
-            .buttonStyle(.plain)
-            .accessibilityElement(children: .ignore)
-            .accessibilityLabel(Text(verbatim: accessorySummary(snapshot)))
-            .accessibilityHint("widget.action.check_in.hint")
         }
     }
 
@@ -871,6 +772,28 @@ private struct PulseLocalizedWidgetView: View {
 
     private var secondaryForeground: Color {
         usesFullColorPalette ? PulseWidgetDesign.secondary : .secondary
+    }
+}
+
+private struct PulseWidgetCheckInHitTarget: View {
+    let label: Text
+
+    init(label: Text = Text("widget.action.check_in")) {
+        self.label = label
+    }
+
+    var body: some View {
+        Button(intent: PulseCheckInIntent()) {
+            Rectangle()
+                .fill(.clear)
+                .contentShape(Rectangle())
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .buttonStyle(.plain)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(label)
+        .accessibilityHint("widget.action.check_in.hint")
     }
 }
 

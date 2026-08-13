@@ -68,7 +68,6 @@ struct PulseWidgetHomeRenderer: View {
             .clipped()
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .accessibilityHidden(true)
     }
 
     private func seal(size: CGSize) -> some View {
