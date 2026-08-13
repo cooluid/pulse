@@ -10,7 +10,7 @@
 
 Widget 是同一签到事实的系统入口，不是第二个应用：
 
-- Home Screen 小号/中号当前可选择“呼吸环 / 晨露 / 斜光 / 潮汐 / 隅色 / 静序 / 强信号 / 七日谱”八种草野构图；原有六式保持既有轻柔语法，新增两式分别以柔色日期带和单行七日圆点扩展同一事实；
+- Home Screen 小号/中号可逐实例选择“呼吸环 / 数影 / 深景 / 静序 / 七日谱”五种差异化构图；它们分别承担均衡、时间剪影、纵深节律、极简秩序和七日直读任务，而不是共享骨架的换肤；
 - Lock Screen 圆形显示带当日日号的开放环或实心完成印；
 - Lock Screen 矩形把过去六日节点以连接线汇入右侧今日印记，今天不重复成第七个小节点；
 - 未签到只提供单向签到；已签到无撤销入口；删除仍只在 App 内二次确认；
@@ -43,19 +43,20 @@ FileManager.containerURL(forSecurityApplicationGroupIdentifier:)
 - 不存在 App 私有 store、旧库迁移、journal、staging、fallback 或双写。
 - 旧开发安装不属于公开数据合同，进入此首发基线时必须清洁安装。
 
-App Group UserDefaults 只允许 `PulseSharedInterfacePreferences` 管理的 `interface.language` 与 `widget.style`。缺失键分别表示 `system` / `breathingOrbit`，未知值必须失败关闭；不得保存任何业务事实或可反向覆盖 store 的投影。`breathingOrbit` 是唯一免费 Home Screen 构图，`morningDew`、`diagonalLight`、`tidalFill`、`cornerTint`、`quietOrder`、`signalPoster` 与 `rhythmBoard` 需要统一高阶权益 entitlement；App 与 Widget extension 分别在写入和渲染边界检查当前 StoreKit 权益，未验证、撤销或读取失败都解析为免费构图。
+App Group UserDefaults 只允许 `PulseSharedInterfacePreferences` 管理 `interface.language`。缺失键表示 `system`，未知值必须失败关闭；不得保存构图、业务事实或可反向覆盖 store 的投影。构图由 `WidgetConfigurationIntent` 逐实例持有：`breathingOrbit` 是唯一免费 Home Screen 构图，`numberSilhouette`、`depthRhythm`、`quietOrder` 与 `rhythmBoard` 需要统一高阶权益 entitlement；Widget extension 在生成 snapshot/timeline 时验证 StoreKit 权益，未验证或撤销时按访问策略解析为免费构图。
 
 ## 4. 共享代码边界
 
-`PulseCore` 是 App 与 Widget 唯一共享编译产物，包含：
+共享边界分为一份事实模块和一份渲染源：
 
 - 逻辑日、SwiftData model 与唯一 schema；
 - Repository、命令、验证与提交回执；
 - 加密备份恢复合同；
 - 不可变 Widget 快照与 timeline 计划；
-- 不含业务事实的 `PulseSharedInterfacePreferences` 与纯 Foundation 日期本地化器。
+- 不含业务事实的 `PulseSharedInterfacePreferences` 与纯 Foundation 日期本地化器；
+- `PulseWidgetUI/PulseWidgetRenderer.swift` 是 App 画廊与 Widget Extension 共同编译的唯一 Home Screen 渲染源，包含正式构图枚举、访问策略、五式渲染和原生日印，不保存状态也不写 Repository。
 
-Core 不含 SwiftUI 页面、WidgetKit 布局、通知调度、触觉或宿主本地化资源。禁止复制 model、Repository、偏好键或建立近似写入路径。
+Core 不含 SwiftUI 页面、WidgetKit 布局、通知调度、触觉或宿主本地化资源。共享渲染源只接收不可变快照和宿主提供的本地化短文案。禁止复制 model、Repository、构图枚举、渲染器、偏好键或建立近似预览/写入路径。
 
 ## 5. 跨进程签到
 
@@ -81,7 +82,7 @@ Widget 不能调用删除、清除、导入、修改时区或编辑承诺。
 - 最近七日状态；
 - 快照生成时间和项目时区的下一个零点。
 
-Home Screen 可以显示已确认名称；Lock Screen、StandBy 和 Always-On 不显示名称；任何 Widget 都不显示可选说明。样式偏好只选择 Home Screen 构图，不改变事实和 Accessory 结构。
+Home Screen 可以显示已确认名称；Lock Screen、StandBy 和 Always-On 不显示名称；任何 Widget 都不显示可选说明。逐实例构图只改变 Home Screen 投影视角，不改变事实和 Accessory 结构。
 
 `ImprintMedia`、原图、缩略图、照片数量与路径永不进入 Widget 快照。照片存在与否也不改变 Widget 的签到语义。
 
@@ -89,7 +90,7 @@ store 缺失或身份未确认显示“打开 App”；store 打不开、偏好�
 
 ## 7. 交互、视觉与无障碍
 
-- 未签到按钮覆盖 Accessory 完整可见区域，不能只让局部图形可点，也不使用可反向删除事实的 Toggle。
+- 未签到按钮覆盖 Home Screen 与 Accessory 的完整可见区域，不能只让局部图形或日期节点可点，也不使用可反向删除事实的 Toggle。
 - 待办开放环不得形成类似完成勾的斜线；完成态用实心内核表达。
 - 日期和历史节点从真实 `LogicalDay` 与当前 Locale 派生，不持久化、不硬编码。
 - Widget 内容必须读取与 App 相同的 `interface.language` 并将解析后的 Locale 注入整棵 Widget view；App 切换语言后必须刷新 timeline。不得读取 `AppleLanguages`、保存 Widget 语言副本或让手写 `String(localized:)` 绕过显式 Locale。
@@ -108,7 +109,8 @@ store 缺失或身份未确认显示“打开 App”；store 打不开、偏好�
 - Widget 在 store 不存在、身份未确认和事实损坏时不可写且不显示虚假完成；
 - 两个独立 ModelContainer 同日写入最终只有一个 `recordKey`；
 - timeline 跨项目时区零点刷新，七日投影与 App 一致；
-- 三值 `interface.language`、四值 `widget.style` 的单一共享持久化、默认值与未知值失败关闭；
+- 三值 `interface.language` 的单一共享持久化、默认值与未知值失败关闭；
+- 五值构图 AppEnum、逐实例默认值、权益解析，以及不同实例可同时使用不同构图；
 - English / 简体中文下的 Widget 状态文案、日期、月份、数字和 VoiceOver 组合；App 切换语言只刷新一次 timeline；
 - Home Screen 显示名称，Accessory 不泄露名称或说明；
 - AppIntent 仅在正式保存后刷新。
@@ -118,7 +120,7 @@ store 缺失或身份未确认显示“打开 App”；store 打不开、偏好�
 自动化工程 GO 不替代以下证据：
 
 - 真实 iPhone / iPad 上 App 未运行、设备锁定、系统杀进程、跨午夜、快速双击和 App/Widget 同日竞争；
-- Home Screen 四式小号/中号的待办/完成、深浅色和长名称；
+- Home Screen 五式小号/中号的待办/完成、深浅色、长名称和完整数字边界；
 - Lock Screen 圆形/矩形、StandBy、Always-On、accented、vibrant、Clear 与降低透明度；
 - 最大 Dynamic Type、VoiceOver、Reduce Motion 和整块命中；
 - Apple Distribution、Archive、TestFlight 和 App Store 分发。

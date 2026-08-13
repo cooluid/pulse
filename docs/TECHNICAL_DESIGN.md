@@ -64,7 +64,7 @@ AppModel 同时建立 `recordsByDay` 与 `mediaByDay`。照片不参与 CheckInS
 
 `PulseEnhancementContract` 与 StoreKit 已验证 entitlement 是购买唯一来源；不保存 `isPro`。拍照、媒体和备份不读取权益。增强只控制额外 Widget 构图与可用设备的 scheduled Live Activity。
 
-提醒、语言、Widget 共享偏好与已有正式合同不变。App Group UserDefaults 仍只允许 `interface.language` 与 `widget.style`；`mediaInvitationEnabled` 是 App 本机设置，不进入共享事实或备份。
+提醒、语言与 Widget 共享事实沿用正式合同。App Group UserDefaults 只允许 `interface.language`；Home Screen 构图由 WidgetKit 逐实例配置持有，不存在全局 `widget.style`。`mediaInvitationEnabled` 是 App 本机设置，不进入共享事实或备份。
 
 ## 8. 视觉与可访问性
 

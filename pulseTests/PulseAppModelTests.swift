@@ -241,44 +241,6 @@ final class PulseAppModelTests: XCTestCase {
         XCTAssertEqual(context.widgetReloader.reloadCount, initialWidgetReloadCount + 1)
     }
 
-    func testPurchasedUserCanPersistPremiumWidgetStyle() async throws {
-        let context = try makeContext()
-        await context.model.start()
-        let initialWidgetReloadCount = context.widgetReloader.reloadCount
-
-        context.model.requestWidgetStyle(.tidalFill)
-
-        XCTAssertEqual(context.model.settings.widgetStyle, .tidalFill)
-        XCTAssertEqual(context.widgetReloader.reloadCount, initialWidgetReloadCount + 1)
-
-        context.model.requestWidgetStyle(.tidalFill)
-        XCTAssertEqual(context.widgetReloader.reloadCount, initialWidgetReloadCount + 1)
-    }
-
-    func testFreeUserCannotPersistPremiumWidgetStyle() async throws {
-        let context = try makeContext(hasEnhancement: false)
-        await context.model.start()
-        let initialWidgetReloadCount = context.widgetReloader.reloadCount
-
-        context.model.requestWidgetStyle(.morningDew)
-
-        XCTAssertEqual(context.model.settings.widgetStyle, .breathingOrbit)
-        XCTAssertEqual(context.widgetReloader.reloadCount, initialWidgetReloadCount)
-        XCTAssertNotNil(context.model.errorMessage)
-    }
-
-    func testFreeUserStartNormalizesPersistedPremiumWidgetStyle() async throws {
-        let context = try makeContext(
-            hasEnhancement: false,
-            initialWidgetStyle: .diagonalLight
-        )
-
-        await context.model.start()
-
-        XCTAssertEqual(context.model.settings.widgetStyle, .breathingOrbit)
-        XCTAssertNil(context.model.errorMessage)
-    }
-
     func testPendingResetJournalIsRecoveredOnStart() async throws {
         let context = try makeContext()
         await context.model.start()
@@ -302,8 +264,7 @@ final class PulseAppModelTests: XCTestCase {
         deliveryCapabilities: ReminderDeliveryCapabilities = .init(
             supportsScheduledLiveActivities: false,
             liveActivitiesEnabled: false
-        ),
-        initialWidgetStyle: PulseWidgetStyle = .breathingOrbit
+        )
     ) throws -> TestContext {
         let clock = MutablePulseClock(now: makeDate(day: 10, hour: 12))
         let repository = SwiftDataPulseRepository(
@@ -334,7 +295,6 @@ final class PulseAppModelTests: XCTestCase {
             sharedInterfacePreferences: PulseSharedInterfacePreferences(defaults: defaults),
             defaults: defaults
         )
-        settings.widgetStyle = initialWidgetStyle
         let scheduler = TestReminderScheduler(
             permission: notificationPermission,
             deliveryCapabilities: deliveryCapabilities

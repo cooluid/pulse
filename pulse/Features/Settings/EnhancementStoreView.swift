@@ -107,15 +107,16 @@ struct EnhancementStoreView: View {
                 HStack(spacing: PulseDesign.spacing12) {
                     ForEach(PulseWidgetStyle.allCases) { style in
                         VStack(alignment: .leading, spacing: PulseDesign.spacing8) {
-                            PulseWidgetStylePreview(
-                                style: style,
-                                dayNumber: model.today?.day,
-                                commitmentName: model.habit?.name
-                            )
-                            .frame(
-                                width: PulseDesign.storePreviewWidth,
-                                height: PulseDesign.storePreviewHeight
-                            )
+                            if let snapshot = model.widgetPresentationSnapshot {
+                                PulseWidgetStylePreview(
+                                    style: style,
+                                    snapshot: snapshot
+                                )
+                                .frame(
+                                    width: PulseDesign.storePreviewWidth,
+                                    height: PulseDesign.storePreviewHeight
+                                )
+                            }
 
                             Text(style.localizedName(locale: locale))
                                 .font(.caption.weight(.semibold))

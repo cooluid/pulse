@@ -37,28 +37,21 @@ final class PulseWidgetSnapshotTests: XCTestCase {
         }
     }
 
-    func testSharedInterfacePreferencesPersistLanguageAndStyleAndReset() throws {
+    func testSharedInterfacePreferencesPersistLanguageAndReset() throws {
         let suiteName = "PulseSharedInterfacePreferences.\(UUID().uuidString)"
         let defaults = try XCTUnwrap(UserDefaults(suiteName: suiteName))
         defer { defaults.removePersistentDomain(forName: suiteName) }
         let preferences = PulseSharedInterfacePreferences(defaults: defaults)
 
         XCTAssertEqual(try preferences.loadLanguage(), .system)
-        XCTAssertEqual(try preferences.loadWidgetStyle(), .breathingOrbit)
 
         for language in PulseInterfaceLanguage.allCases {
             preferences.saveLanguage(language)
             XCTAssertEqual(try preferences.loadLanguage(), language)
         }
 
-        for style in PulseWidgetStyle.allCases {
-            preferences.saveWidgetStyle(style)
-            XCTAssertEqual(try preferences.loadWidgetStyle(), style)
-        }
-
         preferences.reset()
         XCTAssertEqual(try preferences.loadLanguage(), .system)
-        XCTAssertEqual(try preferences.loadWidgetStyle(), .breathingOrbit)
     }
 
     func testSharedInterfacePreferencesRejectUnknownStoredValues() throws {
@@ -78,16 +71,6 @@ final class PulseWidgetSnapshotTests: XCTestCase {
             )
         }
 
-        defaults.set(
-            "unknown-style",
-            forKey: PulseSharedInterfacePreferences.widgetStyleStorageKey
-        )
-        XCTAssertThrowsError(try preferences.loadWidgetStyle()) { error in
-            XCTAssertEqual(
-                error as? PulseSharedInterfacePreferenceError,
-                .invalidStoredWidgetStyle("unknown-style")
-            )
-        }
     }
 
     func testProjectionBuildsSevenValidatedDays() throws {

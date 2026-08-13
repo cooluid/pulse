@@ -244,11 +244,13 @@ final class PulseFlowUITests: XCTestCase {
         XCTAssertTrue(galleryLink.waitForExistence(timeout: 3))
         galleryLink.tap()
 
-        let includedOption = app.buttons["widget.gallery.style.breathingOrbit"]
-        let premiumOption = app.buttons["widget.gallery.style.morningDew"]
+        let includedOption = app.descendants(matching: .any)[
+            "widget.gallery.style.breathingOrbit"
+        ]
+        let premiumOption = app.buttons["widget.gallery.style.numberSilhouette"]
         XCTAssertTrue(includedOption.waitForExistence(timeout: 3))
         XCTAssertTrue(premiumOption.waitForExistence(timeout: 3))
-        XCTAssertTrue(includedOption.label.contains("已选择"))
+        XCTAssertTrue(includedOption.label.contains("已包含"))
         XCTAssertTrue(premiumOption.label.contains("高阶"))
 
         let optionsAttachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
@@ -443,7 +445,7 @@ final class PulseFlowUITests: XCTestCase {
         )
     }
 
-    func testPurchasedUserCanSelectAllWidgetStylesAndPersistAcrossRelaunch() throws {
+    func testPurchasedUserCanBrowseAllPerInstanceWidgetCompositions() throws {
         configureApp()
         app.launchEnvironment["PULSE_UI_TEST_ENHANCEMENT_PURCHASED"] = "1"
         launchAndConfirmDefaultCommitment()
@@ -462,16 +464,15 @@ final class PulseFlowUITests: XCTestCase {
         let window = app.windows.firstMatch
         let styleIdentifiers = [
             "breathingOrbit",
-            "morningDew",
-            "diagonalLight",
-            "tidalFill",
-            "cornerTint",
+            "numberSilhouette",
+            "depthRhythm",
             "quietOrder",
-            "signalPoster",
             "rhythmBoard",
         ]
         for (index, identifier) in styleIdentifiers.enumerated() {
-            let option = app.buttons["widget.gallery.style.\(identifier)"]
+            let option = app.descendants(matching: .any)[
+                "widget.gallery.style.\(identifier)"
+            ]
             for _ in 0..<8 where !option.exists
                 || option.frame.maxY > window.frame.maxY - 20 {
                 app.swipeUp()
@@ -479,40 +480,20 @@ final class PulseFlowUITests: XCTestCase {
             XCTAssertTrue(option.waitForExistence(timeout: 3))
             XCTAssertLessThanOrEqual(option.frame.maxY, window.frame.maxY - 20)
 
-            if index == 1 || index == 3 || index == 5 || index == 7 {
+            if index == 1 || index == 3 || index == 4 {
                 let attachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
-                attachment.name = "Widget compositions \(index / 2 + 1) of 4"
+                attachment.name = "Widget compositions review \(index)"
                 attachment.lifetime = .keepAlways
                 add(attachment)
             }
         }
 
-        let finalStyle = app.buttons["widget.gallery.style.rhythmBoard"]
-        for _ in 0..<8 where !finalStyle.isHittable
-            || finalStyle.frame.maxY > window.frame.maxY - 20 {
-            app.swipeUp()
-        }
-        XCTAssertTrue(finalStyle.isHittable)
-        XCTAssertLessThanOrEqual(finalStyle.frame.maxY, window.frame.maxY - 20)
-        finalStyle.tap()
-        XCTAssertTrue(
-            finalStyle.label.contains("已选择")
-        )
-
-        app.terminate()
-        app.launchEnvironment.removeValue(forKey: "PULSE_UI_TEST_RESET")
-        app.launch()
-
-        let persistedSettingsButton = app.buttons["settings.navigation.open.today"]
-        XCTAssertTrue(persistedSettingsButton.waitForExistence(timeout: 5))
-        persistedSettingsButton.tap()
-
-        let persistedGalleryLink = app.descendants(matching: .any)["settings.widget.gallery.link"]
-        for _ in 0..<4 where !persistedGalleryLink.exists {
-            app.swipeUp()
-        }
-        XCTAssertTrue(persistedGalleryLink.waitForExistence(timeout: 3))
-        XCTAssertTrue(persistedGalleryLink.label.contains("七日谱"))
+        app.buttons["navigation.back"].tap()
+        let galleryLinkAfterReview = app.descendants(matching: .any)[
+            "settings.widget.gallery.link"
+        ]
+        XCTAssertTrue(galleryLinkAfterReview.waitForExistence(timeout: 3))
+        XCTAssertTrue(galleryLinkAfterReview.label.contains("逐个设置"))
     }
 
     func testRecordDetailUsesSheetDismissalAndSourceAnchoredDeleteConfirmation() throws {

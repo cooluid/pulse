@@ -2311,104 +2311,70 @@
         }
       }
     },
-    "settings.widget.style.corner_tint" : {
+    "settings.widget.style.depth_rhythm" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Corner Tint"
+            "value" : "Depth Rhythm"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "隅色"
+            "value" : "深景"
           }
         }
       }
     },
-    "settings.widget.style.corner_tint.detail" : {
+    "settings.widget.style.depth_rhythm.detail" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Two softened color corners frame a generous quiet center."
+            "value" : "Six receding days flow toward today's single imprint."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "两处柔色贴住角边，中间留出安静呼吸。"
+            "value" : "六个过往节点由远及近，流向今天唯一的印记。"
           }
         }
       }
     },
-    "settings.widget.style.diagonal_light" : {
+    "settings.widget.style.number_silhouette" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Diagonal Light"
+            "value" : "Number Silhouette"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "斜光"
+            "value" : "数影"
           }
         }
       }
     },
-    "settings.widget.style.diagonal_light.detail" : {
+    "settings.widget.style.number_silhouette.detail" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "A soft diagonal field lets two grass tones meet without a hard edge."
+            "value" : "A restrained half-panel day number turns time into atmosphere."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "柔和斜向断色，让两侧草色轻轻相遇。"
-          }
-        }
-      }
-    },
-    "settings.widget.style.morning_dew" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Morning Dew"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "晨露"
-          }
-        }
-      }
-    },
-    "settings.widget.style.morning_dew.detail" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Rounded drops bring a lighter start to the day."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "圆润光点，照见轻盈的新一天。"
+            "value" : "克制的半屏日号把时间变成氛围，而不是另一条信息。"
           }
         }
       }
@@ -2436,13 +2402,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "A calm header, centered commitment, and grounded status rhythm."
+            "value" : "Status, commitment, and imprint form a deliberately quiet hierarchy."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "轻身份、居中承诺与底部节律，秩序清晰而松弛。"
+            "value" : "状态、承诺与印记形成刻意克制的单一层级。"
           }
         }
       }
@@ -2453,7 +2419,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Rhythm Board"
+            "value" : "Seven-Day Score"
           }
         },
         "zh-Hans" : {
@@ -2470,81 +2436,30 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Seven dated dots keep the week compact in every widget size."
+            "value" : "Seven dated marks make the week's real rhythm directly readable."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "七个带日期的圆点，让一周在每种尺寸都保持紧凑。"
+            "value" : "七个带日期的真实节点，让一周节律可以直接阅读。"
           }
         }
       }
     },
-    "settings.widget.style.signal_poster" : {
+    "settings.widget.style.per_instance" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Signal Poster"
+            "value" : "Per widget"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "强信号"
-          }
-        }
-      }
-    },
-    "settings.widget.style.signal_poster.detail" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "A soft date band creates a clear focal point without losing calm."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "柔色日号带形成清晰焦点，同时保留细腻与轻柔。"
-          }
-        }
-      }
-    },
-    "settings.widget.style.tidal_fill" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tidal Fill"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "潮汐"
-          }
-        }
-      }
-    },
-    "settings.widget.style.tidal_fill.detail" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Layered waterlines rise gently beneath today’s imprint."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "层叠水线轻轻漫起，托住今天的印记。"
+            "value" : "逐个设置"
           }
         }
       }
@@ -3348,6 +3263,74 @@
         }
       }
     },
+    "widget.gallery.action.short" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Imprint"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "留印"
+          }
+        }
+      }
+    },
+    "widget.gallery.included" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Included"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已包含"
+          }
+        }
+      }
+    },
+    "widget.gallery.introduction.message" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Each installed widget has its own composition. Long-press a widget, choose Edit Widget, then choose its composition."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "每个已安装的小组件都有独立构图。长按小组件，选择“编辑小组件”，再选择它的构图。"
+          }
+        }
+      }
+    },
+    "widget.gallery.introduction.title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Five distinct ways to see today"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "五种真正不同的今日视角"
+          }
+        }
+      }
+    },
     "widget.gallery.navigation_title" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -3365,36 +3348,53 @@
         }
       }
     },
-    "widget.gallery.preview.recent" : {
+    "widget.gallery.unavailable.message" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "4 imprints / 7 days"
+            "value" : "Return after Pulse has loaded your commitment."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "近7日 4次"
+            "value" : "请在一日一印载入主承诺后再查看。"
           }
         }
       }
     },
-    "widget.gallery.selected" : {
+    "widget.gallery.unavailable.title" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Selected"
+            "value" : "Widget facts unavailable"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "已选择"
+            "value" : "暂时无法读取小组件事实"
+          }
+        }
+      }
+    },
+    "widget.gallery.unlocked" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unlocked"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已解锁"
           }
         }
       }

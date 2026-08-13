@@ -215,6 +215,38 @@
         }
       }
     },
+    "widget.configuration.intent.description" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose the composition for this widget instance."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "为当前这个小组件选择构图。"
+          }
+        }
+      }
+    },
+    "widget.configuration.intent.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Configure Today's Imprint"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "配置今日一印"
+          }
+        }
+      }
+    },
     "widget.configuration.name" : {
       "localizations" : {
         "en" : {
@@ -231,70 +263,114 @@
         }
       }
     },
-    "widget.day.before_habit" : {
-      "extractionState" : "stale",
+    "widget.configuration.style.breathing_orbit" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Before commitment"
+            "value" : "Breathing Orbit"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "承诺开始前"
+            "value" : "呼吸环"
           }
         }
       }
     },
-    "widget.day.checked" : {
-      "extractionState" : "stale",
+    "widget.configuration.style.depth_rhythm" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Imprinted"
+            "value" : "Depth Rhythm"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "已留印"
+            "value" : "深景"
           }
         }
       }
     },
-    "widget.day.missed" : {
-      "extractionState" : "stale",
+    "widget.configuration.style.number_silhouette" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Empty"
+            "value" : "Number Silhouette"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "空着"
+            "value" : "数影"
           }
         }
       }
     },
-    "widget.day.today_pending" : {
-      "extractionState" : "stale",
+    "widget.configuration.style.parameter" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Today, still open"
+            "value" : "Composition"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "今天还空着"
+            "value" : "构图"
+          }
+        }
+      }
+    },
+    "widget.configuration.style.quiet_order" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quiet Order"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "静序"
+          }
+        }
+      }
+    },
+    "widget.configuration.style.rhythm_board" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seven-Day Score"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "七日谱"
+          }
+        }
+      }
+    },
+    "widget.configuration.style.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Widget Composition"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "小组件构图"
           }
         }
       }
@@ -343,22 +419,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "我的每日承诺"
-          }
-        }
-      }
-    },
-    "widget.rhythm.summary.format" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld imprints / 7 days"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "近7日 %lld次"
           }
         }
       }

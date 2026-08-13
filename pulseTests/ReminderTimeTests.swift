@@ -85,34 +85,6 @@ final class AppSettingsTests: XCTestCase {
         XCTAssertEqual(reloaded.locale.identifier, "en")
     }
 
-    func testWidgetStyleDefaultsToIncludedStyleAndPersistsEveryOfficialStyle() throws {
-        let suiteName = "AppSettingsTests.WidgetStyle.\(UUID().uuidString)"
-        let defaults = try XCTUnwrap(UserDefaults(suiteName: suiteName))
-        defer { defaults.removePersistentDomain(forName: suiteName) }
-
-        let settings = try makeSettings(defaults: defaults)
-        XCTAssertEqual(settings.widgetStyle, .breathingOrbit)
-
-        for style in PulseWidgetStyle.allCases {
-            settings.widgetStyle = style
-            XCTAssertEqual(try makeSettings(defaults: defaults).widgetStyle, style)
-        }
-    }
-
-    func testInvalidPersistedWidgetStyleFailsInitialization() throws {
-        let suiteName = "AppSettingsTests.WidgetStyle.Invalid.\(UUID().uuidString)"
-        let defaults = try XCTUnwrap(UserDefaults(suiteName: suiteName))
-        defer { defaults.removePersistentDomain(forName: suiteName) }
-        defaults.set(
-            "unknown-style",
-            forKey: PulseSharedInterfacePreferences.widgetStyleStorageKey
-        )
-
-        XCTAssertThrowsError(try makeSettings(defaults: defaults)) { error in
-            XCTAssertEqual(error as? PulseAppError, .invalidSettings)
-        }
-    }
-
     func testInvalidPersistedThemeOrLanguageFailsInitialization() throws {
         let invalidThemeSuite = "AppSettingsTests.Theme.\(UUID().uuidString)"
         let invalidThemeDefaults = try XCTUnwrap(UserDefaults(suiteName: invalidThemeSuite))
@@ -137,17 +109,14 @@ final class AppSettingsTests: XCTestCase {
         let settings = try makeSettings(defaults: defaults)
         settings.theme = .light
         settings.language = .simplifiedChinese
-        settings.widgetStyle = .morningDew
 
         settings.reset()
 
         XCTAssertEqual(settings.theme, .system)
         XCTAssertEqual(settings.language, .system)
-        XCTAssertEqual(settings.widgetStyle, .breathingOrbit)
         let reloaded = try makeSettings(defaults: defaults)
         XCTAssertEqual(reloaded.theme, .system)
         XCTAssertEqual(reloaded.language, .system)
-        XCTAssertEqual(reloaded.widgetStyle, .breathingOrbit)
     }
 
     func testInvalidPersistedReminderTimeFailsInitialization() throws {

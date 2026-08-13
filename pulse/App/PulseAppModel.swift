@@ -91,7 +91,6 @@ final class PulseAppModel {
         self.widgetTimelineReloader = widgetTimelineReloader
         featureAccess.accessDidChange = { [weak self] _ in
             guard let self else { return }
-            self.enforceWidgetStyleAccess()
             self.widgetTimelineReloader.reloadDailyImprint()
             _ = self.enqueueReminderReconciliation()
         }
@@ -147,6 +146,15 @@ final class PulseAppModel {
         }
     }
 
+    var widgetPresentationSnapshot: PulseWidgetSnapshot? {
+        guard let habit else { return nil }
+        return try? PulseWidgetProjector.makeTimelinePlan(
+            habit: habit,
+            records: records,
+            at: clock.now
+        ).snapshot
+    }
+
     func start() async {
         loadState = .loading
         let featureAccessTask = Task { @MainActor [featureAccess] in
@@ -170,7 +178,6 @@ final class PulseAppModel {
             await reload(reconcileReminders: false)
         }
         await featureAccessTask.value
-        enforceWidgetStyleAccess()
         if loadState == .ready {
             await auditMediaStorage()
             await enqueueReminderReconciliation().value
@@ -438,19 +445,6 @@ final class PulseAppModel {
         _ = enqueueReminderReconciliation()
     }
 
-    func requestWidgetStyle(_ style: PulseWidgetStyle) {
-        guard PulseWidgetStyleAccessPolicy.isAvailable(
-            style,
-            hasEnhancementEntitlement: featureAccess.hasEnhancement
-        ) else {
-            present(PulseAppError.enhancementRequired)
-            return
-        }
-        guard settings.widgetStyle != style else { return }
-        settings.widgetStyle = style
-        widgetTimelineReloader.reloadDailyImprint()
-    }
-
     func notifyPhotoIntentReady() {
         guard settings.hapticsEnabled else { return }
         hapticFeedback.notifyHoldReady()
@@ -714,15 +708,6 @@ final class PulseAppModel {
         reminderIntentRevision += 1
         reminderEnabledIntent = nil
         reminderReconcileRevision += 1
-    }
-
-    private func enforceWidgetStyleAccess() {
-        let resolvedStyle = PulseWidgetStyleAccessPolicy.resolvedStyle(
-            preferredStyle: settings.widgetStyle,
-            hasEnhancementEntitlement: featureAccess.hasEnhancement
-        )
-        guard settings.widgetStyle != resolvedStyle else { return }
-        settings.widgetStyle = resolvedStyle
     }
 
     private func scheduleDateBoundaryRefresh() {

@@ -4,19 +4,6 @@ public enum PulseWidgetContract {
     public static let kind = "PulseDailyImprint"
 }
 
-public enum PulseWidgetStyle: String, CaseIterable, Codable, Identifiable, Sendable {
-    case breathingOrbit
-    case morningDew
-    case diagonalLight
-    case tidalFill
-    case cornerTint
-    case quietOrder
-    case signalPoster
-    case rhythmBoard
-
-    public var id: String { rawValue }
-}
-
 public enum PulseWidgetDayState: String, Codable, Equatable, Sendable {
     case beforeHabit
     case checked

@@ -164,7 +164,7 @@ MVP 的目标不是搭建任务平台，而是让以下闭环稳定成立：
 
 通知权限只在用户主动开启提醒时请求，用于免费基础提醒与增强通道不可用时的同一提醒连续性；首次启动不得直接弹出。用户拒绝通知时，仍可用的 scheduled Live Activity 不应被阻止；两个正式通道都不可用时必须显示同步失败并保留开关意图，不得静默关闭。今天已过提醒时间时从明天开始，已签到日期不生成请求；启动、回到前台、签到、权益或提醒设置变化时刷新并先取消旧通道。系统调度容量和呈现由 iOS 裁决，产品文案不能承诺“到点一定出现”。
 
-`PulseWidgetStyleAccessPolicy` 规定 `breathingOrbit`（呼吸环）是唯一免费 Home Screen Widget 构图；`morningDew`（晨露）、`diagonalLight`（斜光）、`tidalFill`（潮汐）、`cornerTint`（隅色）、`quietOrder`（静序）、`signalPoster`（强信号）、`rhythmBoard`（七日谱）属于同一个高阶权益 entitlement。设置写入与 Widget extension 渲染必须各自验证权益；未验证、撤销、共享偏好被外部写成收费样式时统一解析为呼吸环，不能仅隐藏选择入口。
+`PulseWidgetStyleAccessPolicy` 规定 `breathingOrbit`（呼吸环）是唯一免费 Home Screen Widget 构图；`numberSilhouette`（数影）、`depthRhythm`（深景）、`quietOrder`（静序）、`rhythmBoard`（七日谱）属于同一个高阶权益 entitlement。构图由 WidgetKit 逐实例配置持有；Widget extension 在渲染边界验证权益，未验证或撤销时按访问策略解析为呼吸环，不能读取 App 侧购买副本。
 
 ## 5. 功能范围
 
@@ -195,7 +195,7 @@ MVP 的目标不是搭建任务平台，而是让以下闭环稳定成立：
 - 一周起始日设置。
 - 更完整的错误恢复和空状态说明。
 - App 图标、启动体验和正式发布素材。
-- 基础 Widget：Home Screen 小号/中号的“呼吸环”构图面向所有用户；高阶权益解锁“晨露 / 斜光 / 潮汐 / 隅色 / 静序 / 强信号 / 七日谱”。原有六式保持已确认的轻柔构图、颜色与字体层级；强信号使用响应尺寸方向变化的柔色日期带，七日谱使用不可换行的单行七个日期圆点。八式都显示日期、当前主承诺、今日状态、七日事实与单向签到 AppIntent。Lock Screen 圆形/矩形只显示抽象状态且面向所有用户。App/Widget 只使用同一个 App Group store；`interface.language` / `widget.style` 只保存界面语言与构图，不保存签到状态或购买副本。
+- 基础 Widget：Home Screen 小号/中号的“呼吸环”构图面向所有用户；高阶权益解锁“数影 / 深景 / 静序 / 七日谱”。五式必须以不同信息任务组织真实快照，禁止同骨架换肤和重复七日摘要；未签到时整个 Home Screen Widget 是唯一单向签到 AppIntent。Lock Screen 圆形/矩形只显示抽象状态且面向所有用户。App/Widget 只使用同一个 App Group store；App Group UserDefaults 仅保存 `interface.language`，构图由系统逐实例配置，不保存签到状态或购买副本。
 
 ### 5.3 P2：后续候选，不属于 MVP 承诺
 

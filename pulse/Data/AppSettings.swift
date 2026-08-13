@@ -55,18 +55,12 @@ extension PulseWidgetStyle {
         switch self {
         case .breathingOrbit:
             PulseLocalization.string("settings.widget.style.breathing_orbit", locale: locale)
-        case .morningDew:
-            PulseLocalization.string("settings.widget.style.morning_dew", locale: locale)
-        case .diagonalLight:
-            PulseLocalization.string("settings.widget.style.diagonal_light", locale: locale)
-        case .tidalFill:
-            PulseLocalization.string("settings.widget.style.tidal_fill", locale: locale)
-        case .cornerTint:
-            PulseLocalization.string("settings.widget.style.corner_tint", locale: locale)
+        case .numberSilhouette:
+            PulseLocalization.string("settings.widget.style.number_silhouette", locale: locale)
+        case .depthRhythm:
+            PulseLocalization.string("settings.widget.style.depth_rhythm", locale: locale)
         case .quietOrder:
             PulseLocalization.string("settings.widget.style.quiet_order", locale: locale)
-        case .signalPoster:
-            PulseLocalization.string("settings.widget.style.signal_poster", locale: locale)
         case .rhythmBoard:
             PulseLocalization.string("settings.widget.style.rhythm_board", locale: locale)
         }
@@ -79,34 +73,19 @@ extension PulseWidgetStyle {
                 "settings.widget.style.breathing_orbit.detail",
                 locale: locale
             )
-        case .morningDew:
+        case .numberSilhouette:
             PulseLocalization.string(
-                "settings.widget.style.morning_dew.detail",
+                "settings.widget.style.number_silhouette.detail",
                 locale: locale
             )
-        case .diagonalLight:
+        case .depthRhythm:
             PulseLocalization.string(
-                "settings.widget.style.diagonal_light.detail",
-                locale: locale
-            )
-        case .tidalFill:
-            PulseLocalization.string(
-                "settings.widget.style.tidal_fill.detail",
-                locale: locale
-            )
-        case .cornerTint:
-            PulseLocalization.string(
-                "settings.widget.style.corner_tint.detail",
+                "settings.widget.style.depth_rhythm.detail",
                 locale: locale
             )
         case .quietOrder:
             PulseLocalization.string(
                 "settings.widget.style.quiet_order.detail",
-                locale: locale
-            )
-        case .signalPoster:
-            PulseLocalization.string(
-                "settings.widget.style.signal_poster.detail",
                 locale: locale
             )
         case .rhythmBoard:
@@ -166,13 +145,6 @@ final class AppSettings {
         }
     }
 
-    var widgetStyle: PulseWidgetStyle {
-        didSet {
-            guard !isLoading else { return }
-            sharedInterfacePreferences.saveWidgetStyle(widgetStyle)
-        }
-    }
-
     var locale: Locale { language.locale }
 
     init(
@@ -190,10 +162,8 @@ final class AppSettings {
             StorageKey.mediaInvitationEnabled: true
         ])
         let loadedLanguage: PulseInterfaceLanguage
-        let loadedWidgetStyle: PulseWidgetStyle
         do {
             loadedLanguage = try sharedInterfacePreferences.loadLanguage()
-            loadedWidgetStyle = try sharedInterfacePreferences.loadWidgetStyle()
         } catch {
             throw PulseAppError.invalidSettings
         }
@@ -211,7 +181,6 @@ final class AppSettings {
         theme = loadedTheme
         mediaInvitationEnabled = defaults.bool(forKey: StorageKey.mediaInvitationEnabled)
         language = loadedLanguage
-        widgetStyle = loadedWidgetStyle
         isLoading = false
     }
 
@@ -233,7 +202,6 @@ final class AppSettings {
         theme = .system
         mediaInvitationEnabled = true
         language = .system
-        widgetStyle = PulseSharedInterfacePreferences.defaultWidgetStyle
         isLoading = false
     }
 

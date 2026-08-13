@@ -117,7 +117,7 @@ struct SettingsView: View {
                 WidgetStyleGalleryView(model: model)
             } label: {
                 LabeledContent("settings.widget.style") {
-                    Text(model.settings.widgetStyle.localizedName(locale: locale))
+                    Text("settings.widget.style.per_instance")
                         .foregroundStyle(PulseDesign.secondary)
                 }
             }

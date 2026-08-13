@@ -108,6 +108,11 @@
 			path = PulseWidgets;
 			sourceTree = "<group>";
 		};
+		A1D000000000000000000002 /* PulseWidgetUI */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = PulseWidgetUI;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -158,6 +163,7 @@
 				B9538A843029A88800432B53 /* pulse */,
 				E0C000000000000000000002 /* PulseCore */,
 				F0D000000000000000000002 /* PulseWidgets */,
+				A1D000000000000000000002 /* PulseWidgetUI */,
 				C0D000000000000000000002 /* pulseTests */,
 				D0D000000000000000000002 /* pulseUITests */,
 				B9538A833029A88800432B53 /* Products */,
@@ -205,6 +211,7 @@
 			);
 			fileSystemSynchronizedGroups = (
 				B9538A843029A88800432B53 /* pulse */,
+				A1D000000000000000000002 /* PulseWidgetUI */,
 			);
 			name = pulse;
 			packageProductDependencies = (
@@ -296,6 +303,7 @@
 			);
 			fileSystemSynchronizedGroups = (
 				F0D000000000000000000002 /* PulseWidgets */,
+				A1D000000000000000000002 /* PulseWidgetUI */,
 			);
 			name = PulseWidgetsExtension;
 			packageProductDependencies = (

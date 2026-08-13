@@ -77,14 +77,14 @@ final class PulseWidgetStyleAccessPolicyTests: XCTestCase {
             PulseWidgetStyle.allCases.filter {
                 PulseWidgetStyleAccessPolicy.requiresEnhancement($0)
             }.count,
-            7
+            4
         )
     }
 
     func testUnavailablePremiumStyleResolvesToIncludedStyle() {
         XCTAssertEqual(
             PulseWidgetStyleAccessPolicy.resolvedStyle(
-                preferredStyle: .tidalFill,
+                preferredStyle: .depthRhythm,
                 hasEnhancementEntitlement: false
             ),
             .breathingOrbit
