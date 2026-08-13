@@ -106,7 +106,7 @@ python3 scripts/build_brand_assets.py --check
 - Home Screen 未签到时，系统分配的完整可见区域是同一个单向签到 `Button`；完成态整块静态且不可撤销。禁止只让日印或某个日期节点可点，也禁止一张 Widget 出现多个等价签到入口。
 - Home Screen 与 Accessory 共用代码原生日环：312° 环段、9% 线宽、圆润端点；Home Screen 未签到使用 `action`，完成后使用 `grass`，Accessory 交给系统单色或着色调色板。完成态由实心内核、勾形、状态文字和辅助功能标签共同表达。
 - App 内构图画廊与 Widget Extension 必须编译同一份 `PulseWidgetHomeRenderer`；画廊只使用当前主承诺和当前七日事实生成的正式快照。禁止独立近似预览、硬编码日期、按索引伪造签到状态或在画廊提供不能配置已安装 Widget 的“已选择”状态。
-- 构图选择只存在于系统“编辑小组件”的 `WidgetConfigurationIntent`。Widget extension 在每次 snapshot/timeline 独立验证 entitlement；收费构图在权益未验证或撤销时按访问策略解析为呼吸环，不能读取 App 侧购买布尔副本。
+- Home Screen 构图选择只存在于系统“编辑小组件”的 `WidgetConfigurationIntent`；无构图参数的 Lock Screen“节律汇印”是独立 Widget kind。Widget extension 在每次 snapshot/timeline 独立验证 entitlement；收费构图在权益未验证或撤销时必须明确显示“构图尚未解锁”，不得静默替换为呼吸环，也不能读取 App 侧购买布尔副本。
 - Home Screen 固定显示主承诺名称且只读取 `Habit` 真源；Lock Screen、StandBy 与 Always-On 不显示主承诺正文，任何 Widget 都不显示可选备注或媒体。
 - Accessory 使用唯一“节律汇印”语法：圆形在今日开放环或完成印内部显示本地化当日纯数字；矩形左上显示今日短状态，过去六日节点上方显示真实日号并以连接线流向右侧唯一今日印记。不得把今天重复成第七个小节点。
 - Accessory 待签到圆形与矩形的完整可见区域都是同一个单向签到 `Button`；完成态静态。矩形内部节点从辅助功能树隐藏，整块只朗读今日状态、过去六日结果与操作提示。
@@ -115,7 +115,6 @@ python3 scripts/build_brand_assets.py --check
 - 共享 store 未就绪、身份未确认或快照损坏时显示明确“打开一日一印 / Open Pulse”或不可用状态，不能显示虚假待签到。App Group UserDefaults 只允许 `interface.language`，不存在 `widget.style` 旧路径。
 - 五种样式的小号与中号，以及 Accessory Circular / Rectangular，必须分别在系统 Widget Gallery 与真实表面验收待签到、已签到、浅色、深色、accented、vibrant 和 Clear；App 内画廊、Preview、编译成功或资产尺寸检查不能替代运行证据。
 
- ## 5B. 独立高阶权益页
 ## 5B. 独立高阶权益页
 
 - 买断功能必须拥有独立页面，不得埋在设置分组内，不得使用弹窗假装商店页。

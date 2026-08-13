@@ -34,7 +34,7 @@
 - 今日深草行动印支持单击签到与 0.45 秒长按“签到并拍照”；长按先完成权威签到提交，再请求相机，且 VoiceOver 提供独立动作。待签到进入时只有一次有限呼吸，权威提交后才播放收缩、落印和低强调回波，Reduce Motion 使用静态形状替换。
 - 高阶权益从设置内嵌分组迁到独立权益页；商品价格只读 StoreKit，当前已交付权益只读 `PulseEnhancementContract.currentCapabilities`。权益页使用轻量身份区、横向构图预览、等宽满行权益卡和紧凑购买条，末项权益与恢复购买必须能完整滚到购买条上方。
 - Home Screen Widget 与 App 内画廊统一消费同一 `PulseWidgetHomeRenderer`，正式构图收敛为“呼吸环、数影、深景、静序、七日谱”五式。旧八式、独立近似预览、硬编码假日期和重复七日摘要已删除；五式分别承担均衡、时间剪影、纵深节律、极简秩序和七日直读任务。
-- Home Screen Widget 已改为 `AppIntentConfiguration`，构图由系统逐实例持有；App Group 全局 `widget.style` 及 App 内伪“已选择”路径已删除。未签到 Home Screen 整块是唯一签到按钮，Extension 在 timeline 边界独立解析权益。
+- Home Screen Widget 已改为 `AppIntentConfiguration`，构图由系统逐实例持有；Lock Screen“节律汇印”拆为无构图参数的独立 Widget kind。App Group 全局 `widget.style` 及 App 内伪“已选择”路径已删除。未签到 Home Screen 整块是唯一签到按钮；Extension 在 timeline 边界独立验证权益，未授权收费构图明确报未解锁，不静默替换。
 - 记录详情在标准 Dynamic Type 下把“导出原图 / 删除照片 / 删除签到记录”合并为一个横向三分动作坞；Accessibility Dynamic Type 下改为导出跨首行、两个删除动作并列次行。三个动作仍是独立事务、独立确认和独立辅助功能入口，不把照片与签到事实合并。
 - 根页面常态背景加入 18 秒低振幅呼吸与细线漂移，今日页额外使用三层低透明潮面增强可感知性，最高 12 fps；仅在 scene active 且未开启 Reduce Motion 时推进，后台与 Reduce Motion 使用静态相位。该环境层不得驱动按钮持续闪烁或伪装成进度反馈。
 - 首启、今日、记录、设置与购买文案统一为短句；删除运行时“低压力、面向所有用户免费、不是为了打分作证”等解释性废话。
@@ -46,11 +46,11 @@
 
 ## 当前自动化与构建证据
 
-验证环境：macOS 26.6、Xcode 26.6（17F113）、iPhone 17 Pro / iOS 26.5 Simulator（arm64）。
+验证环境：macOS 26.6、Xcode 26.4（17E192）、iPhone 17 Pro / iOS 26.4 Simulator（arm64）。
 
-- 本轮五式重构需以当前全量测试结果为准；旧“八式选择后重启持久化”结论已失效并从门禁删除。工程状态在本轮 build、单测、UI 回归与残留扫描完成前保持 **ENGINEERING CANDIDATE**，不沿用旧计数冒充当前证据。
+- 当前五式冻结版本的 Simulator build 通过；116 项单元测试与 19 项完整 UI 回归全部通过。旧“八式选择后重启持久化”结论已失效并从门禁删除，不沿用旧计数冒充当前证据。Widget 五式重构达到 **ENGINEERING GO**；整个 1.1 仍受媒体真机、系统表面与分发门禁约束，保持 **ENGINEERING CANDIDATE**。
 - 媒体自动化覆盖独立删除/重新关联、同日替换、文件安装/读取/审计、缩略图损坏、无相册回退、v2 归档往返、随机性、错误口令、篡改、v1 拒绝、缺条目与缩略图身份不匹配。
-- 本轮需重新取得五式 App 画廊原始像素截图并逐张复审。即使通过，结果也仅是 **INTERFACE CANDIDATE**；App 内画廊不能替代真实 Home Screen 小号/中号 Widget host，也不能证明逐实例系统配置、accented/vibrant/Clear、Reduce Motion 或人体体验 GO。
+- 本轮已重新取得五式 App 画廊原始像素截图，并以共用正式渲染器逐张复审。结果仍仅是 **INTERFACE CANDIDATE**；App 内画廊不能替代真实 Home Screen 小号/中号 Widget host，也不能证明逐实例系统配置、独立 Lock Screen kind、accented/vibrant/Clear、Reduce Motion 或人体体验 GO。
 - Release `generic/platform=iOS` 无签名构建通过；Release 静态分析通过；Swift 警告按错误处理。
 - 19 项品牌生成资产检查通过，包含由同一令牌确定性产出的 AppIcon 三外观与小尺寸评审图；App、InfoPlist 与 Widget String Catalog 可解析；App/Widget plist 可解析。
 - `git diff --check` 通过；生产 Swift 源码没有 TODO/FIXME/HACK、相册回退、样例照片或演示数据路径。

@@ -1,7 +1,9 @@
 import Foundation
 
 public enum PulseWidgetContract {
-    public static let kind = "PulseDailyImprint"
+    public static let homeKind = "PulseDailyImprint"
+    public static let accessoryKind = "PulseAccessoryRhythm"
+    public static let allKinds = [homeKind, accessoryKind]
 }
 
 public enum PulseWidgetDayState: String, Codable, Equatable, Sendable {

@@ -81,13 +81,25 @@ final class PulseWidgetStyleAccessPolicyTests: XCTestCase {
         )
     }
 
-    func testUnavailablePremiumStyleResolvesToIncludedStyle() {
-        XCTAssertEqual(
-            PulseWidgetStyleAccessPolicy.resolvedStyle(
-                preferredStyle: .depthRhythm,
+    func testUnavailablePremiumStyleIsRejectedInsteadOfSilentlySubstituted() {
+        XCTAssertFalse(
+            PulseWidgetStyleAccessPolicy.isAvailable(
+                .depthRhythm,
                 hasEnhancementEntitlement: false
-            ),
-            .breathingOrbit
+            )
+        )
+    }
+
+    func testOfficialStyleContractContainsOnlyTheFiveCurrentCompositions() {
+        XCTAssertEqual(
+            PulseWidgetStyle.allCases.map(\.rawValue),
+            [
+                "breathingOrbit",
+                "numberSilhouette",
+                "depthRhythm",
+                "quietOrder",
+                "rhythmBoard",
+            ]
         )
     }
 

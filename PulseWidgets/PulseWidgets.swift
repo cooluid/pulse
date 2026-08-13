@@ -9,6 +9,7 @@ import WidgetKit
 struct PulseWidgetsBundle: WidgetBundle {
     var body: some Widget {
         PulseDailyImprintWidget()
+        PulseAccessoryRhythmWidget()
         PulseReminderLiveActivity()
     }
 }
@@ -127,7 +128,7 @@ private struct PulseReminderMark: View {
 struct PulseDailyImprintWidget: Widget {
     var body: some WidgetConfiguration {
         AppIntentConfiguration(
-            kind: PulseWidgetContract.kind,
+            kind: PulseWidgetContract.homeKind,
             intent: PulseWidgetConfigurationIntent.self,
             provider: PulseWidgetProvider()
         ) { entry in
@@ -137,7 +138,24 @@ struct PulseDailyImprintWidget: Widget {
         .description("widget.configuration.description")
         .supportedFamilies([
             .systemSmall,
-            .systemMedium,
+            .systemMedium
+        ])
+        .contentMarginsDisabled()
+        .containerBackgroundRemovable(true)
+    }
+}
+
+struct PulseAccessoryRhythmWidget: Widget {
+    var body: some WidgetConfiguration {
+        StaticConfiguration(
+            kind: PulseWidgetContract.accessoryKind,
+            provider: PulseAccessoryProvider()
+        ) { entry in
+            PulseWidgetView(entry: entry)
+        }
+        .configurationDisplayName("widget.accessory.configuration.name")
+        .description("widget.accessory.configuration.description")
+        .supportedFamilies([
             .accessoryCircular,
             .accessoryRectangular
         ])
@@ -172,6 +190,7 @@ struct PulseWidgetConfigurationIntent: WidgetConfigurationIntent {
 
 private enum PulseWidgetEntryState {
     case ready(PulseWidgetSnapshot, PulseWidgetStyle)
+    case enhancementRequired
     case needsOpenApp
     case unavailable
 }
@@ -229,6 +248,46 @@ private struct PulseWidgetProvider: AppIntentTimelineProvider {
 }
 
 @MainActor
+private struct PulseAccessoryProvider: TimelineProvider {
+    func placeholder(in context: Context) -> PulseWidgetEntry {
+        PulseWidgetEntry(
+            date: .now,
+            state: .ready(.placeholder, PulseWidgetStyleAccessPolicy.freeStyle),
+            language: .system
+        )
+    }
+
+    func getSnapshot(
+        in context: Context,
+        completion: @escaping (PulseWidgetEntry) -> Void
+    ) {
+        guard !context.isPreview else {
+            completion(placeholder(in: context))
+            return
+        }
+        completion(
+            PulseWidgetRuntime.loadEntry(
+                at: .now,
+                requestedStyle: PulseWidgetStyleAccessPolicy.freeStyle,
+                hasEnhancementEntitlement: false
+            ).entry
+        )
+    }
+
+    func getTimeline(
+        in context: Context,
+        completion: @escaping (Timeline<PulseWidgetEntry>) -> Void
+    ) {
+        let result = PulseWidgetRuntime.loadEntry(
+            at: .now,
+            requestedStyle: PulseWidgetStyleAccessPolicy.freeStyle,
+            hasEnhancementEntitlement: false
+        )
+        completion(Timeline(entries: [result.entry], policy: .after(result.refreshAfter)))
+    }
+}
+
+@MainActor
 private enum PulseWidgetRuntime {
     struct LoadResult {
         let entry: PulseWidgetEntry
@@ -268,10 +327,21 @@ private enum PulseWidgetRuntime {
                 at: context.location,
                 clock: FixedPulseClock(now: date)
             )
-            let style = PulseWidgetStyleAccessPolicy.resolvedStyle(
-                preferredStyle: requestedStyle,
+            guard PulseWidgetStyleAccessPolicy.isAvailable(
+                requestedStyle,
                 hasEnhancementEntitlement: hasEnhancementEntitlement
-            )
+            ) else {
+                return LoadResult(
+                    entry: PulseWidgetEntry(
+                        date: date,
+                        state: .enhancementRequired,
+                        language: language
+                    ),
+                    refreshAfter: date.addingTimeInterval(
+                        PulseEnhancementContract.entitlementRefreshInterval
+                    )
+                )
+            }
             guard let plan = try PulseWidgetSnapshotReader.readTimelinePlan(
                 repository: repository,
                 at: date
@@ -281,10 +351,10 @@ private enum PulseWidgetRuntime {
             return LoadResult(
                 entry: PulseWidgetEntry(
                     date: date,
-                    state: .ready(plan.snapshot, style),
+                    state: .ready(plan.snapshot, requestedStyle),
                     language: language
                 ),
-                refreshAfter: PulseWidgetStyleAccessPolicy.requiresEnhancement(style)
+                refreshAfter: PulseWidgetStyleAccessPolicy.requiresEnhancement(requestedStyle)
                     ? min(
                         plan.refreshAfter,
                         date.addingTimeInterval(
@@ -386,7 +456,9 @@ struct PulseCheckInIntent: AppIntent {
     @MainActor
     func perform() async throws -> some IntentResult {
         try PulseWidgetRuntime.checkIn()
-        WidgetCenter.shared.reloadTimelines(ofKind: PulseWidgetContract.kind)
+        for kind in PulseWidgetContract.allKinds {
+            WidgetCenter.shared.reloadTimelines(ofKind: kind)
+        }
         return .result()
     }
 }
@@ -412,6 +484,12 @@ private struct PulseLocalizedWidgetView: View {
             switch entry.state {
             case .ready(let snapshot, let style):
                 readyView(snapshot, style: style)
+            case .enhancementRequired:
+                unavailableView(
+                    title: "widget.state.enhancement_required.title",
+                    message: "widget.state.enhancement_required.message",
+                    systemImage: "lock"
+                )
             case .needsOpenApp:
                 unavailableView(
                     title: "widget.state.open_app.title",
@@ -852,10 +930,12 @@ private struct PulseAccessoryRhythmMetrics {
 
 private extension PulseWidgetSnapshot {
     static var placeholder: PulseWidgetSnapshot {
-        let today = LogicalDay(year: 2026, month: 8, day: 11)
+        let generatedAt = Date.now
+        let timeZone = TimeZone.current
+        let today = LogicalDay.resolve(at: generatedAt, timeZone: timeZone)
         let days = (-6...0).map { offset in
             PulseWidgetDaySnapshot(
-                day: today.addingDays(offset, timeZone: .gmt),
+                day: today.addingDays(offset, timeZone: timeZone),
                 state: offset == 0 ? .todayPending : (offset.isMultiple(of: 2) ? .checked : .missed)
             )
         }
@@ -865,8 +945,10 @@ private extension PulseWidgetSnapshot {
             today: today,
             checkedAt: nil,
             recentDays: days,
-            generatedAt: Date(timeIntervalSince1970: 1_754_860_800),
-            nextDayBoundary: Date(timeIntervalSince1970: 1_754_947_200)
+            generatedAt: generatedAt,
+            nextDayBoundary: today.addingDays(1, timeZone: timeZone).startDate(
+                timeZone: timeZone
+            )
         )
     }
 }

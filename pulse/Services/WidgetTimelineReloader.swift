@@ -9,6 +9,8 @@ protocol WidgetTimelineReloading: AnyObject {
 @MainActor
 final class WidgetTimelineReloader: WidgetTimelineReloading {
     func reloadDailyImprint() {
-        WidgetCenter.shared.reloadTimelines(ofKind: PulseWidgetContract.kind)
+        for kind in PulseWidgetContract.allKinds {
+            WidgetCenter.shared.reloadTimelines(ofKind: kind)
+        }
     }
 }

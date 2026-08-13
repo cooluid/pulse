@@ -119,6 +119,38 @@
         }
       }
     },
+    "widget.accessory.configuration.description" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Read today and the previous six days from the Lock Screen."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在锁定屏幕直读今天与过去六天的节律。"
+          }
+        }
+      }
+    },
+    "widget.accessory.configuration.name" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rhythm Imprint"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "节律汇印"
+          }
+        }
+      }
+    },
     "widget.accessory.state.checked" : {
       "localizations" : {
         "en" : {
@@ -424,6 +456,7 @@
       }
     },
     "widget.state.checked.editorial" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -435,6 +468,38 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "今日已印"
+          }
+        }
+      }
+    },
+    "widget.state.enhancement_required.message" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unlock this composition in Pulse, or choose Breathing Orbit when editing the widget."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "请在一日一印中解锁，或编辑小组件改用呼吸环。"
+          }
+        }
+      }
+    },
+    "widget.state.enhancement_required.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Composition Locked"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "构图尚未解锁"
           }
         }
       }
@@ -472,6 +537,7 @@
       }
     },
     "widget.state.pending.short" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {

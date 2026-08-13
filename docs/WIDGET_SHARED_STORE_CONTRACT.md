@@ -43,7 +43,7 @@ FileManager.containerURL(forSecurityApplicationGroupIdentifier:)
 - 不存在 App 私有 store、旧库迁移、journal、staging、fallback 或双写。
 - 旧开发安装不属于公开数据合同，进入此首发基线时必须清洁安装。
 
-App Group UserDefaults 只允许 `PulseSharedInterfacePreferences` 管理 `interface.language`。缺失键表示 `system`，未知值必须失败关闭；不得保存构图、业务事实或可反向覆盖 store 的投影。构图由 `WidgetConfigurationIntent` 逐实例持有：`breathingOrbit` 是唯一免费 Home Screen 构图，`numberSilhouette`、`depthRhythm`、`quietOrder` 与 `rhythmBoard` 需要统一高阶权益 entitlement；Widget extension 在生成 snapshot/timeline 时验证 StoreKit 权益，未验证或撤销时按访问策略解析为免费构图。
+App Group UserDefaults 只允许 `PulseSharedInterfacePreferences` 管理 `interface.language`。缺失键表示 `system`，未知值必须失败关闭；不得保存构图、业务事实或可反向覆盖 store 的投影。Home Screen 构图由 `WidgetConfigurationIntent` 逐实例持有：`breathingOrbit` 是唯一免费构图，`numberSilhouette`、`depthRhythm`、`quietOrder` 与 `rhythmBoard` 需要统一高阶权益 entitlement；Widget extension 在生成 snapshot/timeline 时验证 StoreKit 权益，未验证或撤销时明确返回未解锁状态，不得用免费构图伪装成功。Lock Screen“节律汇印”使用独立 StaticConfiguration kind，不接收 Home Screen 构图参数。
 
 ## 4. 共享代码边界
 
@@ -110,7 +110,8 @@ store 缺失或身份未确认显示“打开 App”；store 打不开、偏好�
 - 两个独立 ModelContainer 同日写入最终只有一个 `recordKey`；
 - timeline 跨项目时区零点刷新，七日投影与 App 一致；
 - 三值 `interface.language` 的单一共享持久化、默认值与未知值失败关闭；
-- 五值构图 AppEnum、逐实例默认值、权益解析，以及不同实例可同时使用不同构图；
+- 五值构图 AppEnum、逐实例默认值、未授权时的明确拒绝，以及不同 Home Screen 实例可同时使用不同构图；
+- Lock Screen 独立 kind 不暴露构图参数，App/Widget 写入后同时刷新两个正式 kind；
 - English / 简体中文下的 Widget 状态文案、日期、月份、数字和 VoiceOver 组合；App 切换语言只刷新一次 timeline；
 - Home Screen 显示名称，Accessory 不泄露名称或说明；
 - AppIntent 仅在正式保存后刷新。

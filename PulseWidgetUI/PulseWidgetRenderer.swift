@@ -26,15 +26,6 @@ enum PulseWidgetStyleAccessPolicy {
         !requiresEnhancement(style) || hasEnhancementEntitlement
     }
 
-    static func resolvedStyle(
-        preferredStyle: PulseWidgetStyle,
-        hasEnhancementEntitlement: Bool
-    ) -> PulseWidgetStyle {
-        isAvailable(
-            preferredStyle,
-            hasEnhancementEntitlement: hasEnhancementEntitlement
-        ) ? preferredStyle : freeStyle
-    }
 }
 
 struct PulseWidgetHomeRenderer: View {
