@@ -1,8 +1,10 @@
-# Widget 仪式物件方向实验室
+# Widget 仪式物件
 
-这是 Home Screen Widget 六式物件的 **DIRECTION** HTML 原型，用来留档和继续改构图。它不是 1.1 生产真源。
+这是 Home Screen Widget 的 **方向真源**：落印、叠印、数影、手札、静场、来路。
 
-正式 Home Screen 仍只消费 `PulseWidgetHomeRenderer` 的冻结五式：呼吸环、数影、深景、静序、七日谱。本页里的落印 / 叠印 / 数影 / 手札 / 静场 / 来路若要进 1.1，需要单独决定是新增收费构图，还是替换现有式。
+构图、剪影、待办/完成语言以本目录 HTML 为准。[`design/BRAND_SPEC.md`](../../../design/BRAND_SPEC.md) §5A 与仪式/产品合同跟本页。旧五式（呼吸环、深景、静序、七日谱）不再作为视觉依据。
+
+`PulseWidgetHomeRenderer` 仍在画旧五式，这是实现滞后。迁生产时以本页六式替换，不得把旧骨架改名换肤。本页不是商店图，也不是 `INTERFACE GO`。
 
 ## 打开
 
@@ -13,10 +15,10 @@ python3 -m http.server 8766
 
 浏览器打开 `http://127.0.0.1:8766/pulse-widget-ritual-objects.html`。
 
-画布按真实小号 `158×158`、中号 `338×158`。可切换待签到 / 已签到、浅色 / 深色。
+画布按真实小号 `158×158`、中号 `338×158`。主屏示意按 iPhone 逻辑宽 `393`，必须完整放下两枚小号和一枚中号。可切换待签到 / 已签到、浅色 / 深色。
 
 ## 不要用它做什么
 
-- 不要覆盖 `design/BRAND_SPEC.md`、`design/brand-tokens.json` 或正式 SwiftUI 渲染器。
+- 不要覆盖 `design/brand-tokens.json` 或未迁移的 SwiftUI 渲染器。
 - 不要当商店图、画廊截图或 INTERFACE GO 证据。
 - 不要把照片、备注、连续天数或 4/7 分数加进这六式。

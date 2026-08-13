@@ -1,7 +1,7 @@
 <!doctype html>
 <!--
-  DIRECTION lab only. Not 1.1 production Widget.
-  Formal Home Screen styles remain 呼吸环 / 数影 / 深景 / 静序 / 七日谱.
+  Home Screen Widget direction source.
+  Canonical styles: 落印 / 叠印 / 数影 / 手札 / 静场 / 来路.
   See README.md in this folder.
 -->
 <html lang="zh-CN">
@@ -64,15 +64,16 @@
     .control { min-height: 40px; padding: 0 14px; border: 0; border-radius: 999px; color: var(--secondary); background: transparent; cursor: pointer; font-size: 13px; font-weight: 650; }
     .control[aria-pressed="true"] { color: var(--action-fg); background: var(--action); }
 
-    .phone-block { margin-top: 36px; display: grid; grid-template-columns: 280px minmax(0, 1fr); gap: 32px; align-items: center; }
+    .phone-block { margin-top: 36px; display: grid; grid-template-columns: 393px minmax(0, 1fr); gap: 32px; align-items: center; }
     .phone {
-      width: 280px; height: 572px; padding: 18px 16px 22px;
-      border-radius: 42px; background: var(--wallpaper);
+      width: 393px; height: 560px; padding: 20px 27.5px 24px;
+      border-radius: 48px; background: var(--wallpaper);
       box-shadow: 0 30px 60px color-mix(in srgb, var(--shadow) 22%, transparent), inset 0 0 0 1px color-mix(in srgb, var(--ink) 10%, transparent);
-      display: grid; grid-template-rows: auto auto 1fr; gap: 12px;
+      display: grid; grid-template-rows: auto auto 1fr; gap: 16px;
+      overflow: hidden;
     }
     .status-bar { display: flex; justify-content: space-between; color: var(--ink); font-size: 12px; font-weight: 700; padding: 4px 8px 2px; opacity: .72; }
-    .hs-grid { display: grid; grid-template-columns: var(--s) var(--s); gap: 12px; justify-content: center; }
+    .hs-grid { display: grid; grid-template-columns: var(--s) var(--s); gap: 16px; justify-content: center; justify-items: center; }
     .hs-medium { display: flex; justify-content: center; }
     .dock { display: flex; justify-content: center; gap: 10px; align-self: end; }
     .app-dot { width: 44px; height: 44px; border-radius: 12px; background: var(--action); display: grid; place-items: center; }
@@ -813,6 +814,7 @@
 
     @media (max-width: 1100px) {
       .masthead, .phone-block, .concept { grid-template-columns: 1fr; }
+      .phone-block { overflow-x: auto; }
       .frames { overflow-x: auto; padding-bottom: 8px; }
     }
   </style>
@@ -1263,7 +1265,7 @@
       <h2>这轮明确不走的路</h2>
       <p>4/7 分数、柱状「日强度」、GitHub 月点阵、连续 N 日奖杯、CSS 进度环、左右色块分栏、用七日同心圆去顶「年轮」这个名字。它们能让信息变多，但会把一日一印变成打卡看板。年轮留给一年一圈的长期物件；七天是叠印，不是木头。月度密度和连续天数若以后要做，也必须先是物件（草甸、一条未折断的线），而不是比分。</p>
     </aside>
-    <p class="footnote">原型只用于方向。正式实现仍消费同一份 `PulseWidgetSnapshot`，使用 312° 开放日环、系统字体与品牌语义色。照片、备注、最长纪录不进入 Widget。中号按 338×158 构图，禁止把正方形海报拉宽。1.1 合同目前冻结五式；静场作为第六式加入时，需要单独决定是新增收费构图，还是替换「静序」。不能把静场和手札做成同一骨架的两种字号。</p>
+    <p class="footnote">本页是 Home Screen 构图方向真源：落印、叠印、数影、手札、静场、来路。正式实现仍消费同一份 `PulseWidgetSnapshot`，使用系统字体与品牌语义色。照片、备注、最长纪录不进入 Widget。中号按 338×158 构图，禁止把正方形海报拉宽。不能把静场和手札做成同一骨架的两种字号。`PulseWidgetHomeRenderer` 尚未迁入这六式，那是实现滞后，不能反过来改这页。</p>
   </main>
   <script>
     const stateButtons = [...document.querySelectorAll('.state-control')];

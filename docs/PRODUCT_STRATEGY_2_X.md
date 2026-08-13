@@ -23,7 +23,7 @@ Pulse 值得继续，但前提不是“继续堆功能”，而是守住并放�
 | 工程基础 | GO | 事实模型、写入入口、测试与失败处理已成体系 |
 | 1.1 公开发布 | NO-GO | 真机相机、通知、最终视觉、签名分发与连续使用门禁未关闭 |
 | 产品差异化 | CONDITIONAL GO | “一个承诺、一次真实留印、无压力恢复”有空间，但尚未经用户验证 |
-| 高阶权益买断实现 | ENGINEERING CANDIDATE / RELEASE NO-GO | 免费基础提醒、scheduled Live Activity、四种额外逐实例 Widget 构图与单一 StoreKit entitlement 已进入当前基线；生产商品、真机系统表面、Sandbox/TestFlight 与付费意愿尚未验证 |
+| 高阶权益买断实现 | ENGINEERING CANDIDATE / RELEASE NO-GO | 免费基础提醒、scheduled Live Activity、单一 StoreKit entitlement 已进入当前基线；Home Screen 方向为落印免费 + 五种额外物件，代码仍是旧五式。生产商品、真机系统表面、Sandbox/TestFlight 与付费意愿尚未验证 |
 | Pulse Plus 上线 | NO-GO | 还没有被验证的长期价值与订阅功能组合 |
 | 持续投入 | GO，带阶段门槛 | 先发布与验证，再依证据投入 Widget、Plus、同步和 Watch |
 
@@ -144,14 +144,14 @@ flowchart LR
 - 删除、清除、加密备份导出和恢复；
 - 所有已有数据的阅读和再次导出；
 - 主承诺命名与一句可选备注；
-- Home Screen“呼吸环”与基础 Lock Screen Widget；
+- Home Screen「落印」与基础 Lock Screen Widget；
 - 若 Watch 阶段通过真机门禁并进入生产：基础 Watch App、表盘印记、Smart Stack 和可靠签到；
 - App 内落印动效、用户签到后的短暂系统落印回声，以及回归和事实里程碑变体；
 - 基础缺席说明：说明事实，但不把缺席改成完成；
 - 一张带最小品牌署名、默认不暴露私密内容的基础分享卡。
 - 每日一张今日入镜的拍摄、本地查看、独立删除、原图导出和完整加密归档。
 
-把基础提醒、导出、读取历史、无障碍或隐私锁放到付费层，会直接削弱信任。2026-08-13 的受控付费范围是单独的永久买断高阶权益：解锁 iOS 26 scheduled Live Activity 和四种额外 Home Screen Widget 构图；未购买用户仍保留本地通知、呼吸环、签到闭环、历史、备份与数据控制。是否有足够付费价值必须用真实转化与退款证据审查，不能因为已经实现就视为产品验证通过。
+把基础提醒、导出、读取历史、无障碍或隐私锁放到付费层，会直接削弱信任。2026-08-13 的受控付费范围是单独的永久买断高阶权益：解锁 iOS 26 scheduled Live Activity 和五种额外 Home Screen Widget 构图（叠印 / 数影 / 手札 / 静场 / 来路）；未购买用户仍保留本地通知、落印、签到闭环、历史、备份与数据控制。是否有足够付费价值必须用真实转化与退款证据审查，不能因为已经实现就视为产品验证通过。
 
 ### 6.2 Pulse Plus 应售卖的高阶价值
 
@@ -204,7 +204,7 @@ flowchart LR
 
 Widget、Live Activity、灵动岛、锁屏、StandBy、Apple Watch、Control、Action Button 与提醒通道共同遵循 [PULSE_RITUAL_CONTRACT.md](./PULSE_RITUAL_CONTRACT.md)。它们不是新的签到真源，而是同一签到事实的系统级入口与反馈。
 
-日印仪式以“呼吸、落印、显影、年轮”为统一动作语言：免费本地通知、呼吸环与 Lock Screen Widget、签到成功后的两秒落印、今日入镜、回归与事实里程碑免费。高阶权益在 iOS 26 使用本地 scheduled Live Activity，并解锁四种额外 Home Screen 构图；iOS 18–25 或 Live Activities 关闭时仍使用免费本地通知。每个逻辑日最多一次，并与未来远程/微信提醒只选一个主通道。全天常驻未签到、重复触达、照片默认上锁屏和成功先于持久化均为 `NO-GO`。
+日印仪式以“呼吸、落印、显影、年轮”为统一动作语言：免费本地通知、Home Screen 落印与 Lock Screen Widget、签到成功后的两秒落印、今日入镜、回归与事实里程碑免费。高阶权益在 iOS 26 使用本地 scheduled Live Activity，并解锁叠印 / 数影 / 手札 / 静场 / 来路；iOS 18–25 或 Live Activities 关闭时仍使用免费本地通知。每个逻辑日最多一次，并与未来远程/微信提醒只选一个主通道。全天常驻未签到、重复触达、照片默认上锁屏和成功先于持久化均为 `NO-GO`。
 
 ### 6.6 建议暂缓或拒绝
 

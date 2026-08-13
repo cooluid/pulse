@@ -87,9 +87,9 @@ preparing → aligning → blending → encoding → completed / failed / cancel
 
 - Lock Screen 圆形：今日开放环与实心完成印内部都显示由当前 `LogicalDay` 派生的本地化纯数字，不带“日”等日期后缀；待签到开放环不得带有会被误读为勾形的斜线，完成态以实心内核替代勾；
 - Lock Screen 矩形：使用唯一“节律汇印”语法；左上显示今日短状态，过去六日节点上方显示不带日期后缀的本地化纯数字并以真实连接线汇入右侧唯一今日印记，今天数字显示在大印内部，不显示主承诺文本、星期或第七个今日小节点；
-- Home Screen 小号/中号：“呼吸环”是唯一面向所有用户的免费构图；高阶权益解锁“数影 / 深景 / 静序 / 七日谱”。五式分别承担均衡、时间剪影、纵深节律、极简秩序和七日直读任务，按任务选择快照事实，不强制共用信息骨架。小号与中号分别布局，七日谱禁止换行或改成方格。
+- Home Screen 小号/中号：落印是唯一面向所有用户的免费构图；高阶权益解锁叠印 / 数影 / 手札 / 静场 / 来路。六式是六种仪式物件，构图以 [widget-ritual-objects](./prototypes/widget-ritual-objects/) 为准，按任务选择快照事实，不强制共用信息骨架。小号与中号分别布局，禁止把正方形海报拉宽。旧五式「呼吸环 / 深景 / 静序 / 七日谱」不再作为视觉真源。
 
-构图只是逐实例呈现选择：App Group 只保存 `PulseSharedInterfacePreferences` 的 `interface.language`，不得复制构图、签到记录、连续天数、日期、主承诺或购买状态。`WidgetConfigurationIntent` 是每个 Home Screen 实例的唯一构图来源；Widget extension 在生成每个 snapshot/timeline 时独立验证 entitlement，收费构图在权益未验证或撤销时明确显示未解锁，不得静默换成“呼吸环”。Lock Screen / StandBy / Always-On 使用独立、无构图参数的 Accessory Widget kind，永久免费，不消费 Home Screen 构图，也不显示主承诺正文。App 与 Widget 内容消费同一语言；未知语言失败关闭，不能用系统语言伪装成功。
+构图只是逐实例呈现选择：App Group 只保存 `PulseSharedInterfacePreferences` 的 `interface.language`，不得复制构图、签到记录、连续天数、日期、主承诺或购买状态。`WidgetConfigurationIntent` 是每个 Home Screen 实例的唯一构图来源；Widget extension 在生成每个 snapshot/timeline 时独立验证 entitlement，收费构图在权益未验证或撤销时明确显示未解锁，不得静默换成落印。Lock Screen / StandBy / Always-On 使用独立、无构图参数的 Accessory Widget kind，永久免费，不消费 Home Screen 构图，也不显示主承诺正文。App 与 Widget 内容消费同一语言；未知语言失败关闭，不能用系统语言伪装成功。
 
 Widget 的未签到操作使用 `Button`，不使用可以反向切换的 `Toggle`。Accessory 待签到时整块系统分配区域都是同一按钮，不能只让图形局部可点；完成态静态。签到可从系统入口创建，但删除仍只在 App 内二次确认。设备锁定时交互遵循系统认证，不绕过锁屏。
 
@@ -260,13 +260,13 @@ render       = 实际进度环，用于岁月流影生成
 - 用户在 App 完成签到后的短暂 Live Activity 回声；
 - 回归与里程碑变体；
 - 基础本地通知提醒；
-- Home Screen“呼吸环”、全部 Lock Screen Widget 与幂等签到；
+- Home Screen「落印」、全部 Lock Screen Widget 与幂等签到；
 - 影像功能进入生产后的签到后拍照窗口。
 
 一次买断高阶权益：
 
 - iOS 26 本地定时 transient Live Activity；支持设备由系统同时提供 Dynamic Island，其他设备显示 Lock Screen 表面；
-- Home Screen“数影 / 深景 / 静序 / 七日谱”四种额外构图；
+- Home Screen「叠印 / 数影 / 手札 / 静场 / 来路」五种额外构图；
 - 一个商品、一个永久 entitlement；商品价格从 StoreKit 返回值读取，不持久化购买布尔副本；`PulseEnhancementContract.currentCapabilities` 是购买页当前已交付能力的唯一目录。
 
 Pulse Plus 候选：
@@ -279,7 +279,7 @@ Pulse Plus 候选：
 - Apple Watch 上的 28/90/365 日节律、回归力、印期、年轮和往年今日抽象回看；
 - 将来经用户需求验证的专注印刻 Live Activity。
 
-高阶权益当前收费对象是“增强系统呈现 + 四种额外构图”，不是基础提醒可靠性。未来能力只有真正交付后才能加入统一能力目录和权益页，不能预售路线图。无灵动岛设备仍可获得 Lock Screen Live Activity 表面，所有用户都保留本地通知与呼吸环。权益不可用或被撤销时，提醒继续按基础本地通知策略协调，收费 Home Screen 构图明确显示未解锁并提供恢复购买或改用呼吸环的路径；不得删除签到、照片、影片、报告、备份或 Widget。
+高阶权益当前收费对象是“增强系统呈现 + 五种额外构图”，不是基础提醒可靠性。未来能力只有真正交付后才能加入统一能力目录和权益页，不能预售路线图。无灵动岛设备仍可获得 Lock Screen Live Activity 表面，所有用户都保留本地通知与落印。权益不可用或被撤销时，提醒继续按基础本地通知策略协调，收费 Home Screen 构图明确显示未解锁并提供恢复购买或改用落印的路径；不得删除签到、照片、影片、报告、备份或 Widget。
 
 ## 9. Apple Watch 子系统
 
@@ -421,7 +421,7 @@ Watch 默认隐私等级高于 App 前台：
 
 | 阶段 | 日印仪式范围 |
 | --- | --- |
-| R0.5 | 首版免费基础提醒 + 高阶权益：StoreKit 2 单一永久 entitlement、iOS 26 本地 scheduled Live Activity、四种额外逐实例 Home Screen Widget 构图与单通道仲裁 |
+| R0.5 | 首版免费基础提醒 + 高阶权益：StoreKit 2 单一永久 entitlement、iOS 26 本地 scheduled Live Activity、落印免费与五种额外逐实例 Home Screen 物件构图与单通道仲裁 |
 | R1 | App Group 正式 store、基础 Widget、Widget AppIntent、免费落印语言与后续系统仪式原型 |
 | W0 | R1 稳定后提前验证配对真机、WatchConnectivity、`pendingSync` 与跨午夜命令；不写生产历史 |
 | 1.1 | 签到成功后的今日入镜，不单独追拍照提醒，照片不进入系统表面 |

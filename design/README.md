@@ -11,4 +11,4 @@
 
 生产合同只认 `BRAND_SPEC.md`、`brand-tokens.json`、`app-icon-source/` 与对应 SwiftUI 实现。方向候选和旧实现已经退出本目录；历史由版本控制承担，不能成为第二套设计真源。最终界面视觉验收与 App Store 素材验收仍是独立门禁。
 
-Widget 六式仪式物件的 HTML 方向实验室在 [`docs/prototypes/widget-ritual-objects/`](../docs/prototypes/widget-ritual-objects/)。它只用于留档和改构图，不能覆盖本目录的生产合同，也不能把正式五式换成实验室六式。
+Home Screen Widget 的构图方向真源是 [`docs/prototypes/widget-ritual-objects/`](../docs/prototypes/widget-ritual-objects/) 的六式：落印、叠印、数影、手札、静场、来路。[`BRAND_SPEC.md`](./BRAND_SPEC.md) §5A 跟该页。颜色仍只认 `brand-tokens.json`；未迁移的 `PulseWidgetHomeRenderer` 旧五式不能反过来否决这六式。
