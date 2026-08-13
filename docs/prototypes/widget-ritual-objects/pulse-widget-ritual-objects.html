@@ -361,16 +361,16 @@
       height: 118px;
     }
 
-    /* 03 Bleed — bold silhouette over a quiet tidal field */
+    /* 03 Bleed — bold day silhouette over soft mist (not waves; water belongs to 潮痕) */
     .bleed { background: var(--bg); }
-    .bleed .tide {
+    .bleed .haze {
       position: absolute;
       inset: 0;
       z-index: 0;
       pointer-events: none;
       color: var(--field);
     }
-    body.checked .bleed .tide { color: var(--grass); }
+    body.checked .bleed .haze { color: var(--grass); }
     .bleed .ghost {
       position: absolute;
       left: 8px;
@@ -1106,17 +1106,15 @@
         <div>
           <span class="idx">03 · BLEED</span>
           <h3>数影</h3>
-          <p>日号用粗体半透明剪影。小号潮面只铺下沿；中号潮面仍横贯画面，宽画布上才看得清。月份贴上沿，承诺在右上。右下角放一枚小开口日环作「今天」示意——整张卡才是命中面，印不是第二块按钮。完成时环闭合打勾，日号仍是主角。</p>
+          <p>日号用粗体半透明剪影，是这张唯一主角。底场改成软雾团，不再画波浪——水与岸留给潮痕。月份贴上沿，承诺在右上。右下角小开口日环只作「今天」示意。完成时环闭合打勾，日号仍压在雾上。</p>
           <span class="job">任务：今天是哪一天 · 现有快照</span>
         </div>
         <div class="frames">
           <div class="widget bleed">
-            <svg class="tide" viewBox="0 0 160 160" preserveAspectRatio="none" aria-hidden="true">
-              <path fill="currentColor" opacity=".11" d="M-14 112 C 44 98, 108 128, 174 114 L 174 128 C 110 142, 40 116, -14 126 Z"/>
-              <path fill="currentColor" opacity=".15" d="M-14 126 C 50 142, 108 116, 174 132 L 174 148 C 112 134, 46 158, -14 144 Z"/>
-              <path fill="currentColor" opacity=".10" d="M-14 140 C 42 128, 114 156, 174 144 L 174 164 C 108 176, 44 150, -14 156 Z"/>
-              <path fill="none" stroke="currentColor" stroke-width="1" opacity=".28" d="M-14 118 C 38 102, 110 136, 174 120"/>
-              <path fill="none" stroke="currentColor" stroke-width="1" opacity=".18" d="M-14 148 C 44 162, 110 132, 174 152"/>
+            <svg class="haze" viewBox="0 0 160 160" preserveAspectRatio="none" aria-hidden="true">
+              <ellipse cx="48" cy="118" rx="70" ry="34" fill="currentColor" opacity=".10"/>
+              <ellipse cx="110" cy="132" rx="58" ry="28" fill="currentColor" opacity=".14"/>
+              <ellipse cx="78" cy="146" rx="80" ry="26" fill="currentColor" opacity=".08"/>
             </svg>
             <div class="ghost">13</div>
             <div class="month">八月</div>
@@ -1136,12 +1134,10 @@
             </div>
           </div>
           <div class="widget medium bleed bleed-medium">
-            <svg class="tide" viewBox="0 0 160 160" preserveAspectRatio="none" aria-hidden="true">
-              <path fill="currentColor" opacity=".11" d="M-14 46 C 44 26, 108 64, 174 50 L 174 64 C 110 80, 40 50, -14 62 Z"/>
-              <path fill="currentColor" opacity=".15" d="M-14 62 C 50 80, 108 50, 174 68 L 174 86 C 112 70, 46 98, -14 80 Z"/>
-              <path fill="currentColor" opacity=".10" d="M-14 80 C 42 66, 114 98, 174 84 L 174 104 C 108 118, 44 88, -14 98 Z"/>
-              <path fill="none" stroke="currentColor" stroke-width="1" opacity=".28" d="M-14 54 C 38 34, 110 74, 174 56"/>
-              <path fill="none" stroke="currentColor" stroke-width="1" opacity=".18" d="M-14 94 C 44 112, 110 78, 174 98"/>
+            <svg class="haze" viewBox="0 0 160 160" preserveAspectRatio="none" aria-hidden="true">
+              <ellipse cx="40" cy="72" rx="78" ry="36" fill="currentColor" opacity=".10"/>
+              <ellipse cx="118" cy="88" rx="70" ry="32" fill="currentColor" opacity=".14"/>
+              <ellipse cx="78" cy="108" rx="96" ry="30" fill="currentColor" opacity=".08"/>
             </svg>
             <div class="ghost">13</div>
             <div class="month">八月</div>
