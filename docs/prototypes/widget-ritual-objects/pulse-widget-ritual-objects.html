@@ -798,47 +798,50 @@
       letter-spacing: -.035em;
       line-height: .98;
     }
-    .quiet .ring {
-      --ring-color: var(--action);
+    .quiet .today-hit {
       position: absolute;
       right: 11px;
       bottom: 11px;
+      width: 40px;
+      height: 40px;
       z-index: 2;
-      width: 33px;
-      height: 33px;
-      border: 4px solid var(--ring-color);
-      border-right-color: transparent;
-      border-radius: 50%;
-      transform: rotate(42deg);
+      color: var(--field);
     }
-    .quiet .ring::before {
-      content: "";
+    .quiet .today-hit svg {
       position: absolute;
-      inset: 7px;
-      border-radius: 50%;
-      background: var(--ring-color);
-      opacity: .10;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      overflow: visible;
     }
-    .quiet .ring::after {
-      content: "留印";
+    .quiet .today-hit svg.only-checked { display: none; }
+    body.checked .quiet .today-hit svg.only-pending { display: none; }
+    body.checked .quiet .today-hit svg.only-checked { display: block; }
+    .quiet .today-hit .core { fill: currentColor; opacity: .10; }
+    .quiet .today-hit .mark-label {
       position: absolute;
       inset: 0;
       display: grid;
       place-items: center;
-      color: var(--ring-color);
-      font-size: 7px;
+      margin: 0;
+      font-size: 9px;
       font-weight: 700;
-      transform: rotate(-42deg);
+      letter-spacing: -.04em;
+      color: var(--action);
+      pointer-events: none;
     }
-    body.checked .quiet .ring { --ring-color: var(--grass); }
-    body.checked .quiet .ring::before { inset: 6px; opacity: 1; }
-    body.checked .quiet .ring::after { content: "✓"; color: var(--grass-fg); font-size: 11px; }
+    body.checked .quiet .today-hit .mark-label { display: none; }
+    body.checked .quiet .today-hit { color: var(--grass); }
+    body.checked .quiet .today-hit .core { opacity: 1; }
     .quiet.medium { padding: 13px 15px; }
     .quiet.medium .habit { margin-top: 22px; max-width: 9em; font-size: 28px; }
-    .quiet.medium .ring { right: 17px; bottom: 15px; width: 44px; height: 44px; border-width: 5px; }
-    .quiet.medium .ring::before { inset: 9px; }
-    .quiet.medium .ring::after { font-size: 9px; }
-    body.checked .quiet.medium .ring::after { font-size: 14px; }
+    .quiet.medium .today-hit {
+      right: 15px;
+      bottom: 13px;
+      width: 48px;
+      height: 48px;
+    }
+    .quiet.medium .today-hit .mark-label { font-size: 10px; }
     .quiet.medium .state-copy {
       position: absolute;
       left: 15px;
@@ -921,7 +924,18 @@
           <div class="widget quiet">
             <div class="date">08 / 13</div>
             <div class="habit">我的<br>一件事</div>
-            <div class="ring"></div>
+            <div class="today-hit" aria-hidden="true">
+              <svg class="only-pending" viewBox="0 0 100 100">
+                <circle cx="50" cy="50" r="39" fill="none" stroke="currentColor" stroke-width="5.5" stroke-linecap="round" pathLength="100" stroke-dasharray="86.7 13.3" transform="rotate(-18 50 50)"/>
+                <circle class="core" cx="50" cy="50" r="20"/>
+              </svg>
+              <svg class="only-checked" viewBox="0 0 100 100">
+                <circle cx="50" cy="50" r="39" fill="none" stroke="currentColor" stroke-width="5.5"/>
+                <circle class="core" cx="50" cy="50" r="20"/>
+                <path d="M42 51 L48 58 L60 43" fill="none" stroke="var(--grass-fg)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              <span class="mark-label">留印</span>
+            </div>
           </div>
         </div>
         <div class="hs-medium">
@@ -1233,20 +1247,42 @@
         <div>
           <span class="idx">05 · FIELD</span>
           <h3>静场</h3>
-          <p>残影几何与原稿相同，画布和其他式一样是小号 158、中号 338×158。圆心仍在右下角外侧，所以看见的是扫过整张卡的大圆弧。</p>
+          <p>残影几何与原稿相同，画布和其他式一样是小号 158、中号 338×158。圆心仍在右下角外侧，所以看见的是扫过整张卡的大圆弧。右下今日印与落印 / 数影同一套草叶色开口日环，「留印」才用深绿；完成时环闭合、内核实心、换成勾。</p>
           <span class="job">任务：让承诺安静地占住这块屏 · 现有快照</span>
         </div>
         <div class="frames">
           <div class="widget quiet">
             <div class="date">08 / 13</div>
             <div class="habit">我的<br>一件事</div>
-            <div class="ring"></div>
+            <div class="today-hit" aria-hidden="true">
+              <svg class="only-pending" viewBox="0 0 100 100">
+                <circle cx="50" cy="50" r="39" fill="none" stroke="currentColor" stroke-width="5.5" stroke-linecap="round" pathLength="100" stroke-dasharray="86.7 13.3" transform="rotate(-18 50 50)"/>
+                <circle class="core" cx="50" cy="50" r="20"/>
+              </svg>
+              <svg class="only-checked" viewBox="0 0 100 100">
+                <circle cx="50" cy="50" r="39" fill="none" stroke="currentColor" stroke-width="5.5"/>
+                <circle class="core" cx="50" cy="50" r="20"/>
+                <path d="M42 51 L48 58 L60 43" fill="none" stroke="var(--grass-fg)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              <span class="mark-label">留印</span>
+            </div>
           </div>
           <div class="widget medium quiet">
             <div class="date">八月十三日 · 周四</div>
             <div class="habit">我的一件事</div>
             <div class="state-copy"></div>
-            <div class="ring"></div>
+            <div class="today-hit" aria-hidden="true">
+              <svg class="only-pending" viewBox="0 0 100 100">
+                <circle cx="50" cy="50" r="39" fill="none" stroke="currentColor" stroke-width="5.5" stroke-linecap="round" pathLength="100" stroke-dasharray="86.7 13.3" transform="rotate(-18 50 50)"/>
+                <circle class="core" cx="50" cy="50" r="20"/>
+              </svg>
+              <svg class="only-checked" viewBox="0 0 100 100">
+                <circle cx="50" cy="50" r="39" fill="none" stroke="currentColor" stroke-width="5.5"/>
+                <circle class="core" cx="50" cy="50" r="20"/>
+                <path d="M42 51 L48 58 L60 43" fill="none" stroke="var(--grass-fg)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              <span class="mark-label">留印</span>
+            </div>
           </div>
         </div>
       </article>
