@@ -65,6 +65,10 @@ extension PulseWidgetStyle {
             PulseLocalization.string("settings.widget.style.corner_tint", locale: locale)
         case .quietOrder:
             PulseLocalization.string("settings.widget.style.quiet_order", locale: locale)
+        case .signalPoster:
+            PulseLocalization.string("settings.widget.style.signal_poster", locale: locale)
+        case .rhythmBoard:
+            PulseLocalization.string("settings.widget.style.rhythm_board", locale: locale)
         }
     }
 
@@ -98,6 +102,16 @@ extension PulseWidgetStyle {
         case .quietOrder:
             PulseLocalization.string(
                 "settings.widget.style.quiet_order.detail",
+                locale: locale
+            )
+        case .signalPoster:
+            PulseLocalization.string(
+                "settings.widget.style.signal_poster.detail",
+                locale: locale
+            )
+        case .rhythmBoard:
+            PulseLocalization.string(
+                "settings.widget.style.rhythm_board.detail",
                 locale: locale
             )
         }

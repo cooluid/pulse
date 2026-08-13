@@ -77,7 +77,7 @@ final class PulseWidgetStyleAccessPolicyTests: XCTestCase {
             PulseWidgetStyle.allCases.filter {
                 PulseWidgetStyleAccessPolicy.requiresEnhancement($0)
             }.count,
-            5
+            7
         )
     }
 

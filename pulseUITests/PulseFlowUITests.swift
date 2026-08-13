@@ -467,6 +467,8 @@ final class PulseFlowUITests: XCTestCase {
             "tidalFill",
             "cornerTint",
             "quietOrder",
+            "signalPoster",
+            "rhythmBoard",
         ]
         for (index, identifier) in styleIdentifiers.enumerated() {
             let option = app.buttons["widget.gallery.style.\(identifier)"]
@@ -477,15 +479,15 @@ final class PulseFlowUITests: XCTestCase {
             XCTAssertTrue(option.waitForExistence(timeout: 3))
             XCTAssertLessThanOrEqual(option.frame.maxY, window.frame.maxY - 20)
 
-            if index == 1 || index == 3 || index == 5 {
+            if index == 1 || index == 3 || index == 5 || index == 7 {
                 let attachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
-                attachment.name = "Widget compositions \(index / 2 + 1) of 3"
+                attachment.name = "Widget compositions \(index / 2 + 1) of 4"
                 attachment.lifetime = .keepAlways
                 add(attachment)
             }
         }
 
-        let finalStyle = app.buttons["widget.gallery.style.quietOrder"]
+        let finalStyle = app.buttons["widget.gallery.style.rhythmBoard"]
         for _ in 0..<8 where !finalStyle.isHittable
             || finalStyle.frame.maxY > window.frame.maxY - 20 {
             app.swipeUp()
@@ -510,7 +512,7 @@ final class PulseFlowUITests: XCTestCase {
             app.swipeUp()
         }
         XCTAssertTrue(persistedGalleryLink.waitForExistence(timeout: 3))
-        XCTAssertTrue(persistedGalleryLink.label.contains("静序"))
+        XCTAssertTrue(persistedGalleryLink.label.contains("七日谱"))
     }
 
     func testRecordDetailUsesSheetDismissalAndSourceAnchoredDeleteConfirmation() throws {

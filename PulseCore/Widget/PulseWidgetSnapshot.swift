@@ -11,6 +11,8 @@ public enum PulseWidgetStyle: String, CaseIterable, Codable, Identifiable, Senda
     case tidalFill
     case cornerTint
     case quietOrder
+    case signalPoster
+    case rhythmBoard
 
     public var id: String { rawValue }
 }
@@ -44,6 +46,9 @@ public struct PulseWidgetSnapshot: Codable, Equatable, Sendable {
     public let nextDayBoundary: Date
 
     public var isCheckedToday: Bool { checkedAt != nil }
+    public var recentCheckedCount: Int {
+        recentDays.filter { $0.state == .checked }.count
+    }
     public var previousSixCheckedCount: Int {
         recentDays.dropLast().filter { $0.state == .checked }.count
     }

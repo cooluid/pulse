@@ -21,7 +21,7 @@ Pulse 1.1 把“每天可靠签到”升级为“每天留下一个可验证事�
 - 设置中可永久关闭签到后拍照邀请，并查看照片占用；真实照片不进入 Widget、Live Activity、Lock Screen、StandBy 或通知。
 - App Group SwiftData `PulseSchema 1.1.0` + 受 Data Protection 保护的 `Media` 文件目录；启动时执行引用完整性和孤儿文件审计。
 - `.pulsebackup` 容器 v2 / payload v2：项目、签到与全部原图/缩略图逐条 AES-256-GCM 认证加密；不把多年影像归档整体读入内存。
-- 免费基础提醒、一次买断高阶权益、六种 Home Screen Widget 草野构图与 iOS 26 scheduled Live Activity，沿用正式权益合同。
+- 免费基础提醒、一次买断高阶权益、八种 Home Screen Widget 草野构图与 iOS 26 scheduled Live Activity，沿用正式权益合同。
 - English / 简体中文、主题、Dynamic Type、VoiceOver、Reduce Motion、iPhone/iPad 正式布局。
 
 ## 3. 收费边界

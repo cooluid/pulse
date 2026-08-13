@@ -118,6 +118,7 @@ final class PulseWidgetSnapshotTests: XCTestCase {
             [.beforeHabit, .beforeHabit, .beforeHabit, .beforeHabit, .checked, .missed, .todayPending]
         )
         XCTAssertFalse(plan.snapshot.isCheckedToday)
+        XCTAssertEqual(plan.snapshot.recentCheckedCount, 1)
         XCTAssertEqual(plan.snapshot.previousSixCheckedCount, 1)
         XCTAssertEqual(
             plan.refreshAfter,

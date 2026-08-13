@@ -347,6 +347,22 @@
         }
       }
     },
+    "widget.rhythm.summary.format" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld imprints / 7 days"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "近7日 %lld次"
+          }
+        }
+      }
+    },
     "widget.state.checked.editorial" : {
       "localizations" : {
         "en" : {

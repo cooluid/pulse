@@ -444,6 +444,7 @@ private struct DayArchiveDetailView: View {
     let day: LogicalDay
     @Bindable var model: PulseAppModel
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @Environment(\.locale) private var locale
     @State private var showsDeleteConfirmation = false
     @State private var showsMediaDeleteConfirmation = false
@@ -459,54 +460,19 @@ private struct DayArchiveDetailView: View {
             PulseScreenBackground()
 
             ScrollView {
-                VStack(spacing: PulseDesign.spacing24) {
-                    PulseBrandMark(size: PulseDesign.recordDetailBrandMarkSize)
-
-                    VStack(spacing: PulseDesign.spacing8) {
-                        Text(
-                            PulseFormatting.fullDate(
-                                day,
-                                timeZone: model.timeZone ?? .autoupdatingCurrent,
-                                locale: locale
-                            )
-                        )
-                        .font(.title3.bold())
-                        .foregroundStyle(PulseDesign.ink)
-                        if let record {
-                            Text(
-                                String(
-                                    format: PulseLocalization.string(
-                                        "history.checked_at",
-                                        locale: locale
-                                    ),
-                                    PulseFormatting.time(
-                                        record.checkedAt,
-                                        timeZone: record.timeZone,
-                                        locale: locale
-                                    )
-                                )
-                            )
-                            .foregroundStyle(PulseDesign.secondary)
-                        } else {
-                            Text("history.record_deleted_media_retained")
-                                .foregroundStyle(PulseDesign.secondary)
-                                .multilineTextAlignment(.center)
-                        }
-                    }
+                VStack(spacing: PulseDesign.spacing20) {
+                    archiveHeader
 
                     if let media {
                         ImprintMediaPreview(media: media, load: model.thumbnailData)
-                            .frame(maxWidth: PulseDesign.mediaCardMaxWidth)
-                        photoExportButton(media)
-                        mediaDeleteButton(media)
+                            .frame(maxWidth: .infinity)
                     }
 
-                    if record != nil {
-                        deleteButton
-                    }
+                    archiveActionDock
                 }
-                .frame(maxWidth: .infinity)
+                .frame(maxWidth: PulseDesign.mediaCardMaxWidth)
                 .padding(PulseDesign.spacing24)
+                .frame(maxWidth: .infinity)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
@@ -521,6 +487,137 @@ private struct DayArchiveDetailView: View {
         }
     }
 
+    private var archiveHeader: some View {
+        ViewThatFits(in: .horizontal) {
+            HStack(alignment: .center, spacing: PulseDesign.spacing16) {
+                PulseBrandMark(size: PulseDesign.recordDetailBrandMarkSize)
+                archiveIdentity(alignment: .leading, textAlignment: .leading)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+
+            VStack(spacing: PulseDesign.spacing12) {
+                PulseBrandMark(size: PulseDesign.recordDetailBrandMarkSize)
+                archiveIdentity(alignment: .center, textAlignment: .center)
+            }
+            .frame(maxWidth: .infinity)
+        }
+    }
+
+    private func archiveIdentity(
+        alignment: HorizontalAlignment,
+        textAlignment: TextAlignment
+    ) -> some View {
+        VStack(alignment: alignment, spacing: PulseDesign.spacing4) {
+            Text(
+                PulseFormatting.fullDate(
+                    day,
+                    timeZone: model.timeZone ?? .autoupdatingCurrent,
+                    locale: locale
+                )
+            )
+            .font(.title3.bold())
+            .foregroundStyle(PulseDesign.ink)
+            .multilineTextAlignment(textAlignment)
+
+            if let record {
+                Text(
+                    String(
+                        format: PulseLocalization.string(
+                            "history.checked_at",
+                            locale: locale
+                        ),
+                        PulseFormatting.time(
+                            record.checkedAt,
+                            timeZone: record.timeZone,
+                            locale: locale
+                        )
+                    )
+                )
+                .foregroundStyle(PulseDesign.secondary)
+                .multilineTextAlignment(textAlignment)
+            } else {
+                Text("history.record_deleted_media_retained")
+                    .foregroundStyle(PulseDesign.secondary)
+                    .multilineTextAlignment(textAlignment)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: textAlignment == .leading ? .leading : .center)
+    }
+
+    @ViewBuilder
+    private var archiveActionDock: some View {
+        if media != nil || record != nil {
+            Group {
+                if dynamicTypeSize.isAccessibilitySize {
+                    accessibilityActionGrid
+                } else {
+                    compactActionRow
+                }
+            }
+            .padding(PulseDesign.spacing8)
+            .background(
+                PulseDesign.surface,
+                in: RoundedRectangle(
+                    cornerRadius: PulseDesign.mediaCornerRadius,
+                    style: .continuous
+                )
+            )
+            .overlay {
+                RoundedRectangle(
+                    cornerRadius: PulseDesign.mediaCornerRadius,
+                    style: .continuous
+                )
+                .stroke(PulseDesign.separator, lineWidth: PulseDesign.thinLineWidth)
+            }
+        }
+    }
+
+    private var compactActionRow: some View {
+        HStack(spacing: 0) {
+            if let media {
+                photoExportButton(media)
+                actionDivider
+                mediaDeleteButton(media)
+            }
+
+            if record != nil {
+                if media != nil {
+                    actionDivider
+                }
+                deleteButton
+            }
+        }
+        .frame(maxWidth: .infinity)
+    }
+
+    private var accessibilityActionGrid: some View {
+        Grid(horizontalSpacing: PulseDesign.spacing8, verticalSpacing: PulseDesign.spacing8) {
+            if let media {
+                photoExportButton(media)
+                    .gridCellColumns(2)
+
+                if record != nil {
+                    GridRow {
+                        mediaDeleteButton(media)
+                        deleteButton
+                    }
+                } else {
+                    mediaDeleteButton(media)
+                        .gridCellColumns(2)
+                }
+            } else if record != nil {
+                deleteButton
+                    .gridCellColumns(2)
+            }
+        }
+    }
+
+    private var actionDivider: some View {
+        Divider()
+            .frame(height: PulseDesign.minimumHitTarget)
+            .padding(.horizontal, PulseDesign.spacing4)
+    }
+
     private func photoExportButton(_ media: ImprintMediaSnapshot) -> some View {
         Button {
             guard !isPreparingPhotoExport else { return }
@@ -533,21 +630,35 @@ private struct DayArchiveDetailView: View {
             }
         } label: {
             if isPreparingPhotoExport {
-                ProgressView()
+                archiveActionLabel(
+                    "media.export_original",
+                    systemImage: nil,
+                    showsProgress: true
+                )
             } else {
-                Label("media.export_original", systemImage: "square.and.arrow.up")
+                archiveActionLabel(
+                    "media.export_original",
+                    systemImage: "square.and.arrow.up"
+                )
             }
         }
-        .buttonStyle(.bordered)
+        .buttonStyle(.plain)
+        .foregroundStyle(PulseDesign.ink)
         .disabled(isPreparingPhotoExport)
         .accessibilityIdentifier("history.media.export.button")
     }
 
     private func mediaDeleteButton(_ media: ImprintMediaSnapshot) -> some View {
-        Button("today.media.delete", role: .destructive) {
+        Button(role: .destructive) {
             showsMediaDeleteConfirmation = true
+        } label: {
+            archiveActionLabel(
+                "today.media.delete",
+                systemImage: "photo.badge.minus"
+            )
         }
-        .buttonStyle(.bordered)
+        .buttonStyle(.plain)
+        .accessibilityIdentifier("history.media.delete.button")
         .confirmationDialog(
             "media.delete_confirmation.title",
             isPresented: $showsMediaDeleteConfirmation,
@@ -567,10 +678,15 @@ private struct DayArchiveDetailView: View {
     }
 
     private var deleteButton: some View {
-        Button("history.delete_record", role: .destructive) {
+        Button(role: .destructive) {
             showsDeleteConfirmation = true
+        } label: {
+            archiveActionLabel(
+                "history.delete_record",
+                systemImage: "calendar.badge.minus"
+            )
         }
-        .buttonStyle(.bordered)
+        .buttonStyle(.plain)
         .accessibilityIdentifier("history.record.delete.button")
         .confirmationDialog(
             "history.delete_confirmation.title",
@@ -589,5 +705,34 @@ private struct DayArchiveDetailView: View {
         } message: {
             Text("history.delete_confirmation.message")
         }
+    }
+
+    private func archiveActionLabel(
+        _ title: LocalizedStringKey,
+        systemImage: String?,
+        showsProgress: Bool = false
+    ) -> some View {
+        VStack(spacing: PulseDesign.spacing4) {
+            if showsProgress {
+                ProgressView()
+                    .controlSize(.small)
+            } else if let systemImage {
+                Image(systemName: systemImage)
+                    .font(.headline.weight(.semibold))
+            }
+
+            Text(title)
+                .font(.caption.weight(.semibold))
+                .multilineTextAlignment(.center)
+                .lineLimit(dynamicTypeSize.isAccessibilitySize ? 3 : 2)
+                .minimumScaleFactor(0.78)
+        }
+        .frame(maxWidth: .infinity)
+        .frame(
+            minHeight: dynamicTypeSize.isAccessibilitySize
+                ? PulseDesign.accessibilityActionMinimumHeight
+                : 60
+        )
+        .contentShape(Rectangle())
     }
 }

@@ -747,12 +747,13 @@ private struct PulseWidgetHomeView: View {
     let snapshot: PulseWidgetSnapshot
     let style: PulseWidgetStyle
     let usesMediumMetrics: Bool
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.widgetRenderingMode) private var renderingMode
     @Environment(\.locale) private var locale
 
     var body: some View {
         GeometryReader { proxy in
-            Group {
+            let content = Group {
                 switch style {
                 case .breathingOrbit:
                     breathingOrbit(size: proxy.size)
@@ -766,12 +767,31 @@ private struct PulseWidgetHomeView: View {
                     cornerTint(size: proxy.size)
                 case .quietOrder:
                     quietOrder(size: proxy.size)
+                case .signalPoster:
+                    signalPoster(size: proxy.size)
+                case .rhythmBoard:
+                    rhythmBoard(size: proxy.size)
                 }
             }
             .frame(width: proxy.size.width, height: proxy.size.height)
             .clipped()
+
+            if usesDesignedStateTransition {
+                content.animation(
+                    reduceMotion
+                        ? nil
+                        : .easeOut(duration: PulseWidgetDesign.stateTransitionDuration),
+                    value: snapshot.isCheckedToday
+                )
+            } else {
+                content
+            }
         }
         .accessibilityElement(children: .contain)
+    }
+
+    private var usesDesignedStateTransition: Bool {
+        style == .signalPoster || style == .rhythmBoard
     }
 
     private func breathingOrbit(size: CGSize) -> some View {
@@ -1174,6 +1194,176 @@ private struct PulseWidgetHomeView: View {
         }
     }
 
+    @ViewBuilder
+    private func signalPoster(size: CGSize) -> some View {
+        let inset = size.width * (usesMediumMetrics ? 0.055 : 0.075)
+
+        if usesMediumMetrics {
+            let panelWidth = size.width * 0.26
+            let actionDiameter = size.height * 0.48
+
+            ZStack {
+                baseBackground
+
+                Rectangle()
+                    .fill(signalPosterFieldColor)
+                    .frame(width: panelWidth)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+                    .widgetAccentable()
+
+                signalPosterDate(size: size, numberSizeCSS: 76)
+                    .frame(width: panelWidth)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+
+                VStack(alignment: .leading, spacing: css(10, in: size)) {
+                    Text(verbatim: snapshot.habitName)
+                        .font(.system(
+                            size: css(40, in: size),
+                            weight: .semibold,
+                            design: .rounded
+                        ))
+                        .foregroundStyle(primaryForeground)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.66)
+
+                    HStack(spacing: css(10, in: size)) {
+                        editorialStatus(foreground: secondaryForeground, size: css(14, in: size))
+                            .contentTransition(.interpolate)
+                        Text(verbatim: recentSummary)
+                            .font(.system(size: css(11, in: size), weight: .medium))
+                            .foregroundStyle(secondaryForeground)
+                            .lineLimit(1)
+                    }
+
+                    HStack(alignment: .center, spacing: css(10, in: size)) {
+                        homeWeekRail(snapshot.recentDays, gapCSS: 7, size: size)
+                        Spacer(minLength: css(8, in: size))
+                        designedHomeImprintControl(
+                            diameter: actionDiameter,
+                            hasHalo: false,
+                            coreScale: 0.42,
+                            ringInsetRatio: 0.08,
+                            pendingLabelScale: 0.14,
+                            glyphScale: 0.25
+                        )
+                    }
+                }
+                .padding(.leading, panelWidth + inset)
+                .padding(.trailing, inset)
+                .padding(.vertical, size.height * 0.075)
+                .frame(maxHeight: .infinity, alignment: .center)
+            }
+        } else {
+            let actionDiameter = size.width * 0.22
+
+            ZStack {
+                baseBackground
+
+                Rectangle()
+                    .fill(signalPosterFieldColor)
+                    .frame(height: size.height * 0.34)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+                    .widgetAccentable()
+
+                HStack(alignment: .center, spacing: css(8, in: size)) {
+                    signalPosterDate(size: size, numberSizeCSS: 50)
+                    Spacer(minLength: css(4, in: size))
+                    editorialStatus(foreground: secondaryForeground, size: css(12, in: size))
+                        .contentTransition(.interpolate)
+                }
+                .padding(.horizontal, inset)
+                .frame(height: size.height * 0.34)
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+
+                VStack(alignment: .leading, spacing: css(6, in: size)) {
+                    Text(verbatim: snapshot.habitName)
+                        .font(.system(
+                            size: css(34, in: size),
+                            weight: .semibold,
+                            design: .rounded
+                        ))
+                        .foregroundStyle(primaryForeground)
+                        .lineLimit(2)
+                        .minimumScaleFactor(0.64)
+
+                    Text(verbatim: recentSummary)
+                        .font(.system(size: css(11, in: size), weight: .medium))
+                        .foregroundStyle(secondaryForeground)
+                        .lineLimit(1)
+
+                    Spacer(minLength: 0)
+
+                    HStack(spacing: css(7, in: size)) {
+                        homeWeekRail(snapshot.recentDays, gapCSS: 4, size: size)
+                        Spacer(minLength: 0)
+                        designedHomeImprintControl(
+                            diameter: actionDiameter,
+                            hasHalo: false,
+                            coreScale: 0.42,
+                            ringInsetRatio: 0.08,
+                            pendingLabelScale: 0.14,
+                            glyphScale: 0.25
+                        )
+                    }
+                }
+                .padding(.horizontal, inset)
+                .padding(.top, size.height * 0.39)
+                .padding(.bottom, size.height * 0.065)
+            }
+        }
+    }
+
+    private func rhythmBoard(size: CGSize) -> some View {
+        let inset = size.width * (usesMediumMetrics ? 0.055 : 0.075)
+
+        return ZStack {
+            baseBackground
+
+            VStack(alignment: .leading, spacing: css(8, in: size)) {
+                HStack(alignment: .firstTextBaseline, spacing: css(8, in: size)) {
+                    Text(verbatim: snapshot.habitName)
+                        .font(.system(
+                            size: css(usesMediumMetrics ? 38 : 31, in: size),
+                            weight: .semibold,
+                            design: .rounded
+                        ))
+                        .foregroundStyle(primaryForeground)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.66)
+                    Spacer(minLength: css(8, in: size))
+                    Text(verbatim: editorialDate)
+                        .font(.system(
+                            size: css(usesMediumMetrics ? 17 : 15, in: size),
+                            weight: .medium,
+                            design: .rounded
+                        ))
+                        .foregroundStyle(secondaryForeground)
+                        .monospacedDigit()
+                        .lineLimit(1)
+                }
+
+                HStack(spacing: css(8, in: size)) {
+                    editorialStatus(
+                        foreground: secondaryForeground,
+                        size: css(usesMediumMetrics ? 14 : 12, in: size)
+                    )
+                    .contentTransition(.interpolate)
+                    Spacer(minLength: 0)
+                    Text(verbatim: recentSummary)
+                        .font(.system(size: css(11, in: size), weight: .medium))
+                        .foregroundStyle(secondaryForeground)
+                        .lineLimit(1)
+                }
+
+                homeWeekDateDots(snapshot.recentDays, size: size)
+            }
+            .padding(.horizontal, inset)
+            .padding(.top, size.height * 0.07)
+            .padding(.bottom, size.height * 0.065)
+            .frame(maxHeight: .infinity, alignment: .center)
+        }
+    }
+
     private func organicContours(
         size: CGSize,
         anchor: CGPoint,
@@ -1284,6 +1474,69 @@ private struct PulseWidgetHomeView: View {
         .contentShape(Circle())
     }
 
+    @ViewBuilder
+    private func designedHomeImprintControl(
+        diameter: CGFloat,
+        hasHalo: Bool,
+        coreScale: CGFloat,
+        ringInsetRatio: CGFloat,
+        pendingLabelScale: CGFloat,
+        glyphScale: CGFloat
+    ) -> some View {
+        if snapshot.isCheckedToday {
+            designedHomeImprintMark(
+                diameter: diameter,
+                hasHalo: hasHalo,
+                coreScale: coreScale,
+                ringInsetRatio: ringInsetRatio,
+                pendingLabelScale: pendingLabelScale,
+                glyphScale: glyphScale
+            )
+            .accessibilityLabel("widget.accessibility.checked")
+        } else {
+            Button(intent: PulseCheckInIntent()) {
+                designedHomeImprintMark(
+                    diameter: diameter,
+                    hasHalo: hasHalo,
+                    coreScale: coreScale,
+                    ringInsetRatio: ringInsetRatio,
+                    pendingLabelScale: pendingLabelScale,
+                    glyphScale: glyphScale
+                )
+                .invalidatableContent()
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("widget.action.check_in")
+            .accessibilityHint("widget.action.check_in.hint")
+        }
+    }
+
+    private func designedHomeImprintMark(
+        diameter: CGFloat,
+        hasHalo: Bool,
+        coreScale: CGFloat,
+        ringInsetRatio: CGFloat,
+        pendingLabelScale: CGFloat,
+        glyphScale: CGFloat
+    ) -> some View {
+        homeImprintMark(
+            diameter: diameter,
+            hasHalo: hasHalo,
+            coreScale: coreScale,
+            ringInsetRatio: ringInsetRatio,
+            pendingLabelScale: pendingLabelScale,
+            glyphScale: glyphScale,
+            ringRotationDegrees: 0,
+            coreRotationDegrees: 0
+        )
+        .id(snapshot.isCheckedToday)
+        .transition(
+            reduceMotion
+                ? .opacity
+                : .scale(scale: 0.88).combined(with: .opacity)
+        )
+    }
+
     private func homeWeekRail(
         _ days: [PulseWidgetDaySnapshot],
         gapCSS: CGFloat,
@@ -1296,6 +1549,110 @@ private struct PulseWidgetHomeView: View {
         }
         .frame(height: css(15, in: size))
         .fixedSize()
+    }
+
+    private func signalPosterDate(
+        size: CGSize,
+        numberSizeCSS: CGFloat
+    ) -> some View {
+        VStack(spacing: 0) {
+            Text(snapshot.today.day, format: .number)
+                .font(.system(
+                    size: css(numberSizeCSS, in: size),
+                    weight: .semibold,
+                    design: .rounded
+                ))
+                .foregroundStyle(primaryForeground)
+                .monospacedDigit()
+                .lineLimit(1)
+            Text(verbatim: localizedMonthName)
+                .font(.system(size: css(12, in: size), weight: .medium))
+                .foregroundStyle(secondaryForeground)
+                .lineLimit(1)
+        }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(Text(verbatim: localizedAccessibilityDate))
+    }
+
+    private func homeWeekDateDots(
+        _ days: [PulseWidgetDaySnapshot],
+        size: CGSize
+    ) -> some View {
+        HStack(spacing: css(usesMediumMetrics ? 8 : 2, in: size)) {
+            ForEach(days) { item in
+                homeWeekDateDotControl(item, size: size)
+            }
+        }
+        .frame(maxWidth: .infinity)
+    }
+
+    @ViewBuilder
+    private func homeWeekDateDotControl(
+        _ item: PulseWidgetDaySnapshot,
+        size: CGSize
+    ) -> some View {
+        if item.state == .todayPending {
+            Button(intent: PulseCheckInIntent()) {
+                homeWeekDateDot(item, size: size)
+                    .invalidatableContent()
+            }
+            .buttonStyle(.plain)
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel("widget.action.check_in")
+            .accessibilityHint("widget.action.check_in.hint")
+        } else {
+            homeWeekDateDot(item, size: size)
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel(dayAccessibilityLabel(item))
+        }
+    }
+
+    private func homeWeekDateDot(
+        _ item: PulseWidgetDaySnapshot,
+        size: CGSize
+    ) -> some View {
+        let slotSide = css(usesMediumMetrics ? 40 : 28, in: size)
+        let isEmphasized = item.state == .checked || item.state == .todayPending
+        let visualSide = isEmphasized ? slotSide : slotSide * 0.64
+
+        return VStack(spacing: css(4, in: size)) {
+            Text(verbatim: PulseLocalizedDateFormatting.dayNumber(
+                item.day,
+                locale: locale
+            ))
+            .font(.system(
+                size: css(usesMediumMetrics ? 14 : 11, in: size),
+                weight: .medium,
+                design: .rounded
+            ))
+            .foregroundStyle(secondaryForeground)
+            .monospacedDigit()
+            .lineLimit(1)
+
+            ZStack {
+                Circle()
+                    .fill(homeRailMarkFill(item.state))
+                    .overlay {
+                        if let stroke = homeRailMarkStroke(item.state) {
+                            Circle()
+                                .stroke(stroke, lineWidth: css(1.4, in: size))
+                        }
+                    }
+
+                if item.state == .checked {
+                    Image(systemName: "checkmark")
+                        .font(.system(
+                            size: css(usesMediumMetrics ? 12 : 9, in: size),
+                            weight: .bold
+                        ))
+                        .foregroundStyle(checkedDotForeground)
+                }
+            }
+            .frame(width: visualSide, height: visualSide)
+            .frame(width: slotSide, height: slotSide)
+            .widgetAccentable(isEmphasized)
+        }
+        .frame(maxWidth: .infinity)
     }
 
     @ViewBuilder
@@ -1442,6 +1799,16 @@ private struct PulseWidgetHomeView: View {
             : Color.primary.opacity(0.06)
     }
 
+    private var signalPosterFieldColor: Color {
+        usesFullColorPalette
+            ? PulseWidgetDesign.field.opacity(0.16)
+            : Color.primary.opacity(0.08)
+    }
+
+    private var checkedDotForeground: Color {
+        usesFullColorPalette ? PulseWidgetDesign.grassForeground : .white
+    }
+
     private var orderShelfColor: Color {
         usesFullColorPalette
             ? PulseWidgetDesign.field.opacity(0.10)
@@ -1460,6 +1827,18 @@ private struct PulseWidgetHomeView: View {
         PulseLocalizedDateFormatting.accessibilityDate(
             snapshot.today,
             locale: locale
+        )
+    }
+
+    private var recentSummary: String {
+        let format = String(
+            localized: "widget.rhythm.summary.format",
+            locale: locale
+        )
+        return String(
+            format: format,
+            locale: locale,
+            Int64(snapshot.recentCheckedCount)
         )
     }
 
@@ -1769,6 +2148,7 @@ private enum PulseWidgetDesign {
     static let accessoryRailTerminalGap: CGFloat = 14
     static let homeMissedOpacity = 0.38
     static let homeBeforeHabitOpacity = 0.58
+    static let stateTransitionDuration = 0.48
     static let accessoryMissedOpacity = 0.42
     static let accessoryBeforeHabitOpacity = 0.56
 }

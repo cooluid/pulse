@@ -2311,6 +2311,40 @@
         }
       }
     },
+    "settings.widget.style.corner_tint" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Corner Tint"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "隅色"
+          }
+        }
+      }
+    },
+    "settings.widget.style.corner_tint.detail" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Two softened color corners frame a generous quiet center."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "两处柔色贴住角边，中间留出安静呼吸。"
+          }
+        }
+      }
+    },
     "settings.widget.style.diagonal_light" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -2379,74 +2413,6 @@
         }
       }
     },
-    "settings.widget.style.tidal_fill" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tidal Fill"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "潮汐"
-          }
-        }
-      }
-    },
-    "settings.widget.style.tidal_fill.detail" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Layered waterlines rise gently beneath today’s imprint."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "层叠水线轻轻漫起，托住今天的印记。"
-          }
-        }
-      }
-    },
-    "settings.widget.style.corner_tint" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Corner Tint"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "隅色"
-          }
-        }
-      }
-    },
-    "settings.widget.style.corner_tint.detail" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Two softened color corners frame a generous quiet center."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "两处柔色贴住角边，中间留出安静呼吸。"
-          }
-        }
-      }
-    },
     "settings.widget.style.quiet_order" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -2477,6 +2443,108 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "轻身份、居中承诺与底部节律，秩序清晰而松弛。"
+          }
+        }
+      }
+    },
+    "settings.widget.style.rhythm_board" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rhythm Board"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "七日谱"
+          }
+        }
+      }
+    },
+    "settings.widget.style.rhythm_board.detail" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seven dated dots keep the week compact in every widget size."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "七个带日期的圆点，让一周在每种尺寸都保持紧凑。"
+          }
+        }
+      }
+    },
+    "settings.widget.style.signal_poster" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Signal Poster"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "强信号"
+          }
+        }
+      }
+    },
+    "settings.widget.style.signal_poster.detail" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A soft date band creates a clear focal point without losing calm."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "柔色日号带形成清晰焦点，同时保留细腻与轻柔。"
+          }
+        }
+      }
+    },
+    "settings.widget.style.tidal_fill" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tidal Fill"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "潮汐"
+          }
+        }
+      }
+    },
+    "settings.widget.style.tidal_fill.detail" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Layered waterlines rise gently beneath today’s imprint."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "层叠水线轻轻漫起，托住今天的印记。"
           }
         }
       }
@@ -2635,13 +2703,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Unlock Morning Dew, Diagonal Light, Tidal Fill, Corner Tint, and Quiet Order compositions."
+            "value" : "Unlock Morning Dew, Diagonal Light, Tidal Fill, Corner Tint, Quiet Order, Signal Poster, and Rhythm Board compositions."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "解锁晨露、斜光、潮汐、隅色与静序构图。"
+            "value" : "解锁晨露、斜光、潮汐、隅色、静序、强信号与七日谱构图。"
           }
         }
       }
@@ -3293,6 +3361,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "小组件构图"
+          }
+        }
+      }
+    },
+    "widget.gallery.preview.recent" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "4 imprints / 7 days"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "近7日 4次"
           }
         }
       }

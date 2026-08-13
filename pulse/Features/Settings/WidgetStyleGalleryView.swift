@@ -278,6 +278,56 @@ struct PulseWidgetStylePreview: View {
                 .background(PulseDesign.field.opacity(0.10), in: Capsule())
             }
             .padding(PulseDesign.spacing16)
+        case .signalPoster:
+            ZStack {
+                Rectangle()
+                    .fill(PulseDesign.field.opacity(0.16))
+                    .frame(width: size.width * 0.26)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+
+                previewDay(size: size.height * 0.29)
+                    .frame(width: size.width * 0.26)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+
+                VStack(alignment: .leading, spacing: PulseDesign.spacing12) {
+                    previewCommitment()
+                        .lineLimit(1)
+                    HStack(spacing: PulseDesign.spacing8) {
+                        Text("today.navigation.pending")
+                            .font(.caption2.weight(.medium))
+                            .foregroundStyle(PulseDesign.secondary)
+                        previewSummary
+                    }
+                    HStack {
+                        previewRhythm
+                        Spacer()
+                        previewImprint
+                    }
+                }
+                .padding(.leading, size.width * 0.26 + PulseDesign.spacing16)
+                .padding(.trailing, PulseDesign.spacing16)
+                .padding(.vertical, PulseDesign.spacing16)
+                .frame(maxHeight: .infinity, alignment: .center)
+            }
+        case .rhythmBoard:
+            VStack(alignment: .leading, spacing: PulseDesign.spacing8) {
+                HStack(alignment: .firstTextBaseline) {
+                    previewCommitment()
+                        .lineLimit(1)
+                    Spacer(minLength: PulseDesign.spacing8)
+                    previewDay(size: 24)
+                }
+                HStack {
+                    Text("today.navigation.pending")
+                        .font(.caption.weight(.medium))
+                        .foregroundStyle(PulseDesign.secondary)
+                    Spacer()
+                    previewSummary
+                }
+                previewWeekDots
+            }
+            .padding(PulseDesign.spacing16)
+            .frame(maxHeight: .infinity, alignment: .center)
         }
     }
 
@@ -344,6 +394,42 @@ struct PulseWidgetStylePreview: View {
                 Circle()
                     .fill(index.isMultiple(of: 3) ? PulseDesign.grass : PulseDesign.separator)
                     .frame(width: index == 6 ? 8 : 6, height: index == 6 ? 8 : 6)
+            }
+        }
+    }
+
+    private var previewSummary: some View {
+        Text("widget.gallery.preview.recent")
+            .font(.caption2.weight(.medium))
+            .foregroundStyle(PulseDesign.secondary)
+            .lineLimit(1)
+    }
+
+    private var previewWeekDots: some View {
+        let currentDay = dayNumber ?? 10
+
+        return HStack(spacing: PulseDesign.spacing8) {
+            ForEach(0..<7, id: \.self) { index in
+                VStack(spacing: PulseDesign.spacing4) {
+                    Text(currentDay - 6 + index, format: .number)
+                        .font(.caption2.weight(.medium))
+                        .foregroundStyle(PulseDesign.secondary)
+                        .monospacedDigit()
+
+                    ZStack {
+                        Circle()
+                            .fill(index.isMultiple(of: 3)
+                                ? PulseDesign.grass
+                                : PulseDesign.separator)
+                        if index.isMultiple(of: 3) {
+                            Image(systemName: "checkmark")
+                                .font(.system(size: 9, weight: .bold))
+                                .foregroundStyle(PulseDesign.grassForeground)
+                        }
+                    }
+                    .frame(width: 25, height: 25)
+                }
+                .frame(maxWidth: .infinity)
             }
         }
     }

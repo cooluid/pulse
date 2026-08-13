@@ -33,7 +33,8 @@
 - 品牌按产品确认从“断层海报 + 贴边双页签”干净切换为“草野脉冲 + 状态式悬浮底栏”；颜色仍只由 `design/brand-tokens.json` 生成，不保留断层海报运行时分支。底栏两个入口稳定等宽，根内容按实测底栏高度清空滚动末端。
 - 今日深草行动印支持单击签到与 0.45 秒长按“签到并拍照”；长按先完成权威签到提交，再请求相机，且 VoiceOver 提供独立动作。待签到进入时只有一次有限呼吸，权威提交后才播放收缩、落印和低强调回波，Reduce Motion 使用静态形状替换。
 - 高阶权益从设置内嵌分组迁到独立权益页；商品价格只读 StoreKit，当前已交付权益只读 `PulseEnhancementContract.currentCapabilities`。权益页使用轻量身份区、横向构图预览、等宽满行权益卡和紧凑购买条，末项权益与恢复购买必须能完整滚到购买条上方。
-- Home Screen Widget 与 App 内画廊统一为“呼吸环、晨露、斜光、潮汐、隅色、静序”六种草野构图；“静序”只继承更早一版的稳定阅读顺序，不复活方块轨迹、表情和厚状态条。画廊末张卡必须能完整进入安全区域。
+- Home Screen Widget 与 App 内画廊统一为“呼吸环、晨露、斜光、潮汐、隅色、静序、强信号、七日谱”八种草野构图。原有六式逐段恢复既有构图、颜色、字体层级和圆点节律；强信号使用柔色日期带并为小号/中号切换横向/侧向布局，七日谱在两种尺寸都使用不可换行的单行七个日期圆点，不保留方格或 `LazyVGrid` 路径。
+- 记录详情在标准 Dynamic Type 下把“导出原图 / 删除照片 / 删除签到记录”合并为一个横向三分动作坞；Accessibility Dynamic Type 下改为导出跨首行、两个删除动作并列次行。三个动作仍是独立事务、独立确认和独立辅助功能入口，不把照片与签到事实合并。
 - 根页面常态背景加入 18 秒低振幅呼吸与细线漂移，今日页额外使用三层低透明潮面增强可感知性，最高 12 fps；仅在 scene active 且未开启 Reduce Motion 时推进，后台与 Reduce Motion 使用静态相位。该环境层不得驱动按钮持续闪烁或伪装成进度反馈。
 - 首启、今日、记录、设置与购买文案统一为短句；删除运行时“低压力、面向所有用户免费、不是为了打分作证”等解释性废话。
 - 删除旧 `CheckInRepositoryProtocol` / `SwiftDataCheckInRepository` 名称，统一为 `PulseRepositoryProtocol` / `SwiftDataPulseRepository`。
@@ -46,9 +47,9 @@
 
 验证环境：macOS 26.6、Xcode 26.6（17F113）、iPhone 17 Pro / iOS 26.5 Simulator（arm64）。
 
-- 当前 120 项单元/集成测试与 19 项 Simulator UI 测试全量通过，共 139 项、0 失败；UI 回归逐一覆盖六式 Widget 滚动、末张卡完整露出、选择后重启持久化，以及权益末项与恢复购买滚到固定购买条上方。当前改动尚未形成不可变提交，因此状态保持 **ENGINEERING CANDIDATE**，不写成最终 GO。
+- 当前 120 项单元/集成测试与 19 项 Simulator UI 测试全量通过，共 139 项、0 失败；UI 回归逐一覆盖八式 Widget 滚动、末张卡完整露出、选择后重启持久化、记录详情来源锚定删除确认，以及权益末项与恢复购买滚到固定购买条上方。当前改动尚未形成不可变提交，因此状态保持 **ENGINEERING CANDIDATE**，不写成最终 GO。
 - 媒体自动化覆盖独立删除/重新关联、同日替换、文件安装/读取/审计、缩略图损坏、无相册回退、v2 归档往返、随机性、错误口令、篡改、v1 拒绝、缺条目与缩略图身份不匹配。
-- 当前 Simulator 原始像素截图已复审六式 Widget 画廊与等宽权益项；今日页另取得 15.27 秒连续录屏，并抽检 1、5、9 秒帧确认潮面位置持续变化且不遮挡日期、承诺、签到或底栏。当前结果保持 **INTERFACE CANDIDATE**；它仍不是相机真机、真实 Home Screen Widget host、Reduce Motion 系统切换、完整视觉矩阵或人体体验 GO。
+- 当前 Simulator 原始像素截图已复审八式 Widget 中号画廊：原有六式回到既有轻柔基线，强信号使用浅色日期带与原圆角字形，七日谱为单行日期圆点。今日页另有既存 15.27 秒连续录屏证据。当前结果保持 **INTERFACE CANDIDATE**；App 内画廊不能替代真实 Home Screen 小号/中号 Widget host，当前也没有带真实媒体的三动作坞截图、Reduce Motion 系统切换、完整视觉矩阵或人体体验 GO。
 - Release `generic/platform=iOS` 无签名构建通过；Release 静态分析通过；Swift 警告按错误处理。
 - 19 项品牌生成资产检查通过，包含由同一令牌确定性产出的 AppIcon 三外观与小尺寸评审图；App、InfoPlist 与 Widget String Catalog 可解析；App/Widget plist 可解析。
 - `git diff --check` 通过；生产 Swift 源码没有 TODO/FIXME/HACK、相册回退、样例照片或演示数据路径。
