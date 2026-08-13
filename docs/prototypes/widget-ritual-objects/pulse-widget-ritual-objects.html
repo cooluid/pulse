@@ -124,10 +124,10 @@
     .seal { background: var(--surface); color: var(--ink); }
     .seal .stamp {
       position: absolute;
-      left: 2px;
+      left: 4px;
       top: 50%;
-      width: 122px;
-      height: 122px;
+      width: 110px;
+      height: 110px;
       transform: translateY(-50%);
       color: var(--field);
       z-index: 1;
@@ -136,12 +136,12 @@
     .seal .stamp::before {
       content: "";
       position: absolute;
-      inset: 10%;
+      inset: 8%;
       border-radius: 50%;
       border: 1px solid color-mix(in srgb, var(--field) 22%, transparent);
       box-shadow:
-        0 0 0 16px color-mix(in srgb, var(--field) 7%, transparent),
-        0 0 0 34px color-mix(in srgb, var(--field) 4%, transparent);
+        0 0 0 14px color-mix(in srgb, var(--field) 7%, transparent),
+        0 0 0 28px color-mix(in srgb, var(--field) 4%, transparent);
       pointer-events: none;
       z-index: 0;
     }
@@ -155,6 +155,13 @@
     }
     .seal .stamp .wash { stroke: currentColor; fill: none; opacity: .22; }
     .seal .stamp .core { fill: currentColor; opacity: .10; }
+    .seal .stamp .tick {
+      fill: none;
+      stroke: var(--grass-fg);
+      stroke-width: 7;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
     .seal .stamp .mark-label {
       position: absolute;
       inset: 0;
@@ -162,13 +169,13 @@
       place-items: center;
       z-index: 2;
       margin: 0;
-      font-size: 17px;
+      font-size: 16px;
       font-weight: 700;
       letter-spacing: -.04em;
       color: var(--action);
       pointer-events: none;
     }
-    .seal-medium .stamp .mark-label { font-size: 19px; }
+    .seal-medium .stamp .mark-label { font-size: 18px; }
     body.checked .seal .stamp .mark-label { display: none; }
     .seal .copy {
       position: static;
@@ -176,21 +183,16 @@
     }
     .seal .copy .day {
       position: absolute;
-      top: 10px;
+      top: 12px;
       right: 12px;
       z-index: 2;
       text-align: right;
-      font-size: 26px;
+      font-size: 12px;
       font-weight: 700;
-      letter-spacing: -.05em;
-      line-height: .88;
+      letter-spacing: .04em;
+      line-height: 1;
       color: var(--action);
-    }
-    .seal .copy .day .month {
-      font-size: 13px;
-      font-weight: 650;
-      letter-spacing: -.02em;
-      color: var(--secondary);
+      font-variant-numeric: tabular-nums;
     }
     .seal .copy .habit {
       position: absolute;
@@ -198,33 +200,33 @@
       bottom: 12px;
       z-index: 2;
       margin: 0;
-      font-size: 12px;
+      font-size: 13px;
       max-width: 4.8em;
       text-align: right;
       color: var(--ink);
     }
     body.checked .seal .stamp { color: var(--grass); }
     body.checked .seal .stamp .core { opacity: 1; }
-    body.checked .seal .stamp text { fill: var(--grass-fg); }
     .seal-medium .stamp {
-      left: 8px;
-      width: 136px;
-      height: 136px;
+      left: 10px;
+      width: 128px;
+      height: 128px;
     }
     .seal-medium .copy .day {
-      top: 14px;
+      top: 16px;
       right: auto;
-      left: 160px;
-      font-size: 52px;
+      left: 156px;
+      font-size: 15px;
+      font-weight: 650;
+      letter-spacing: .06em;
       text-align: left;
     }
-    .seal-medium .copy .day .month { font-size: 22px; }
     .seal-medium .copy .habit {
       right: auto;
-      left: 160px;
-      bottom: 16px;
-      font-size: 20px;
-      max-width: 8em;
+      left: 156px;
+      bottom: 18px;
+      font-size: 22px;
+      max-width: 7.5em;
       text-align: left;
     }
 
@@ -912,12 +914,12 @@
                 <circle class="wash" cx="50" cy="50" r="40" stroke-width="18"/>
                 <circle cx="50" cy="50" r="39" fill="none" stroke="currentColor" stroke-width="5.5"/>
                 <circle class="core" cx="50" cy="50" r="20"/>
-                <path d="M42 51 L48 58 L60 43" fill="none" stroke="var(--grass-fg)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+                <path class="tick" d="M34 52 L46 66 L70 36"/>
               </svg>
               <span class="mark-label">留印</span>
             </div>
             <div class="copy">
-              <div class="day">13<span class="month">/8</span></div>
+              <div class="day">08 / 13</div>
               <div class="habit">晨间书写</div>
             </div>
           </div>
@@ -995,7 +997,7 @@
         <div>
           <span class="idx">01 · SEAL</span>
           <h3>落印</h3>
-          <p>大圆环仍是这张的物件，但环本身走静场的草叶色场，不再用深绿实线。浅底、淡残影、一层洗色环带加细开口，内核几乎透明，「留印」才用深绿。完成时环闭合、内核实心、换成勾。</p>
+          <p>大圆环仍是这张的物件，但环本身走静场的草叶色场，不再用深绿实线。浅底、淡残影、一层洗色环带加细开口，内核几乎透明，「留印」才用深绿。日期是说明（08 / 13），不做 13/8，也不抢半屏数字——那留给数影。中号日号降到说明级，环继续占左。完成时环闭合、内核实心、勾压在核上。</p>
           <span class="job">任务：今天能不能留下 · 现有快照</span>
         </div>
         <div class="frames">
@@ -1010,12 +1012,12 @@
                 <circle class="wash" cx="50" cy="50" r="40" stroke-width="18"/>
                 <circle cx="50" cy="50" r="39" fill="none" stroke="currentColor" stroke-width="5.5"/>
                 <circle class="core" cx="50" cy="50" r="20"/>
-                <path d="M42 51 L48 58 L60 43" fill="none" stroke="var(--grass-fg)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+                <path class="tick" d="M34 52 L46 66 L70 36"/>
               </svg>
               <span class="mark-label">留印</span>
             </div>
             <div class="copy">
-              <div class="day">13<span class="month">/8</span></div>
+              <div class="day">08 / 13</div>
               <div class="habit">晨间书写</div>
             </div>
           </div>
@@ -1030,12 +1032,12 @@
                 <circle class="wash" cx="50" cy="50" r="40" stroke-width="18"/>
                 <circle cx="50" cy="50" r="39" fill="none" stroke="currentColor" stroke-width="5.5"/>
                 <circle class="core" cx="50" cy="50" r="20"/>
-                <path d="M42 51 L48 58 L60 43" fill="none" stroke="var(--grass-fg)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+                <path class="tick" d="M34 52 L46 66 L70 36"/>
               </svg>
               <span class="mark-label">留印</span>
             </div>
             <div class="copy">
-              <div class="day">13<span class="month">/8</span></div>
+              <div class="day">08 / 13</div>
               <div class="habit">晨间书写</div>
             </div>
           </div>
