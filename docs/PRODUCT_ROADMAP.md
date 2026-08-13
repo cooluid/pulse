@@ -84,7 +84,7 @@
 
 Plus 首发不能只是主题包。至少同时具备持续价值中的三项：长期节律、个人印期、持续回顾、私密同步、高级档案。价格只来自 StoreKit；页面和运行入口都验证同一权益；退款、撤销、过期或离线不会删除内容。
 
-已购买 `co.fanr.pulse.enhancement.lifetime` 的用户永久保留 scheduled Live Activity 和同一 entitlement 下的额外 Home Screen 构图；方向为叠印 / 数影 / 手札 / 静场 / 来路，迁入后不得再向已购用户重复收费。Plus 不得重复销售同一能力。
+已购买 `co.fanr.pulse.enhancement.lifetime` 的用户永久保留 scheduled Live Activity 和同一 entitlement 下的额外 Home Screen 构图；方向为叠印 / 数影 / 手札 / 静场 / 来路 / 潮痕，迁入后不得再向已购用户重复收费。Plus 不得重复销售同一能力。
 
 ## 7. 2.1：岁月流影
 

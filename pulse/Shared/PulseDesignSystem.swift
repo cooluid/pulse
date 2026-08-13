@@ -15,6 +15,8 @@ enum PulseDesign {
     static let separator = Color("PulseSeparator")
     static let field = Color("PulseField")
     static let shadow = Color("PulseShadow")
+    static let widgetSky = Color("PulseWidgetSky")
+    static let widgetSkyMiddle = Color("PulseWidgetSkyMiddle")
     static let tint = Color("AccentColor")
 
     static let spacing4: CGFloat = 4
@@ -116,7 +118,10 @@ enum PulseDesign {
     static let storeCapabilityIconSize: CGFloat = 36
     static let storeCapabilityMinimumHeight: CGFloat = 88
     static let storePurchaseButtonMinimumHeight: CGFloat = 56
-    static let widgetGalleryPreviewHeight: CGFloat = 184
+    static let widgetMediumAspectRatio: CGFloat = 338.0 / 158.0
+    static let widgetPreviewPairAspectRatio: CGFloat = 338.0 / (
+        (338.0 - spacing8) / (1 + widgetMediumAspectRatio)
+    )
     static let widgetGalleryCardCornerRadius: CGFloat = 28
     static let widgetPreviewCornerRadius: CGFloat = 20
     static let storeHeroCornerRadius: CGFloat = 32

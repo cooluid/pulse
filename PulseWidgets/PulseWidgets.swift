@@ -169,11 +169,13 @@ extension PulseWidgetStyle: AppEnum {
         "widget.configuration.style.title"
 
     static let caseDisplayRepresentations: [PulseWidgetStyle: DisplayRepresentation] = [
-        .breathingOrbit: "widget.configuration.style.breathing_orbit",
-        .numberSilhouette: "widget.configuration.style.number_silhouette",
-        .depthRhythm: "widget.configuration.style.depth_rhythm",
-        .quietOrder: "widget.configuration.style.quiet_order",
-        .rhythmBoard: "widget.configuration.style.rhythm_board",
+        .seal: "widget.configuration.style.seal",
+        .stack: "widget.configuration.style.stack",
+        .bleed: "widget.configuration.style.bleed",
+        .letter: "widget.configuration.style.letter",
+        .field: "widget.configuration.style.field",
+        .path: "widget.configuration.style.path",
+        .tide: "widget.configuration.style.tide",
     ]
 }
 
@@ -183,7 +185,7 @@ struct PulseWidgetConfigurationIntent: WidgetConfigurationIntent {
 
     @Parameter(
         title: "widget.configuration.style.parameter",
-        default: .breathingOrbit
+        default: .seal
     )
     var style: PulseWidgetStyle
 }
@@ -553,12 +555,16 @@ private struct PulseLocalizedWidgetView: View {
 
         if snapshot.isCheckedToday {
             content
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .accessibilityElement(children: .ignore)
                 .accessibilityLabel("widget.accessibility.checked")
         } else {
             Button(intent: PulseCheckInIntent()) {
-                content.invalidatableContent()
+                content
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .invalidatableContent()
             }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
             .buttonStyle(.plain)
             .contentShape(Rectangle())
             .accessibilityElement(children: .ignore)

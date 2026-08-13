@@ -91,8 +91,33 @@ struct WidgetStyleGalleryView: View {
         isLocked: Bool
     ) -> some View {
         VStack(alignment: .leading, spacing: PulseDesign.spacing12) {
-            PulseWidgetStylePreview(style: style, snapshot: snapshot)
-                .frame(height: PulseDesign.widgetGalleryPreviewHeight)
+            GeometryReader { proxy in
+                let gap = PulseDesign.spacing8
+                let previewHeight = max(
+                    1,
+                    (proxy.size.width - gap) / (1 + PulseDesign.widgetMediumAspectRatio)
+                )
+
+                HStack(spacing: gap) {
+                    PulseWidgetStylePreview(
+                        style: style,
+                        snapshot: snapshot,
+                        usesMediumMetrics: false
+                    )
+                    .frame(width: previewHeight, height: previewHeight)
+
+                    PulseWidgetStylePreview(
+                        style: style,
+                        snapshot: snapshot,
+                        usesMediumMetrics: true
+                    )
+                    .frame(
+                        width: previewHeight * PulseDesign.widgetMediumAspectRatio,
+                        height: previewHeight
+                    )
+                }
+            }
+            .aspectRatio(PulseDesign.widgetPreviewPairAspectRatio, contentMode: .fit)
 
             HStack(alignment: .firstTextBaseline) {
                 Text(style.localizedName(locale: locale))
@@ -173,6 +198,17 @@ struct WidgetStyleGalleryView: View {
 struct PulseWidgetStylePreview: View {
     let style: PulseWidgetStyle
     let snapshot: PulseWidgetSnapshot
+    let usesMediumMetrics: Bool
+
+    init(
+        style: PulseWidgetStyle,
+        snapshot: PulseWidgetSnapshot,
+        usesMediumMetrics: Bool = true
+    ) {
+        self.style = style
+        self.snapshot = snapshot
+        self.usesMediumMetrics = usesMediumMetrics
+    }
 
     @Environment(\.locale) private var locale
 
@@ -180,7 +216,7 @@ struct PulseWidgetStylePreview: View {
         PulseWidgetHomeRenderer(
             snapshot: snapshot,
             style: style,
-            usesMediumMetrics: true,
+            usesMediumMetrics: usesMediumMetrics,
             usesFullColorPalette: true,
             statusText: PulseLocalization.string(
                 snapshot.isCheckedToday

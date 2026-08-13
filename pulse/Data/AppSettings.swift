@@ -53,44 +53,58 @@ extension PulseInterfaceLanguage {
 extension PulseWidgetStyle {
     func localizedName(locale: Locale) -> String {
         switch self {
-        case .breathingOrbit:
-            PulseLocalization.string("settings.widget.style.breathing_orbit", locale: locale)
-        case .numberSilhouette:
-            PulseLocalization.string("settings.widget.style.number_silhouette", locale: locale)
-        case .depthRhythm:
-            PulseLocalization.string("settings.widget.style.depth_rhythm", locale: locale)
-        case .quietOrder:
-            PulseLocalization.string("settings.widget.style.quiet_order", locale: locale)
-        case .rhythmBoard:
-            PulseLocalization.string("settings.widget.style.rhythm_board", locale: locale)
+        case .seal:
+            PulseLocalization.string("settings.widget.style.seal", locale: locale)
+        case .stack:
+            PulseLocalization.string("settings.widget.style.stack", locale: locale)
+        case .bleed:
+            PulseLocalization.string("settings.widget.style.bleed", locale: locale)
+        case .letter:
+            PulseLocalization.string("settings.widget.style.letter", locale: locale)
+        case .field:
+            PulseLocalization.string("settings.widget.style.field", locale: locale)
+        case .path:
+            PulseLocalization.string("settings.widget.style.path", locale: locale)
+        case .tide:
+            PulseLocalization.string("settings.widget.style.tide", locale: locale)
         }
     }
 
     func localizedDescription(locale: Locale) -> String {
         switch self {
-        case .breathingOrbit:
+        case .seal:
             PulseLocalization.string(
-                "settings.widget.style.breathing_orbit.detail",
+                "settings.widget.style.seal.detail",
                 locale: locale
             )
-        case .numberSilhouette:
+        case .stack:
             PulseLocalization.string(
-                "settings.widget.style.number_silhouette.detail",
+                "settings.widget.style.stack.detail",
                 locale: locale
             )
-        case .depthRhythm:
+        case .bleed:
             PulseLocalization.string(
-                "settings.widget.style.depth_rhythm.detail",
+                "settings.widget.style.bleed.detail",
                 locale: locale
             )
-        case .quietOrder:
+        case .letter:
             PulseLocalization.string(
-                "settings.widget.style.quiet_order.detail",
+                "settings.widget.style.letter.detail",
                 locale: locale
             )
-        case .rhythmBoard:
+        case .field:
             PulseLocalization.string(
-                "settings.widget.style.rhythm_board.detail",
+                "settings.widget.style.field.detail",
+                locale: locale
+            )
+        case .path:
+            PulseLocalization.string(
+                "settings.widget.style.path.detail",
+                locale: locale
+            )
+        case .tide:
+            PulseLocalization.string(
+                "settings.widget.style.tide.detail",
                 locale: locale
             )
         }

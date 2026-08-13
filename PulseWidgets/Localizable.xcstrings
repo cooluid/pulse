@@ -295,44 +295,44 @@
         }
       }
     },
-    "widget.configuration.style.breathing_orbit" : {
+    "widget.configuration.style.seal" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Breathing Orbit"
+            "value" : "Seal"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "呼吸环"
+            "value" : "落印"
           }
         }
       }
     },
-    "widget.configuration.style.depth_rhythm" : {
+    "widget.configuration.style.stack" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Depth Rhythm"
+            "value" : "Stacked Imprints"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "深景"
+            "value" : "叠印"
           }
         }
       }
     },
-    "widget.configuration.style.number_silhouette" : {
+    "widget.configuration.style.bleed" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Number Silhouette"
+            "value" : "Day Silhouette"
           }
         },
         "zh-Hans" : {
@@ -359,34 +359,66 @@
         }
       }
     },
-    "widget.configuration.style.quiet_order" : {
+    "widget.configuration.style.letter" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Quiet Order"
+            "value" : "Letter"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "静序"
+            "value" : "手札"
           }
         }
       }
     },
-    "widget.configuration.style.rhythm_board" : {
+    "widget.configuration.style.field" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Seven-Day Score"
+            "value" : "Quiet Field"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "七日谱"
+            "value" : "静场"
+          }
+        }
+      }
+    },
+    "widget.configuration.style.path" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Path"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "来路"
+          }
+        }
+      }
+    },
+    "widget.configuration.style.tide" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tide Mark"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "潮痕"
           }
         }
       }
@@ -477,13 +509,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Unlock this composition in Pulse, or choose Breathing Orbit when editing the widget."
+            "value" : "Unlock this composition in Pulse, or choose Seal when editing the widget."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "请在一日一印中解锁，或编辑小组件改用呼吸环。"
+            "value" : "请在一日一印中解锁，或编辑小组件改用落印。"
           }
         }
       }

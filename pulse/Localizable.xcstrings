@@ -738,13 +738,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "This widget composition is included with Advanced Benefits. Breathing Orbit and basic reminders stay available without a purchase."
+            "value" : "This widget composition is included with Advanced Benefits. Seal and basic reminders stay available without a purchase."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "这个小组件构图属于高阶权益；呼吸环和基础提醒无需购买。"
+            "value" : "这个小组件构图属于高阶权益；落印和基础提醒无需购买。"
           }
         }
       }
@@ -2277,81 +2277,81 @@
         }
       }
     },
-    "settings.widget.style.breathing_orbit" : {
+    "settings.widget.style.seal" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Breathing Orbit"
+            "value" : "Seal"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "呼吸环"
+            "value" : "落印"
           }
         }
       }
     },
-    "settings.widget.style.breathing_orbit.detail" : {
+    "settings.widget.style.seal.detail" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Fine contours give today a quiet breath."
+            "value" : "A large open seal makes today's action the object."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "细线环绕，让今天轻轻呼吸。"
+            "value" : "大开口日环就是今天要留下的那枚印。"
           }
         }
       }
     },
-    "settings.widget.style.depth_rhythm" : {
+    "settings.widget.style.stack" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Depth Rhythm"
+            "value" : "Stacked Imprints"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "深景"
+            "value" : "叠印"
           }
         }
       }
     },
-    "settings.widget.style.depth_rhythm.detail" : {
+    "settings.widget.style.stack.detail" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Six receding days flow toward today's single imprint."
+            "value" : "Up to three kept days settle beneath today's imprint."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "六个过往节点由远及近，流向今天唯一的印记。"
+            "value" : "最多三层已留下的日子沉在今天这一印之下。"
           }
         }
       }
     },
-    "settings.widget.style.number_silhouette" : {
+    "settings.widget.style.bleed" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Number Silhouette"
+            "value" : "Day Silhouette"
           }
         },
         "zh-Hans" : {
@@ -2362,87 +2362,155 @@
         }
       }
     },
-    "settings.widget.style.number_silhouette.detail" : {
+    "settings.widget.style.bleed.detail" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "A restrained half-panel day number turns time into atmosphere."
+            "value" : "Today's day number becomes the single oversized silhouette."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "克制的半屏日号把时间变成氛围，而不是另一条信息。"
+            "value" : "今日日号成为画面里唯一的巨大剪影。"
           }
         }
       }
     },
-    "settings.widget.style.quiet_order" : {
+    "settings.widget.style.letter" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Quiet Order"
+            "value" : "Letter"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "静序"
+            "value" : "手札"
           }
         }
       }
     },
-    "settings.widget.style.quiet_order.detail" : {
+    "settings.widget.style.letter.detail" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Status, commitment, and imprint form a deliberately quiet hierarchy."
+            "value" : "A private note carries today's wax seal and seven postmarks."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "状态、承诺与印记形成刻意克制的单一层级。"
+            "value" : "一封私密短笺，带着今天的蜡封和七枚邮戳。"
           }
         }
       }
     },
-    "settings.widget.style.rhythm_board" : {
+    "settings.widget.style.field" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Seven-Day Score"
+            "value" : "Quiet Field"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "七日谱"
+            "value" : "静场"
           }
         }
       }
     },
-    "settings.widget.style.rhythm_board.detail" : {
+    "settings.widget.style.field.detail" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Seven dated marks make the week's real rhythm directly readable."
+            "value" : "A poster-like field lets the commitment hold the screen quietly."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "七个带日期的真实节点，让一周节律可以直接阅读。"
+            "value" : "海报般的静场，让主承诺安静地占住屏幕。"
+          }
+        }
+      }
+    },
+    "settings.widget.style.path" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Path"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "来路"
+          }
+        }
+      }
+    },
+    "settings.widget.style.path.detail" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Six impressions grow nearer and arrive at today's open seal."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "过去六枚印由远及近，走到今天的开放日环。"
+          }
+        }
+      }
+    },
+    "settings.widget.style.tide" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tide Mark"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "潮痕"
+          }
+        }
+      }
+    },
+    "settings.widget.style.tide.detail" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sky, shoreline, and one fish let today's tide meet the open seal."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "天际、潮唇与一尾水下鱼，让今天的潮线贴近开放日环。"
           }
         }
       }
@@ -2618,13 +2686,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Unlock Morning Dew, Diagonal Light, Tidal Fill, Corner Tint, Quiet Order, Signal Poster, and Rhythm Board compositions."
+            "value" : "Unlock Stacked Imprints, Day Silhouette, Letter, Quiet Field, Path, and Tide Mark compositions."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "解锁晨露、斜光、潮汐、隅色、静序、强信号与七日谱构图。"
+            "value" : "解锁叠印、数影、手札、静场、来路与潮痕构图。"
           }
         }
       }
@@ -3320,13 +3388,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Five distinct ways to see today"
+            "value" : "Seven distinct ways to see today"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "五种真正不同的今日视角"
+            "value" : "七种真正不同的今日视角"
           }
         }
       }

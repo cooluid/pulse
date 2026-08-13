@@ -1,12 +1,12 @@
 # Widget 仪式物件
 
-这是 Home Screen Widget 的 **方向真源**：落印、叠印、数影、手札、静场、来路。
+这是 Home Screen Widget 的 **正式方向清单真源**：落印、叠印、数影、手札、静场、来路、潮痕。
 
-构图、剪影、待办/完成语言以本目录 HTML 为准。[`design/BRAND_SPEC.md`](../../../design/BRAND_SPEC.md) §5A 与仪式/产品合同跟本页。旧五式（呼吸环、深景、静序、七日谱）不再作为视觉依据。
+前六式的构图、剪影、待办/完成语言以本目录 HTML 为准；潮痕以 [`01-tide-mark/pulse-widget-tide-mark.html`](../widget-style-experiments/01-tide-mark/pulse-widget-tide-mark.html) 为像素构图真源。[`design/BRAND_SPEC.md`](../../../design/BRAND_SPEC.md) §5A 与仪式/产品合同跟本清单。旧五式（呼吸环、深景、静序、七日谱）不再作为视觉依据。
 
 若把落印改为收费，免费默认另见探索页 [widget-awaiting-place · 待落之处](../widget-awaiting-place/)；该页尚未写入正式权益合同。新风格逐个实验见 [widget-style-experiments](../widget-style-experiments/)。
 
-`PulseWidgetHomeRenderer` 仍在画旧五式，这是实现滞后。迁生产时以本页六式替换，不得把旧骨架改名换肤。本页不是商店图，也不是 `INTERFACE GO`。
+`PulseWidgetHomeRenderer` 已按本清单七式迁入正式共享渲染源；原型仍是方向与像素比对真源，不是商店图，也不是 `INTERFACE GO`。
 
 ## 打开
 
@@ -23,4 +23,4 @@ python3 -m http.server 8766
 
 - 不要覆盖 `design/brand-tokens.json` 或未迁移的 SwiftUI 渲染器。
 - 不要当商店图、画廊截图或 INTERFACE GO 证据。
-- 不要把照片、备注、连续天数或 4/7 分数加进这六式。
+- 不要把照片、备注、连续天数或 4/7 分数加进这七式。

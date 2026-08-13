@@ -1,8 +1,7 @@
 <!doctype html>
 <!--
-  Home Screen Widget direction source.
-  Canonical styles: 落印 / 叠印 / 数影 / 手札 / 静场 / 来路.
-  See README.md in this folder.
+  Home Screen Widget core-six pixel source.
+  The formal seven-style manifest is README.md; 潮痕 keeps its pixel source in 01-tide-mark.
 -->
 <html lang="zh-CN">
 <head>
@@ -982,7 +981,7 @@
         <ul>
           <li>开放日环是印，不是进度环。缺口永远在，绝不画成百分比。</li>
           <li>完成靠形状闭合 + 勾，不只换色。</li>
-          <li>现有七日快照就够这六式；月历比分和连续天数不要做成主角。</li>
+          <li>现有七日快照就够本页六式；月历比分和连续天数不要做成主角。</li>
           <li>静场的残影必须从右下角印的圆心扩开，字在场上，印在原点。不能把脉冲场挪成角落装饰。</li>
         </ul>
       </div>
@@ -1357,7 +1356,7 @@
       <h2>这轮明确不走的路</h2>
       <p>4/7 分数、柱状「日强度」、GitHub 月点阵、连续 N 日奖杯、CSS 进度环、左右色块分栏、用七日同心圆去顶「年轮」这个名字。它们能让信息变多，但会把一日一印变成打卡看板。年轮留给一年一圈的长期物件；七天是叠印，不是木头。月度密度和连续天数若以后要做，也必须先是物件（草甸、一条未折断的线），而不是比分。</p>
     </aside>
-    <p class="footnote">本页是 Home Screen 构图方向真源：落印、叠印、数影、手札、静场、来路。正式实现仍消费同一份 `PulseWidgetSnapshot`，使用系统字体与品牌语义色。照片、备注、最长纪录不进入 Widget。中号按 338×158 构图，禁止把正方形海报拉宽。不能把静场和手札做成同一骨架的两种字号。`PulseWidgetHomeRenderer` 尚未迁入这六式，那是实现滞后，不能反过来改这页。</p>
+    <p class="footnote">本页是六种核心 Home Screen 构图的像素真源：落印、叠印、数影、手札、静场、来路；正式第七式潮痕见同级实验序列中的 01-tide-mark，完整清单以本目录 README 为准。`PulseWidgetHomeRenderer` 消费同一份 `PulseWidgetSnapshot`，使用系统字体与品牌语义色。照片、备注、最长纪录不进入 Widget。中号按 338×158 构图，禁止把正方形海报拉宽。不能把静场和手札做成同一骨架的两种字号。</p>
   </main>
   <script>
     const stateButtons = [...document.querySelectorAll('.state-control')];

@@ -15,6 +15,11 @@ public enum PulseLocalizedDateFormatting {
             .string(from: day.date(timeZone: .gmt))
     }
 
+    public static func monthDayAndWeekday(_ day: LogicalDay, locale: Locale) -> String {
+        formatter(locale: locale, template: "MMddEEEE")
+            .string(from: day.date(timeZone: .gmt))
+    }
+
     public static func accessibilityDate(_ day: LogicalDay, locale: Locale) -> String {
         let formatter = DateFormatter()
         formatter.locale = locale

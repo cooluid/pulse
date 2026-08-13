@@ -70,37 +70,51 @@ final class ReminderDeliveryPolicyTests: XCTestCase {
 }
 
 final class PulseWidgetStyleAccessPolicyTests: XCTestCase {
-    func testBreathingOrbitIsTheOnlyIncludedStyle() {
-        XCTAssertEqual(PulseWidgetStyleAccessPolicy.freeStyle, .breathingOrbit)
-        XCTAssertFalse(PulseWidgetStyleAccessPolicy.requiresEnhancement(.breathingOrbit))
+    func testSealIsTheOnlyIncludedStyle() {
+        XCTAssertEqual(PulseWidgetStyleAccessPolicy.freeStyle, .seal)
+        XCTAssertFalse(PulseWidgetStyleAccessPolicy.requiresEnhancement(.seal))
         XCTAssertEqual(
             PulseWidgetStyle.allCases.filter {
                 PulseWidgetStyleAccessPolicy.requiresEnhancement($0)
             }.count,
-            4
+            6
         )
     }
 
     func testUnavailablePremiumStyleIsRejectedInsteadOfSilentlySubstituted() {
         XCTAssertFalse(
             PulseWidgetStyleAccessPolicy.isAvailable(
-                .depthRhythm,
+                .stack,
                 hasEnhancementEntitlement: false
             )
         )
     }
 
-    func testOfficialStyleContractContainsOnlyTheFiveCurrentCompositions() {
+    func testOfficialStyleContractContainsOnlyTheSevenRitualObjects() {
         XCTAssertEqual(
             PulseWidgetStyle.allCases.map(\.rawValue),
             [
-                "breathingOrbit",
-                "numberSilhouette",
-                "depthRhythm",
-                "quietOrder",
-                "rhythmBoard",
+                "seal",
+                "stack",
+                "bleed",
+                "letter",
+                "field",
+                "path",
+                "tide",
             ]
         )
+    }
+
+    func testRetiredStyleIdentifiersFailClosed() {
+        for rawValue in [
+            "breathingOrbit",
+            "numberSilhouette",
+            "depthRhythm",
+            "quietOrder",
+            "rhythmBoard"
+        ] {
+            XCTAssertNil(PulseWidgetStyle(rawValue: rawValue))
+        }
     }
 
     func testEntitlementMakesEveryOfficialStyleAvailable() {

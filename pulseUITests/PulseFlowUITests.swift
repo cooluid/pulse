@@ -245,9 +245,9 @@ final class PulseFlowUITests: XCTestCase {
         galleryLink.tap()
 
         let includedOption = app.descendants(matching: .any)[
-            "widget.gallery.style.breathingOrbit"
+            "widget.gallery.style.seal"
         ]
-        let premiumOption = app.buttons["widget.gallery.style.numberSilhouette"]
+        let premiumOption = app.buttons["widget.gallery.style.stack"]
         XCTAssertTrue(includedOption.waitForExistence(timeout: 3))
         XCTAssertTrue(premiumOption.waitForExistence(timeout: 3))
         XCTAssertTrue(includedOption.label.contains("已包含"))
@@ -461,14 +461,57 @@ final class PulseFlowUITests: XCTestCase {
         XCTAssertTrue(galleryLink.waitForExistence(timeout: 3))
         galleryLink.tap()
 
-        let window = app.windows.firstMatch
         let styleIdentifiers = [
-            "breathingOrbit",
-            "numberSilhouette",
-            "depthRhythm",
-            "quietOrder",
-            "rhythmBoard",
+            "seal",
+            "stack",
+            "bleed",
+            "letter",
+            "field",
+            "path",
+            "tide",
         ]
+        reviewWidgetCompositions(styleIdentifiers, state: "pending")
+
+        app.buttons["navigation.back"].tap()
+        let galleryLinkAfterPendingReview = app.descendants(matching: .any)[
+            "settings.widget.gallery.link"
+        ]
+        XCTAssertTrue(galleryLinkAfterPendingReview.waitForExistence(timeout: 3))
+
+        app.buttons["navigation.back"].tap()
+        let checkInButton = app.buttons["today.checkin.button"]
+        XCTAssertTrue(checkInButton.waitForExistence(timeout: 3))
+        checkInButton.tap()
+        XCTAssertFalse(checkInButton.isEnabled)
+
+        let settingsButtonAfterCheckIn = app.buttons["settings.navigation.open.today"]
+        XCTAssertTrue(settingsButtonAfterCheckIn.waitForExistence(timeout: 3))
+        settingsButtonAfterCheckIn.tap()
+
+        let galleryLinkAfterCheckIn = app.descendants(matching: .any)[
+            "settings.widget.gallery.link"
+        ]
+        for _ in 0..<4 where !galleryLinkAfterCheckIn.exists {
+            app.swipeUp()
+        }
+        XCTAssertTrue(galleryLinkAfterCheckIn.waitForExistence(timeout: 3))
+        galleryLinkAfterCheckIn.tap()
+
+        reviewWidgetCompositions(styleIdentifiers, state: "completed")
+
+        app.buttons["navigation.back"].tap()
+        let galleryLinkAfterReview = app.descendants(matching: .any)[
+            "settings.widget.gallery.link"
+        ]
+        XCTAssertTrue(galleryLinkAfterReview.waitForExistence(timeout: 3))
+        XCTAssertTrue(galleryLinkAfterReview.label.contains("逐个设置"))
+    }
+
+    private func reviewWidgetCompositions(
+        _ styleIdentifiers: [String],
+        state: String
+    ) {
+        let window = app.windows.firstMatch
         for (index, identifier) in styleIdentifiers.enumerated() {
             let option = app.descendants(matching: .any)[
                 "widget.gallery.style.\(identifier)"
@@ -480,20 +523,11 @@ final class PulseFlowUITests: XCTestCase {
             XCTAssertTrue(option.waitForExistence(timeout: 3))
             XCTAssertLessThanOrEqual(option.frame.maxY, window.frame.maxY - 20)
 
-            if index == 1 || index == 3 || index == 4 {
-                let attachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
-                attachment.name = "Widget compositions review \(index)"
-                attachment.lifetime = .keepAlways
-                add(attachment)
-            }
+            let attachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
+            attachment.name = "Widget compositions \(state) \(index)"
+            attachment.lifetime = .keepAlways
+            add(attachment)
         }
-
-        app.buttons["navigation.back"].tap()
-        let galleryLinkAfterReview = app.descendants(matching: .any)[
-            "settings.widget.gallery.link"
-        ]
-        XCTAssertTrue(galleryLinkAfterReview.waitForExistence(timeout: 3))
-        XCTAssertTrue(galleryLinkAfterReview.label.contains("逐个设置"))
     }
 
     func testRecordDetailUsesSheetDismissalAndSourceAnchoredDeleteConfirmation() throws {

@@ -1,6 +1,6 @@
 # Pulse 1.1 实现与验收状态
 
-更新时间：2026-08-13
+更新时间：2026-08-14
 
 当前 checkout 结论：**1.1 (4) ENGINEERING CANDIDATE / INTERFACE CANDIDATE / DISTRIBUTION NO-GO**。
 
@@ -33,7 +33,7 @@
 - 品牌按产品确认从“断层海报 + 贴边双页签”干净切换为“草野脉冲 + 状态式悬浮底栏”；颜色仍只由 `design/brand-tokens.json` 生成，不保留断层海报运行时分支。底栏两个入口稳定等宽，根内容按实测底栏高度清空滚动末端。
 - 今日深草行动印支持单击签到与 0.45 秒长按“签到并拍照”；长按先完成权威签到提交，再请求相机，且 VoiceOver 提供独立动作。待签到进入时只有一次有限呼吸，权威提交后才播放收缩、落印和低强调回波，Reduce Motion 使用静态形状替换。
 - 高阶权益从设置内嵌分组迁到独立权益页；商品价格只读 StoreKit，当前已交付权益只读 `PulseEnhancementContract.currentCapabilities`。权益页使用轻量身份区、横向构图预览、等宽满行权益卡和紧凑购买条，末项权益与恢复购买必须能完整滚到购买条上方。
-- Home Screen Widget 构图方向真源已改为六式仪式物件：落印、叠印、数影、手札、静场、来路，见 [docs/prototypes/widget-ritual-objects/](./prototypes/widget-ritual-objects/)。App 画廊与 Extension 仍消费同一 `PulseWidgetHomeRenderer` 的旧五式（呼吸环、数影、深景、静序、七日谱），这是实现滞后，不是视觉真源；迁六式前不得用旧画廊否决实验室稿。旧八式、独立近似预览、硬编码假日期和重复七日摘要已删除。
+- Home Screen Widget 构图方向真源与正式共享渲染源已统一为七式仪式物件：落印、叠印、数影、手札、静场、来路、潮痕，见 [docs/prototypes/widget-ritual-objects/](./prototypes/widget-ritual-objects/) 的正式清单；潮痕像素构图真源为 [01-tide-mark](./prototypes/widget-style-experiments/01-tide-mark/pulse-widget-tide-mark.html)。App 画廊与 Extension 消费同一 `PulseWidgetHomeRenderer`；旧五式枚举、旧骨架、独立近似预览、硬编码假日期和重复七日摘要已删除。画廊现在同时投影小号与中号，不再用单一中号预览掩盖小号错误。用户提供的真实主屏截图证明此前叠印版本存在画布左上漂移与日期裁切，已否决此前视觉结论；当前代码通过固定画布左上原点、独立定位小号日号并把 AppIntent 按钮标签钉死到完整系统分配区域形成修复候选，仍需新真机主屏截图复验。
 - Home Screen Widget 已改为 `AppIntentConfiguration`，构图由系统逐实例持有；Lock Screen“节律汇印”拆为无构图参数的独立 Widget kind。App Group 全局 `widget.style` 及 App 内伪“已选择”路径已删除。未签到 Home Screen 整块是唯一签到按钮；Extension 在 timeline 边界独立验证权益，未授权收费构图明确报未解锁，不静默替换。
 - 记录详情在标准 Dynamic Type 下把“导出原图 / 删除照片 / 删除签到记录”合并为一个横向三分动作坞；Accessibility Dynamic Type 下改为导出跨首行、两个删除动作并列次行。三个动作仍是独立事务、独立确认和独立辅助功能入口，不把照片与签到事实合并。
 - 根页面常态背景加入 18 秒低振幅呼吸与细线漂移，今日页额外使用三层低透明潮面增强可感知性，最高 12 fps；仅在 scene active 且未开启 Reduce Motion 时推进，后台与 Reduce Motion 使用静态相位。该环境层不得驱动按钮持续闪烁或伪装成进度反馈。
@@ -46,13 +46,13 @@
 
 ## 当前自动化与构建证据
 
-验证环境：macOS 26.6、Xcode 26.4（17E192）、iPhone 17 Pro / iOS 26.4 Simulator（arm64）。
+验证环境：macOS 26.6、Xcode 26.6（17F113）、iPhone 17 Pro / iOS 26.5 Simulator（arm64）。
 
-- 当前生产渲染器仍是旧五式：Simulator build 通过；116 项单元测试与 19 项完整 UI 回归全部通过。旧“八式选择后重启持久化”结论已失效并从门禁删除，不沿用旧计数冒充当前证据。Widget 旧五式工程重构达到 **ENGINEERING GO**；六式物件尚未迁入 `PulseWidgetHomeRenderer`，视觉方向以实验室为准。整个 1.1 仍受媒体真机、系统表面与分发门禁约束，保持 **ENGINEERING CANDIDATE**。
+- 当前生产渲染器已 clean-break 为七式仪式物件；Debug Simulator 的 App 与 Widget Extension 构建通过，117 项单元/集成测试全部通过。七式逐项可达的定向 UI 测试通过，并保留待办/完成两态共十四张当前原始像素截图；本轮未重跑全部 UI 套件，不沿用旧计数冒充当前证据。整个 1.1 仍受媒体真机、系统表面与分发门禁约束，保持 **ENGINEERING CANDIDATE**。
 - 媒体自动化覆盖独立删除/重新关联、同日替换、文件安装/读取/审计、缩略图损坏、无相册回退、v2 归档往返、随机性、错误口令、篡改、v1 拒绝、缺条目与缩略图身份不匹配。
-- 本轮已重新取得旧五式 App 画廊原始像素截图，并以共用正式渲染器逐张复审。结果仍仅是 **INTERFACE CANDIDATE**，且不能代表六式方向。App 内画廊不能替代真实 Home Screen 小号/中号 Widget host，也不能证明逐实例系统配置、独立 Lock Screen kind、accented/vibrant/Clear、Reduce Motion 或人体体验 GO。
-- Release `generic/platform=iOS` 无签名构建通过；Release 静态分析通过；Swift 警告按错误处理。
-- 19 项品牌生成资产检查通过，包含由同一令牌确定性产出的 AppIcon 三外观与小尺寸评审图；App、InfoPlist 与 Widget String Catalog 可解析；App/Widget plist 可解析。
+- 本轮已取得七式 App 画廊待办/完成两态共十四张当前原始像素截图，并以共用正式渲染器逐张复审；叠印小号的月份、承诺与两位日号完整回到原型坐标，潮痕小号/中号均出现天际、地平线、潮唇、一尾鱼与无日号日环。结果仍仅是 **INTERFACE CANDIDATE**。App 内画廊不能替代真实 Home Screen 小号/中号 Widget host，也不能证明逐实例系统配置、独立 Lock Screen kind、accented/vibrant/Clear、Reduce Motion 或人体体验 GO。
+- Release `generic/platform=iOS Simulator` 构建通过；Debug 静态分析通过；Swift 警告按错误处理。
+- 21 项品牌生成资产检查通过，包含由同一令牌确定性产出的 AppIcon 三外观、小尺寸评审图与潮痕天空语义色；App、InfoPlist 与 Widget String Catalog 可解析；App/Widget plist 可解析。
 - `git diff --check` 通过；生产 Swift 源码没有 TODO/FIXME/HACK、相册回退、样例照片或演示数据路径。
 
 ## 仍为 NO-GO 的证据
@@ -60,7 +60,7 @@
 - 真实 iPhone：首次授权、拒绝后从设置恢复、前后镜头、方向、取消、重拍、低存储、写入中断、杀进程、重启、跨日与设备锁定。
 - 真实 iPad：相机能力差异、横竖屏、分屏、大字号和文件导入/导出。
 - 数据恢复：从真实设备导出带多张原图的 v2 归档，在另一清洁安装恢复并逐张核对；清除与卸载后确认无非预期残留。
-- 系统与无障碍：真人 VoiceOver、最大 Dynamic Type、Reduce Motion、提高对比度、通知、Widget host、iOS 26 Live Activity / Dynamic Island 和 StoreKit Sandbox/TestFlight。
+- 系统与无障碍：真人 VoiceOver、最大 Dynamic Type、Reduce Motion、提高对比度、通知、Widget host、iOS 26 Live Activity / Dynamic Island 和 StoreKit Sandbox/TestFlight。用户的旧版真实主屏截图已证明叠印错位；当前修复候选尚无同设备、同尺寸的新截图，因此不得把 Simulator 画廊复审写成主屏修复 GO。
 - 分发：当前源码的不可变提交、Apple Distribution Archive、签名/entitlement/dSYM/隐私清单核验、TestFlight 处理与清洁安装、App Store 商品/隐私答案/截图/文案和公开支持/隐私站点一致性。
 
 ## 历史证据边界
