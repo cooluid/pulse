@@ -410,12 +410,49 @@
     .bleed .status {
       position: absolute;
       left: 12px;
-      bottom: 10px;
+      bottom: 12px;
       z-index: 1;
       font-size: 10px;
       font-weight: 560;
       color: var(--secondary);
+      max-width: 6.5em;
     }
+    /* Today’s seal is the action cue; the whole card is still one hit target */
+    .bleed .today-hit {
+      position: absolute;
+      right: 10px;
+      bottom: 10px;
+      width: 40px;
+      height: 40px;
+      z-index: 2;
+      color: var(--field);
+    }
+    .bleed .today-hit svg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      overflow: visible;
+    }
+    .bleed .today-hit svg.only-checked { display: none; }
+    body.checked .bleed .today-hit svg.only-pending { display: none; }
+    body.checked .bleed .today-hit svg.only-checked { display: block; }
+    .bleed .today-hit .core { fill: currentColor; opacity: .10; }
+    .bleed .today-hit .mark-label {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      margin: 0;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: -.04em;
+      color: var(--action);
+      pointer-events: none;
+    }
+    body.checked .bleed .today-hit .mark-label { display: none; }
+    body.checked .bleed .today-hit { color: var(--grass); }
+    body.checked .bleed .today-hit .core { opacity: 1; }
     .bleed-medium .ghost {
       left: 12px;
       top: 18px;
@@ -429,6 +466,13 @@
       max-width: 5.4em;
     }
     .bleed-medium .status { left: 16px; bottom: 14px; font-size: 11px; }
+    .bleed-medium .today-hit {
+      right: 14px;
+      bottom: 12px;
+      width: 48px;
+      height: 48px;
+    }
+    .bleed-medium .today-hit .mark-label { font-size: 10px; }
 
     /* 04 Letter — one sheet of stationery; ink and wax on the same paper */
     .letter {
@@ -543,10 +587,8 @@
       display: flex;
       flex-direction: column;
       align-items: stretch;
-      gap: 6px;
       margin-top: auto;
     }
-    .letter .foot .meta { font-size: 10px; }
     .letter .postmarks {
       display: block;
       width: 100%;
@@ -1052,7 +1094,7 @@
         <div>
           <span class="idx">03 · BLEED</span>
           <h3>数影</h3>
-          <p>日号用粗体半透明剪影。小号潮面只铺下沿；中号潮面仍横贯画面，宽画布上才看得清。月份贴上沿，承诺在右上。</p>
+          <p>日号用粗体半透明剪影。小号潮面只铺下沿；中号潮面仍横贯画面，宽画布上才看得清。月份贴上沿，承诺在右上。右下角放一枚小开口日环作「今天」示意——整张卡才是命中面，印不是第二块按钮。完成时环闭合打勾，日号仍是主角。</p>
           <span class="job">任务：今天是哪一天 · 现有快照</span>
         </div>
         <div class="frames">
@@ -1068,6 +1110,18 @@
             <div class="month">八月</div>
             <div class="habit">晨间<br>书写</div>
             <div class="status state"></div>
+            <div class="today-hit" aria-hidden="true">
+              <svg class="only-pending" viewBox="0 0 100 100">
+                <circle cx="50" cy="50" r="39" fill="none" stroke="currentColor" stroke-width="5.5" stroke-linecap="round" pathLength="100" stroke-dasharray="86.7 13.3" transform="rotate(-18 50 50)"/>
+                <circle class="core" cx="50" cy="50" r="20"/>
+              </svg>
+              <svg class="only-checked" viewBox="0 0 100 100">
+                <circle cx="50" cy="50" r="39" fill="none" stroke="currentColor" stroke-width="5.5"/>
+                <circle class="core" cx="50" cy="50" r="20"/>
+                <path d="M42 51 L48 58 L60 43" fill="none" stroke="var(--grass-fg)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              <span class="mark-label">留印</span>
+            </div>
           </div>
           <div class="widget medium bleed bleed-medium">
             <svg class="tide" viewBox="0 0 160 160" preserveAspectRatio="none" aria-hidden="true">
@@ -1081,6 +1135,18 @@
             <div class="month">八月</div>
             <div class="habit">晨间<br>书写</div>
             <div class="status state"></div>
+            <div class="today-hit" aria-hidden="true">
+              <svg class="only-pending" viewBox="0 0 100 100">
+                <circle cx="50" cy="50" r="39" fill="none" stroke="currentColor" stroke-width="5.5" stroke-linecap="round" pathLength="100" stroke-dasharray="86.7 13.3" transform="rotate(-18 50 50)"/>
+                <circle class="core" cx="50" cy="50" r="20"/>
+              </svg>
+              <svg class="only-checked" viewBox="0 0 100 100">
+                <circle cx="50" cy="50" r="39" fill="none" stroke="currentColor" stroke-width="5.5"/>
+                <circle class="core" cx="50" cy="50" r="20"/>
+                <path d="M42 51 L48 58 L60 43" fill="none" stroke="var(--grass-fg)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              <span class="mark-label">留印</span>
+            </div>
           </div>
         </div>
       </article>
@@ -1122,7 +1188,6 @@
                   <g class="mark kept" transform="translate(104 23)"><circle r="5"/><text y="-9">12</text></g>
                   <g class="mark today" transform="translate(123 23)"><circle r="5.6" pathLength="100" stroke-dasharray="86.7 13.3" transform="rotate(-18)"/><text y="-9">13</text></g>
                 </svg>
-                <span class="meta state"></span>
               </div>
             </div>
           </div>
@@ -1158,7 +1223,6 @@
                   <g class="mark kept" transform="translate(177 21)"><circle r="7"/><text y="-11">12</text></g>
                   <g class="mark today" transform="translate(208 21)"><circle r="8" pathLength="100" stroke-dasharray="86.7 13.3" transform="rotate(-18)"/><text y="-11">13</text></g>
                 </svg>
-                <span class="meta state"></span>
               </div>
             </div>
           </div>
