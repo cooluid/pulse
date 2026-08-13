@@ -718,7 +718,7 @@
     .path .today-hit svg.only-checked { display: none; }
     body.checked .path .today-hit svg.only-pending { display: none; }
     body.checked .path .today-hit svg.only-checked { display: block; }
-    .path .today-hit .core { fill: currentColor; opacity: .10; }
+    .path .today-hit .core { fill: currentColor; opacity: .12; }
     .path .today-hit .day-num {
       position: absolute;
       inset: 0;
@@ -726,24 +726,18 @@
       place-items: center;
       margin: 0;
       font-size: 22px;
-      font-weight: 700;
+      font-weight: 650;
       letter-spacing: -.06em;
       line-height: 1;
       font-variant-numeric: tabular-nums;
-      color: var(--action);
+      color: var(--ink);
       pointer-events: none;
+      z-index: 2;
     }
-    .path-medium .today-hit .day-num { font-size: 36px; }
-    .path .today-hit .tick {
-      fill: none;
-      stroke: var(--grass-fg);
-      stroke-width: 3.2;
-      stroke-linecap: round;
-      stroke-linejoin: round;
-    }
+    .path-medium .today-hit .day-num { font-size: 32px; }
     body.checked .path .today-hit { color: var(--grass); }
-    body.checked .path .today-hit .core { opacity: 1; }
-    body.checked .path .today-hit .day-num { color: var(--grass-fg); }
+    body.checked .path .today-hit .core { opacity: .18; }
+    body.checked .path .today-hit .day-num { color: var(--ink); }
     .path-medium .habit { font-size: 22px; max-width: 7em; }
     .path-medium .trail {
       left: 8px;
@@ -763,6 +757,9 @@
       font-weight: 650;
       fill: var(--secondary);
       text-anchor: middle;
+    }
+    body.dark .path .pin-day {
+      fill: color-mix(in srgb, var(--ink) 72%, transparent);
     }
     .path-medium .pin-day { font-size: 9px; }
 
@@ -967,7 +964,6 @@
               <svg class="only-checked" viewBox="0 0 100 100">
                 <circle cx="50" cy="50" r="39" fill="none" stroke="currentColor" stroke-width="5.5"/>
                 <circle class="core" cx="50" cy="50" r="20"/>
-                <path class="tick" d="M43 72 L47 77 L58 66"/>
               </svg>
               <span class="day-num">13</span>
             </div>
@@ -1293,7 +1289,7 @@
         <div>
           <span class="idx">06 · PATH</span>
           <h3>来路</h3>
-          <p>来路是走过来的一串印，不是折线加点的健康图。过去六日由远到近、由小到大，日号轻标在点上；漏签空心，已留下实心。今天这一枚是开口日环，环心是今日日号，不写「留印」。完成时环闭合、日号留下，勾只作小记，不盖住日子。不写「近七日 N 次」，也不把连续天数做成奖杯。</p>
+          <p>来路是走过来的一串印，不是折线加点的健康图。过去六日由远到近、由小到大，日号轻标在点上；漏签空心，已留下实心。今天这一枚是开口日环，环心是今日日号，不写「留印」。完成时只闭合日环，日号仍用墨色留在环心——不灌实心核，也不打勾。勾和实心是落印的语言，套在来路上会把日子压成徽章。不写「近七日 N 次」，也不把连续天数做成奖杯。</p>
           <span class="job">任务：我怎么走到今天 · 现有七日快照</span>
         </div>
         <div class="frames">
@@ -1323,7 +1319,6 @@
               <svg class="only-checked" viewBox="0 0 100 100">
                 <circle cx="50" cy="50" r="39" fill="none" stroke="currentColor" stroke-width="5.5"/>
                 <circle class="core" cx="50" cy="50" r="20"/>
-                <path class="tick" d="M43 72 L47 77 L58 66"/>
               </svg>
               <span class="day-num">13</span>
             </div>
@@ -1354,7 +1349,6 @@
               <svg class="only-checked" viewBox="0 0 100 100">
                 <circle cx="50" cy="50" r="39" fill="none" stroke="currentColor" stroke-width="5.5"/>
                 <circle class="core" cx="50" cy="50" r="20"/>
-                <path class="tick" d="M43 72 L47 77 L58 66"/>
               </svg>
               <span class="day-num">13</span>
             </div>
