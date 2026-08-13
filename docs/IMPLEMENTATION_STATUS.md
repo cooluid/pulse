@@ -33,7 +33,7 @@
 - 品牌按产品确认从“断层海报 + 贴边双页签”干净切换为“草野脉冲 + 状态式悬浮底栏”；颜色仍只由 `design/brand-tokens.json` 生成，不保留断层海报运行时分支。底栏两个入口稳定等宽，根内容按实测底栏高度清空滚动末端。
 - 今日深草行动印支持单击签到与 0.45 秒长按“签到并拍照”；长按先完成权威签到提交，再请求相机，且 VoiceOver 提供独立动作。待签到进入时只有一次有限呼吸，权威提交后才播放收缩、落印和低强调回波，Reduce Motion 使用静态形状替换。
 - 高阶权益从设置内嵌分组迁到独立权益页；商品价格只读 StoreKit，当前已交付权益只读 `PulseEnhancementContract.currentCapabilities`。权益页使用轻量身份区、横向构图预览、等宽满行权益卡和紧凑购买条，末项权益与恢复购买必须能完整滚到购买条上方。
-- Home Screen Widget 与 App 内画廊统一消费同一 `PulseWidgetHomeRenderer`，正式构图收敛为“呼吸环、数影、深景、静序、七日谱”五式。旧八式、独立近似预览、硬编码假日期和重复七日摘要已删除；五式分别承担均衡、时间剪影、纵深节律、极简秩序和七日直读任务。
+- Home Screen Widget 与 App 内画廊统一消费同一 `PulseWidgetHomeRenderer`，正式构图收敛为“呼吸环、数影、深景、静序、七日谱”五式。旧八式、独立近似预览、硬编码假日期和重复七日摘要已删除；五式分别承担均衡、时间剪影、纵深节律、极简秩序和七日直读任务。六式仪式物件 HTML 方向实验室见 [docs/prototypes/widget-ritual-objects/](./prototypes/widget-ritual-objects/)；它不是生产渲染器，也不能把正式五式改写成实验室六式。
 - Home Screen Widget 已改为 `AppIntentConfiguration`，构图由系统逐实例持有；Lock Screen“节律汇印”拆为无构图参数的独立 Widget kind。App Group 全局 `widget.style` 及 App 内伪“已选择”路径已删除。未签到 Home Screen 整块是唯一签到按钮；Extension 在 timeline 边界独立验证权益，未授权收费构图明确报未解锁，不静默替换。
 - 记录详情在标准 Dynamic Type 下把“导出原图 / 删除照片 / 删除签到记录”合并为一个横向三分动作坞；Accessibility Dynamic Type 下改为导出跨首行、两个删除动作并列次行。三个动作仍是独立事务、独立确认和独立辅助功能入口，不把照片与签到事实合并。
 - 根页面常态背景加入 18 秒低振幅呼吸与细线漂移，今日页额外使用三层低透明潮面增强可感知性，最高 12 fps；仅在 scene active 且未开启 Reduce Motion 时推进，后台与 Reduce Motion 使用静态相位。该环境层不得驱动按钮持续闪烁或伪装成进度反馈。
