@@ -4,6 +4,8 @@
 
 构图、剪影、待办/完成语言以本目录 HTML 为准。[`design/BRAND_SPEC.md`](../../../design/BRAND_SPEC.md) §5A 与仪式/产品合同跟本页。旧五式（呼吸环、深景、静序、七日谱）不再作为视觉依据。
 
+若把落印改为收费，免费默认另见探索页 [widget-awaiting-place · 待落之处](../widget-awaiting-place/)；该页尚未写入正式权益合同。
+
 `PulseWidgetHomeRenderer` 仍在画旧五式，这是实现滞后。迁生产时以本页六式替换，不得把旧骨架改名换肤。本页不是商店图，也不是 `INTERFACE GO`。
 
 ## 打开

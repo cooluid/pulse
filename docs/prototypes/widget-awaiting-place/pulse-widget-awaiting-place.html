@@ -1,0 +1,721 @@
+<!doctype html>
+<!--
+  Free default Home Screen Widget direction exploration.
+  Object: 待落之处 (Awaiting Place) — where today's imprint still waits to land.
+  Paid seal (落印) is intentionally NOT the free hero.
+  See README.md in this folder.
+-->
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>一日一印 · 免费默认：待落之处</title>
+  <style>
+    :root {
+      --bg: #EDF5E7;
+      --surface: #F6FAEF;
+      --action: #1F5E34;
+      --action-fg: #FFFFFF;
+      --grass: #68B33F;
+      --grass-fg: #102013;
+      --ink: #172119;
+      --secondary: #667064;
+      --field: #68B33F;
+      --separator: #D3D9CF;
+      --shadow: #182D1D;
+      --canvas: #E7EBDF;
+      --wallpaper: #C5D6B8;
+      --ease: cubic-bezier(.22,.8,.28,1);
+      --s: 158px;
+      --m-w: 338px;
+      --m-h: 158px;
+      --radius: 22px;
+    }
+    * { box-sizing: border-box; }
+    html { background: var(--canvas); }
+    body {
+      margin: 0;
+      color: var(--ink);
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC", sans-serif;
+      -webkit-font-smoothing: antialiased;
+      background: var(--canvas);
+    }
+    body.dark {
+      --bg: #07120A;
+      --surface: #0D1C10;
+      --action: #276D3D;
+      --action-fg: #F7FBF2;
+      --grass: #91D55B;
+      --grass-fg: #0C1A0E;
+      --ink: #F0F5EC;
+      --secondary: #A6B0A2;
+      --field: #91D55B;
+      --separator: #3D4B3E;
+      --shadow: #000000;
+      --canvas: #111813;
+      --wallpaper: #1A2A1C;
+    }
+    button { font: inherit; }
+    .page { width: min(1100px, calc(100% - 40px)); margin: 0 auto; padding: 40px 0 80px; }
+    .masthead {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 28px;
+      align-items: end;
+      padding-bottom: 24px;
+      border-bottom: 1px solid color-mix(in srgb, var(--ink) 14%, transparent);
+    }
+    .eyebrow {
+      margin: 0 0 10px;
+      color: var(--action);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+    }
+    h1 {
+      margin: 0;
+      max-width: 760px;
+      font-size: clamp(32px, 4.6vw, 52px);
+      line-height: 1.04;
+      letter-spacing: -.04em;
+    }
+    .lede {
+      margin: 14px 0 0;
+      max-width: 680px;
+      color: var(--secondary);
+      font-size: 16px;
+      line-height: 1.6;
+    }
+    .controls {
+      display: flex;
+      gap: 6px;
+      padding: 5px;
+      border: 1px solid color-mix(in srgb, var(--ink) 12%, transparent);
+      border-radius: 999px;
+      background: color-mix(in srgb, var(--surface) 88%, transparent);
+    }
+    .control {
+      min-height: 40px;
+      padding: 0 14px;
+      border: 0;
+      border-radius: 999px;
+      color: var(--secondary);
+      background: transparent;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 650;
+    }
+    .control[aria-pressed="true"] {
+      color: var(--action-fg);
+      background: var(--action);
+    }
+
+    .phone-block {
+      margin-top: 36px;
+      display: grid;
+      grid-template-columns: 393px minmax(0, 1fr);
+      gap: 32px;
+      align-items: center;
+    }
+    .phone {
+      width: 393px;
+      height: 560px;
+      padding: 20px 27.5px 24px;
+      border-radius: 48px;
+      background: var(--wallpaper);
+      box-shadow:
+        0 30px 60px color-mix(in srgb, var(--shadow) 22%, transparent),
+        inset 0 0 0 1px color-mix(in srgb, var(--ink) 10%, transparent);
+      display: grid;
+      grid-template-rows: auto auto 1fr;
+      gap: 16px;
+      overflow: hidden;
+    }
+    .status-bar {
+      display: flex;
+      justify-content: space-between;
+      color: var(--ink);
+      font-size: 12px;
+      font-weight: 700;
+      padding: 4px 8px 2px;
+      opacity: .72;
+    }
+    .hs-grid {
+      display: grid;
+      grid-template-columns: var(--s) var(--s);
+      gap: 16px;
+      justify-content: center;
+      justify-items: center;
+    }
+    .hs-medium { display: flex; justify-content: center; }
+    .dock {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      align-self: end;
+    }
+    .app-dot {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      background: var(--action);
+      display: grid;
+      place-items: center;
+    }
+    .app-dot.muted {
+      background: color-mix(in srgb, var(--ink) 16%, transparent);
+    }
+    .app-dot svg { width: 22px; height: 22px; color: var(--action-fg); }
+    .phone-copy h2 {
+      margin: 0 0 8px;
+      font-size: 28px;
+      letter-spacing: -.03em;
+    }
+    .phone-copy p {
+      margin: 0;
+      color: var(--secondary);
+      font-size: 15px;
+      line-height: 1.65;
+    }
+    .phone-copy ul {
+      margin: 16px 0 0;
+      padding-left: 18px;
+      color: var(--ink);
+      font-size: 14px;
+      line-height: 1.7;
+    }
+
+    .list { display: grid; gap: 20px; margin-top: 36px; }
+    .concept {
+      display: grid;
+      grid-template-columns: 240px minmax(0, 1fr);
+      gap: 22px;
+      padding: 22px;
+      border-radius: 28px;
+      border: 1px solid color-mix(in srgb, var(--ink) 10%, transparent);
+      background: color-mix(in srgb, var(--surface) 48%, transparent);
+    }
+    .idx {
+      color: var(--action);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .14em;
+    }
+    .concept h3 {
+      margin: 8px 0 8px;
+      font-size: 24px;
+      letter-spacing: -.03em;
+    }
+    .concept p {
+      margin: 0;
+      color: var(--secondary);
+      font-size: 13.5px;
+      line-height: 1.55;
+    }
+    .job {
+      display: inline-block;
+      margin-top: 14px;
+      color: var(--action);
+      font-size: 12px;
+      font-weight: 650;
+    }
+    .frames {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      min-height: var(--s);
+    }
+
+    .widget {
+      position: relative;
+      overflow: hidden;
+      flex: 0 0 auto;
+      width: var(--s);
+      height: var(--s);
+      border-radius: var(--radius);
+      color: var(--ink);
+      background: var(--bg);
+      box-shadow:
+        0 10px 22px color-mix(in srgb, var(--shadow) 10%, transparent),
+        inset 0 0 0 1px color-mix(in srgb, var(--ink) 5%, transparent);
+      isolation: isolate;
+      font-variant-numeric: tabular-nums;
+    }
+    .widget.medium { width: var(--m-w); height: var(--m-h); }
+    .widget::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      border-radius: inherit;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.26);
+    }
+
+    .meta { color: var(--secondary); font-size: 11px; font-weight: 600; letter-spacing: .01em; }
+    .habit { font-weight: 650; letter-spacing: -.03em; line-height: 1.05; }
+    .state::after { content: "今天还空着"; }
+    body.checked .state::after { content: "今天已留下"; }
+
+    .only-checked { display: none; }
+    body.checked .only-pending { display: none; }
+    body.checked .only-checked { display: block; }
+
+    /* Locked tease — paid 落印 silhouette, not interactive free content */
+    .locked-tease {
+      background: color-mix(in srgb, var(--surface) 70%, transparent);
+      opacity: .72;
+    }
+    .locked-tease .stamp-ghost {
+      position: absolute;
+      left: 10px;
+      top: 50%;
+      width: 96px;
+      height: 96px;
+      transform: translateY(-50%);
+      color: var(--field);
+      opacity: .35;
+    }
+    .locked-tease .stamp-ghost circle {
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 5.5;
+      stroke-linecap: round;
+    }
+    .locked-tease .lock-copy {
+      position: absolute;
+      right: 12px;
+      bottom: 12px;
+      text-align: right;
+      z-index: 1;
+    }
+    .locked-tease .lock-copy .title {
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: -.02em;
+    }
+    .locked-tease .lock-copy .hint {
+      margin-top: 4px;
+      color: var(--secondary);
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    /* 00 Awaiting Place — small uses row rhythm so text never kisses the pad */
+    .place {
+      background: var(--surface);
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr) auto;
+      align-items: center;
+      justify-items: center;
+      padding: 12px 14px 13px;
+      gap: 8px;
+    }
+    .place .blotter {
+      position: relative;
+      left: auto;
+      top: auto;
+      width: 86px;
+      height: 86px;
+      transform: none;
+      border-radius: 24px;
+      background:
+        radial-gradient(
+          circle at 50% 48%,
+          color-mix(in srgb, var(--field) 10%, transparent) 0%,
+          color-mix(in srgb, var(--field) 5%, transparent) 42%,
+          transparent 68%
+        ),
+        color-mix(in srgb, var(--field) 9%, var(--bg));
+      box-shadow:
+        inset 0 1px 0 color-mix(in srgb, var(--ink) 6%, transparent),
+        inset 0 -8px 14px color-mix(in srgb, var(--shadow) 4%, transparent);
+      z-index: 0;
+    }
+    .place .well {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 52px;
+      height: 52px;
+      transform: translate(-50%, -50%);
+      border-radius: 50%;
+      color: var(--field);
+    }
+    .place .well .rim {
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      border: 1.5px solid color-mix(in srgb, var(--field) 28%, transparent);
+      box-shadow:
+        inset 0 0 0 9px color-mix(in srgb, var(--field) 7%, transparent),
+        0 0 0 7px color-mix(in srgb, var(--field) 4%, transparent);
+    }
+    .place .well .void {
+      position: absolute;
+      inset: 11px;
+      border-radius: 50%;
+      background: color-mix(in srgb, var(--surface) 82%, transparent);
+      box-shadow: inset 0 2px 6px color-mix(in srgb, var(--shadow) 10%, transparent);
+    }
+    .place .well .mark {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      color: var(--action);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: -.03em;
+      pointer-events: none;
+    }
+    .place .well .kept {
+      position: absolute;
+      inset: 8px;
+      border-radius: 50%;
+      background: var(--grass);
+      color: var(--grass-fg);
+      display: none;
+      place-items: center;
+      box-shadow: 0 6px 14px color-mix(in srgb, var(--shadow) 12%, transparent);
+    }
+    .place .well .kept svg {
+      width: 24px;
+      height: 24px;
+      display: block;
+    }
+    body.checked .place .well .void,
+    body.checked .place .well .mark { display: none; }
+    body.checked .place .well .kept { display: grid; }
+    body.checked .place .blotter {
+      background:
+        radial-gradient(
+          circle at 50% 48%,
+          color-mix(in srgb, var(--grass) 16%, transparent) 0%,
+          color-mix(in srgb, var(--grass) 7%, transparent) 46%,
+          transparent 70%
+        ),
+        color-mix(in srgb, var(--grass) 10%, var(--bg));
+    }
+    body.checked .place .well .rim {
+      border-color: color-mix(in srgb, var(--grass) 40%, transparent);
+      box-shadow:
+        inset 0 0 0 9px color-mix(in srgb, var(--grass) 8%, transparent),
+        0 0 0 7px color-mix(in srgb, var(--grass) 5%, transparent);
+    }
+
+    .place > .day {
+      position: static;
+      z-index: 2;
+      text-align: center;
+      color: var(--action);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .06em;
+      line-height: 1.1;
+    }
+    .place > .habit {
+      position: static;
+      z-index: 2;
+      text-align: center;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: -.02em;
+      line-height: 1.2;
+      color: var(--ink);
+    }
+    .place .copy,
+    .place .foot { display: none; }
+
+    /* Medium keeps left pad / right copy; reset the small grid */
+    .place-medium {
+      display: block;
+      padding: 0;
+      gap: 0;
+    }
+    .place-medium .blotter {
+      position: absolute;
+      left: 18px;
+      top: 50%;
+      width: 122px;
+      height: 122px;
+      transform: translateY(-50%);
+      border-radius: 32px;
+    }
+    .place-medium .well {
+      width: 74px;
+      height: 74px;
+    }
+    .place-medium .well .void { inset: 16px; }
+    .place-medium .well .kept { inset: 10px; }
+    .place-medium .well .kept svg { width: 32px; height: 32px; }
+    .place-medium .well .mark { font-size: 13px; }
+    .place-medium > .day,
+    .place-medium > .habit { display: none; }
+    .place-medium .copy {
+      display: flex;
+      position: absolute;
+      left: 154px;
+      right: 18px;
+      top: 22px;
+      bottom: 48px;
+      z-index: 2;
+      text-align: left;
+      flex-direction: column;
+      justify-content: center;
+      gap: 10px;
+    }
+    .place-medium .copy .day {
+      color: var(--action);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: .05em;
+      line-height: 1;
+    }
+    .place-medium .copy .habit {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -.03em;
+      line-height: 1.15;
+      max-width: 8em;
+      color: var(--ink);
+    }
+    .place-medium .foot {
+      display: block;
+      position: absolute;
+      left: 154px;
+      right: 18px;
+      bottom: 18px;
+      z-index: 2;
+      text-align: left;
+      color: var(--secondary);
+      font-size: 12px;
+      font-weight: 560;
+      white-space: nowrap;
+    }
+
+    .contrast {
+      margin-top: 28px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    .contrast article {
+      padding: 18px 20px;
+      border-radius: 22px;
+      border: 1px solid color-mix(in srgb, var(--ink) 10%, transparent);
+      background: color-mix(in srgb, var(--surface) 40%, transparent);
+    }
+    .contrast h2 {
+      margin: 0 0 8px;
+      font-size: 16px;
+      letter-spacing: -.02em;
+    }
+    .contrast p {
+      margin: 0;
+      color: var(--secondary);
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    .reject {
+      margin-top: 28px;
+      padding: 20px 22px;
+      border-radius: 24px;
+      background: color-mix(in srgb, var(--ink) 5%, transparent);
+    }
+    .reject h2 { margin: 0 0 8px; font-size: 18px; }
+    .reject p {
+      margin: 0;
+      color: var(--secondary);
+      font-size: 13.5px;
+      line-height: 1.6;
+    }
+    .footnote {
+      margin: 20px 4px 0;
+      color: var(--secondary);
+      font-size: 12px;
+      line-height: 1.6;
+    }
+
+    @media (max-width: 980px) {
+      .masthead, .phone-block, .concept, .contrast { grid-template-columns: 1fr; }
+      .phone-block { overflow-x: auto; }
+      .frames { overflow-x: auto; padding-bottom: 8px; }
+    }
+  </style>
+</head>
+<body class="pending">
+  <main class="page">
+    <header class="masthead">
+      <div>
+        <p class="eyebrow">Pulse Widget Lab · Free Default</p>
+        <h1>免费不是另一枚印。<br>是一处还等着落下的地方。</h1>
+        <p class="lede">落印若改收费，主屏仍需要一个默认物件：一眼看出今天空着，一点即可留下。名字不必压成两字格。「待落之处」承印，不抢开放日环；日环留给收费的落印。</p>
+      </div>
+      <div class="controls" aria-label="原型状态">
+        <button class="control state-control" type="button" data-state="pending" aria-pressed="true">待签到</button>
+        <button class="control state-control" type="button" data-state="checked" aria-pressed="false">已签到</button>
+        <button class="control theme-control" type="button" data-theme="light" aria-pressed="true">浅色</button>
+        <button class="control theme-control" type="button" data-theme="dark" aria-pressed="false">深色</button>
+      </div>
+    </header>
+
+    <section class="phone-block">
+      <div class="phone" aria-hidden="true">
+        <div class="status-bar"><span>9:41</span><span>一日一印</span></div>
+        <div class="hs-grid">
+          <div class="widget place">
+            <div class="day">08 / 13</div>
+            <div class="blotter">
+              <div class="well">
+                <div class="rim"></div>
+                <div class="void"></div>
+                <div class="mark only-pending">空着</div>
+                <div class="kept only-checked">
+                  <svg viewBox="0 0 100 100" aria-hidden="true">
+                    <path d="M32 53 L45 66 L71 38" fill="none" stroke="currentColor" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </div>
+              </div>
+            </div>
+            <div class="habit">晨间书写</div>
+          </div>
+          <div class="widget locked-tease">
+            <svg class="stamp-ghost" viewBox="0 0 100 100" aria-hidden="true">
+              <circle cx="50" cy="50" r="39" pathLength="100" stroke-dasharray="86.7 13.3" transform="rotate(-18 50 50)"/>
+              <circle cx="50" cy="50" r="20" fill="currentColor" opacity=".12" stroke="none"/>
+            </svg>
+            <div class="lock-copy">
+              <div class="title">落印</div>
+              <div class="hint">高阶物件</div>
+            </div>
+          </div>
+        </div>
+        <div class="hs-medium">
+          <div class="widget medium place place-medium">
+            <div class="blotter">
+              <div class="well">
+                <div class="rim"></div>
+                <div class="void"></div>
+                <div class="mark only-pending">空着</div>
+                <div class="kept only-checked">
+                  <svg viewBox="0 0 100 100" aria-hidden="true">
+                    <path d="M32 53 L45 66 L71 38" fill="none" stroke="currentColor" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </div>
+              </div>
+            </div>
+            <div class="copy">
+              <div class="day">八月十三日 · 周四</div>
+              <div class="habit">晨间书写</div>
+            </div>
+            <div class="foot state"></div>
+          </div>
+        </div>
+        <div class="dock">
+          <div class="app-dot">
+            <svg viewBox="0 0 100 100" aria-hidden="true">
+              <circle cx="50" cy="50" r="42" fill="none" stroke="currentColor" stroke-width="9" stroke-linecap="round" pathLength="100" stroke-dasharray="86.7 13.3" transform="rotate(28 50 50)"/>
+            </svg>
+          </div>
+          <div class="app-dot muted"></div>
+          <div class="app-dot muted"></div>
+          <div class="app-dot muted"></div>
+        </div>
+      </div>
+      <div class="phone-copy">
+        <h2>先认空坑，再读字。</h2>
+        <p>小号是一条中轴：上日期、中印垫、下承诺。不要再做成左下物件 + 右上文字，右侧会空荡。完成靠坑心被占满 + 勾，不只换色。</p>
+        <ul>
+          <li>待落之处 = 等印落下的位置；落印 = 印本身。两套剪影不能混。</li>
+          <li>小号单轴构图；中号才左右分栏（印垫左、文字右）。</li>
+          <li>未签到时整卡是唯一签到命中面。</li>
+          <li>中号禁止把正方形印垫拉宽。</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="list">
+      <article class="concept">
+        <div>
+          <span class="idx">00 · PLACE · 免费默认</span>
+          <h3>待落之处</h3>
+          <p>小号走中轴：日期在上，圆角印垫居中，承诺在下。待签到坑心写「空着」；已留下则草叶色实心占满并打勾。不做左下垫、右上字的对角拆分。中号才把印垫放到左侧，右侧排日期、承诺和状态句。</p>
+          <span class="job">任务：今天这里还空着吗 · 现有今日快照</span>
+        </div>
+        <div class="frames">
+          <div class="widget place">
+            <div class="day">08 / 13</div>
+            <div class="blotter">
+              <div class="well">
+                <div class="rim"></div>
+                <div class="void"></div>
+                <div class="mark only-pending">空着</div>
+                <div class="kept only-checked">
+                  <svg viewBox="0 0 100 100" aria-hidden="true">
+                    <path d="M32 53 L45 66 L71 38" fill="none" stroke="currentColor" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </div>
+              </div>
+            </div>
+            <div class="habit">晨间书写</div>
+          </div>
+          <div class="widget medium place place-medium">
+            <div class="blotter">
+              <div class="well">
+                <div class="rim"></div>
+                <div class="void"></div>
+                <div class="mark only-pending">空着</div>
+                <div class="kept only-checked">
+                  <svg viewBox="0 0 100 100" aria-hidden="true">
+                    <path d="M32 53 L45 66 L71 38" fill="none" stroke="currentColor" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </div>
+              </div>
+            </div>
+            <div class="copy">
+              <div class="day">八月十三日 · 周四</div>
+              <div class="habit">晨间书写</div>
+            </div>
+            <div class="foot state"></div>
+          </div>
+        </div>
+      </article>
+    </section>
+
+    <section class="contrast">
+      <article>
+        <h2>待落之处（免费）</h2>
+        <p>承印的位置。剪影是垫 + 空坑。完成 = 坑被占满。回答「今天还空着吗」。</p>
+      </article>
+      <article>
+        <h2>落印（拟收费）</h2>
+        <p>品牌印本身。剪影是开放日环 + 留印。完成 = 环闭合打勾。回答「能不能留下这一枚」。</p>
+      </article>
+    </section>
+
+    <aside class="reject">
+      <h2>这轮明确不走的路</h2>
+      <p>不要把待落之处画成缩小版落印；不要用静场大圆弧顶替印垫；不要把数影大日号塞进免费默认；不要为了「多一个免费」去六式里挑一件降级。本页是新物件，定稿后再改权益合同与默认 `WidgetConfigurationIntent`。</p>
+    </aside>
+    <p class="footnote">探索页，不是正式真源。正式六式仍见 <code>docs/prototypes/widget-ritual-objects/</code>。若采纳待落之处为唯一免费默认，需同步合同：落印进入同一高阶 entitlement，默认构图改为待落之处，未解锁收费构图明确拒绝。</p>
+  </main>
+  <script>
+    const stateButtons = [...document.querySelectorAll('.state-control')];
+    const themeButtons = [...document.querySelectorAll('.theme-control')];
+    function setPressed(buttons, active) {
+      buttons.forEach(button => button.setAttribute('aria-pressed', String(button === active)));
+    }
+    stateButtons.forEach(button => button.addEventListener('click', () => {
+      document.body.classList.toggle('checked', button.dataset.state === 'checked');
+      document.body.classList.toggle('pending', button.dataset.state === 'pending');
+      setPressed(stateButtons, button);
+    }));
+    themeButtons.forEach(button => button.addEventListener('click', () => {
+      document.body.classList.toggle('dark', button.dataset.theme === 'dark');
+      setPressed(themeButtons, button);
+    }));
+  </script>
+</body>
+</html>
