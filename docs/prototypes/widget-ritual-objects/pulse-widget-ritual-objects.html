@@ -552,17 +552,6 @@
     }
     .letter.medium .seal .mark-label { font-size: 11px; }
     body.checked .letter .seal .mark-label { display: none; }
-    .letter .rules {
-      height: 20px;
-      margin: 8px 0 4px;
-      background: repeating-linear-gradient(
-        to bottom,
-        transparent 0 9px,
-        color-mix(in srgb, var(--field) 18%, transparent) 9px 10px
-      );
-      pointer-events: none;
-    }
-    .letter.medium .rules { height: 12px; margin: 4px 0 0; }
     body.checked .letter::before {
       background: color-mix(in srgb, var(--grass) 36%, var(--surface));
     }
@@ -1183,7 +1172,6 @@
             </div>
             <div class="body">
               <div class="habit">晨间<br>书写</div>
-              <div class="rules" aria-hidden="true"></div>
               <div class="foot">
                 <svg class="postmarks" viewBox="0 0 132 34" aria-hidden="true">
                   <line class="thread" x1="9" y1="23" x2="123" y2="23"/>
@@ -1218,7 +1206,6 @@
             </div>
             <div class="body">
               <div class="habit">晨间书写</div>
-              <div class="rules" aria-hidden="true"></div>
               <div class="foot">
                 <svg class="postmarks" viewBox="0 0 220 36" aria-hidden="true">
                   <line class="thread" x1="12" y1="21" x2="208" y2="21"/>

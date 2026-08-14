@@ -405,8 +405,6 @@ struct PulseWidgetHomeRenderer: View {
             .padding(.leading, inset)
             .padding(.top, pt(usesMediumMetrics ? 72 : 48, in: size))
 
-            letterRules(size: size)
-
             postmarkRail(size: size)
                 .padding(.horizontal, inset)
                 .padding(.bottom, pt(10, in: size))
@@ -585,15 +583,6 @@ struct PulseWidgetHomeRenderer: View {
                 .frame(width: size.width, height: size.height * 0.33)
                 .position(x: size.width * 0.49, y: size.height * (usesMediumMetrics ? 0.84 : 0.92))
         }
-    }
-
-    private func letterRules(size: CGSize) -> some View {
-        VStack(spacing: pt(9, in: size)) {
-            Rectangle().fill(fieldColor.opacity(0.18)).frame(height: pt(1, in: size))
-            Rectangle().fill(fieldColor.opacity(0.18)).frame(height: pt(1, in: size))
-        }
-        .padding(.horizontal, pt(14, in: size))
-        .padding(.top, pt(usesMediumMetrics ? 96 : 82, in: size))
     }
 
     private func postmarkRail(size: CGSize) -> some View {
