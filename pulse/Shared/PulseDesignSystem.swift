@@ -16,8 +16,6 @@ enum PulseDesign {
     static let separator = Color("PulseSeparator")
     static let field = Color("PulseField")
     static let shadow = Color("PulseShadow")
-    static let widgetSky = Color("PulseWidgetSky")
-    static let widgetSkyMiddle = Color("PulseWidgetSkyMiddle")
     static let tint = Color("AccentColor")
     static let systemDestructive = Color(uiColor: .systemRed)
     static let spacing4: CGFloat = 4

@@ -114,16 +114,14 @@ public enum PulseWidgetProjector {
     public static func makeTimelinePlan(
         habit: HabitSnapshot,
         records: [CheckInRecordSnapshot],
-        at date: Date,
-        presentationMode: PulseWidgetMotionContract.PresentationMode = .phaseKeyframes
+        at date: Date
     ) throws -> PulseWidgetTimelinePlan {
         let snapshot = try makeSnapshot(habit: habit, records: records, at: date)
         let entries = try PulseWidgetTimelineSchedule.buildEntries(
             habit: habit,
             records: records,
             snapshot: snapshot,
-            at: date,
-            includePhaseKeyframes: presentationMode == .phaseKeyframes
+            at: date
         )
         return PulseWidgetTimelinePlan(entries: entries)
     }
@@ -186,16 +184,14 @@ public enum PulseWidgetProjector {
 public enum PulseWidgetSnapshotReader {
     public static func readTimelinePlan(
         repository: any PulseRepositoryProtocol,
-        at date: Date,
-        presentationMode: PulseWidgetMotionContract.PresentationMode = .phaseKeyframes
+        at date: Date
     ) throws -> PulseWidgetTimelinePlan? {
         guard let habit = try repository.existingPrimaryHabit() else { return nil }
         let records = try repository.allRecords(habitID: habit.id)
         return try PulseWidgetProjector.makeTimelinePlan(
             habit: habit,
             records: records,
-            at: date,
-            presentationMode: presentationMode
+            at: date
         )
     }
 }

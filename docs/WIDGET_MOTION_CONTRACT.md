@@ -1,78 +1,64 @@
 # Pulse Widget 动效合同
 
-文档版本：1.0
+文档版本：2.0
 状态：Canonical Implemented Contract
 更新日期：2026-08-14
 
-本文定义 Home Screen 与 Accessory Widget 的**时段关键帧动效**边界。签到事实、逻辑日与唯一 store 仍以 [DOMAIN_CONTRACT.md](./DOMAIN_CONTRACT.md) 为准；共享 store 与跨进程边界仍以 [WIDGET_SHARED_STORE_CONTRACT.md](./WIDGET_SHARED_STORE_CONTRACT.md) 为准。
+本文定义 Home Screen Widget 的产品级动效边界。签到事实、逻辑日与唯一 store 以 [DOMAIN_CONTRACT.md](./DOMAIN_CONTRACT.md) 为准；共享 store 与跨进程边界以 [WIDGET_SHARED_STORE_CONTRACT.md](./WIDGET_SHARED_STORE_CONTRACT.md) 为准。
 
-## 1. 设计原则
+## 1. 第一原则
 
-Widget 动效服务**仪式物件识别、时段节律与事实变装**，不是 App 内环境层的复制，也不是加载进度或连续 GIF。
+Widget 不是持续运行的动画画布。它首先必须准确表达“今天是否已经签到”，其次才允许在系统交付新 entry 时，用一次有限过渡表现物件发生了什么。
 
-| 级别 | 名称 | 机制 | 允许 |
+| 级别 | 名称 | 机制 | 允许范围 |
 | --- | --- | --- | --- |
-| L0 | 当前帧 | 单 entry | Reduce Motion、错误态、预览 |
-| L1 | 时段关键帧 | Timeline 多 entry + WidgetKit 切换过渡 | 默认 Home / Accessory |
-| L2 | 事实变装 | reload 后 entry 间过渡 | 签到、跨逻辑日 |
+| L0 | 静态终态 | 单一事实画面 | Reduce Motion、Accessory、错误态、预览 |
+| L1 | 事实变装 | 权威事实保存并 reload 后的有限过渡 | Home Screen 八式 |
 
-**禁止：** 无限循环动画、伪造业务事实、用 ornament 覆盖 store 投影、App Group 持久化 variant、高频率 entry（< 30 分钟间隔）。
+禁止无限循环、按时段制造装饰变化、用 Timeline 模拟帧动画、伪造签到事实、持久化纯视觉状态，以及用运动掩盖布局或可读性问题。
 
-## 2. 正式类型
+## 2. 正式数据流
 
-| 类型 | 模块 | 职责 |
+1. `PulseWidgetSnapshotReader` 从唯一 Repository 投影不可变 snapshot。
+2. `PulseWidgetTimelineSchedule` 只生成“当前事实 + 下一逻辑日零点”两条 entry。
+3. App Intent 保存签到事实后，reload 两个正式 Widget kind。
+4. `PulseWidgetHomeRenderer` 仅根据 `snapshot.isCheckedToday` 选择物件终态。
+5. `PulseWidgetMotionPresentation` 为各物件提供一次、有限、可关闭的过渡曲线。
+
+不存在 `PulseWidgetVisualVariant`、时段 phase、ornament seed 或第二套预览状态。Gallery 与 Widget Extension 使用同一 Renderer 和同一事实输入。
+
+## 3. 八式物件变化
+
+| 构图 | 材料语法 | 待签到 → 已签到 |
 | --- | --- | --- |
-| `PulseWidgetDayPhase` | PulseCore | 晨 / 午 / 暮 / 夜，按项目时区 06 / 12 / 18 / 22 时切分 |
-| `PulseWidgetVisualVariant` | PulseCore | 由 `LogicalDay` + 当前时刻派生的 phase 与 ornamentSeed |
-| `PulseWidgetTimelineEntry` | PulseCore | `date` + 不可变 `PulseWidgetSnapshot` + `PulseWidgetVisualVariant` |
-| `PulseWidgetTimelinePlan` | PulseCore | 严格 chronological 的 entry 数组；末 entry 日期即 reload 边界 |
-| `PulseWidgetTimelineSchedule` | PulseCore | 从 snapshot 生成「当前帧 + 剩余时段边界 + 逻辑日零点」 |
-| `PulseWidgetMotionPresentation` | PulseWidgetUI | 统一 entry 过渡曲线 |
-| `PulseWidgetPhaseAtmosphere` | PulseWidgetUI | 八式共享的环境强度/旋转偏移 |
+| 待落之处 | 留白 / 印位 | 空位收束并落下日印 |
+| 落印 | 墨 / 印泥 | 开放印记闭合并略微压实 |
+| 叠印 | 纸张 | 松散纸层压紧，顶层完成落印 |
+| 数影 | 数字 / 雾影 | 今日数影显色并稳定，印记闭合 |
+| 手札 | 信纸 / 封缄 | 封缄闭合，纸面轻微归位 |
+| 静场 | 回声 / 场 | 开放回声收束为完成场 |
+| 来路 | 足迹 / 路径 | 今日节点闭合并出现确认标记 |
+| 潮痕 | 潮面 / 岸线 | 潮面一次上移，开放日环闭合 |
 
-`PulseWidgetSnapshot` 额外携带 `projectTimeZoneIdentifier`，供 Renderer 与 Gallery 在无 Repository 时正确派生 variant。
+每式只保留一个主物件。潮痕禁止天空、云、太阳、鱼、气象隐喻、黑色装饰块和独立天空色 token。
 
-## 3. Timeline 调度
+## 4. 曲线与 Reduce Motion
 
-默认 `PresentationMode.phaseKeyframes`：
+- 每种材料的 duration、spring 或 easing 统一由 `PulseWidgetMotionPresentation` 管理；Renderer 不散落自定义曲线。
+- 运动只绑定 `snapshot.isCheckedToday`，不绑定时钟、随机数或持续 timer。
+- Reduce Motion 为真时，Renderer 传入 `allowsMotion = false`，取消插值但保留完全相同的事实终态、层级与颜色。
+- Accessory Widget 维持静态事实表达；不为 Lock Screen、StandBy 或 Always-On 另存动效副本。
 
-1. 当前时刻 entry（事实 snapshot + 当前 phase variant）
-2. 当日剩余 phase 边界 entry（事实不变，variant 变）
-3. 逻辑日零点 entry（事实与 variant 均按新逻辑日重投影）
-
-Reduce Motion 时使用 `PresentationMode.currentFrameOnly`：仅保留「当前帧 + 逻辑日零点」两条 entry。
-
-Widget Extension 对成功 plan 使用 `TimelineReloadPolicy.atEnd`；失败/未解锁态使用单 entry + `.after(retryInterval)`。
-
-## 4. 八式动效表达
-
-八式消费同一 `PulseWidgetVisualVariant`，但只通过各自物件语法解释：
-
-- **潮痕**：云团水平漂移、潮位/天际抬升、单鱼深度与签到跃动；仍禁止鱼群、气象图标、百分比水位
-- **待落之处 / 落印 / 叠印 / 数影 / 手札 / 静场 / 来路**：通过 `PulseWidgetPhaseAtmosphere` 调整环境层透明度与微旋转；不得改变业务布局或引入第二主角
-
-variant **不得**写入 App Group、UserDefaults 或 snapshot 持久字段；ornamentSeed 由 `LogicalDay.storageValue` 的 FNV-1a 稳定派生。
-
-## 5. 交互与无障碍
-
-- 签到 Intent 保存事实后 reload 两个正式 kind；过渡仅作用于视觉层
-- Reduce Motion 下 Extension 必须切换为 `currentFrameOnly`
-- VoiceOver 与状态文案只朗读事实，不朗读 phase 名称
-- Always-On / Accessory 使用与 Home Screen 相同的 plan；不得为 Lock Screen 另存动效副本
-
-## 6. 自动化门禁
+## 5. 自动化门禁
 
 必须覆盖：
 
-- phase 边界在 project time zone 下正确生成（含 DST）
-- `currentFrameOnly` 与 `phaseKeyframes` entry 数差异
-- ornamentSeed 对同一 `LogicalDay` 稳定、对不同日变化
-- 末 entry 对齐 `nextDayBoundary`
-- Renderer 接收 explicit `visualVariant`（Gallery、Extension 同源）
+- Timeline 只有当前 entry 与 `nextDayBoundary` entry；
+- 零点 entry 重新投影新逻辑日，而非复制旧 snapshot；
+- Gallery 与 Extension 初始化同一 Renderer，不存在 legacy variant 参数；
+- 源码、token、Asset Catalog、原型和文档均无 sky / cloud / fish / phase keyframe 遗留；
+- Debug、Release、Analyze 与 Widget UI 截图通过。
 
-## 7. 真机验收
+## 6. 真机验收
 
-- 一日内多次瞥见 Widget，潮痕云位/氛围应随 phase 变化（不要求精确到分钟）
-- 签到瞬间潮涌/环闭/鱼位变化可辨认
-- Reduce Motion 开启后仅保留当前帧直至跨日
-- 八式在 accented / vibrant / Clear / 深浅色下动效不破坏待签/已签可读性
+自动化只能证明静态终态、布局和代码契约。真机验收必须确认：签到后系统实际刷新、一次过渡是否自然、Reduce Motion、深浅色、Tinted/Clear、StandBy 与 Always-On。未完成这些检查前，不得把 Widget 宣称为 runtime GO。

@@ -3,16 +3,13 @@ import Foundation
 public struct PulseWidgetTimelineEntry: Equatable, Sendable {
     public let date: Date
     public let snapshot: PulseWidgetSnapshot
-    public let variant: PulseWidgetVisualVariant
 
     public init(
         date: Date,
-        snapshot: PulseWidgetSnapshot,
-        variant: PulseWidgetVisualVariant
+        snapshot: PulseWidgetSnapshot
     ) {
         self.date = date
         self.snapshot = snapshot
-        self.variant = variant
     }
 }
 
@@ -21,42 +18,14 @@ public enum PulseWidgetTimelineSchedule {
         habit: HabitSnapshot,
         records: [CheckInRecordSnapshot],
         snapshot: PulseWidgetSnapshot,
-        at date: Date,
-        includePhaseKeyframes: Bool
+        at date: Date
     ) throws -> [PulseWidgetTimelineEntry] {
-        let timeZone = habit.timeZone
         var entries: [PulseWidgetTimelineEntry] = [
             PulseWidgetTimelineEntry(
                 date: date,
-                snapshot: snapshot,
-                variant: PulseWidgetVisualVariant.make(
-                    for: snapshot.today,
-                    at: date,
-                    timeZone: timeZone
-                )
+                snapshot: snapshot
             ),
         ]
-
-        if includePhaseKeyframes {
-            let phaseBoundaries = PulseWidgetDayPhase.upcomingPhaseBoundaries(
-                after: date,
-                before: snapshot.nextDayBoundary,
-                timeZone: timeZone
-            )
-            for boundary in phaseBoundaries {
-                entries.append(
-                    PulseWidgetTimelineEntry(
-                        date: boundary,
-                        snapshot: snapshot,
-                        variant: PulseWidgetVisualVariant.make(
-                            for: snapshot.today,
-                            at: boundary,
-                            timeZone: timeZone
-                        )
-                    )
-                )
-            }
-        }
 
         let midnightDate = snapshot.nextDayBoundary
         if entries.last?.date != midnightDate {
@@ -68,12 +37,7 @@ public enum PulseWidgetTimelineSchedule {
             entries.append(
                 PulseWidgetTimelineEntry(
                     date: midnightDate,
-                    snapshot: midnightSnapshot,
-                    variant: PulseWidgetVisualVariant.make(
-                        for: midnightSnapshot.today,
-                        at: midnightDate,
-                        timeZone: timeZone
-                    )
+                    snapshot: midnightSnapshot
                 )
             )
         }

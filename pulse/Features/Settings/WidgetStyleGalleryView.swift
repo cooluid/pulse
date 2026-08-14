@@ -211,18 +211,15 @@ struct PulseWidgetStylePreview: View {
     }
 
     @Environment(\.locale) private var locale
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         PulseWidgetHomeRenderer(
             snapshot: snapshot,
             style: style,
-            visualVariant: PulseWidgetVisualVariant.make(
-                for: snapshot.today,
-                at: snapshot.generatedAt,
-                timeZone: snapshot.projectTimeZone
-            ),
             usesMediumMetrics: usesMediumMetrics,
             usesFullColorPalette: true,
+            allowsMotion: !reduceMotion,
             statusText: PulseLocalization.string(
                 snapshot.isCheckedToday
                     ? "today.navigation.checked"

@@ -34,9 +34,9 @@ enum PulseWidgetStyleAccessPolicy {
 struct PulseWidgetHomeRenderer: View {
     let snapshot: PulseWidgetSnapshot
     let style: PulseWidgetStyle
-    let visualVariant: PulseWidgetVisualVariant
     let usesMediumMetrics: Bool
     let usesFullColorPalette: Bool
+    let allowsMotion: Bool
     let statusText: String
     let pathSummaryFormat: String
     let actionText: String
@@ -44,10 +44,6 @@ struct PulseWidgetHomeRenderer: View {
     let placeStatusText: String
 
     @Environment(\.locale) private var locale
-
-    private var atmosphere: PulseWidgetPhaseAtmosphere {
-        PulseWidgetPhaseAtmosphere(variant: visualVariant)
-    }
 
     var body: some View {
         GeometryReader { proxy in
@@ -178,6 +174,7 @@ struct PulseWidgetHomeRenderer: View {
             )
         }
         .frame(width: side, height: side)
+        .animation(motion(.place), value: snapshot.isCheckedToday)
     }
 
     private func seal(size: CGSize) -> some View {
@@ -281,20 +278,23 @@ struct PulseWidgetHomeRenderer: View {
         let isMedium = usesMediumMetrics
         let inset = pt(isMedium ? 16 : 12, in: size)
         let markSide = pt(isMedium ? 58 : 40, in: size)
-        let horizonLift = CGFloat(visualVariant.tideHorizonLift)
-        let markBottomRatio: CGFloat = snapshot.isCheckedToday
-            ? (isMedium ? 0.32 : 0.36) + horizonLift
-            : (isMedium ? 0.24 : 0.28) + horizonLift
+        let shoreHeightRatio = snapshot.isCheckedToday
+            ? (isMedium
+                ? PulseWidgetDesign.tideCheckedHeightRatioMedium
+                : PulseWidgetDesign.tideCheckedHeightRatioSmall)
+            : (isMedium
+                ? PulseWidgetDesign.tidePendingHeightRatioMedium
+                : PulseWidgetDesign.tidePendingHeightRatioSmall)
+        let shoreHeight = size.height * shoreHeightRatio
         let markX = isMedium
             ? size.width - pt(28, in: size) - markSide / 2
-            : size.width / 2
-        let markY = size.height - size.height * markBottomRatio - markSide / 2
+            : size.width * PulseWidgetDesign.tideSmallMarkXRatio
+        let markY = size.height - shoreHeight * PulseWidgetDesign.tideLipInverseRatio
         let copyWidth = isMedium ? size.width - pt(126, in: size) : pt(76, in: size)
 
         return ZStack(alignment: .topLeading) {
-            tideBackground
-            tideSky(size: size)
-            tideShore(size: size)
+            baseBackground
+            tideShore(size: size, shoreHeight: shoreHeight)
 
             PulseTideDayMark(
                 isChecked: snapshot.isCheckedToday,
@@ -302,6 +302,7 @@ struct PulseWidgetHomeRenderer: View {
             )
             .frame(width: markSide, height: markSide)
             .position(x: markX, y: markY)
+            .animation(motion(.tide), value: snapshot.isCheckedToday)
 
             VStack(alignment: .leading, spacing: pt(isMedium ? 10 : 8, in: size)) {
                 Text(verbatim: tideDate)
@@ -329,94 +330,8 @@ struct PulseWidgetHomeRenderer: View {
         }
     }
 
-    private var tideBackground: some View {
-        LinearGradient(
-            stops: [
-                .init(color: usesFullColorPalette ? PulseWidgetDesign.widgetSky : .clear, location: 0),
-                .init(color: usesFullColorPalette ? PulseWidgetDesign.widgetSkyMiddle : .clear, location: 0.48),
-                .init(color: surfaceColor, location: 0.62),
-            ],
-            startPoint: .top,
-            endPoint: .bottom
-        )
-    }
-
-    private func tideSky(size: CGSize) -> some View {
-        let sunSide = pt(16, in: size)
-        let skyHeight = size.height * (usesMediumMetrics ? 0.50 : 0.46)
-        let cloudDrift = CGFloat(visualVariant.cloudDrift)
-        let cloudBaseX = size.width * (0.34 + cloudDrift * 0.14)
-        let cloudY = skyHeight * (usesMediumMetrics ? 0.34 : 0.38)
-
-        return ZStack(alignment: .topLeading) {
-            tideCloud(size: size, widthScale: 1.0, opacity: 0.16)
-                .position(x: cloudBaseX, y: cloudY)
-                .animation(PulseWidgetMotionPresentation.entryTransition, value: visualVariant)
-
-            tideCloud(size: size, widthScale: 0.72, opacity: 0.11)
-                .position(
-                    x: cloudBaseX + size.width * 0.16,
-                    y: cloudY + pt(6, in: size)
-                )
-                .animation(PulseWidgetMotionPresentation.entryTransition, value: visualVariant)
-
-            Circle()
-                .fill(fieldColor.opacity(0.35))
-                .frame(width: sunSide, height: sunSide)
-                .overlay {
-                    Circle()
-                        .stroke(fieldColor.opacity(0.08), lineWidth: pt(5, in: size))
-                }
-                .position(
-                    x: size.width - pt(18, in: size) - sunSide / 2,
-                    y: pt(14, in: size) + sunSide / 2
-                )
-
-            Rectangle()
-                .fill(primaryColor.opacity(0.10))
-                .frame(width: size.width * 0.84, height: pt(1, in: size))
-                .position(x: size.width / 2, y: skyHeight * 0.98)
-        }
-        .frame(width: size.width, height: skyHeight, alignment: .topLeading)
-    }
-
-    private func tideCloud(size: CGSize, widthScale: CGFloat, opacity: Double) -> some View {
-        let cloudWidth = size.width * 0.22 * widthScale
-        let cloudHeight = pt(usesMediumMetrics ? 11 : 9, in: size) * widthScale
-
-        return Capsule(style: .continuous)
-            .fill(primaryColor.opacity(opacity))
-            .frame(width: cloudWidth, height: cloudHeight)
-            .overlay {
-                HStack(spacing: cloudWidth * 0.08) {
-                    Circle()
-                        .fill(primaryColor.opacity(opacity * 0.92))
-                        .frame(width: cloudHeight * 1.05, height: cloudHeight * 1.05)
-                    Circle()
-                        .fill(primaryColor.opacity(opacity * 0.88))
-                        .frame(width: cloudHeight * 0.92, height: cloudHeight * 0.92)
-                }
-            }
-    }
-
-    private func tideShore(size: CGSize) -> some View {
-        let horizonLift = CGFloat(visualVariant.tideHorizonLift)
-        let shoreHeightRatio: CGFloat = snapshot.isCheckedToday
-            ? (usesMediumMetrics ? 0.48 : 0.50) + horizonLift
-            : (usesMediumMetrics ? 0.40 : 0.42) + horizonLift
-        let shoreHeight = size.height * shoreHeightRatio
+    private func tideShore(size: CGSize, shoreHeight: CGFloat) -> some View {
         let shoreColor = snapshot.isCheckedToday ? grassColor : fieldColor
-        let fishXRatio: CGFloat = usesMediumMetrics ? 250 / 340 : 118 / 160
-        let fishX = size.width * (fishXRatio + CGFloat(visualVariant.cloudDrift) * 0.018)
-        let fishDepth = snapshot.isCheckedToday
-            ? 1 - CGFloat(visualVariant.fishLeap) * 0.22
-            : CGFloat(visualVariant.fishDepth)
-        let fishYRatio: CGFloat = usesMediumMetrics ? 62 / 100 : 58 / 90
-        let fishY = shoreHeight * (fishYRatio + (1 - fishDepth) * 0.08)
-        let fishScale = pt(usesMediumMetrics ? 1.15 : 0.9, in: size)
-        let fishRotation = snapshot.isCheckedToday
-            ? Angle(degrees: -18 * Double(visualVariant.fishLeap))
-            : Angle(degrees: 8 * Double(visualVariant.fishDepth - 0.5))
 
         return ZStack(alignment: .topLeading) {
             PulseTideCurve(kind: .water, usesMediumMetrics: usesMediumMetrics)
@@ -426,25 +341,15 @@ struct PulseWidgetHomeRenderer: View {
                     shoreColor.opacity(snapshot.isCheckedToday ? 0.75 : 0.58),
                     style: StrokeStyle(lineWidth: pt(1.7, in: size), lineCap: .round)
                 )
-            PulseTideCurve(kind: .foam, usesMediumMetrics: usesMediumMetrics)
+            PulseTideCurve(kind: .trace, usesMediumMetrics: usesMediumMetrics)
                 .stroke(
-                    shoreColor.opacity(0.28),
+                    shoreColor.opacity(snapshot.isCheckedToday ? 0.24 : 0.18),
                     style: StrokeStyle(lineWidth: pt(1, in: size), lineCap: .round)
                 )
-
-            PulseTideFish()
-                .fill(shoreColor.opacity(snapshot.isCheckedToday ? 0.48 : 0.34))
-                .frame(
-                    width: (usesMediumMetrics ? 21 : 18) * fishScale,
-                    height: (usesMediumMetrics ? 8 : 7) * fishScale
-                )
-                .rotationEffect(fishRotation)
-                .position(x: fishX, y: fishY)
-                .animation(PulseWidgetMotionPresentation.entryTransition, value: visualVariant)
-                .animation(PulseWidgetMotionPresentation.entryTransition, value: snapshot.isCheckedToday)
         }
         .frame(width: size.width, height: shoreHeight)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
+        .animation(motion(.tide), value: snapshot.isCheckedToday)
     }
 
     private func bleed(size: CGSize) -> some View {
@@ -467,6 +372,8 @@ struct PulseWidgetHomeRenderer: View {
                     x: pt(usesMediumMetrics ? 12 : 8, in: size),
                     y: pt(usesMediumMetrics ? 18 : 34, in: size)
                 )
+                .scaleEffect(snapshot.isCheckedToday ? 1 : 1.035, anchor: .leading)
+                .animation(motion(.number), value: snapshot.isCheckedToday)
 
             Text(verbatim: monthName)
                 .font(.system(size: pt(11, in: size), weight: .bold))
@@ -551,6 +458,8 @@ struct PulseWidgetHomeRenderer: View {
                 ritualSeal(side: sealSide, showsWash: false, showsCheck: true)
             }
             .frame(width: sealSide, height: sealSide)
+            .scaleEffect(snapshot.isCheckedToday ? 1 : 0.94)
+            .animation(motion(.letter), value: snapshot.isCheckedToday)
             .padding(.trailing, pt(usesMediumMetrics ? 16 : 12, in: size))
             .padding(.top, pt(usesMediumMetrics ? 14 : 12, in: size))
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
@@ -680,6 +589,7 @@ struct PulseWidgetHomeRenderer: View {
                 usesFullColorPalette: usesFullColorPalette
             )
             .frame(width: todaySide, height: todaySide)
+            .animation(motion(.footprint), value: snapshot.isCheckedToday)
             .padding(.trailing, pt(usesMediumMetrics ? 6 : 10, in: size))
             .padding(.bottom, pt(usesMediumMetrics ? 10 : 12, in: size))
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
@@ -699,6 +609,7 @@ struct PulseWidgetHomeRenderer: View {
             showsCheck: showsCheck
         )
         .frame(width: side, height: side)
+        .animation(motion(materialForCurrentStyle), value: snapshot.isCheckedToday)
     }
 
     private func sealAfterimage(side: CGFloat, size: CGSize) -> some View {
@@ -717,16 +628,16 @@ struct PulseWidgetHomeRenderer: View {
 
     private func placeAmbientField(size: CGSize) -> some View {
         let color = snapshot.isCheckedToday ? grassColor : fieldColor
-        let opacityScale = atmosphere.ambientOpacityScale
 
         return Ellipse()
-            .fill(color.opacity((usesFullColorPalette ? 0.085 : 0.055) * opacityScale))
+            .fill(color.opacity(usesFullColorPalette ? 0.085 : 0.055))
             .frame(
                 width: size.width * (usesMediumMetrics ? 0.58 : 0.92),
                 height: size.height * (usesMediumMetrics ? 1.18 : 0.72)
             )
-            .rotationEffect(.degrees((usesMediumMetrics ? -8 : -4) + atmosphere.ambientRotationOffset))
-            .animation(PulseWidgetMotionPresentation.entryTransition, value: visualVariant)
+            .rotationEffect(.degrees(usesMediumMetrics ? -8 : -4))
+            .scaleEffect(snapshot.isCheckedToday ? 1.03 : 1)
+            .animation(motion(.place), value: snapshot.isCheckedToday)
             .position(
                 x: size.width * (usesMediumMetrics ? 0.20 : 0.46),
                 y: size.height * (usesMediumMetrics ? 0.54 : 0.50)
@@ -735,11 +646,10 @@ struct PulseWidgetHomeRenderer: View {
 
     private func sealAmbientField(size: CGSize) -> some View {
         let color = snapshot.isCheckedToday ? grassColor : fieldColor
-        let opacityScale = atmosphere.ambientOpacityScale
 
         return ZStack {
             Circle()
-                .fill(color.opacity((usesFullColorPalette ? 0.075 : 0.045) * opacityScale))
+                .fill(color.opacity(usesFullColorPalette ? 0.075 : 0.045))
                 .frame(
                     width: size.height * (usesMediumMetrics ? 1.32 : 1.08),
                     height: size.height * (usesMediumMetrics ? 1.32 : 1.08)
@@ -751,7 +661,7 @@ struct PulseWidgetHomeRenderer: View {
 
             Circle()
                 .stroke(
-                    color.opacity((usesFullColorPalette ? 0.10 : 0.06) * opacityScale),
+                    color.opacity(usesFullColorPalette ? 0.10 : 0.06),
                     lineWidth: pt(18, in: size)
                 )
                 .frame(
@@ -763,30 +673,37 @@ struct PulseWidgetHomeRenderer: View {
                     y: size.height * 0.50
                 )
         }
-        .animation(PulseWidgetMotionPresentation.entryTransition, value: visualVariant)
+        .scaleEffect(snapshot.isCheckedToday ? 1.04 : 0.98)
+        .animation(motion(.ink), value: snapshot.isCheckedToday)
     }
 
     private func stackDeskMat(size: CGSize) -> some View {
         let color = snapshot.isCheckedToday ? grassColor : fieldColor
-        let opacityScale = atmosphere.ambientOpacityScale
 
         return RoundedRectangle(
             cornerRadius: pt(usesMediumMetrics ? 26 : 22, in: size),
             style: .continuous
         )
-        .fill(color.opacity((usesFullColorPalette ? 0.085 : 0.05) * opacityScale))
+        .fill(color.opacity(usesFullColorPalette ? 0.085 : 0.05))
         .frame(
             width: size.width - pt(usesMediumMetrics ? 10 : 12, in: size),
             height: size.height - pt(usesMediumMetrics ? 8 : 10, in: size)
         )
-        .rotationEffect(.degrees((usesMediumMetrics ? 1.3 : 1.8) + atmosphere.ambientRotationOffset))
-        .animation(PulseWidgetMotionPresentation.entryTransition, value: visualVariant)
+        .rotationEffect(.degrees(usesMediumMetrics ? 1.3 : 1.8))
+        .scaleEffect(snapshot.isCheckedToday ? 0.99 : 1)
+        .animation(motion(.paper), value: snapshot.isCheckedToday)
         .position(x: size.width / 2, y: size.height / 2 + pt(2, in: size))
     }
 
     private func stackedPaperBackdrop(size: CGSize) -> some View {
         let paperFrame = stackTopPaperFrame(in: size)
-        let layerStep = pt(usesMediumMetrics ? 3.5 : 3, in: size)
+        let pendingLayerStep = usesMediumMetrics
+            ? PulseWidgetDesign.stackPendingLayerStepMedium
+            : PulseWidgetDesign.stackPendingLayerStepSmall
+        let checkedLayerStep = usesMediumMetrics
+            ? PulseWidgetDesign.stackCheckedLayerStepMedium
+            : PulseWidgetDesign.stackCheckedLayerStepSmall
+        let layerStep = pt(snapshot.isCheckedToday ? checkedLayerStep : pendingLayerStep, in: size)
 
         return ZStack {
             ForEach(0..<PulseWidgetDesign.stackPhysicalSheetCount, id: \.self) { index in
@@ -821,6 +738,7 @@ struct PulseWidgetHomeRenderer: View {
         }
         .frame(width: paperFrame.width, height: paperFrame.height)
         .position(x: paperFrame.midX, y: paperFrame.midY)
+        .animation(motion(.paper), value: snapshot.isCheckedToday)
     }
 
     private func stackTopPaperFrame(in size: CGSize) -> CGRect {
@@ -851,22 +769,22 @@ struct PulseWidgetHomeRenderer: View {
 
     private func mistField(size: CGSize) -> some View {
         let color = snapshot.isCheckedToday ? grassColor : fieldColor
-        let opacityScale = atmosphere.ambientOpacityScale
         return ZStack {
             Ellipse()
-                .fill(color.opacity(0.10 * opacityScale))
+                .fill(color.opacity(0.10))
                 .frame(width: size.width * 0.88, height: size.height * 0.43)
                 .position(x: size.width * 0.30, y: size.height * (usesMediumMetrics ? 0.62 : 0.74))
             Ellipse()
-                .fill(color.opacity(0.14 * opacityScale))
+                .fill(color.opacity(0.14))
                 .frame(width: size.width * 0.73, height: size.height * 0.36)
                 .position(x: size.width * 0.69, y: size.height * (usesMediumMetrics ? 0.70 : 0.83))
             Ellipse()
-                .fill(color.opacity(0.08 * opacityScale))
+                .fill(color.opacity(0.08))
                 .frame(width: size.width, height: size.height * 0.33)
                 .position(x: size.width * 0.49, y: size.height * (usesMediumMetrics ? 0.84 : 0.92))
         }
-        .animation(PulseWidgetMotionPresentation.entryTransition, value: visualVariant)
+        .scaleEffect(x: snapshot.isCheckedToday ? 0.98 : 1.03, y: 1)
+        .animation(motion(.number), value: snapshot.isCheckedToday)
     }
 
     private func postmarkRow(size: CGSize) -> some View {
@@ -915,47 +833,46 @@ struct PulseWidgetHomeRenderer: View {
             y: size.height - pt(usesMediumMetrics ? 7 : 6, in: size)
         )
         let color = snapshot.isCheckedToday ? grassColor : fieldColor
-        let opacityScale = atmosphere.ambientOpacityScale
 
         return ZStack {
             Circle()
-                .fill(color.opacity((snapshot.isCheckedToday ? 0.15 : 0.12) * opacityScale))
+                .fill(color.opacity(snapshot.isCheckedToday ? 0.15 : 0.12))
                 .frame(width: ringSide * 0.82, height: ringSide * 0.82)
             Circle()
-                .stroke(color.opacity(0.38 * opacityScale), lineWidth: pt(1.2, in: size))
+                .stroke(color.opacity(0.38), lineWidth: pt(1.2, in: size))
                 .frame(width: ringSide, height: ringSide)
             Circle()
-                .stroke(color.opacity(0.13 * opacityScale), lineWidth: pt(16, in: size))
+                .stroke(color.opacity(0.13), lineWidth: pt(16, in: size))
                 .frame(width: ringSide + pt(20, in: size), height: ringSide + pt(20, in: size))
             Circle()
-                .stroke(color.opacity(0.065 * opacityScale), lineWidth: pt(20, in: size))
+                .stroke(color.opacity(0.065), lineWidth: pt(20, in: size))
                 .frame(width: ringSide + pt(58, in: size), height: ringSide + pt(58, in: size))
         }
-        .animation(PulseWidgetMotionPresentation.entryTransition, value: visualVariant)
+        .scaleEffect(snapshot.isCheckedToday ? 1.06 : 0.96)
+        .animation(motion(.echo), value: snapshot.isCheckedToday)
         .position(center)
     }
 
     private func pathGround(size: CGSize) -> some View {
         let color = snapshot.isCheckedToday ? grassColor : fieldColor
-        let opacityScale = atmosphere.ambientOpacityScale
 
         return ZStack {
             Ellipse()
-                .fill(color.opacity((usesFullColorPalette ? 0.075 : 0.045) * opacityScale))
+                .fill(color.opacity(usesFullColorPalette ? 0.075 : 0.045))
                 .frame(width: size.width * 1.12, height: size.height * 0.45)
                 .rotationEffect(.degrees(-6))
                 .position(x: size.width * 0.43, y: size.height * 0.78)
 
             Ellipse()
                 .stroke(
-                    color.opacity((usesFullColorPalette ? 0.12 : 0.07) * opacityScale),
+                    color.opacity(usesFullColorPalette ? 0.12 : 0.07),
                     lineWidth: pt(1, in: size)
                 )
                 .frame(width: size.width * 0.82, height: size.height * 0.28)
                 .rotationEffect(.degrees(-6))
                 .position(x: size.width * 0.48, y: size.height * 0.76)
         }
-        .animation(PulseWidgetMotionPresentation.entryTransition, value: visualVariant)
+        .animation(motion(.footprint), value: snapshot.isCheckedToday)
     }
 
     private func pathTrail(size: CGSize) -> some View {
@@ -1117,6 +1034,23 @@ struct PulseWidgetHomeRenderer: View {
         )
     }
 
+    private var materialForCurrentStyle: PulseWidgetMotionPresentation.Material {
+        switch style {
+        case .place: .place
+        case .seal: .ink
+        case .stack: .paper
+        case .bleed: .number
+        case .letter: .letter
+        case .field: .echo
+        case .path: .footprint
+        case .tide: .tide
+        }
+    }
+
+    private func motion(_ material: PulseWidgetMotionPresentation.Material) -> Animation? {
+        PulseWidgetMotionPresentation.animation(for: material, allowsMotion: allowsMotion)
+    }
+
     private func pt(_ value: CGFloat, in size: CGSize) -> CGFloat {
         value * size.height / 158
     }
@@ -1199,20 +1133,11 @@ private struct PulseTideDayMark: View {
                     .fill(ringColor.opacity(isChecked ? 0.22 : 0.12))
                     .frame(width: side * 0.52, height: side * 0.52)
 
-                if isChecked {
-                    Circle()
-                        .stroke(ringColor, lineWidth: side * 0.052)
-                        .padding(side * 0.052 / 2)
-                } else {
-                    Circle()
-                        .trim(from: 0, to: 0.867)
-                        .stroke(
-                            ringColor,
-                            style: StrokeStyle(lineWidth: side * 0.052, lineCap: .round)
-                        )
-                        .rotationEffect(.degrees(-18))
-                        .padding(side * 0.052 / 2)
-                }
+                PulseStateRing(
+                    isChecked: isChecked,
+                    color: ringColor,
+                    lineWidth: side * 0.052
+                )
             }
             .frame(width: side, height: side)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -1230,7 +1155,7 @@ private struct PulseTideCurve: Shape {
     enum Kind {
         case water
         case lip
-        case foam
+        case trace
     }
 
     let kind: Kind
@@ -1242,7 +1167,7 @@ private struct PulseTideCurve: Shape {
         let points: [CGPoint]
 
         if usesMediumMetrics {
-            points = kind == .foam
+            points = kind == .trace
                 ? [
                     CGPoint(x: -8, y: 50), CGPoint(x: 52, y: 36),
                     CGPoint(x: 108, y: 58), CGPoint(x: 170, y: 46),
@@ -1256,7 +1181,7 @@ private struct PulseTideCurve: Shape {
                     CGPoint(x: 348, y: 34),
                 ]
         } else {
-            points = kind == .foam
+            points = kind == .trace
                 ? [
                     CGPoint(x: -4, y: 44), CGPoint(x: 30, y: 34),
                     CGPoint(x: 58, y: 50), CGPoint(x: 86, y: 42),
@@ -1301,22 +1226,6 @@ private struct PulseTideCurve: Shape {
     }
 }
 
-private struct PulseTideFish: Shape {
-    func path(in rect: CGRect) -> Path {
-        var path = Path(ellipseIn: CGRect(
-            x: rect.minX,
-            y: rect.midY - rect.height * 0.40,
-            width: rect.width * 0.66,
-            height: rect.height * 0.80
-        ))
-        path.move(to: CGPoint(x: rect.minX + rect.width * 0.58, y: rect.midY))
-        path.addLine(to: CGPoint(x: rect.maxX, y: rect.minY))
-        path.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY))
-        path.closeSubpath()
-        return path
-    }
-}
-
 private struct PulseRitualSealMark: View {
     let isChecked: Bool
     let usesFullColorPalette: Bool
@@ -1329,9 +1238,17 @@ private struct PulseRitualSealMark: View {
             let side = min(proxy.size.width, proxy.size.height)
             ZStack {
                 if showsWash {
-                    ritualRing(color: ringColor.opacity(0.22), width: side * 0.18)
+                    PulseStateRing(
+                        isChecked: isChecked,
+                        color: ringColor.opacity(0.22),
+                        lineWidth: side * 0.18
+                    )
                 }
-                ritualRing(color: ringColor, width: side * 0.055)
+                PulseStateRing(
+                    isChecked: isChecked,
+                    color: ringColor,
+                    lineWidth: side * 0.055
+                )
 
                 Circle()
                     .fill(ringColor.opacity(isChecked ? 1 : 0.10))
@@ -1358,19 +1275,6 @@ private struct PulseRitualSealMark: View {
         .accessibilityHidden(true)
     }
 
-    @ViewBuilder
-    private func ritualRing(color: Color, width: CGFloat) -> some View {
-        if isChecked {
-            Circle().stroke(color, lineWidth: width).padding(width / 2)
-        } else {
-            Circle()
-                .trim(from: 0, to: 0.867)
-                .stroke(color, style: StrokeStyle(lineWidth: width, lineCap: .round))
-                .rotationEffect(.degrees(-18))
-                .padding(width / 2)
-        }
-    }
-
     private var ringColor: Color {
         guard usesFullColorPalette else { return .primary }
         return isChecked ? PulseWidgetDesign.grass : PulseWidgetDesign.field
@@ -1394,20 +1298,11 @@ private struct PulsePathTodayMark: View {
         GeometryReader { proxy in
             let side = min(proxy.size.width, proxy.size.height)
             ZStack {
-                if isChecked {
-                    Circle()
-                        .stroke(ringColor, lineWidth: side * 0.055)
-                        .padding(side * 0.055 / 2)
-                } else {
-                    Circle()
-                        .trim(from: 0, to: 0.867)
-                        .stroke(
-                            ringColor,
-                            style: StrokeStyle(lineWidth: side * 0.055, lineCap: .round)
-                        )
-                        .rotationEffect(.degrees(-18))
-                        .padding(side * 0.055 / 2)
-                }
+                PulseStateRing(
+                    isChecked: isChecked,
+                    color: ringColor,
+                    lineWidth: side * 0.055
+                )
                 Circle()
                     .fill(ringColor.opacity(isChecked ? 0.18 : 0.12))
                     .frame(width: side * 0.40, height: side * 0.40)
@@ -1445,6 +1340,25 @@ private struct PulsePathTodayMark: View {
 
     private var completedForeground: Color {
         usesFullColorPalette ? PulseWidgetDesign.grassForeground : .black
+    }
+}
+
+private struct PulseStateRing: View {
+    let isChecked: Bool
+    let color: Color
+    let lineWidth: CGFloat
+
+    var body: some View {
+        Circle()
+            .trim(from: 0, to: isChecked ? 1 : PulseWidgetDesign.openRingTrim)
+            .stroke(
+                color,
+                style: StrokeStyle(lineWidth: lineWidth, lineCap: .round)
+            )
+            .rotationEffect(.degrees(
+                isChecked ? 0 : PulseWidgetDesign.openRingRotationDegrees
+            ))
+            .padding(lineWidth / 2)
     }
 }
 
@@ -1608,10 +1522,20 @@ enum PulseWidgetDesign {
     static let secondary = Color("PulseSecondary")
     static let field = Color("PulseField")
     static let shadow = Color("PulseShadow")
-    static let widgetSky = Color("PulseWidgetSky")
-    static let widgetSkyMiddle = Color("PulseWidgetSkyMiddle")
-
     static let stackPhysicalSheetCount = 4
+
+    static let stackPendingLayerStepMedium: CGFloat = 3.5
+    static let stackPendingLayerStepSmall: CGFloat = 3
+    static let stackCheckedLayerStepMedium: CGFloat = 2.4
+    static let stackCheckedLayerStepSmall: CGFloat = 2.1
+    static let tidePendingHeightRatioMedium: CGFloat = 0.38
+    static let tidePendingHeightRatioSmall: CGFloat = 0.40
+    static let tideCheckedHeightRatioMedium: CGFloat = 0.48
+    static let tideCheckedHeightRatioSmall: CGFloat = 0.52
+    static let tideSmallMarkXRatio: CGFloat = 0.70
+    static let tideLipInverseRatio: CGFloat = 0.62
+    static let openRingTrim: CGFloat = 312 / 360
+    static let openRingRotationDegrees = -18.0
 
     static let spacing4: CGFloat = 4
     static let spacing8: CGFloat = 8

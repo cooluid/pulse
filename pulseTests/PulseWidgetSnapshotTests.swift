@@ -201,12 +201,12 @@ final class PulseWidgetSnapshotTests: XCTestCase {
             plan.reloadAfter,
             makeDate(2026, 8, 12, 0, timeZone: timeZone)
         )
-        XCTAssertGreaterThan(plan.entries.count, 1)
+        XCTAssertEqual(plan.entries.count, 2)
         XCTAssertEqual(plan.entries.first?.snapshot.today.storageValue, "2026-08-11")
         XCTAssertEqual(plan.entries.last?.date, plan.reloadAfter)
     }
 
-    func testTimelinePlanUsesPhaseKeyframesByDefault() throws {
+    func testTimelinePlanContainsOnlyCurrentFactAndNextLogicalDay() throws {
         let timeZone = try XCTUnwrap(TimeZone(identifier: "Asia/Shanghai"))
         let now = makeDate(2026, 8, 11, 8, timeZone: timeZone)
         let repository = try makeRepository(clock: MutableWidgetClock(now: now))
@@ -222,56 +222,13 @@ final class PulseWidgetSnapshotTests: XCTestCase {
                 at: now
             )
         )
-        let phaseBoundaries = plan.entries
-            .dropLast()
-            .map(\.date)
-            .filter { $0 > now }
-
-        XCTAssertEqual(
-            phaseBoundaries,
-            [
-                makeDate(2026, 8, 11, 12, timeZone: timeZone),
-                makeDate(2026, 8, 11, 18, timeZone: timeZone),
-                makeDate(2026, 8, 11, 22, timeZone: timeZone),
-            ]
-        )
-        XCTAssertEqual(plan.entries.map(\.variant.phase), [.morning, .midday, .evening, .night, .night])
-    }
-
-    func testTimelinePlanUsesSingleFrameWhenRequested() throws {
-        let timeZone = try XCTUnwrap(TimeZone(identifier: "Asia/Shanghai"))
-        let now = makeDate(2026, 8, 11, 8, timeZone: timeZone)
-        let repository = try makeRepository(clock: MutableWidgetClock(now: now))
-        let initialHabit = try repository.primaryHabit(systemTimeZone: timeZone)
-        _ = try repository.updateIdentity(
-            habitID: initialHabit.id,
-            identity: HabitIdentity(userName: "每天走路", userPurpose: "保持活力")
-        )
-
-        let plan = try XCTUnwrap(
-            PulseWidgetSnapshotReader.readTimelinePlan(
-                repository: repository,
-                at: now,
-                presentationMode: .currentFrameOnly
-            )
-        )
-
         XCTAssertEqual(plan.entries.count, 2)
-        XCTAssertEqual(plan.entries.first?.variant.phase, .morning)
+        XCTAssertEqual(plan.entries.first?.date, now)
+        XCTAssertEqual(plan.entries.first?.snapshot.isCheckedToday, false)
         XCTAssertEqual(plan.entries.last?.date, makeDate(2026, 8, 12, 0, timeZone: timeZone))
-    }
-
-    func testOrnamentSeedIsStableForLogicalDay() {
-        let day = LogicalDay(year: 2026, month: 8, day: 11)
         XCTAssertEqual(
-            PulseWidgetVisualVariant.ornamentSeed(for: day),
-            PulseWidgetVisualVariant.ornamentSeed(for: day)
-        )
-        XCTAssertNotEqual(
-            PulseWidgetVisualVariant.ornamentSeed(for: day),
-            PulseWidgetVisualVariant.ornamentSeed(
-                for: LogicalDay(year: 2026, month: 8, day: 12)
-            )
+            plan.entries.last?.snapshot.today.storageValue,
+            "2026-08-12"
         )
     }
 

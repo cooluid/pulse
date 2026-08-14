@@ -12,8 +12,6 @@
     "separator" : "#D3D9CF",
     "shadow" : "#182D1D",
     "surface" : "#F6FAEF",
-    "widgetSky" : "#D0E6E3",
-    "widgetSkyMiddle" : "#F4F9EE",
     "tint" : "#1F5E34"
   },
   "dark" : {
@@ -29,8 +27,6 @@
     "separator" : "#3D4B3E",
     "shadow" : "#000000",
     "surface" : "#0D1C10",
-    "widgetSky" : "#0A1820",
-    "widgetSkyMiddle" : "#0D1B11",
     "tint" : "#91D55B"
   },
   "icon" : {

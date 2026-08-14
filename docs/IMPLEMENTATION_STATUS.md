@@ -35,6 +35,7 @@
 - 高阶权益从设置内嵌分组迁到独立权益页；商品价格只读 StoreKit，当前已交付权益只读 `PulseEnhancementContract.currentCapabilities`。权益页使用轻量身份区、横向构图预览、等宽满行权益卡和紧凑购买条，末项权益与恢复购买必须能完整滚到购买条上方。
 - Home Screen Widget 构图方向真源与正式共享渲染源已统一为八种仪式物件：待落之处、落印、叠印、数影、手札、静场、来路、潮痕，见 [docs/prototypes/widget-ritual-objects/](./prototypes/widget-ritual-objects/) 的正式清单；待落之处像素构图真源为 [widget-awaiting-place](./prototypes/widget-awaiting-place/pulse-widget-awaiting-place.html)，潮痕像素构图真源为 [01-tide-mark](./prototypes/widget-style-experiments/01-tide-mark/pulse-widget-tide-mark.html)。待落之处是唯一免费及默认构图，落印与其余六式统一由高阶权益解锁；应用内核心签到“落印”动作仍永久免费。App 画廊与 Extension 消费同一 `PulseWidgetHomeRenderer`；旧五式枚举、旧骨架、独立近似预览、硬编码假日期和重复七日摘要已删除。当前精修以“低彩度环境 + 高覆盖仪式物件 + 清楚明度层级”为统一质感：Widget 容器统一使用品牌环境底，只有真实纸面使用 surface；八式分别以留位场、印晕、桌垫、雾场、信纸环境、静场残影、路径地面与潮面建立填充，不套同一张装饰皮。叠印恒定为四页物理纸叠，纸层只表达厚度和触感，完全不映射历史、连续天数或计数；被否决的历史层数投影及其测试已删除。手札 clean-break 为单张笺纸，以左笺边、两条低对比书写纹、蜡封和独立邮戳建立身份，不再与叠印共用多纸语法；静场只加深右下回响核心及第一圈，不整体压暗；来路删除连续图表曲线和日期节点，以鞋底加趾印形成空间轨迹，并从不可变快照即时派生唯一一次 `六日 · N 印`，不保存派生计数。画廊权益徽章降为次级说明。用户提供的真实主屏截图曾否决此前叠印版本；当前仍须新真机主屏截图复验，不用 App 画廊代替 Widget host 结论。
 - Home Screen Widget 已改为 `AppIntentConfiguration`，构图由系统逐实例持有；Lock Screen“节律汇印”拆为无构图参数的独立 Widget kind。App Group 全局 `widget.style` 及 App 内伪“已选择”路径已删除。未签到 Home Screen 整块是唯一签到按钮；Extension 在 timeline 边界独立验证权益，未授权收费构图明确报未解锁，不静默替换。
+- Widget 动效已 clean-break 为权威签到事实驱动的单次物件变装：Timeline 只保留当前事实与下一逻辑日，不再生成晨/午/暮/夜装饰关键帧；八式的纸、墨、信笺、足迹、回声与潮面曲线集中由 `PulseWidgetMotionPresentation` 管理，Reduce Motion 直接呈现相同终态。已删除 `PulseWidgetVisualVariant`、phase/ornament seed 与旧 Motion Contract，不保留兼容入口。潮痕 V2 删除天空、天际线、云、太阳、鱼、天空渐变与两项专用 Color Set，只保留潮面、潮唇、一道潮迹和开放日环；App 画廊、Extension、品牌令牌、生成器与正式 HTML 构图真源已同步到同一路径。
 - 今日与记录照片详情已 clean-break 为同一个内容优先的系统 Sheet 骨架：统一导航栏、关闭、真实像素比例照片和尾侧管理菜单，不再重复 App 标志、保留三栏动作坞或建立两套详情实现。含照片状态统一使用 `.large`；只签到状态使用集中定义的语义紧凑 detent 并保留 `.large`，Accessibility 字号与紧凑高度直接使用 `.large`。已删除内容高度反馈循环、设备型号分支和散落 detent 数值；两种删除仍是独立事务与独立确认。
 - 根页面常态背景加入 18 秒低振幅呼吸与细线漂移，今日页额外使用三层低透明潮面增强可感知性，最高 12 fps；仅在 scene active 且未开启 Reduce Motion 时推进，后台与 Reduce Motion 使用静态相位。该环境层不得驱动按钮持续闪烁或伪装成进度反馈。
 - 首启、今日、记录、设置与购买文案统一为短句；删除运行时“低压力、面向所有用户免费、不是为了打分作证”等解释性废话。
@@ -47,13 +48,13 @@
 
 ## 当前自动化与构建证据
 
-验证环境：macOS 26.6、Xcode 26.4（17E192）、iPhone 17 Pro / iOS 26.4 Simulator（arm64）。
+验证环境：macOS 26.6、Xcode 26.6（17F113）、iPhone 17 Pro / iOS 26.5 Simulator（arm64）。
 
-- 当前生产渲染器已 clean-break 为八种仪式物件；Debug Simulator 的 App 与 Widget Extension 构建通过，123 项单元/集成测试全部通过。名称 4 / 12 字符边界、3 字符密码失败关闭、4 字符密码完整归档往返、12 字符首页投影、设置编辑持久化与密码按钮门禁均已覆盖；被产品语义否决的“纸层映射历史签到”实现和对应测试已一起删除，不保留兼容分支。对应首启、首页与加密备份定向 UI 流程的既有原始截图证据仍在；本轮另重跑八种构图逐项可达流程。统一记录详情的标准字号与 Accessibility XXXL 两条定向 UI 测试此前通过。当前只签到状态的稳定紧凑 Sheet、全高无障碍结构与来源锚定菜单均已按当前原始像素截图复审；对抗测试还证明仅设置 `destructive` role 会让菜单图标继承品牌绿，因此最终实现以集中 `UIColor.systemRed` 语义 tint 同步图标和文字，复跑截图通过。未重跑全部 UI 套件，也没有统一详情改造后“含照片”状态的新真机截图，不沿用用户提供的改造前真机图冒充当前证据。整个 1.1 仍受媒体真机、系统表面与分发门禁约束，保持 **ENGINEERING CANDIDATE / INTERFACE CANDIDATE**。
+- 当前生产渲染器已 clean-break 为八种仪式物件；本轮 Debug Simulator 的 App 与 Widget Extension 编译通过，124 项单元/集成测试全部通过。名称 4 / 12 字符边界、3 字符密码失败关闭、4 字符密码完整归档往返、12 字符首页投影、设置编辑持久化、密码按钮门禁，以及 Widget 仅生成当前事实与下一逻辑日两条 entry 均已覆盖；被产品语义否决的“纸层映射历史签到”和“时段装饰关键帧”实现及测试已一起删除，不保留兼容分支。对应首启、首页与加密备份定向 UI 流程的既有原始截图证据仍在；本轮重跑八种构图待签到/已签到逐项可达流程并保存 16 张附件。统一记录详情的标准字号与 Accessibility XXXL 两条定向 UI 测试此前通过。当前只签到状态的稳定紧凑 Sheet、全高无障碍结构与来源锚定菜单均已按当前原始像素截图复审；对抗测试还证明仅设置 `destructive` role 会让菜单图标继承品牌绿，因此最终实现以集中 `UIColor.systemRed` 语义 tint 同步图标和文字，复跑截图通过。未重跑全部 UI 套件，也没有统一详情改造后“含照片”状态的新真机截图，不沿用用户提供的改造前真机图冒充当前证据。整个 1.1 仍受媒体真机、系统表面与分发门禁约束，保持 **ENGINEERING CANDIDATE / INTERFACE CANDIDATE**。
 - 媒体自动化覆盖独立删除/重新关联、同日替换、文件安装/读取/审计、缩略图损坏、无相册回退、v2 归档往返、随机性、错误口令、篡改、v1 拒绝、缺条目与缩略图身份不匹配。
-- 本轮已三次取得八种 App 画廊待办/完成两态各十六张当前原始像素截图，并以共用正式渲染器复审；第二次专门验证叠印纸内排版，第三次验证手札、静场和来路的职责拆分。待落之处坑心只写“空着”且已有环境留位场；落印的印晕覆盖画面但不抢日期与承诺；叠印在待办和完成两态均稳定显示四页纸及独立桌垫，纸层不再随数据变化，日期、承诺、状态与今日印共同消费唯一最上层纸面矩形并完整收在纸内；数影保持大日号主角；手札成为单张笺纸；静场加深回响核心但不压暗整卡；来路使用真实六日计数与足印，潮痕保持天岸身份。结果仍仅是 **INTERFACE CANDIDATE**。App 内画廊不能替代真实 Home Screen 小号/中号 Widget host，也不能证明逐实例系统配置、独立 Lock Screen kind、accented/vibrant/Clear、Reduce Motion 或人体体验 GO。
-- 未签名 Release `generic/platform=iOS` 构建通过；Debug 静态分析通过；Swift 警告按错误处理。
-- 21 项品牌生成资产检查通过，包含由同一令牌确定性产出的 AppIcon 三外观、小尺寸评审图与潮痕天空语义色；App、InfoPlist 与 Widget String Catalog 可解析；App/Widget plist 可解析。
+- 本轮新增取得八种 App 画廊待办/完成两态共 16 张当前原始像素截图，并以共用正式渲染器复审。待落之处坑心只写“空着”且已有环境留位场；落印的印晕覆盖画面但不抢日期与承诺；叠印稳定显示四页纸及独立桌垫；数影保持大日号主角；手札为单张笺纸；静场加深回响核心但不压暗整卡；来路使用真实六日计数与足印；潮痕 V2 已无黑色装饰块、天空、云和鱼，待办为低潮开放环，完成为潮面上移与闭环。结果仍仅是 **INTERFACE CANDIDATE**。App 内画廊不能替代真实 Home Screen 小号/中号 Widget host，也不能证明系统实际 reload 动画、逐实例配置、独立 Lock Screen kind、accented/vibrant/Clear、Reduce Motion 或人体体验 GO。
+- 本轮未签名 Release `generic/platform=iOS Simulator` 构建通过；Debug 静态分析通过；Swift 警告按错误处理。
+- 19 项品牌生成资产检查通过，包含由同一令牌确定性产出的 AppIcon 三外观与小尺寸评审图；已删除潮痕两项天空语义色。App、InfoPlist 与 Widget String Catalog 可解析；App/Widget plist 可解析。
 - `git diff --check` 通过；生产 Swift 源码没有 TODO/FIXME/HACK、相册回退、样例照片或演示数据路径。
 
 ## 仍为 NO-GO 的证据

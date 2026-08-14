@@ -3,7 +3,6 @@ import AppIntents
 import Foundation
 import PulseCore
 import SwiftUI
-import UIKit
 import WidgetKit
 
 @main
@@ -176,7 +175,6 @@ private struct PulseWidgetEntry: TimelineEntry {
     let date: Date
     let state: PulseWidgetEntryState
     let language: PulseInterfaceLanguage
-    let visualVariant: PulseWidgetVisualVariant
 }
 
 @MainActor
@@ -185,8 +183,7 @@ private struct PulseWidgetProvider: AppIntentTimelineProvider {
         PulseWidgetEntry(
             date: .now,
             state: .ready(.placeholder, PulseWidgetStyleAccessPolicy.freeStyle),
-            language: .system,
-            visualVariant: .placeholder
+            language: .system
         )
     }
 
@@ -203,8 +200,7 @@ private struct PulseWidgetProvider: AppIntentTimelineProvider {
         return PulseWidgetRuntime.loadTimeline(
             at: .now,
             requestedStyle: configuration.style,
-            hasEnhancementEntitlement: hasEnhancement,
-            presentationMode: PulseWidgetRuntime.presentationMode
+            hasEnhancementEntitlement: hasEnhancement
         ).entries[0]
     }
 
@@ -218,8 +214,7 @@ private struct PulseWidgetProvider: AppIntentTimelineProvider {
         return PulseWidgetRuntime.loadTimeline(
             at: .now,
             requestedStyle: configuration.style,
-            hasEnhancementEntitlement: hasEnhancement,
-            presentationMode: PulseWidgetRuntime.presentationMode
+            hasEnhancementEntitlement: hasEnhancement
         )
     }
 }
@@ -230,8 +225,7 @@ private struct PulseAccessoryProvider: TimelineProvider {
         PulseWidgetEntry(
             date: .now,
             state: .ready(.placeholder, PulseWidgetStyleAccessPolicy.freeStyle),
-            language: .system,
-            visualVariant: .placeholder
+            language: .system
         )
     }
 
@@ -247,8 +241,7 @@ private struct PulseAccessoryProvider: TimelineProvider {
             PulseWidgetRuntime.loadTimeline(
                 at: .now,
                 requestedStyle: PulseWidgetStyleAccessPolicy.freeStyle,
-                hasEnhancementEntitlement: false,
-                presentationMode: PulseWidgetRuntime.presentationMode
+                hasEnhancementEntitlement: false
             ).entries[0]
         )
     }
@@ -261,8 +254,7 @@ private struct PulseAccessoryProvider: TimelineProvider {
             PulseWidgetRuntime.loadTimeline(
                 at: .now,
                 requestedStyle: PulseWidgetStyleAccessPolicy.freeStyle,
-                hasEnhancementEntitlement: false,
-                presentationMode: PulseWidgetRuntime.presentationMode
+                hasEnhancementEntitlement: false
             )
         )
     }
@@ -279,15 +271,10 @@ private enum PulseWidgetRuntime {
         }
     }
 
-    static var presentationMode: PulseWidgetMotionContract.PresentationMode {
-        UIAccessibility.isReduceMotionEnabled ? .currentFrameOnly : .phaseKeyframes
-    }
-
     static func loadTimeline(
         at date: Date,
         requestedStyle: PulseWidgetStyle,
-        hasEnhancementEntitlement: Bool,
-        presentationMode: PulseWidgetMotionContract.PresentationMode
+        hasEnhancementEntitlement: Bool
     ) -> Timeline<PulseWidgetEntry> {
         let context: PulseWidgetSharedRuntime.Context
         let language: PulseInterfaceLanguage
@@ -322,8 +309,7 @@ private enum PulseWidgetRuntime {
             }
             guard let plan = try PulseWidgetSnapshotReader.readTimelinePlan(
                 repository: repository,
-                at: date,
-                presentationMode: presentationMode
+                at: date
             ) else {
                 throw PulseWidgetSharedRuntime.RuntimeError.missingPrimaryHabit
             }
@@ -331,8 +317,7 @@ private enum PulseWidgetRuntime {
                 PulseWidgetEntry(
                     date: timelineEntry.date,
                     state: .ready(timelineEntry.snapshot, requestedStyle),
-                    language: language,
-                    visualVariant: timelineEntry.variant
+                    language: language
                 )
             }
             return TimelineResult(entries: entries, policy: .atEnd).timeline
@@ -367,18 +352,12 @@ private enum PulseWidgetRuntime {
         language: PulseInterfaceLanguage,
         retryAfter: TimeInterval
     ) -> TimelineResult {
-        let variant = PulseWidgetVisualVariant.make(
-            for: LogicalDay.resolve(at: date, timeZone: .current),
-            at: date,
-            timeZone: .current
-        )
         return TimelineResult(
             entries: [
                 PulseWidgetEntry(
                     date: date,
                     state: state,
-                    language: language,
-                    visualVariant: variant
+                    language: language
                 ),
             ],
             policy: .after(date.addingTimeInterval(retryAfter))
@@ -401,6 +380,7 @@ private struct PulseLocalizedWidgetView: View {
     @Environment(\.widgetRenderingMode) private var renderingMode
     @Environment(\.widgetContentMargins) private var widgetContentMargins
     @Environment(\.locale) private var locale
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         Group {
@@ -460,9 +440,9 @@ private struct PulseLocalizedWidgetView: View {
         let content = PulseWidgetHomeRenderer(
             snapshot: snapshot,
             style: style,
-            visualVariant: entry.visualVariant,
             usesMediumMetrics: usesMediumMetrics,
             usesFullColorPalette: usesFullColorPalette,
+            allowsMotion: !reduceMotion,
             statusText: String(
                 localized: snapshot.isCheckedToday
                     ? "widget.state.checked.editorial"
@@ -914,19 +894,6 @@ private extension PulseWidgetSnapshot {
                 timeZone: timeZone
             ),
             projectTimeZoneIdentifier: timeZone.identifier
-        )
-    }
-}
-
-private extension PulseWidgetVisualVariant {
-    static var placeholder: PulseWidgetVisualVariant {
-        let generatedAt = Date.now
-        let timeZone = TimeZone.current
-        let today = LogicalDay.resolve(at: generatedAt, timeZone: timeZone)
-        return PulseWidgetVisualVariant.make(
-            for: today,
-            at: generatedAt,
-            timeZone: timeZone
         )
     }
 }
