@@ -114,7 +114,7 @@ python3 scripts/build_brand_assets.py --check
 - 七日状态中，已签到为大实心，漏签为小实心低强调，项目开始前为小空心，今天待签到为大空心强调；状态不能只依赖颜色。手札邮戳可在已留下节点内增加勾形；来路的今日勾不得盖住日号。
 - Home Screen 未签到时，系统分配的完整可见区域是同一个单向签到 `Button`；完成态整块静态且不可撤销。禁止只让日印或某个日期节点可点，也禁止一张 Widget 出现多个等价签到入口。
 - Home Screen 与 Accessory 共用代码原生日环：312° 环段、9% 线宽、圆润端点；Home Screen 未签到使用 `action`，完成后使用 `grass`，Accessory 交给系统单色或着色调色板。完成态由实心内核、勾形、状态文字和辅助功能标签共同表达。
-- App 内构图画廊与 Widget Extension 必须编译同一份 `PulseWidgetHomeRenderer`；画廊只使用当前主承诺和当前七日事实生成的正式快照。禁止独立近似预览、硬编码日期、按索引伪造签到状态或在画廊提供不能配置已安装 Widget 的“已选择”状态。
+- App 内构图画廊与 Widget Extension 必须编译同一份 `PulseWidgetHomeRenderer`；画廊只使用当前主承诺和当前七日事实生成的正式快照。每张卡允许以明确标注的“预览变化”瞬时投影今天的待签到/已签到外观，用于重播同一 Renderer 的物件变化；该投影不得写入 Repository、App Group、偏好或 Timeline，过去六日事实保持不变。禁止独立近似预览、硬编码日期、按索引伪造历史状态或在画廊提供不能配置已安装 Widget 的“已选择”状态。
 - Home Screen 构图选择只存在于系统“编辑小组件”的 `WidgetConfigurationIntent`；无构图参数的 Lock Screen“节律汇印”是独立 Widget kind。Widget extension 在每次 snapshot/timeline 独立验证 entitlement；收费构图在权益未验证或撤销时必须明确显示“构图尚未解锁”，不得静默替换为待落之处，也不能读取 App 侧购买布尔副本。
 - Home Screen 固定显示主承诺名称且只读取 `Habit` 真源；Lock Screen、StandBy 与 Always-On 不显示主承诺正文，任何 Widget 都不显示可选备注或媒体。
 - Accessory 使用唯一“节律汇印”语法：圆形在今日开放环或完成印内部显示本地化当日纯数字；矩形左上显示今日短状态，过去六日节点上方显示真实日号并以连接线流向右侧唯一今日印记。不得把今天重复成第七个小节点。

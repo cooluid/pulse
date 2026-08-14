@@ -3479,6 +3479,23 @@
         }
       }
     },
+    "widget.gallery.enhancement.open" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "View Advanced Features"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "查看高级功能"
+          }
+        }
+      }
+    },
     "widget.gallery.included" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -3492,6 +3509,91 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "已包含"
+          }
+        }
+      }
+    },
+    "widget.gallery.preview.hint" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Shows the transition without changing today's check-in."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "只演示变化，不会改变今天的签到。"
+          }
+        }
+      }
+    },
+    "widget.gallery.preview.notice" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Preview the visual change here. Home Screen timing is scheduled by iOS."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "可在这里预览构图变化；主屏幕的实际过渡时机由 iOS 调度。"
+          }
+        }
+      }
+    },
+    "widget.gallery.preview.play" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Preview Change"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "预览变化"
+          }
+        }
+      }
+    },
+    "widget.gallery.preview.playing" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Previewing"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在预览"
+          }
+        }
+      }
+    },
+    "widget.gallery.preview.replay" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Replay"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "再次预览"
           }
         }
       }

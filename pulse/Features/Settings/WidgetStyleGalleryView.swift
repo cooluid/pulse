@@ -20,7 +20,14 @@ struct WidgetStyleGalleryView: View {
                     if let snapshot = model.widgetPresentationSnapshot {
                         LazyVGrid(columns: columns, spacing: PulseDesign.spacing20) {
                             ForEach(PulseWidgetStyle.allCases) { style in
-                                styleCard(style, snapshot: snapshot)
+                                PulseWidgetStyleCard(
+                                    style: style,
+                                    snapshot: snapshot,
+                                    isLocked: PulseWidgetStyleAccessPolicy
+                                        .requiresEnhancement(style)
+                                        && !model.featureAccess.hasEnhancement,
+                                    onOpenStore: { showsStore = true }
+                                )
                             }
                         }
                     } else {
@@ -53,6 +60,10 @@ struct WidgetStyleGalleryView: View {
                 .font(.footnote)
                 .foregroundStyle(PulseDesign.secondary)
                 .fixedSize(horizontal: false, vertical: true)
+            Label("widget.gallery.preview.notice", systemImage: "play.circle")
+                .font(.caption)
+                .foregroundStyle(PulseDesign.secondary)
+                .fixedSize(horizontal: false, vertical: true)
         }
         .padding(.horizontal, PulseDesign.spacing4)
     }
@@ -62,34 +73,20 @@ struct WidgetStyleGalleryView: View {
         return Array(repeating: GridItem(.flexible(), spacing: PulseDesign.spacing20), count: count)
     }
 
-    @ViewBuilder
-    private func styleCard(
-        _ style: PulseWidgetStyle,
-        snapshot: PulseWidgetSnapshot
-    ) -> some View {
-        let isLocked = PulseWidgetStyleAccessPolicy.requiresEnhancement(style)
-            && !model.featureAccess.hasEnhancement
+}
 
-        if isLocked {
-            Button {
-                showsStore = true
-            } label: {
-                styleCardContent(style, snapshot: snapshot, isLocked: true)
-            }
-            .buttonStyle(.plain)
-            .accessibilityIdentifier("widget.gallery.style.\(style.rawValue)")
-        } else {
-            styleCardContent(style, snapshot: snapshot, isLocked: false)
-                .accessibilityElement(children: .combine)
-                .accessibilityIdentifier("widget.gallery.style.\(style.rawValue)")
-        }
-    }
+private struct PulseWidgetStyleCard: View {
+    let style: PulseWidgetStyle
+    let snapshot: PulseWidgetSnapshot
+    let isLocked: Bool
+    let onOpenStore: () -> Void
 
-    private func styleCardContent(
-        _ style: PulseWidgetStyle,
-        snapshot: PulseWidgetSnapshot,
-        isLocked: Bool
-    ) -> some View {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.locale) private var locale
+    @State private var previewPhase = PreviewPhase.current
+    @State private var previewTask: Task<Void, Never>?
+
+    var body: some View {
         VStack(alignment: .leading, spacing: PulseDesign.spacing12) {
             GeometryReader { proxy in
                 let gap = PulseDesign.spacing8
@@ -101,14 +98,14 @@ struct WidgetStyleGalleryView: View {
                 HStack(spacing: gap) {
                     PulseWidgetStylePreview(
                         style: style,
-                        snapshot: snapshot,
+                        snapshot: presentedSnapshot,
                         usesMediumMetrics: false
                     )
                     .frame(width: previewHeight, height: previewHeight)
 
                     PulseWidgetStylePreview(
                         style: style,
-                        snapshot: snapshot,
+                        snapshot: presentedSnapshot,
                         usesMediumMetrics: true
                     )
                     .frame(
@@ -124,6 +121,7 @@ struct WidgetStyleGalleryView: View {
                     .font(.headline.weight(.semibold))
                     .foregroundStyle(PulseDesign.ink)
                 Spacer()
+                previewControl
                 if isLocked {
                     galleryBadge(
                         title: "widget.gallery.locked",
@@ -152,6 +150,20 @@ struct WidgetStyleGalleryView: View {
                 .font(.footnote)
                 .foregroundStyle(PulseDesign.secondary)
                 .fixedSize(horizontal: false, vertical: true)
+
+            if isLocked {
+                HStack {
+                    Spacer(minLength: 0)
+                    Button(action: onOpenStore) {
+                        Text("widget.gallery.enhancement.open")
+                            .font(.footnote.weight(.semibold))
+                            .frame(minHeight: PulseDesign.minimumHitTarget)
+                    }
+                    .buttonStyle(.borderless)
+                    .foregroundStyle(PulseDesign.action)
+                    .accessibilityIdentifier("widget.gallery.enhancement.\(style.rawValue)")
+                }
+            }
         }
         .padding(PulseDesign.spacing12)
         .background {
@@ -178,6 +190,136 @@ struct WidgetStyleGalleryView: View {
             cornerRadius: PulseDesign.widgetGalleryCardCornerRadius,
             style: .continuous
         ))
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel(Text(verbatim: accessibilitySummary))
+        .accessibilityIdentifier("widget.gallery.style.\(style.rawValue)")
+        .onChange(of: snapshot.isCheckedToday) { _, _ in
+            cancelPreviewAndRestoreFact()
+        }
+        .onDisappear {
+            previewTask?.cancel()
+            previewTask = nil
+        }
+    }
+
+    private var previewControl: some View {
+        Button(action: replayPreview) {
+            Image(systemName: previewButtonSystemImage)
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(PulseDesign.action)
+                .frame(
+                    width: PulseDesign.spacing32,
+                    height: PulseDesign.spacing32
+                )
+                .background(PulseDesign.background.opacity(0.86), in: Circle())
+                .overlay {
+                    Circle()
+                        .stroke(
+                            PulseDesign.separator.opacity(0.76),
+                            lineWidth: PulseDesign.thinLineWidth
+                        )
+                }
+                .frame(
+                    width: PulseDesign.minimumHitTarget,
+                    height: PulseDesign.minimumHitTarget
+                )
+                .contentShape(Circle())
+        }
+        .buttonStyle(.plain)
+        .disabled(isPreviewRunning)
+        .accessibilityLabel(previewButtonTitle)
+        .accessibilityHint("widget.gallery.preview.hint")
+        .accessibilityIdentifier("widget.gallery.preview.\(style.rawValue)")
+    }
+
+    private var presentedSnapshot: PulseWidgetSnapshot {
+        switch previewPhase {
+        case .current:
+            return snapshot
+        case .pending:
+            return snapshot.projectingTodayCheckInForGallery(false)
+        case .animating, .completed:
+            return snapshot.projectingTodayCheckInForGallery(true)
+        }
+    }
+
+    private var accessibilitySummary: String {
+        let accessKey: String
+        if isLocked {
+            accessKey = "widget.gallery.locked"
+        } else if PulseWidgetStyleAccessPolicy.requiresEnhancement(style) {
+            accessKey = "widget.gallery.unlocked"
+        } else {
+            accessKey = "widget.gallery.included"
+        }
+        return [
+            style.localizedName(locale: locale),
+            PulseLocalization.string(accessKey, locale: locale),
+            style.localizedDescription(locale: locale),
+        ].joined(separator: ", ")
+    }
+
+    private var isPreviewRunning: Bool {
+        previewPhase == .pending || previewPhase == .animating
+    }
+
+    private var previewButtonTitle: LocalizedStringKey {
+        switch previewPhase {
+        case .current:
+            return "widget.gallery.preview.play"
+        case .pending, .animating:
+            return "widget.gallery.preview.playing"
+        case .completed:
+            return "widget.gallery.preview.replay"
+        }
+    }
+
+    private var previewButtonSystemImage: String {
+        switch previewPhase {
+        case .current:
+            return "play.fill"
+        case .pending, .animating:
+            return "hourglass"
+        case .completed:
+            return "arrow.counterclockwise"
+        }
+    }
+
+    @MainActor
+    private func replayPreview() {
+        previewTask?.cancel()
+        var transaction = Transaction(animation: nil)
+        transaction.disablesAnimations = true
+        withTransaction(transaction) {
+            previewPhase = .pending
+        }
+
+        previewTask = Task { @MainActor in
+            do {
+                try await Task.sleep(for: PulseWidgetMotionPresentation.previewPreparationDelay)
+                try Task.checkCancellation()
+                previewPhase = .animating
+                try await Task.sleep(for: reduceMotion
+                    ? PulseWidgetMotionPresentation.reducedMotionPreviewCompletionDelay
+                    : PulseWidgetMotionPresentation.previewCompletionDelay)
+                try Task.checkCancellation()
+                previewPhase = .completed
+                previewTask = nil
+            } catch {
+                return
+            }
+        }
+    }
+
+    @MainActor
+    private func cancelPreviewAndRestoreFact() {
+        previewTask?.cancel()
+        previewTask = nil
+        var transaction = Transaction(animation: nil)
+        transaction.disablesAnimations = true
+        withTransaction(transaction) {
+            previewPhase = .current
+        }
     }
 
     private func galleryBadge(
@@ -192,6 +334,36 @@ struct WidgetStyleGalleryView: View {
             .padding(.horizontal, PulseDesign.spacing8)
             .padding(.vertical, PulseDesign.spacing4)
             .background(background, in: Capsule())
+    }
+
+    private enum PreviewPhase {
+        case current
+        case pending
+        case animating
+        case completed
+    }
+}
+
+extension PulseWidgetSnapshot {
+    func projectingTodayCheckInForGallery(_ isChecked: Bool) -> PulseWidgetSnapshot {
+        let projectedRecentDays = recentDays.map { daySnapshot in
+            guard daySnapshot.day == today else { return daySnapshot }
+            return PulseWidgetDaySnapshot(
+                day: daySnapshot.day,
+                state: isChecked ? .checked : .todayPending
+            )
+        }
+
+        return PulseWidgetSnapshot(
+            habitID: habitID,
+            habitName: habitName,
+            today: today,
+            checkedAt: isChecked ? (checkedAt ?? generatedAt) : nil,
+            recentDays: projectedRecentDays,
+            generatedAt: generatedAt,
+            nextDayBoundary: nextDayBoundary,
+            projectTimeZoneIdentifier: projectTimeZoneIdentifier
+        )
     }
 }
 

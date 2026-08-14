@@ -247,11 +247,24 @@ final class PulseFlowUITests: XCTestCase {
         let includedOption = app.descendants(matching: .any)[
             "widget.gallery.style.place"
         ]
-        let premiumOption = app.buttons["widget.gallery.style.seal"]
+        let premiumOption = app.descendants(matching: .any)["widget.gallery.style.seal"]
+        let premiumStoreButton = app.buttons["widget.gallery.enhancement.seal"]
         XCTAssertTrue(includedOption.waitForExistence(timeout: 3))
         XCTAssertTrue(premiumOption.waitForExistence(timeout: 3))
         XCTAssertTrue(includedOption.label.contains("已包含"))
         XCTAssertTrue(premiumOption.label.contains("高级功能"))
+
+        let previewButton = app.buttons["widget.gallery.preview.place"]
+        XCTAssertTrue(previewButton.waitForExistence(timeout: 3))
+        previewButton.tap()
+        let replayLabel = NSPredicate(format: "label == %@", "再次预览")
+        expectation(for: replayLabel, evaluatedWith: previewButton)
+        waitForExpectations(timeout: 3)
+
+        let previewAttachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
+        previewAttachment.name = "Widget change preview completed without check-in"
+        previewAttachment.lifetime = .keepAlways
+        add(previewAttachment)
 
         let optionsAttachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
         optionsAttachment.name = "Free and advanced widget compositions"
@@ -259,14 +272,15 @@ final class PulseFlowUITests: XCTestCase {
         add(optionsAttachment)
 
         let window = app.windows.firstMatch
-        for _ in 0..<4 where !premiumOption.isHittable
-            || premiumOption.frame.maxY > window.frame.maxY - 20 {
+        for _ in 0..<4 where !premiumStoreButton.isHittable
+            || premiumStoreButton.frame.maxY > window.frame.maxY - 20 {
             app.swipeUp()
         }
-        XCTAssertTrue(premiumOption.isHittable)
-        XCTAssertLessThanOrEqual(premiumOption.frame.maxY, window.frame.maxY - 20)
+        XCTAssertTrue(premiumStoreButton.waitForExistence(timeout: 3))
+        XCTAssertTrue(premiumStoreButton.isHittable)
+        XCTAssertLessThanOrEqual(premiumStoreButton.frame.maxY, window.frame.maxY - 20)
 
-        premiumOption.tap()
+        premiumStoreButton.tap()
         XCTAssertTrue(app.buttons["store.buy"].waitForExistence(timeout: 3))
     }
 

@@ -232,6 +232,34 @@ final class PulseWidgetSnapshotTests: XCTestCase {
         )
     }
 
+    func testGalleryCheckInProjectionDoesNotMutateAuthoritativeSnapshot() throws {
+        let timeZone = try XCTUnwrap(TimeZone(identifier: "Asia/Shanghai"))
+        let now = makeDate(2026, 8, 11, 8, timeZone: timeZone)
+        let repository = try makeRepository(clock: MutableWidgetClock(now: now))
+        let initialHabit = try repository.primaryHabit(systemTimeZone: timeZone)
+        _ = try repository.updateIdentity(
+            habitID: initialHabit.id,
+            identity: HabitIdentity(userName: "每天走路", userPurpose: "保持活力")
+        )
+        let snapshot = try XCTUnwrap(
+            PulseWidgetSnapshotReader.readTimelinePlan(
+                repository: repository,
+                at: now
+            )?.snapshot
+        )
+
+        let completedPreview = snapshot.projectingTodayCheckInForGallery(true)
+        let pendingPreview = completedPreview.projectingTodayCheckInForGallery(false)
+
+        XCTAssertFalse(snapshot.isCheckedToday)
+        XCTAssertEqual(snapshot.recentDays.last?.state, .todayPending)
+        XCTAssertTrue(completedPreview.isCheckedToday)
+        XCTAssertEqual(completedPreview.recentDays.last?.state, .checked)
+        XCTAssertFalse(pendingPreview.isCheckedToday)
+        XCTAssertEqual(pendingPreview.recentDays.last?.state, .todayPending)
+        XCTAssertEqual(completedPreview.previousSixCheckedCount, snapshot.previousSixCheckedCount)
+    }
+
     func testProjectionIncludesTodayReceipt() throws {
         let timeZone = try XCTUnwrap(TimeZone(identifier: "Asia/Shanghai"))
         let now = makeDate(2026, 8, 11, 7, timeZone: timeZone)

@@ -75,6 +75,8 @@ struct PulseWidgetHomeRenderer: View {
             .clipped()
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .contentTransition(allowsMotion ? .interpolate : .identity)
+        .animation(motion(materialForCurrentStyle), value: snapshot.isCheckedToday)
     }
 
     private func place(size: CGSize) -> some View {
