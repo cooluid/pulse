@@ -448,7 +448,7 @@
     }
     .bleed-medium .today-hit .mark-label { font-size: 10px; }
 
-    /* 04 Letter — one sheet of stationery; ink and wax on the same paper */
+    /* 04 Letter — one sheet of stationery; one primary date seal and six past marks */
     .letter {
       padding: 0;
       background: var(--bg);
@@ -490,9 +490,6 @@
       font-weight: 650;
       letter-spacing: .02em;
     }
-    .letter .letterhead .day {
-      display: none;
-    }
     .letter .seal {
       position: absolute;
       right: 12px;
@@ -500,7 +497,20 @@
       width: 52px;
       height: 52px;
       z-index: 3;
-      color: var(--field);
+      color: var(--action);
+      transform: rotate(2.5deg);
+    }
+    .letter .seal::before {
+      content: "";
+      position: absolute;
+      right: calc(100% - 2px);
+      top: 19px;
+      width: 14px;
+      height: 2px;
+      border-radius: 999px;
+      background: currentColor;
+      box-shadow: 3px 7px 0 currentColor;
+      opacity: .30;
     }
     .letter .wafer {
       position: absolute;
@@ -528,19 +538,23 @@
       place-items: center;
       z-index: 2;
       margin: 0;
-      font-size: 10px;
+      font-size: 16px;
       font-weight: 700;
       letter-spacing: -.04em;
       color: var(--action);
       pointer-events: none;
     }
-    .letter.medium .seal .mark-label { font-size: 11px; }
-    body.checked .letter .seal .mark-label { display: none; }
+    .letter.medium .seal .mark-label { font-size: 18px; }
     body.checked .letter::before {
       background: color-mix(in srgb, var(--grass) 13%, var(--surface));
     }
-    body.checked .letter .seal { color: var(--grass); }
+    body.checked .letter .seal {
+      color: var(--grass);
+      transform: rotate(0);
+    }
+    body.checked .letter .seal::before { opacity: .58; }
     body.checked .letter .seal .core { opacity: 1; }
+    body.checked .letter .seal .mark-label { color: var(--grass-fg); }
     .letter .body {
       position: relative;
       z-index: 2;
@@ -582,47 +596,34 @@
       height: 34px;
       overflow: visible;
     }
-    .letter .mark text {
-      font-family: inherit;
-      font-size: 7.5px;
-      font-weight: 650;
-      text-anchor: middle;
-      fill: var(--secondary);
+    .letter .kept .press-base { fill: var(--field); opacity: .14; }
+    .letter .kept .press-ridges {
+      fill: none;
+      stroke: color-mix(in srgb, var(--field) 66%, transparent);
+      stroke-width: .95;
+      stroke-linecap: round;
+      stroke-linejoin: round;
     }
-    .letter .kept circle { fill: var(--field); }
-    .letter .kept text { fill: var(--action); }
+    .letter .kept .press-smear { fill: var(--field); opacity: .34; }
+    .letter .kept .press-smear-primary { opacity: .46; }
     .letter .missed circle {
       fill: none;
       stroke: color-mix(in srgb, var(--secondary) 42%, transparent);
       stroke-width: 1.2;
     }
-    .letter .today circle {
+    .letter .before circle {
       fill: none;
-      stroke: var(--field);
-      stroke-width: 1.6;
-      stroke-linecap: round;
+      stroke: color-mix(in srgb, var(--secondary) 24%, transparent);
+      stroke-width: 1.2;
+      transform: scale(.82);
+      transform-origin: center;
     }
-    .letter .today text { fill: var(--action); font-weight: 720; }
-    body.checked .letter .today circle {
-      fill: var(--grass);
-      stroke: none;
-    }
-    body.checked .letter .today text { fill: var(--action); }
     .letter.medium {
       display: flex;
       flex-direction: column;
     }
     .letter.medium .letterhead {
       padding: 14px 18px 0;
-    }
-    .letter.medium .letterhead .day {
-      display: block;
-      margin-top: 4px;
-      font-size: 40px;
-      font-weight: 200;
-      letter-spacing: -.05em;
-      line-height: .88;
-      color: var(--action);
     }
     .letter.medium .seal {
       right: 16px;
@@ -634,8 +635,6 @@
     .letter.medium .body::before { left: 22px; top: 50px; width: 58%; }
     .letter.medium .habit { font-size: 28px; max-width: 8em; }
     .letter.medium .postmarks { height: 36px; }
-    .letter.medium .mark text { font-size: 10px; }
-    .letter.medium .today circle { stroke-width: 2; }
 
     /* 06 Path — impressions approach and arrive at today's seal */
     .path { background: var(--bg); }
@@ -1124,12 +1123,12 @@
         <div>
           <span class="idx">04 · LETTER</span>
           <h3>手札</h3>
-          <p>手札是一张独立浅色笺纸，不叠第二张垫纸。左笺边与两条低对比书写纹建立文具身份；右上蜡封是今天，下沿是一串彼此独立、等大的邮戳日印，不画连接轨，也不重复日期。它是单张笺纸上的附言，不是摆正的叠印。漏签空心，已留下实心，今天开口；完成时今天这枚邮戳才闭合，蜡封同时打勾。</p>
+          <p>手札是一张独立浅色笺纸，不叠第二张垫纸。左上只写月份，右上主日戳独占今天的日号；下沿六枚彼此独立、等大的邮路印只回看过去六日，不画连接轨，也不重复今天。它是单张笺纸上的附言，不是摆正的叠印。已签到由浅受压底、长短不一且彼此断开的指腹状残纹和两处深浅不同的偏压墨屑形成半实印泥残印；漏签是细空心，项目开始前更淡更小。残印不能缩成硬实圆点或等距彩虹 / 无线网络图标，也不画手掌、写实生物识别指纹或第二枚完整日环。完成时主日戳由开口压实闭合，但日号始终可读。</p>
           <span class="job">任务：我守住的那一件事 · 现有快照</span>
         </div>
         <div class="frames">
           <div class="widget letter">
-            <div class="letterhead"><div class="date">八月十三日</div></div>
+            <div class="letterhead"><div class="date">八月</div></div>
             <div class="seal" aria-hidden="true">
               <div class="wafer"></div>
               <svg class="only-pending" viewBox="0 0 100 100">
@@ -1139,21 +1138,23 @@
               <svg class="only-checked" viewBox="0 0 100 100">
                 <circle cx="50" cy="50" r="39" fill="none" stroke="currentColor" stroke-width="5.5"/>
                 <circle class="core" cx="50" cy="50" r="20"/>
-                <path d="M42 51 L48 58 L60 43" fill="none" stroke="var(--grass-fg)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
               </svg>
-              <span class="mark-label">留印</span>
+              <span class="mark-label">13</span>
             </div>
             <div class="body">
               <div class="habit">晨间<br>书写</div>
               <div class="foot">
                 <svg class="postmarks" viewBox="0 0 132 34" aria-hidden="true">
-                  <g class="mark kept" transform="translate(9 23)"><circle r="5"/><text y="-9">7</text></g>
-                  <g class="mark missed" transform="translate(28 23)"><circle r="5"/><text y="-9">8</text></g>
-                  <g class="mark kept" transform="translate(47 23)"><circle r="5"/><text y="-9">9</text></g>
-                  <g class="mark kept" transform="translate(66 23)"><circle r="5"/><text y="-9">10</text></g>
-                  <g class="mark missed" transform="translate(85 23)"><circle r="5"/><text y="-9">11</text></g>
-                  <g class="mark kept" transform="translate(104 23)"><circle r="5"/><text y="-9">12</text></g>
-                  <g class="mark today" transform="translate(123 23)"><circle r="5.6" pathLength="100" stroke-dasharray="86.7 13.3" transform="rotate(-18)"/><text y="-9">13</text></g>
+                  <defs>
+                    <path id="letter-press-base-small" d="M0-5 C2.8-5.1 5.2-2.7 4.8.5 C4.5 3.4 2.1 5.1-1 4.8 C-4.1 4.5-5.4 2.2-5-.7 C-4.6-3.5-2.6-4.8 0-5Z"/>
+                    <path id="letter-press-ridges-small" d="M-4.2 1.5 C-5.4-2.8 .2-5.7 2.8-3.6 M3.7-2.6 C4.4-2.1 4.4-.9 3.8-.3 M-3.1 3.2 C-4.3.1-1.2-3.2 1.8-1.9 M-.7 2.6 C-1.8.9-.6-1.1 1.1-.7"/>
+                  </defs>
+                  <g class="mark before" transform="translate(11 23)"><circle r="5"/></g>
+                  <g class="mark kept" transform="translate(33 23)"><g transform="rotate(-11)"><use class="press-base" href="#letter-press-base-small" transform="scale(.94 .84)"/><use class="press-ridges" href="#letter-press-ridges-small"/></g><ellipse class="press-smear press-smear-primary" cx="-1.6" cy="1" rx="1.25" ry=".8" transform="rotate(13 -1.6 1)"/><ellipse class="press-smear" cx="2.5" cy="2.8" rx="1.2" ry=".7" transform="rotate(-19 2.5 2.8)"/></g>
+                  <g class="mark missed" transform="translate(55 23)"><circle r="5"/></g>
+                  <g class="mark kept" transform="translate(77 23)"><g transform="rotate(-11)"><use class="press-base" href="#letter-press-base-small" transform="scale(.94 .84)"/><use class="press-ridges" href="#letter-press-ridges-small"/></g><ellipse class="press-smear press-smear-primary" cx="-1.6" cy="1" rx="1.25" ry=".8" transform="rotate(13 -1.6 1)"/><ellipse class="press-smear" cx="2.5" cy="2.8" rx="1.2" ry=".7" transform="rotate(-19 2.5 2.8)"/></g>
+                  <g class="mark kept" transform="translate(99 23)"><g transform="rotate(-11)"><use class="press-base" href="#letter-press-base-small" transform="scale(.94 .84)"/><use class="press-ridges" href="#letter-press-ridges-small"/></g><ellipse class="press-smear press-smear-primary" cx="-1.6" cy="1" rx="1.25" ry=".8" transform="rotate(13 -1.6 1)"/><ellipse class="press-smear" cx="2.5" cy="2.8" rx="1.2" ry=".7" transform="rotate(-19 2.5 2.8)"/></g>
+                  <g class="mark missed" transform="translate(121 23)"><circle r="5"/></g>
                 </svg>
               </div>
             </div>
@@ -1161,7 +1162,6 @@
           <div class="widget medium letter">
             <div class="letterhead">
               <div class="date">八月</div>
-              <div class="day">13</div>
             </div>
             <div class="seal" aria-hidden="true">
               <div class="wafer"></div>
@@ -1172,21 +1172,23 @@
               <svg class="only-checked" viewBox="0 0 100 100">
                 <circle cx="50" cy="50" r="39" fill="none" stroke="currentColor" stroke-width="5.5"/>
                 <circle class="core" cx="50" cy="50" r="20"/>
-                <path d="M42 51 L48 58 L60 43" fill="none" stroke="var(--grass-fg)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
               </svg>
-              <span class="mark-label">留印</span>
+              <span class="mark-label">13</span>
             </div>
             <div class="body">
               <div class="habit">晨间书写</div>
               <div class="foot">
                 <svg class="postmarks" viewBox="0 0 220 36" aria-hidden="true">
-                  <g class="mark kept" transform="translate(12 21)"><circle r="7"/><text y="-11">7</text></g>
-                  <g class="mark missed" transform="translate(45 21)"><circle r="7"/><text y="-11">8</text></g>
-                  <g class="mark kept" transform="translate(78 21)"><circle r="7"/><text y="-11">9</text></g>
-                  <g class="mark kept" transform="translate(111 21)"><circle r="7"/><text y="-11">10</text></g>
-                  <g class="mark missed" transform="translate(144 21)"><circle r="7"/><text y="-11">11</text></g>
-                  <g class="mark kept" transform="translate(177 21)"><circle r="7"/><text y="-11">12</text></g>
-                  <g class="mark today" transform="translate(208 21)"><circle r="8" pathLength="100" stroke-dasharray="86.7 13.3" transform="rotate(-18)"/><text y="-11">13</text></g>
+                  <defs>
+                    <path id="letter-press-base-medium" d="M0-5 C2.8-5.1 5.2-2.7 4.8.5 C4.5 3.4 2.1 5.1-1 4.8 C-4.1 4.5-5.4 2.2-5-.7 C-4.6-3.5-2.6-4.8 0-5Z"/>
+                    <path id="letter-press-ridges-medium" d="M-4.2 1.5 C-5.4-2.8 .2-5.7 2.8-3.6 M3.7-2.6 C4.4-2.1 4.4-.9 3.8-.3 M-3.1 3.2 C-4.3.1-1.2-3.2 1.8-1.9 M-.7 2.6 C-1.8.9-.6-1.1 1.1-.7"/>
+                  </defs>
+                  <g class="mark before" transform="translate(14 21)"><circle r="7"/></g>
+                  <g class="mark kept" transform="translate(52 21) scale(1.4)"><g transform="rotate(-11)"><use class="press-base" href="#letter-press-base-medium" transform="scale(.94 .84)"/><use class="press-ridges" href="#letter-press-ridges-medium"/></g><ellipse class="press-smear press-smear-primary" cx="-1.6" cy="1" rx="1.25" ry=".8" transform="rotate(13 -1.6 1)"/><ellipse class="press-smear" cx="2.5" cy="2.8" rx="1.2" ry=".7" transform="rotate(-19 2.5 2.8)"/></g>
+                  <g class="mark missed" transform="translate(90 21)"><circle r="7"/></g>
+                  <g class="mark kept" transform="translate(128 21) scale(1.4)"><g transform="rotate(-11)"><use class="press-base" href="#letter-press-base-medium" transform="scale(.94 .84)"/><use class="press-ridges" href="#letter-press-ridges-medium"/></g><ellipse class="press-smear press-smear-primary" cx="-1.6" cy="1" rx="1.25" ry=".8" transform="rotate(13 -1.6 1)"/><ellipse class="press-smear" cx="2.5" cy="2.8" rx="1.2" ry=".7" transform="rotate(-19 2.5 2.8)"/></g>
+                  <g class="mark kept" transform="translate(166 21) scale(1.4)"><g transform="rotate(-11)"><use class="press-base" href="#letter-press-base-medium" transform="scale(.94 .84)"/><use class="press-ridges" href="#letter-press-ridges-medium"/></g><ellipse class="press-smear press-smear-primary" cx="-1.6" cy="1" rx="1.25" ry=".8" transform="rotate(13 -1.6 1)"/><ellipse class="press-smear" cx="2.5" cy="2.8" rx="1.2" ry=".7" transform="rotate(-19 2.5 2.8)"/></g>
+                  <g class="mark missed" transform="translate(204 21)"><circle r="7"/></g>
                 </svg>
               </div>
             </div>

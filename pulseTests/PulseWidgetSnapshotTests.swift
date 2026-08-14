@@ -1,10 +1,118 @@
 import SwiftData
+import SwiftUI
 import XCTest
 @testable import PulseCore
 @testable import pulse
 
 @MainActor
 final class PulseWidgetSnapshotTests: XCTestCase {
+    func testLetterCompositionOwnsTodayInOneDateSealAndOnlySixPastMarks() throws {
+        let projectRoot = URL(fileURLWithPath: #filePath)
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+        let rendererSource = try String(
+            contentsOf: projectRoot
+                .appendingPathComponent("PulseWidgetUI", isDirectory: true)
+                .appendingPathComponent("PulseWidgetRenderer.swift", isDirectory: false),
+            encoding: .utf8
+        )
+        let prototypeSource = try String(
+            contentsOf: projectRoot
+                .appendingPathComponent("docs", isDirectory: true)
+                .appendingPathComponent("prototypes", isDirectory: true)
+                .appendingPathComponent("widget-ritual-objects", isDirectory: true)
+                .appendingPathComponent("pulse-widget-ritual-objects.html", isDirectory: false),
+            encoding: .utf8
+        )
+        let letterStart = try XCTUnwrap(prototypeSource.range(of: "04 · LETTER"))
+        let letterEnd = try XCTUnwrap(
+            prototypeSource.range(of: "05 · FIELD", range: letterStart.upperBound..<prototypeSource.endIndex)
+        )
+        let letterPrototype = String(prototypeSource[letterStart.lowerBound..<letterEnd.lowerBound])
+        let postmarkStart = try XCTUnwrap(rendererSource.range(of: "private func postmarkNode"))
+        let postmarkEnd = try XCTUnwrap(
+            rendererSource.range(
+                of: "private func quietFieldAfterimage",
+                range: postmarkStart.upperBound..<rendererSource.endIndex
+            )
+        )
+        let postmarkSource = String(rendererSource[postmarkStart.lowerBound..<postmarkEnd.lowerBound])
+
+        XCTAssertTrue(rendererSource.contains("private struct PulseLetterDateSeal"))
+        XCTAssertTrue(rendererSource.contains("snapshot.recentDays.dropLast()"))
+        XCTAssertFalse(rendererSource.contains("private struct PulseLetterClosureMark"))
+        XCTAssertTrue(postmarkSource.contains("PulseLetterPressedInkMark"))
+        XCTAssertTrue(postmarkSource.contains("item.state == .beforeHabit"))
+        XCTAssertEqual(
+            letterPrototype.components(separatedBy: "class=\"mark ").count - 1,
+            12,
+            "Small and medium prototypes must each render exactly six past-day marks."
+        )
+        XCTAssertFalse(letterPrototype.contains("class=\"mark today\""))
+        XCTAssertFalse(letterPrototype.contains("<div class=\"day\">"))
+        XCTAssertTrue(letterPrototype.contains("class=\"mark before\""))
+        XCTAssertTrue(letterPrototype.contains("class=\"press-ridges\""))
+        XCTAssertTrue(letterPrototype.contains("<span class=\"mark-label\">13</span>"))
+    }
+
+    func testLetterCompositionRendersMixedHistoricalFactsAtBothHomeSizes() throws {
+        let timeZone = try XCTUnwrap(TimeZone(identifier: "Asia/Shanghai"))
+        let today = LogicalDay(year: 2026, month: 8, day: 10)
+        let generatedAt = makeDate(2026, 8, 10, 12, timeZone: timeZone)
+        let snapshot = PulseWidgetSnapshot(
+            habitID: try XCTUnwrap(
+                UUID(uuidString: "9FA0F56B-6D71-4E81-B6ED-07BF287049A5")
+            ),
+            habitName: "我的一件事",
+            today: today,
+            checkedAt: nil,
+            recentDays: [
+                PulseWidgetDaySnapshot(day: LogicalDay(year: 2026, month: 8, day: 4), state: .beforeHabit),
+                PulseWidgetDaySnapshot(day: LogicalDay(year: 2026, month: 8, day: 5), state: .checked),
+                PulseWidgetDaySnapshot(day: LogicalDay(year: 2026, month: 8, day: 6), state: .missed),
+                PulseWidgetDaySnapshot(day: LogicalDay(year: 2026, month: 8, day: 7), state: .checked),
+                PulseWidgetDaySnapshot(day: LogicalDay(year: 2026, month: 8, day: 8), state: .checked),
+                PulseWidgetDaySnapshot(day: LogicalDay(year: 2026, month: 8, day: 9), state: .missed),
+                PulseWidgetDaySnapshot(day: today, state: .todayPending),
+            ],
+            generatedAt: generatedAt,
+            nextDayBoundary: makeDate(2026, 8, 11, 0, timeZone: timeZone),
+            projectTimeZoneIdentifier: timeZone.identifier
+        )
+        let configurations: [(name: String, size: CGSize, usesMediumMetrics: Bool)] = [
+            ("small", CGSize(width: 158, height: 158), false),
+            ("medium", CGSize(width: 338, height: 158), true),
+        ]
+
+        for configuration in configurations {
+            let content = PulseWidgetHomeRenderer(
+                snapshot: snapshot,
+                style: .letter,
+                usesMediumMetrics: configuration.usesMediumMetrics,
+                usesFullColorPalette: true,
+                allowsMotion: false,
+                statusText: "今天还未签到",
+                pathSummaryFormat: "六日 · %d 印",
+                actionText: "留印",
+                emptyPlaceText: "空着",
+                placeStatusText: "今天还未签到"
+            )
+            .environment(\.locale, Locale(identifier: "zh-Hans"))
+            .frame(width: configuration.size.width, height: configuration.size.height)
+
+            let renderer = ImageRenderer(content: content)
+            renderer.scale = 3
+            let image = try XCTUnwrap(renderer.uiImage)
+            XCTAssertEqual(image.size.width, configuration.size.width, accuracy: 0.5)
+            XCTAssertEqual(image.size.height, configuration.size.height, accuracy: 0.5)
+
+            let attachment = XCTAttachment(image: image)
+            attachment.name = "Letter mixed history \(configuration.name)"
+            attachment.lifetime = .keepAlways
+            add(attachment)
+        }
+    }
+
     func testWidgetAppIntentsAreSharedWithTheContainerApp() throws {
         let projectRoot = URL(fileURLWithPath: #filePath)
             .deletingLastPathComponent()
@@ -85,10 +193,10 @@ final class PulseWidgetSnapshotTests: XCTestCase {
                 .appendingPathComponent("Localizable.xcstrings", isDirectory: false),
         ]
         let forbiddenTerms = [
-            "大开口日环", "开放日环", "承印坑", "潮唇", "巨大剪影", "蜡封", "邮戳",
+            "大开口日环", "开放日环", "承印坑", "潮唇", "巨大剪影", "蜡封", "邮戳", "七枚日印",
             "主承诺", "高阶权益", "小组件构图", "小组件事实", "共享存储", "数据校验",
             "虚构价格", "open seal", "imprint well", "postmarks", "widget facts",
-            "shared store", "advanced benefits", "main commitment", "widget composition",
+            "shared store", "advanced benefits", "main commitment", "widget composition", "seven marks",
         ]
 
         for catalogURL in catalogURLs {

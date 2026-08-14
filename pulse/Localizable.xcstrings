@@ -2533,13 +2533,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Writes the date, your one thing, and seven marks on a single piece of stationery."
+            "value" : "Writes the month, your one thing, today’s date, and the past six marks on one sheet of stationery."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "在一张有笺纹的手札上写下日期、我的一件事与七枚日印。"
+            "value" : "在一张有笺纹的手札上写下月份、我的一件事、今天日期与过去六日的留印。"
           }
         }
       }
