@@ -183,37 +183,54 @@
     .orbit-medium .copy .day { left: 18px; top: 16px; font-size: 14px; }
     .orbit-medium .copy .habit { left: 18px; top: 52px; max-width: 6em; font-size: 22px; }
 
-    /* 02 叠印 — fixed four-sheet material object; thickness never expresses data */
+    /* 02 叠印 — fixed four-sheet stack filling the canvas; today's press is a plate, not a ring */
     .stack { background: var(--bg); }
     .stack .desk-mat {
       position: absolute;
-      inset: 5px 6px;
+      inset: 3px;
       z-index: 0;
       border-radius: 24px;
-      background: color-mix(in srgb, var(--field) 9%, transparent);
-      transform: rotate(1.8deg);
+      background: color-mix(in srgb, var(--field) 13%, transparent);
+      transform: rotate(1.6deg);
+    }
+    body.checked .stack .desk-mat {
+      background: color-mix(in srgb, var(--grass) 16%, transparent);
     }
     .stack .paper-stack {
       position: absolute;
-      inset: 12px;
+      inset: 5px 5px 21.5px 21.5px;
       z-index: 1;
     }
     .stack .paper-stack span {
       position: absolute;
       inset: 0;
-      border: 1px solid color-mix(in srgb, var(--field) 17%, transparent);
+      border: 1px solid color-mix(in srgb, var(--field) 22%, transparent);
       border-radius: 17px;
       background: var(--surface);
-      box-shadow: 0 3px 8px color-mix(in srgb, var(--shadow) 8%, transparent);
+      box-shadow: 0 4px 10px color-mix(in srgb, var(--shadow) 10%, transparent);
     }
-    .stack .paper-stack span:nth-child(1) { transform: translate(-9px, 9px) rotate(-2.7deg); opacity: .84; }
-    .stack .paper-stack span:nth-child(2) { transform: translate(-6px, 6px) rotate(-1.8deg); opacity: .90; }
-    .stack .paper-stack span:nth-child(3) { transform: translate(-3px, 3px) rotate(-.9deg); opacity: .95; }
+    .stack .paper-stack span:nth-child(1) {
+      transform: translate(-16.5px, 16.5px) rotate(-4.05deg);
+      background: color-mix(in srgb, var(--surface) 76%, var(--field));
+      opacity: .92;
+    }
+    .stack .paper-stack span:nth-child(2) {
+      transform: translate(-11px, 11px) rotate(-2.7deg);
+      background: color-mix(in srgb, var(--surface) 84%, var(--field));
+      opacity: .95;
+    }
+    .stack .paper-stack span:nth-child(3) {
+      transform: translate(-5.5px, 5.5px) rotate(-1.35deg);
+      background: color-mix(in srgb, var(--surface) 92%, var(--field));
+    }
     .stack .paper-stack span:nth-child(4) { transform: none; }
+    body.checked .stack .paper-stack span:nth-child(1) { transform: translate(-10.8px, 10.8px) rotate(-4.05deg); }
+    body.checked .stack .paper-stack span:nth-child(2) { transform: translate(-7.2px, 7.2px) rotate(-2.7deg); }
+    body.checked .stack .paper-stack span:nth-child(3) { transform: translate(-3.6px, 3.6px) rotate(-1.35deg); }
     .stack .copy {
       position: absolute;
-      left: 20px;
-      top: 20px;
+      left: 30px;
+      top: 14px;
       z-index: 3;
       max-width: 5.4em;
     }
@@ -229,43 +246,57 @@
       max-width: 4.6em;
       font-weight: 750;
     }
-    .stack .today-hit {
+    .stack .press-plate {
       position: absolute;
-      right: 20px;
-      bottom: 20px;
-      width: 78px;
-      height: 78px;
+      right: 28px;
+      bottom: 46px;
+      width: 54px;
+      height: 46px;
       z-index: 3;
-      color: var(--field);
+      border: 1.5px solid color-mix(in srgb, var(--action) 38%, transparent);
+      border-radius: 48% 56% 44% 52% / 56% 44% 58% 46%;
+      background: color-mix(in srgb, var(--action) 6%, transparent);
+      transform: rotate(-11deg);
+      box-shadow: none;
     }
-    .stack .today-hit svg {
-      width: 100%;
-      height: 100%;
-      display: block;
-      overflow: visible;
+    .stack .press-plate .chop-inner,
+    .stack .press-plate .chop-ink { display: none; }
+    body.checked .stack .press-plate {
+      border: 0;
+      background:
+        radial-gradient(
+          58% 52% at 42% 48%,
+          color-mix(in srgb, var(--grass) 48%, transparent) 0%,
+          color-mix(in srgb, var(--grass) 28%, transparent) 55%,
+          color-mix(in srgb, var(--grass) 12%, transparent) 100%
+        );
+      box-shadow:
+        7px 8px 0 -4px color-mix(in srgb, var(--grass) 18%, transparent),
+        -6px 9px 0 -5px color-mix(in srgb, var(--grass) 12%, transparent);
+      transform: rotate(-9deg);
     }
-    .stack .today-hit .core { fill: currentColor; opacity: .08; }
-    .stack .today-hit .mark-label {
+    .stack .paper-fold {
+      display: none;
       position: absolute;
-      inset: 0;
-      z-index: 2;
-      display: grid;
-      place-items: center;
-      margin: 0;
-      font-size: 15px;
-      font-weight: 700;
-      letter-spacing: -.04em;
-      color: var(--action);
-      pointer-events: none;
+      right: 5px;
+      bottom: 21.5px;
+      width: 40px;
+      height: 40px;
+      z-index: 4;
+      background: color-mix(in srgb, var(--surface) 82%, var(--field));
+      clip-path: polygon(0 100%, 100% 0, 0 0);
+      box-shadow: -3px -3px 6px color-mix(in srgb, var(--shadow) 18%, transparent);
     }
-    .stack-medium .today-hit .mark-label { font-size: 15px; }
-    body.checked .stack .today-hit .mark-label { display: none; }
-    body.checked .stack .today-hit { color: var(--grass); }
-    body.checked .stack .today-hit .core { opacity: 1; }
-    body.checked .stack .today-hit text { fill: var(--grass-fg); }
+    body.checked .stack .paper-fold { display: block; }
+    body.checked .stack .paper-stack span:nth-child(4) {
+      clip-path: polygon(0 0, 100% 0, 100% calc(100% - 40px), calc(100% - 40px) 100%, 0 100%);
+    }
+    body.checked .stack-medium .paper-stack span:nth-child(4) {
+      clip-path: polygon(0 0, 100% 0, 100% calc(100% - 38px), calc(100% - 38px) 100%, 0 100%);
+    }
     .stack-medium .copy {
       position: absolute;
-      inset: 21px auto 21px 21px;
+      inset: 16px auto 16px 36px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
@@ -277,14 +308,18 @@
       font-size: 24px;
       max-width: 150px;
     }
-    .stack-medium .paper-stack { inset: 11px; }
-    .stack-medium .today-hit {
-      left: auto;
-      right: 21px;
-      top: auto;
-      bottom: 21px;
-      width: 106px;
-      height: 106px;
+    .stack-medium .paper-stack { inset: 6px 6px 25.5px 25.5px; }
+    .stack-medium .press-plate {
+      right: 48px;
+      bottom: 36px;
+      width: 86px;
+      height: 70px;
+    }
+    .stack-medium .paper-fold {
+      right: 6px;
+      bottom: 25.5px;
+      width: 38px;
+      height: 38px;
     }
 
     /* 03 Bleed — bold day silhouette over soft mist (not waves; water belongs to 潮痕) */
@@ -814,7 +849,8 @@
       <div>
         <p class="eyebrow">Pulse Widget Lab · Ritual Objects</p>
         <h1>不要仪表盘。<br>要能认出来的物件。</h1>
-        <p class="lede">按真实小号 158×158、中号 338×158 画。斜眼看去，剪影必须不同：一个开口环上只有一颗星、一叠印、一个溢出的日子、一封短笺、一片静场、一条来路。星环不是统计轨道，静场也不是手札的放大版。</p>
+        <p class="lede"><strong>探索草稿</strong>：本页不是像素合同。美术可随时重画；改画以代码与人工截图为准，不必同步长文档。</p>
+<p class="lede">按真实小号 158×158、中号 338×158 画。斜眼看去，剪影必须不同：一个开口环上只有一颗星、一叠印、一个溢出的日子、一封短笺、一片静场、一条来路。星环不是统计轨道，静场也不是手札的放大版。</p>
       </div>
       <div class="controls" aria-label="原型状态">
         <button class="control state-control" type="button" data-state="pending" aria-pressed="true">待签到</button>
@@ -957,7 +993,7 @@
         <div>
           <span class="idx">02 · STACK</span>
           <h3>叠印</h3>
-          <p>叠印是同一枚印压在固定四页的淡色纸叠上：最上面一页承载今天的日期、承诺、状态和印，其余三页只露出稳定纸边，表达厚度与触感，不映射历史、连续天数或计数。纸叠下只有一块低透明桌垫建立环境层次；全部文字和印必须收在最上层纸面内，不能沿组件外框定位。</p>
+          <p>叠印：纸叠 + 今日一印（纸层不映射历史）。外观可随时改。</p>
           <span class="job">任务：把今天留在一叠有厚度的纸上 · 今日快照</span>
         </div>
         <div class="frames">
@@ -968,18 +1004,11 @@
               <div class="meta">08 / 13</div>
               <div class="habit">晨间<br>书写</div>
             </div>
-            <div class="today-hit" aria-hidden="true">
-              <svg class="only-pending" viewBox="0 0 100 100">
-                <circle cx="50" cy="50" r="39" fill="none" stroke="currentColor" stroke-width="5.5" stroke-linecap="round" pathLength="100" stroke-dasharray="86.7 13.3" transform="rotate(-18 50 50)"/>
-                <circle class="core" cx="50" cy="50" r="20"/>
-              </svg>
-              <svg class="only-checked" viewBox="0 0 100 100">
-                <circle cx="50" cy="50" r="39" fill="none" stroke="currentColor" stroke-width="5.5"/>
-                <circle class="core" cx="50" cy="50" r="20"/>
-                <path d="M42 51 L48 58 L60 43" fill="none" stroke="var(--grass-fg)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-              <span class="mark-label">留印</span>
+            <div class="press-plate" aria-hidden="true">
+              <span class="chop-inner"></span>
+              <span class="chop-ink"></span>
             </div>
+            <div class="paper-fold" aria-hidden="true"></div>
           </div>
           <div class="widget medium stack stack-medium">
             <div class="desk-mat" aria-hidden="true"></div>
@@ -991,18 +1020,11 @@
               </div>
               <div class="meta state"></div>
             </div>
-            <div class="today-hit" aria-hidden="true">
-              <svg class="only-pending" viewBox="0 0 100 100">
-                <circle cx="50" cy="50" r="39" fill="none" stroke="currentColor" stroke-width="5.5" stroke-linecap="round" pathLength="100" stroke-dasharray="86.7 13.3" transform="rotate(-18 50 50)"/>
-                <circle class="core" cx="50" cy="50" r="20"/>
-              </svg>
-              <svg class="only-checked" viewBox="0 0 100 100">
-                <circle cx="50" cy="50" r="39" fill="none" stroke="currentColor" stroke-width="5.5"/>
-                <circle class="core" cx="50" cy="50" r="20"/>
-                <path d="M42 51 L48 58 L60 43" fill="none" stroke="var(--grass-fg)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-              <span class="mark-label">留印</span>
+            <div class="press-plate" aria-hidden="true">
+              <span class="chop-inner"></span>
+              <span class="chop-ink"></span>
             </div>
+            <div class="paper-fold" aria-hidden="true"></div>
           </div>
         </div>
       </article>
@@ -1068,7 +1090,7 @@
         <div>
           <span class="idx">04 · LETTER</span>
           <h3>手札</h3>
-          <p>手札是一张独立浅色笺纸，不叠第二张垫纸。左上只写月份，右上主日戳独占今天的日号；下沿六枚彼此独立、等大的邮路印只回看过去六日，不画连接轨，也不重复今天。它是单张笺纸上的附言，不是摆正的叠印。已签到由浅受压底、长短不一且彼此断开的指腹状残纹和两处深浅不同的偏压墨屑形成半实印泥残印；漏签是细空心，项目开始前更淡更小。残印不能缩成硬实圆点或等距彩虹 / 无线网络图标，也不画手掌、写实生物识别指纹或第二枚完整日环。完成时主日戳由开口压实闭合，但日号始终可读。</p>
+          <p>手札是一张独立浅色笺纸，不叠第二张垫纸。外观可随时改。</p>
           <span class="job">任务：我守住的那一件事 · 现有快照</span>
         </div>
         <div class="frames">
@@ -1249,7 +1271,7 @@
       <h2>这轮明确不走的路</h2>
       <p>4/7 分数、柱状「日强度」、GitHub 月点阵、连续 N 日奖杯、CSS 进度环、左右色块分栏、用七日同心圆去顶「年轮」这个名字。它们能让信息变多，但会把一日一印变成打卡看板。叠印是固定四页纸的材质物件，不承担七日计数；月度密度和连续天数若以后要做，也必须先是独立物件，而不是比分。</p>
     </aside>
-    <p class="footnote">本页是六种 Home Screen 构图的像素真源：星环、叠印、数影、手札、静场、来路；正式编号 00 待落之处见同级 widget-awaiting-place，编号 07 潮痕见同级实验序列中的 01-tide-mark，完整八式清单以本目录 README 为准。`PulseWidgetHomeRenderer` 消费同一份 `PulseWidgetSnapshot`，使用系统字体与品牌语义色。照片、备注、最长纪录不进入 Widget。中号按 338×158 构图，禁止把正方形物件拉宽。不能把静场和手札做成同一骨架的两种字号。</p>
+    <p class="footnote">本页是八式外观的探索草稿（星环至来路在此；待落之处 / 潮痕见同级目录）。不是像素合同。`PulseWidgetHomeRenderer` 消费同一快照。照片、备注、连续天数不进 Widget。</p>
   </main>
   <script>
     const stateButtons = [...document.querySelectorAll('.state-control')];

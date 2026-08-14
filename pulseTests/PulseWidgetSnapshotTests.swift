@@ -314,6 +314,261 @@ final class PulseWidgetSnapshotTests: XCTestCase {
         }
     }
 
+    func testStackGeometryFillsTheCanvasWithFourSheetsAndAPressPlate() throws {
+        let projectRoot = URL(fileURLWithPath: #filePath)
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+        let rendererSource = try String(
+            contentsOf: projectRoot
+                .appendingPathComponent("PulseWidgetUI", isDirectory: true)
+                .appendingPathComponent("PulseWidgetRenderer.swift", isDirectory: false),
+            encoding: .utf8
+        )
+        let prototypeSource = try String(
+            contentsOf: projectRoot
+                .appendingPathComponent("docs", isDirectory: true)
+                .appendingPathComponent("prototypes", isDirectory: true)
+                .appendingPathComponent("widget-ritual-objects", isDirectory: true)
+                .appendingPathComponent("pulse-widget-ritual-objects.html", isDirectory: false),
+            encoding: .utf8
+        )
+        let stackStart = try XCTUnwrap(prototypeSource.range(of: "02 · STACK"))
+        let stackEnd = try XCTUnwrap(
+            prototypeSource.range(of: "03 · BLEED", range: stackStart.upperBound..<prototypeSource.endIndex)
+        )
+        let stackPrototype = String(prototypeSource[stackStart.lowerBound..<stackEnd.lowerBound])
+        let pressStart = try XCTUnwrap(rendererSource.range(of: "private struct PulsePaperPressMark"))
+        let pressEnd = try XCTUnwrap(
+            rendererSource.range(
+                of: "private struct PulseLetterPressedInkMark",
+                range: pressStart.upperBound..<rendererSource.endIndex
+            )
+        )
+        let pressSource = String(rendererSource[pressStart.lowerBound..<pressEnd.lowerBound])
+
+        XCTAssertTrue(rendererSource.contains("struct PulseStackPaperGeometry"))
+        XCTAssertTrue(rendererSource.contains("stackCanvasMarginSmall"))
+        XCTAssertFalse(rendererSource.contains("PulsePressedPaperCrease"))
+        XCTAssertEqual(PulseWidgetDesign.stackPhysicalSheetCount, 4)
+        XCTAssertFalse(pressSource.contains("systemName: \"checkmark\""))
+        XCTAssertFalse(pressSource.contains("openRingTrim"))
+        XCTAssertFalse(pressSource.contains("RoundedRectangle"))
+        XCTAssertFalse(pressSource.contains("opacity(0.86)"))
+        XCTAssertFalse(pressSource.contains("PulseLetterPressRidges"))
+        XCTAssertTrue(pressSource.contains("RadialGradient"))
+        XCTAssertTrue(pressSource.contains("opacity(0.48)"))
+        XCTAssertTrue(pressSource.contains("opacity(0.28)"))
+        XCTAssertTrue(pressSource.contains("opacity(0.12)"))
+        XCTAssertTrue(pressSource.contains("Ellipse()"))
+        XCTAssertTrue(rendererSource.contains("private struct PulseFoldedPaperFlap"))
+        XCTAssertTrue(rendererSource.contains("size.width - 28"))
+        XCTAssertTrue(rendererSource.contains("size.width - 48"))
+        XCTAssertTrue(rendererSource.contains("86 * sx"))
+        XCTAssertTrue(rendererSource.contains("54 * sx"))
+        XCTAssertTrue(rendererSource.contains("private struct PulseStackedSheetShape"))
+        XCTAssertEqual(
+            stackPrototype.components(separatedBy: "class=\"press-plate\"").count - 1,
+            2,
+            "Small and medium stack prototypes must each render one press plate."
+        )
+        XCTAssertEqual(
+            stackPrototype.components(separatedBy: "<span></span><span></span><span></span><span></span>").count - 1,
+            2,
+            "Small and medium stack prototypes must each render four sheets."
+        )
+        XCTAssertFalse(stackPrototype.contains("class=\"today-hit\""))
+        XCTAssertFalse(stackPrototype.contains("pathLength=\"100\""))
+
+        let sizes: [(CGSize, Bool)] = [
+            (CGSize(width: 145, height: 145), false),
+            (CGSize(width: 158, height: 158), false),
+            (CGSize(width: 180, height: 180), false),
+            (CGSize(width: 329, height: 155), true),
+            (CGSize(width: 338, height: 158), true),
+            (CGSize(width: 364, height: 170), true),
+        ]
+
+        for (size, usesMediumMetrics) in sizes {
+            for isChecked in [false, true] {
+                let geometry = PulseStackPaperGeometry(
+                    size: size,
+                    usesMediumMetrics: usesMediumMetrics,
+                    isChecked: isChecked
+                )
+                let bounds = geometry.stackBounds
+
+                XCTAssertGreaterThanOrEqual(
+                    bounds.width / size.width,
+                    0.88,
+                    "Stack is too narrow to fill the canvas at \(size)."
+                )
+                XCTAssertGreaterThanOrEqual(
+                    bounds.height / size.height,
+                    0.88,
+                    "Stack is too short to fill the canvas at \(size)."
+                )
+                XCTAssertGreaterThanOrEqual(
+                    min(geometry.foldSize.width, geometry.foldSize.height)
+                        / min(geometry.topPaperFrame.width, geometry.topPaperFrame.height),
+                    0.28,
+                    "Folded corner is too small to read as a dog-ear at \(size)."
+                )
+                XCTAssertGreaterThanOrEqual(
+                    (geometry.pressSize.width * geometry.pressSize.height)
+                        / (geometry.topPaperFrame.width * geometry.topPaperFrame.height),
+                    0.08,
+                    "Press plate is too small to occupy the top sheet at \(size)."
+                )
+                XCTAssertTrue(
+                    geometry.topPaperFrame.insetBy(dx: -0.5, dy: -0.5).contains(geometry.pressFrame),
+                    "Press plate escaped the top sheet at \(size), checked=\(isChecked)."
+                )
+                // Prototype intentionally overlaps the dog-ear; do not force clearance.
+                if usesMediumMetrics {
+                    XCTAssertEqual(
+                        geometry.pressSize.width / size.width,
+                        86 / 338,
+                        accuracy: 0.01,
+                        "Medium press width must track prototype 86/338."
+                    )
+                    XCTAssertEqual(
+                        (size.width - geometry.pressFrame.maxX) / size.width,
+                        48 / 338,
+                        accuracy: 0.02,
+                        "Medium press right inset must track prototype 48pt."
+                    )
+                    XCTAssertEqual(
+                        (size.height - geometry.pressFrame.maxY) / size.height,
+                        36 / 158,
+                        accuracy: 0.03,
+                        "Medium press bottom inset must track prototype 36pt."
+                    )
+                } else {
+                    XCTAssertEqual(
+                        geometry.pressSize.width / size.width,
+                        54 / 158,
+                        accuracy: 0.01,
+                        "Small press width must track prototype 54/158."
+                    )
+                    XCTAssertEqual(
+                        (size.width - geometry.pressFrame.maxX) / size.width,
+                        28 / 158,
+                        accuracy: 0.02,
+                        "Small press right inset must track prototype 28pt."
+                    )
+                    XCTAssertEqual(
+                        (size.height - geometry.pressFrame.maxY) / size.height,
+                        46 / 158,
+                        accuracy: 0.03,
+                        "Small press bottom inset must track prototype 46pt."
+                    )
+                }
+                let reservedCascade = geometry.topPaperFrame.minX - bounds.minX
+                if isChecked {
+                    XCTAssertLessThan(
+                        geometry.layerStep * CGFloat(PulseStackPaperGeometry.sheetCount - 1),
+                        reservedCascade,
+                        "Checked sheets must compress inside the reserved cascade at \(size)."
+                    )
+                } else {
+                    XCTAssertEqual(
+                        geometry.layerStep * CGFloat(PulseStackPaperGeometry.sheetCount - 1),
+                        reservedCascade,
+                        accuracy: 0.001,
+                        "Pending sheets must use the full reserved cascade at \(size)."
+                    )
+                }
+            }
+        }
+    }
+
+    func testStackCleanBreakRendersPendingAndCompletedAcrossSupportedHomeSizes() throws {
+        let projectRoot = URL(fileURLWithPath: #filePath)
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+        let timeZone = try XCTUnwrap(TimeZone(identifier: "Asia/Shanghai"))
+        let today = LogicalDay(year: 2026, month: 8, day: 15)
+        let generatedAt = makeDate(2026, 8, 15, 12, timeZone: timeZone)
+        let pending = PulseWidgetSnapshot(
+            habitID: try XCTUnwrap(
+                UUID(uuidString: "7832FF6C-AEAE-4C04-BD22-5DE680439423")
+            ),
+            habitName: "晨间书写",
+            today: today,
+            checkedAt: nil,
+            recentDays: [
+                PulseWidgetDaySnapshot(day: LogicalDay(year: 2026, month: 8, day: 9), state: .checked),
+                PulseWidgetDaySnapshot(day: LogicalDay(year: 2026, month: 8, day: 10), state: .missed),
+                PulseWidgetDaySnapshot(day: LogicalDay(year: 2026, month: 8, day: 11), state: .checked),
+                PulseWidgetDaySnapshot(day: LogicalDay(year: 2026, month: 8, day: 12), state: .checked),
+                PulseWidgetDaySnapshot(day: LogicalDay(year: 2026, month: 8, day: 13), state: .missed),
+                PulseWidgetDaySnapshot(day: LogicalDay(year: 2026, month: 8, day: 14), state: .checked),
+                PulseWidgetDaySnapshot(day: today, state: .todayPending),
+            ],
+            generatedAt: generatedAt,
+            nextDayBoundary: makeDate(2026, 8, 16, 0, timeZone: timeZone),
+            projectTimeZoneIdentifier: timeZone.identifier
+        )
+        let completed = PulseWidgetSnapshot(
+            habitID: pending.habitID,
+            habitName: pending.habitName,
+            today: pending.today,
+            checkedAt: generatedAt,
+            recentDays: Array(pending.recentDays.dropLast()) + [
+                PulseWidgetDaySnapshot(day: today, state: .checked)
+            ],
+            generatedAt: pending.generatedAt,
+            nextDayBoundary: pending.nextDayBoundary,
+            projectTimeZoneIdentifier: pending.projectTimeZoneIdentifier
+        )
+        let states: [(name: String, snapshot: PulseWidgetSnapshot)] = [
+            ("pending", pending),
+            ("completed", completed),
+        ]
+        let configurations: [(name: String, size: CGSize, usesMediumMetrics: Bool)] = [
+            ("small-158", CGSize(width: 158, height: 158), false),
+            ("medium-338", CGSize(width: 338, height: 158), true),
+        ]
+
+        for state in states {
+            for configuration in configurations {
+                let content = PulseWidgetHomeRenderer(
+                    snapshot: state.snapshot,
+                    style: .stack,
+                    usesMediumMetrics: configuration.usesMediumMetrics,
+                    usesFullColorPalette: true,
+                    allowsMotion: false,
+                    statusText: state.snapshot.isCheckedToday ? "今天已签到" : "今天还未签到",
+                    pathSummaryFormat: "六日 · %d 印",
+                    emptyPlaceText: "空着",
+                    placeStatusText: state.snapshot.isCheckedToday ? "今天已签到" : "今天还未签到"
+                )
+                .environment(\.locale, Locale(identifier: "zh-Hans"))
+                .frame(width: configuration.size.width, height: configuration.size.height)
+
+                let renderer = ImageRenderer(content: content)
+                renderer.scale = 3
+                let image = try XCTUnwrap(renderer.uiImage)
+                XCTAssertEqual(image.size.width, configuration.size.width, accuracy: 0.5)
+                XCTAssertEqual(image.size.height, configuration.size.height, accuracy: 0.5)
+
+                let previewDir = projectRoot
+                    .appendingPathComponent(".tmp", isDirectory: true)
+                    .appendingPathComponent("stack-preview", isDirectory: true)
+                try FileManager.default.createDirectory(at: previewDir, withIntermediateDirectories: true)
+                let previewURL = previewDir.appendingPathComponent(
+                    "stack-\(state.name)-\(configuration.name)@3x.png"
+                )
+                try XCTUnwrap(image.pngData()).write(to: previewURL)
+
+                let attachment = XCTAttachment(image: image)
+                attachment.name = "Stack \(state.name) \(configuration.name)"
+                attachment.lifetime = .keepAlways
+                add(attachment)
+            }
+        }
+    }
+
     func testWidgetAppIntentsAreSharedWithTheContainerApp() throws {
         let projectRoot = URL(fileURLWithPath: #filePath)
             .deletingLastPathComponent()

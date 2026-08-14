@@ -1,7 +1,8 @@
-.DS_Store
-xcuserdata/
 *.xcuserstate
-DerivedData/
+.DS_Store
+.tmp/
 /.derivedData/
 /.playwright-cli/
 /output/
+DerivedData/
+xcuserdata/

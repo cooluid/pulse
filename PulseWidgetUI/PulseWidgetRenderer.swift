@@ -220,54 +220,57 @@ struct PulseWidgetHomeRenderer: View {
     }
 
     private func stack(size: CGSize) -> some View {
-        let sealSide = pt(usesMediumMetrics ? 106 : 78, in: size)
-        let paperFrame = stackTopPaperFrame(in: size)
-        let paperInset = pt(usesMediumMetrics ? 10 : 8, in: size)
+        let geometry = PulseStackPaperGeometry(
+            size: size,
+            usesMediumMetrics: usesMediumMetrics,
+            isChecked: snapshot.isCheckedToday
+        )
+        let paperFrame = geometry.topPaperFrame
+        let paperInset = geometry.paperInset
+        let copyLeading = paperInset + pt(usesMediumMetrics ? 2 : 1, in: size)
+        let copyTop = paperInset
+        // Keep small copy narrow like the prototype (≈4.6em), but pin it to the
+        // paper's top-leading — a free-floating VStack inside an expanded ZStack
+        // was reading as a centered cluster on small sizes.
+        let copyWidth = min(
+            pt(usesMediumMetrics ? 150 : 74, in: size),
+            paperFrame.width * (usesMediumMetrics ? 0.48 : 0.52)
+        )
 
         return ZStack(alignment: .topLeading) {
             baseBackground
             stackDeskMat(size: size)
             stackedPaperBackdrop(size: size)
 
-            ZStack(alignment: .topLeading) {
-                VStack(alignment: .leading, spacing: pt(usesMediumMetrics ? 7 : 6, in: size)) {
-                    Text(verbatim: monthAndDay)
-                        .font(.system(size: pt(usesMediumMetrics ? 12 : 11, in: size), weight: .bold))
-                        .tracking(pt(usesMediumMetrics ? 0.5 : 0.4, in: size))
-                        .foregroundStyle(actionColor)
-                        .monospacedDigit()
-                        .lineLimit(1)
+            Color.clear
+                .frame(width: paperFrame.width, height: paperFrame.height)
+                .overlay(alignment: .topLeading) {
+                    VStack(alignment: .leading, spacing: pt(usesMediumMetrics ? 8 : 6, in: size)) {
+                        Text(verbatim: monthAndDay)
+                            .font(.system(size: pt(usesMediumMetrics ? 12 : 11, in: size), weight: .bold))
+                            .tracking(pt(usesMediumMetrics ? 0.5 : 0.4, in: size))
+                            .foregroundStyle(actionColor)
+                            .monospacedDigit()
+                            .lineLimit(1)
 
-                    habitName(
-                        size: pt(usesMediumMetrics ? 23 : 16, in: size),
-                        width: pt(usesMediumMetrics ? 154 : 88, in: size),
-                        alignment: .leading
-                    )
-
+                        habitName(
+                            size: pt(usesMediumMetrics ? 24 : 16, in: size),
+                            width: copyWidth,
+                            alignment: .leading
+                        )
+                    }
+                    .frame(width: copyWidth, alignment: .leading)
+                    .padding(.leading, copyLeading)
+                    .padding(.top, copyTop)
+                }
+                .overlay(alignment: .bottomLeading) {
                     if usesMediumMetrics {
-                        Spacer(minLength: 0)
                         statusLabel(size: pt(11, in: size))
+                            .padding(.leading, copyLeading)
+                            .padding(.bottom, copyTop)
                     }
                 }
-                .frame(
-                    width: pt(usesMediumMetrics ? 154 : 88, in: size),
-                    height: usesMediumMetrics ? paperFrame.height - paperInset * 2 : nil,
-                    alignment: .topLeading
-                )
-                .padding(.leading, paperInset)
-                .padding(.top, paperInset)
-
-                PulsePaperPressMark(
-                    isChecked: snapshot.isCheckedToday,
-                    usesFullColorPalette: usesFullColorPalette
-                )
-                    .frame(width: sealSide, height: sealSide * 0.72)
-                    .padding(.trailing, paperInset)
-                    .padding(.bottom, paperInset)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
-            }
-            .frame(width: paperFrame.width, height: paperFrame.height)
-            .position(x: paperFrame.midX, y: paperFrame.midY)
+                .position(x: paperFrame.midX, y: paperFrame.midY)
         }
     }
 
@@ -621,87 +624,109 @@ struct PulseWidgetHomeRenderer: View {
     }
 
     private func stackDeskMat(size: CGSize) -> some View {
+        let geometry = PulseStackPaperGeometry(
+            size: size,
+            usesMediumMetrics: usesMediumMetrics,
+            isChecked: snapshot.isCheckedToday
+        )
         let color = snapshot.isCheckedToday ? grassColor : fieldColor
 
         return RoundedRectangle(
-            cornerRadius: pt(usesMediumMetrics ? 26 : 22, in: size),
+            cornerRadius: geometry.deskCornerRadius,
             style: .continuous
         )
-        .fill(color.opacity(usesFullColorPalette ? 0.085 : 0.05))
+        .fill(color.opacity(usesFullColorPalette ? (snapshot.isCheckedToday ? 0.16 : 0.13) : 0.07))
         .frame(
-            width: size.width - pt(usesMediumMetrics ? 10 : 12, in: size),
-            height: size.height - pt(usesMediumMetrics ? 8 : 10, in: size)
+            width: size.width - pt(6, in: size),
+            height: size.height - pt(6, in: size)
         )
-        .rotationEffect(.degrees((usesMediumMetrics ? 1.3 : 1.8) + ambientRotation * 0.28))
+        .rotationEffect(.degrees((usesMediumMetrics ? 1.1 : 1.6) + ambientRotation * 0.28))
         .scaleEffect(snapshot.isCheckedToday ? 0.99 : 1)
         .animation(motion(.paper), value: snapshot.isCheckedToday)
         .position(
-            x: size.width / 2 + ambientHorizontalShift(in: size) * 0.32,
-            y: size.height / 2 + pt(2, in: size)
+            x: size.width / 2 + ambientHorizontalShift(in: size) * 0.28,
+            y: size.height / 2 + pt(1.5, in: size)
         )
     }
 
     private func stackedPaperBackdrop(size: CGSize) -> some View {
-        let paperFrame = stackTopPaperFrame(in: size)
-        let pendingLayerStep = usesMediumMetrics
-            ? PulseWidgetDesign.stackPendingLayerStepMedium
-            : PulseWidgetDesign.stackPendingLayerStepSmall
-        let checkedLayerStep = usesMediumMetrics
-            ? PulseWidgetDesign.stackCheckedLayerStepMedium
-            : PulseWidgetDesign.stackCheckedLayerStepSmall
-        let layerStep = pt(snapshot.isCheckedToday ? checkedLayerStep : pendingLayerStep, in: size)
+        let geometry = PulseStackPaperGeometry(
+            size: size,
+            usesMediumMetrics: usesMediumMetrics,
+            isChecked: snapshot.isCheckedToday
+        )
+        let paperFrame = geometry.topPaperFrame
 
         return ZStack {
-            ForEach(0..<PulseWidgetDesign.stackPhysicalSheetCount, id: \.self) { index in
-                let depth = PulseWidgetDesign.stackPhysicalSheetCount - 1 - index
-                RoundedRectangle(
-                    cornerRadius: pt(usesMediumMetrics ? 19 : 17, in: size),
-                    style: .continuous
+            ForEach(0..<PulseStackPaperGeometry.sheetCount, id: \.self) { index in
+                let depth = PulseStackPaperGeometry.sheetCount - 1 - index
+                let cutsCorner = snapshot.isCheckedToday && depth == 0
+                let sheet = PulseStackedSheetShape(
+                    cornerRadius: geometry.paperCornerRadius,
+                    foldSide: cutsCorner ? geometry.foldSize.width : 0
                 )
-                .fill(surfaceColor.opacity(0.98 - Double(depth) * 0.055))
-                .overlay {
-                    RoundedRectangle(
-                        cornerRadius: pt(usesMediumMetrics ? 19 : 17, in: size),
-                        style: .continuous
+
+                sheet
+                    .fill(surfaceColor)
+                    .overlay {
+                        sheet
+                            .fill(fieldColor.opacity(Double(depth) * 0.08))
+                    }
+                    .overlay {
+                        if !cutsCorner {
+                            sheet
+                                .stroke(
+                                    fieldColor.opacity(0.18 + Double(depth) * 0.07),
+                                    lineWidth: pt(1, in: size)
+                                )
+                        }
+                    }
+                    .shadow(
+                        color: shadowColor.opacity(0.07 + Double(depth) * 0.025),
+                        radius: pt(5 + CGFloat(depth), in: size),
+                        y: pt(2.4, in: size)
                     )
-                    .stroke(
-                        fieldColor.opacity(0.13 + Double(depth) * 0.04),
-                        lineWidth: pt(1, in: size)
+                    .frame(width: paperFrame.width, height: paperFrame.height)
+                    .rotationEffect(.degrees(Double(depth) * geometry.rotationPerLayer))
+                    .offset(
+                        x: -CGFloat(depth) * geometry.layerStep,
+                        y: CGFloat(depth) * geometry.layerStep
                     )
-                }
-                .shadow(
-                    color: shadowColor.opacity(0.05 + Double(depth) * 0.015),
-                    radius: pt(4 + CGFloat(depth), in: size),
-                    y: pt(2, in: size)
-                )
-                .frame(width: paperFrame.width, height: paperFrame.height)
-                .rotationEffect(.degrees(Double(depth) * (usesMediumMetrics ? -0.65 : -0.9)))
-                .offset(
-                    x: -CGFloat(depth) * layerStep,
-                    y: CGFloat(depth) * layerStep
-                )
+            }
+
+            PulsePaperPressMark(
+                isChecked: snapshot.isCheckedToday,
+                usesFullColorPalette: usesFullColorPalette
+            )
+            .frame(width: geometry.pressSize.width, height: geometry.pressSize.height)
+            .position(
+                x: geometry.pressFrame.midX - paperFrame.minX,
+                y: geometry.pressFrame.midY - paperFrame.minY
+            )
+
+            if snapshot.isCheckedToday {
+                // Keep the outer corner anchored; grow the flap inward so it seals the
+                // cut hypotenuse. Any sub-pixel gap shows the darker under-sheet as a
+                // false black crease.
+                let foldSide = geometry.foldSize.width
+                let foldOverlap = pt(3.0, in: size)
+                PulseFoldedPaperFlap()
+                    .fill(surfaceColor)
+                    .overlay {
+                        PulseFoldedPaperFlap()
+                            .fill(fieldColor.opacity(usesFullColorPalette ? 0.10 : 0.05))
+                    }
+                    .frame(width: foldSide + foldOverlap, height: foldSide + foldOverlap)
+                    .position(
+                        x: paperFrame.width - (foldSide + foldOverlap) / 2,
+                        y: paperFrame.height - (foldSide + foldOverlap) / 2
+                    )
             }
         }
         .frame(width: paperFrame.width, height: paperFrame.height)
         .rotationEffect(.degrees(ambientRotation * 0.22))
         .position(x: paperFrame.midX, y: paperFrame.midY)
         .animation(motion(.paper), value: snapshot.isCheckedToday)
-    }
-
-    private func stackTopPaperFrame(in size: CGSize) -> CGRect {
-        let width = size.width - pt(usesMediumMetrics ? 22 : 24, in: size)
-        let height = size.height - pt(usesMediumMetrics ? 22 : 24, in: size)
-        let center = CGPoint(
-            x: size.width / 2 + pt(usesMediumMetrics ? 3 : 4, in: size),
-            y: size.height / 2 - pt(usesMediumMetrics ? 8 : 9, in: size) / 2
-        )
-
-        return CGRect(
-            x: center.x - width / 2,
-            y: center.y - height / 2,
-            width: width,
-            height: height
-        )
     }
 
     private func letterDeskField(size: CGSize) -> some View {
@@ -1317,6 +1342,88 @@ struct PulseStarRingGeometry {
     }
 }
 
+struct PulseStackPaperGeometry {
+    let topPaperFrame: CGRect
+    let stackBounds: CGRect
+    let pressSize: CGSize
+    let pressFrame: CGRect
+    let foldSize: CGSize
+    let foldClearance: CGFloat
+    let paperInset: CGFloat
+    let layerStep: CGFloat
+    let paperCornerRadius: CGFloat
+    let deskCornerRadius: CGFloat
+    let rotationPerLayer: Double
+
+    static var sheetCount: Int { PulseWidgetDesign.stackPhysicalSheetCount }
+
+    init(
+        size: CGSize,
+        usesMediumMetrics: Bool,
+        isChecked: Bool
+    ) {
+        let scale = min(size.width, size.height) / 158
+        let pendingStep = (usesMediumMetrics
+            ? PulseWidgetDesign.stackPendingLayerStepMedium
+            : PulseWidgetDesign.stackPendingLayerStepSmall) * scale
+        let checkedStep = (usesMediumMetrics
+            ? PulseWidgetDesign.stackCheckedLayerStepMedium
+            : PulseWidgetDesign.stackCheckedLayerStepSmall) * scale
+        let margin = (usesMediumMetrics
+            ? PulseWidgetDesign.stackCanvasMarginMedium
+            : PulseWidgetDesign.stackCanvasMarginSmall) * scale
+        let cascade = CGFloat(Self.sheetCount - 1) * pendingStep
+        let paperInset = (usesMediumMetrics ? 10 : 8) * scale
+        let width = max(1, size.width - margin * 2 - cascade)
+        let height = max(1, size.height - margin * 2 - cascade)
+        let origin = CGPoint(x: margin + cascade, y: margin)
+        let topPaper = CGRect(origin: origin, size: CGSize(width: width, height: height))
+        // Prototype canvas coords: small 158² press 54×46 at right 28 / bottom 46;
+        // medium 338×158 press 86×70 at right 48 / bottom 36.
+        let pressWidth: CGFloat
+        let pressHeight: CGFloat
+        let pressOrigin: CGPoint
+        if usesMediumMetrics {
+            let sx = size.width / 338
+            let sy = size.height / 158
+            pressWidth = 86 * sx
+            pressHeight = 70 * sy
+            pressOrigin = CGPoint(
+                x: size.width - 48 * sx - pressWidth,
+                y: size.height - 36 * sy - pressHeight
+            )
+        } else {
+            let sx = size.width / 158
+            let sy = size.height / 158
+            pressWidth = 54 * sx
+            pressHeight = 46 * sy
+            pressOrigin = CGPoint(
+                x: size.width - 28 * sx - pressWidth,
+                y: size.height - 46 * sy - pressHeight
+            )
+        }
+        let foldSide = min(width, height) * 0.30
+        let foldClearance = foldSide * 0.86
+
+        self.topPaperFrame = topPaper
+        self.stackBounds = CGRect(
+            x: topPaper.minX - cascade,
+            y: topPaper.minY,
+            width: topPaper.width + cascade,
+            height: topPaper.height + cascade
+        )
+        self.pressSize = CGSize(width: pressWidth, height: pressHeight)
+        self.pressFrame = CGRect(origin: pressOrigin, size: CGSize(width: pressWidth, height: pressHeight))
+        self.foldSize = CGSize(width: foldSide, height: foldSide)
+        self.foldClearance = foldClearance
+        self.paperInset = paperInset
+        self.layerStep = isChecked ? checkedStep : pendingStep
+        self.paperCornerRadius = (usesMediumMetrics ? 19 : 17) * scale
+        self.deskCornerRadius = (usesMediumMetrics ? 26 : 22) * scale
+        self.rotationPerLayer = usesMediumMetrics ? -0.95 : -1.35
+    }
+}
+
 private struct PulseOrganicInkShape: Shape {
     func path(in rect: CGRect) -> Path {
         let points: [CGPoint] = [
@@ -1352,36 +1459,47 @@ private struct PulsePaperPressMark: View {
         GeometryReader { proxy in
             let width = proxy.size.width
             let height = proxy.size.height
-            ZStack(alignment: .bottomTrailing) {
-                VStack(alignment: .trailing, spacing: height * (isChecked ? 0.045 : 0.12)) {
-                    ForEach(0..<3, id: \.self) { index in
-                        Rectangle()
-                            .fill(markColor.opacity(isChecked ? 0.34 : 0.22 + Double(index) * 0.10))
-                            .frame(
-                                width: width * (0.68 - CGFloat(index) * 0.12),
-                                height: max(1, height * 0.045)
-                            )
-                    }
-                }
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
-                .rotationEffect(.degrees(isChecked ? 0 : -6))
-                .offset(x: -width * 0.10, y: -height * (isChecked ? 0.12 : 0.04))
+            let radius = hypot(width, height) * 0.52
 
+            ZStack {
                 if isChecked {
-                    PulsePressedPaperCorner()
-                        .fill(markColor.opacity(0.18))
+                    // Single soft oval matching prototype plate; keep side soaks very faint.
+                    Ellipse()
+                        .fill(
+                            RadialGradient(
+                                colors: [markColor.opacity(0.14), markColor.opacity(0)],
+                                center: .center,
+                                startRadius: 0,
+                                endRadius: radius * 0.70
+                            )
+                        )
+                        .frame(width: width * 0.70, height: height * 0.60)
+                        .offset(x: width * 0.14, y: height * 0.16)
+
+                    Ellipse()
+                        .fill(
+                            RadialGradient(
+                                stops: [
+                                    .init(color: markColor.opacity(0.48), location: 0),
+                                    .init(color: markColor.opacity(0.28), location: 0.55),
+                                    .init(color: markColor.opacity(0.12), location: 0.88),
+                                    .init(color: markColor.opacity(0), location: 1),
+                                ],
+                                center: UnitPoint(x: 0.42, y: 0.48),
+                                startRadius: 0,
+                                endRadius: radius
+                            )
+                        )
+                        .rotationEffect(.degrees(-9))
+                } else {
+                    Ellipse()
+                        .fill(markColor.opacity(0.06))
                         .overlay {
-                            PulsePressedPaperCorner()
-                                .stroke(markColor.opacity(0.72), lineWidth: max(1, height * 0.035))
+                            Ellipse()
+                                .stroke(markColor.opacity(0.38), lineWidth: max(1.2, min(width, height) * 0.035))
                         }
-                        .frame(width: width * 0.62, height: height * 0.68)
-                        .overlay(alignment: .bottomTrailing) {
-                            Image(systemName: "checkmark")
-                                .font(.system(size: height * 0.21, weight: .bold))
-                                .foregroundStyle(markColor)
-                                .padding(.trailing, width * 0.10)
-                                .padding(.bottom, height * 0.08)
-                        }
+                        .padding(min(width, height) * 0.06)
+                        .rotationEffect(.degrees(-11))
                 }
             }
             .frame(width: width, height: height)
@@ -1391,9 +1509,8 @@ private struct PulsePaperPressMark: View {
 
     private var markColor: Color {
         guard usesFullColorPalette else { return .primary }
-        return isChecked ? PulseWidgetDesign.grass : PulseWidgetDesign.field
+        return isChecked ? PulseWidgetDesign.grass : PulseWidgetDesign.action
     }
-
 }
 
 private struct PulseLetterPressedInkMark: View {
@@ -1478,12 +1595,66 @@ private struct PulseLetterPressRidges: Shape {
     }
 }
 
-private struct PulsePressedPaperCorner: Shape {
+private struct PulseStackedSheetShape: Shape {
+    var cornerRadius: CGFloat
+    var foldSide: CGFloat
+
+    func path(in rect: CGRect) -> Path {
+        let radius = min(cornerRadius, min(rect.width, rect.height) / 2)
+        let fold = min(max(0, foldSide), min(rect.width, rect.height) * 0.45)
+        var path = Path()
+
+        path.move(to: CGPoint(x: rect.minX + radius, y: rect.minY))
+        path.addLine(to: CGPoint(x: rect.maxX - radius, y: rect.minY))
+        path.addArc(
+            center: CGPoint(x: rect.maxX - radius, y: rect.minY + radius),
+            radius: radius,
+            startAngle: .degrees(-90),
+            endAngle: .degrees(0),
+            clockwise: false
+        )
+
+        if fold > radius {
+            path.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY - fold))
+            path.addLine(to: CGPoint(x: rect.maxX - fold, y: rect.maxY))
+        } else {
+            path.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY - radius))
+            path.addArc(
+                center: CGPoint(x: rect.maxX - radius, y: rect.maxY - radius),
+                radius: radius,
+                startAngle: .degrees(0),
+                endAngle: .degrees(90),
+                clockwise: false
+            )
+        }
+
+        path.addLine(to: CGPoint(x: rect.minX + radius, y: rect.maxY))
+        path.addArc(
+            center: CGPoint(x: rect.minX + radius, y: rect.maxY - radius),
+            radius: radius,
+            startAngle: .degrees(90),
+            endAngle: .degrees(180),
+            clockwise: false
+        )
+        path.addLine(to: CGPoint(x: rect.minX, y: rect.minY + radius))
+        path.addArc(
+            center: CGPoint(x: rect.minX + radius, y: rect.minY + radius),
+            radius: radius,
+            startAngle: .degrees(180),
+            endAngle: .degrees(270),
+            clockwise: false
+        )
+        path.closeSubpath()
+        return path
+    }
+}
+
+private struct PulseFoldedPaperFlap: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
-        path.move(to: CGPoint(x: rect.minX + rect.width * 0.08, y: rect.maxY))
-        path.addLine(to: CGPoint(x: rect.maxX, y: rect.minY + rect.height * 0.08))
-        path.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY))
+        path.move(to: CGPoint(x: rect.minX, y: rect.maxY))
+        path.addLine(to: CGPoint(x: rect.maxX, y: rect.minY))
+        path.addLine(to: CGPoint(x: rect.minX, y: rect.minY))
         path.closeSubpath()
         return path
     }
@@ -2016,10 +2187,12 @@ enum PulseWidgetDesign {
     static let shadow = Color("PulseShadow")
     static let stackPhysicalSheetCount = 4
 
-    static let stackPendingLayerStepMedium: CGFloat = 3.5
-    static let stackPendingLayerStepSmall: CGFloat = 3
-    static let stackCheckedLayerStepMedium: CGFloat = 2.4
-    static let stackCheckedLayerStepSmall: CGFloat = 2.1
+    static let stackPendingLayerStepMedium: CGFloat = 6.5
+    static let stackPendingLayerStepSmall: CGFloat = 5.5
+    static let stackCheckedLayerStepMedium: CGFloat = 4.2
+    static let stackCheckedLayerStepSmall: CGFloat = 3.6
+    static let stackCanvasMarginMedium: CGFloat = 6
+    static let stackCanvasMarginSmall: CGFloat = 5
     static let tidePendingHeightRatioMedium: CGFloat = 0.38
     static let tidePendingHeightRatioSmall: CGFloat = 0.40
     static let tideCheckedHeightRatioMedium: CGFloat = 0.48

@@ -87,7 +87,7 @@ preparing → aligning → blending → encoding → completed / failed / cancel
 
 - Lock Screen 圆形：今日开放环与实心完成印内部都显示由当前 `LogicalDay` 派生的本地化纯数字，不带“日”等日期后缀；待签到开放环不得带有会被误读为勾形的斜线，完成态以实心内核替代勾；
 - Lock Screen 矩形：使用唯一“节律汇印”语法；左上显示今日短状态，过去六日节点上方显示不带日期后缀的本地化纯数字并以真实连接线汇入右侧唯一今日印记，今天数字显示在大印内部，不显示主承诺文本、星期或第七个今日小节点；
-- Home Screen 小号/中号：待落之处是唯一面向所有用户的免费构图；高阶权益解锁星环 / 叠印 / 数影 / 手札 / 静场 / 来路 / 潮痕。八式是八种仪式物件，构图以 [widget-ritual-objects](./prototypes/widget-ritual-objects/) 的正式清单为准，待落之处像素构图以 [widget-awaiting-place](./prototypes/widget-awaiting-place/pulse-widget-awaiting-place.html) 为准，潮痕像素构图以 [01-tide-mark](./prototypes/widget-style-experiments/01-tide-mark/pulse-widget-tide-mark.html) 为准；各式按任务选择快照事实，不强制共用信息骨架。小号与中号分别布局，禁止把正方形物件拉宽。旧 `.seal` 落印构图和旧五式「呼吸环 / 深景 / 静序 / 七日谱」不再作为视觉真源。
+- Home Screen 小号/中号：待落之处是唯一面向所有用户的免费构图；高阶权益解锁星环 / 叠印 / 数影 / 手札 / 静场 / 来路 / 潮痕。八式是八种产品构图名；外观自由迭代、人工验收。各式按任务选择快照事实。旧 `.seal` 与旧五式不再进入正式枚举。
 
 构图只是逐实例呈现选择：App Group 只保存 `PulseSharedInterfacePreferences` 的 `interface.language`，不得复制构图、签到记录、连续天数、日期、主承诺或购买状态。`WidgetConfigurationIntent` 是每个 Home Screen 实例的唯一构图来源；Widget extension 在生成每个 snapshot/timeline 时独立验证 entitlement，收费构图在权益未验证或撤销时明确显示未解锁，不得静默换成待落之处。Lock Screen / StandBy / Always-On 使用独立、无构图参数的 Accessory Widget kind，永久免费，不消费 Home Screen 构图，也不显示主承诺正文。App 与 Widget 内容消费同一语言；未知语言失败关闭，不能用系统语言伪装成功。
 

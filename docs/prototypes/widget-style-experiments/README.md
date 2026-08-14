@@ -1,15 +1,5 @@
-# Widget 风格实验序列
+# Widget 风格实验
 
-逐个实验新的仪式物件剪影。正式八式清单以 [widget-ritual-objects](../widget-ritual-objects/) 为准；其中潮痕已从本序列提升为正式编号 07，唯一免费默认的像素真源见 [widget-awaiting-place](../widget-awaiting-place/)。
+逐个试新剪影。正式八式产品名以 [widget-ritual-objects](../widget-ritual-objects/) 为准。
 
-| 序 | 物件 | 状态 | 目录 |
-| --- | --- | --- | --- |
-| 01 | 潮痕 | 已提升为正式编号 07 | [01-tide-mark](./01-tide-mark/) |
-| 02 | 一盏 | 未开始 | — |
-| 03 | 折角 | 未开始 | — |
-| 04 | 露珠 | 未开始 | — |
-| 05 | 弦上 | 未开始 | — |
-| 06 | 窗格 | 未开始 | — |
-| 07 | 印泥盒 | 未开始 | — |
-
-一次只开一件。未提升的实验不得写入权益合同；潮痕已进入正式合同，但仍需真实 Widget host 复验后才能获得 `INTERFACE GO`。
+这里的 HTML **全部是探索**，可丢可改；满意再迁进共享渲染器。不以实验稿写长合同。
