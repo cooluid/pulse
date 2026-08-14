@@ -245,9 +245,9 @@ final class PulseFlowUITests: XCTestCase {
         galleryLink.tap()
 
         let includedOption = app.descendants(matching: .any)[
-            "widget.gallery.style.seal"
+            "widget.gallery.style.place"
         ]
-        let premiumOption = app.buttons["widget.gallery.style.stack"]
+        let premiumOption = app.buttons["widget.gallery.style.seal"]
         XCTAssertTrue(includedOption.waitForExistence(timeout: 3))
         XCTAssertTrue(premiumOption.waitForExistence(timeout: 3))
         XCTAssertTrue(includedOption.label.contains("已包含"))
@@ -462,6 +462,7 @@ final class PulseFlowUITests: XCTestCase {
         galleryLink.tap()
 
         let styleIdentifiers = [
+            "place",
             "seal",
             "stack",
             "bleed",

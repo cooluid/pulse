@@ -1,10 +1,10 @@
 # Widget 风格实验序列
 
-逐个实验新的仪式物件剪影。正式七式清单以 [widget-ritual-objects](../widget-ritual-objects/) 为准；其中潮痕已从本序列提升为正式第七式，免费默认探索见 [widget-awaiting-place](../widget-awaiting-place/)。
+逐个实验新的仪式物件剪影。正式八式清单以 [widget-ritual-objects](../widget-ritual-objects/) 为准；其中潮痕已从本序列提升为正式编号 07，唯一免费默认的像素真源见 [widget-awaiting-place](../widget-awaiting-place/)。
 
 | 序 | 物件 | 状态 | 目录 |
 | --- | --- | --- | --- |
-| 01 | 潮痕 | 已提升为正式第七式 | [01-tide-mark](./01-tide-mark/) |
+| 01 | 潮痕 | 已提升为正式编号 07 | [01-tide-mark](./01-tide-mark/) |
 | 02 | 一盏 | 未开始 | — |
 | 03 | 折角 | 未开始 | — |
 | 04 | 露珠 | 未开始 | — |

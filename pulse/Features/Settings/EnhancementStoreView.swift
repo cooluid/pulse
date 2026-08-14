@@ -105,7 +105,11 @@ struct EnhancementStoreView: View {
 
             ScrollView(.horizontal) {
                 HStack(spacing: PulseDesign.spacing12) {
-                    ForEach(PulseWidgetStyle.allCases) { style in
+                    ForEach(
+                        PulseWidgetStyle.allCases.filter(
+                            PulseWidgetStyleAccessPolicy.requiresEnhancement
+                        )
+                    ) { style in
                         VStack(alignment: .leading, spacing: PulseDesign.spacing8) {
                             if let snapshot = model.widgetPresentationSnapshot {
                                 PulseWidgetStylePreview(

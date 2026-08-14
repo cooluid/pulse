@@ -164,7 +164,7 @@ MVP 的目标不是搭建任务平台，而是让以下闭环稳定成立：
 
 通知权限只在用户主动开启提醒时请求，用于免费基础提醒与增强通道不可用时的同一提醒连续性；首次启动不得直接弹出。用户拒绝通知时，仍可用的 scheduled Live Activity 不应被阻止；两个正式通道都不可用时必须显示同步失败并保留开关意图，不得静默关闭。今天已过提醒时间时从明天开始，已签到日期不生成请求；启动、回到前台、签到、权益或提醒设置变化时刷新并先取消旧通道。系统调度容量和呈现由 iOS 裁决，产品文案不能承诺“到点一定出现”。
 
-`PulseWidgetStyleAccessPolicy` 规定落印是唯一免费 Home Screen Widget 构图；叠印、数影、手札、静场、来路、潮痕属于同一个高阶权益 entitlement。构图方向真源是 [widget-ritual-objects](./prototypes/widget-ritual-objects/) 的正式清单，潮痕像素真源是 [01-tide-mark](./prototypes/widget-style-experiments/01-tide-mark/pulse-widget-tide-mark.html)。构图由 Home Screen WidgetKit 逐实例配置持有；Widget extension 在渲染边界验证权益，未验证或撤销时明确显示未解锁状态，不得静默替换构图，也不能读取 App 侧购买副本。正式枚举与共享渲染器只包含七式仪式物件，不接受旧五式标识。Lock Screen“节律汇印”使用独立、无构图参数的 Widget kind。
+`PulseWidgetStyleAccessPolicy` 规定待落之处是唯一免费 Home Screen Widget 构图；落印、叠印、数影、手札、静场、来路、潮痕属于同一个高阶权益 entitlement。构图方向真源是 [widget-ritual-objects](./prototypes/widget-ritual-objects/) 的正式清单，待落之处像素真源是 [widget-awaiting-place](./prototypes/widget-awaiting-place/pulse-widget-awaiting-place.html)，潮痕像素真源是 [01-tide-mark](./prototypes/widget-style-experiments/01-tide-mark/pulse-widget-tide-mark.html)。构图由 Home Screen WidgetKit 逐实例配置持有；Widget extension 在渲染边界验证权益，未验证或撤销时明确显示未解锁状态，不得静默替换构图，也不能读取 App 侧购买副本。正式枚举与共享渲染器只包含八式仪式物件，不接受旧五式标识。Lock Screen“节律汇印”使用独立、无构图参数的 Widget kind。
 
 ## 5. 功能范围
 
@@ -195,7 +195,7 @@ MVP 的目标不是搭建任务平台，而是让以下闭环稳定成立：
 - 一周起始日设置。
 - 更完整的错误恢复和空状态说明。
 - App 图标、启动体验和正式发布素材。
-- 基础 Widget：Home Screen 小号/中号的落印面向所有用户；高阶权益解锁叠印 / 数影 / 手札 / 静场 / 来路 / 潮痕。七式必须以实验室仪式物件组织真实快照，禁止同骨架换肤、仪表盘指标和 4/7 分数；未签到时整个 Home Screen Widget 是唯一单向签到 AppIntent。Lock Screen 圆形/矩形只显示抽象状态且面向所有用户。App/Widget 只使用同一个 App Group store；App Group UserDefaults 仅保存 `interface.language`，构图由系统逐实例配置，不保存签到状态或购买副本。
+- 基础 Widget：Home Screen 小号/中号的待落之处面向所有用户；高阶权益解锁落印 / 叠印 / 数影 / 手札 / 静场 / 来路 / 潮痕。八式必须以实验室仪式物件组织真实快照，禁止同骨架换肤、仪表盘指标和 4/7 分数；未签到时整个 Home Screen Widget 是唯一单向签到 AppIntent。Lock Screen 圆形/矩形只显示抽象状态且面向所有用户。App/Widget 只使用同一个 App Group store；App Group UserDefaults 仅保存 `interface.language`，构图由系统逐实例配置，不保存签到状态或购买副本。
 
 ### 5.3 P2：后续候选，不属于 MVP 承诺
 

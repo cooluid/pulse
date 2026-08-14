@@ -295,6 +295,102 @@
         }
       }
     },
+    "widget.configuration.style.bleed" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Day Silhouette"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "数影"
+          }
+        }
+      }
+    },
+    "widget.configuration.style.field" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quiet Field"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "静场"
+          }
+        }
+      }
+    },
+    "widget.configuration.style.letter" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Letter"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "手札"
+          }
+        }
+      }
+    },
+    "widget.configuration.style.parameter" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Composition"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "构图"
+          }
+        }
+      }
+    },
+    "widget.configuration.style.path" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Path"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "来路"
+          }
+        }
+      }
+    },
+    "widget.configuration.style.place" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Awaiting Place"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "待落之处"
+          }
+        }
+      }
+    },
     "widget.configuration.style.seal" : {
       "localizations" : {
         "en" : {
@@ -323,86 +419,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "叠印"
-          }
-        }
-      }
-    },
-    "widget.configuration.style.bleed" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Day Silhouette"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "数影"
-          }
-        }
-      }
-    },
-    "widget.configuration.style.parameter" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Composition"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "构图"
-          }
-        }
-      }
-    },
-    "widget.configuration.style.letter" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Letter"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "手札"
-          }
-        }
-      }
-    },
-    "widget.configuration.style.field" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Quiet Field"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "静场"
-          }
-        }
-      }
-    },
-    "widget.configuration.style.path" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Path"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "来路"
           }
         }
       }
@@ -471,6 +487,56 @@
         }
       }
     },
+    "widget.place.checked" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Today has landed"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "今天已留下"
+          }
+        }
+      }
+    },
+    "widget.place.empty" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Empty"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "空着"
+          }
+        }
+      }
+    },
+    "widget.place.pending" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Today is still empty"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "今天还空着"
+          }
+        }
+      }
+    },
     "widget.placeholder.commitment" : {
       "localizations" : {
         "en" : {
@@ -509,13 +575,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Unlock this composition in Pulse, or choose Seal when editing the widget."
+            "value" : "Unlock this composition in Pulse, or choose Awaiting Place when editing the widget."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "请在一日一印中解锁，或编辑小组件改用落印。"
+            "value" : "请在一日一印中解锁，或编辑小组件改用待落之处。"
           }
         }
       }

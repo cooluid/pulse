@@ -738,13 +738,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "This widget composition is included with Advanced Benefits. Seal and basic reminders stay available without a purchase."
+            "value" : "This widget composition is included with Advanced Benefits. Awaiting Place and basic reminders stay available without a purchase."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "这个小组件构图属于高阶权益；落印和基础提醒无需购买。"
+            "value" : "这个小组件构图属于高阶权益；待落之处和基础提醒无需购买。"
           }
         }
       }
@@ -2357,6 +2357,40 @@
         }
       }
     },
+    "settings.widget.style.place" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Awaiting Place"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "待落之处"
+          }
+        }
+      }
+    },
+    "settings.widget.style.place.detail" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "An empty imprint well shows whether today is still waiting."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "一处空着的承印坑，等待今天这一印落下。"
+          }
+        }
+      }
+    },
     "settings.widget.style.seal" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -2766,13 +2800,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Unlock Stacked Imprints, Day Silhouette, Letter, Quiet Field, Path, and Tide Mark compositions."
+            "value" : "Unlock Seal, Stacked Imprints, Day Silhouette, Letter, Quiet Field, Path, and Tide Mark compositions."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "解锁叠印、数影、手札、静场、来路与潮痕构图。"
+            "value" : "解锁落印、叠印、数影、手札、静场、来路与潮痕构图。"
           }
         }
       }
@@ -3468,13 +3502,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Seven distinct ways to see today"
+            "value" : "Eight distinct ways to see today"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "七种真正不同的今日视角"
+            "value" : "八种真正不同的今日视角"
           }
         }
       }
@@ -3649,6 +3683,23 @@
         }
       }
     },
+    "widget.configuration.style.place" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Awaiting Place"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "待落之处"
+          }
+        }
+      }
+    },
     "widget.configuration.style.path" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -3730,6 +3781,57 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "小组件构图"
+          }
+        }
+      }
+    },
+    "widget.place.checked" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Today has landed"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "今天已留下"
+          }
+        }
+      }
+    },
+    "widget.place.empty" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Empty"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "空着"
+          }
+        }
+      }
+    },
+    "widget.place.pending" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Today is still empty"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "今天还空着"
           }
         }
       }

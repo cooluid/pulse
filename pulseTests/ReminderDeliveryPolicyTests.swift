@@ -70,14 +70,15 @@ final class ReminderDeliveryPolicyTests: XCTestCase {
 }
 
 final class PulseWidgetStyleAccessPolicyTests: XCTestCase {
-    func testSealIsTheOnlyIncludedStyle() {
-        XCTAssertEqual(PulseWidgetStyleAccessPolicy.freeStyle, .seal)
-        XCTAssertFalse(PulseWidgetStyleAccessPolicy.requiresEnhancement(.seal))
+    func testAwaitingPlaceIsTheOnlyIncludedStyle() {
+        XCTAssertEqual(PulseWidgetStyleAccessPolicy.freeStyle, .place)
+        XCTAssertFalse(PulseWidgetStyleAccessPolicy.requiresEnhancement(.place))
+        XCTAssertTrue(PulseWidgetStyleAccessPolicy.requiresEnhancement(.seal))
         XCTAssertEqual(
             PulseWidgetStyle.allCases.filter {
                 PulseWidgetStyleAccessPolicy.requiresEnhancement($0)
             }.count,
-            6
+            7
         )
     }
 
@@ -90,10 +91,11 @@ final class PulseWidgetStyleAccessPolicyTests: XCTestCase {
         )
     }
 
-    func testOfficialStyleContractContainsOnlyTheSevenRitualObjects() {
+    func testOfficialStyleContractContainsOnlyTheEightRitualObjects() {
         XCTAssertEqual(
             PulseWidgetStyle.allCases.map(\.rawValue),
             [
+                "place",
                 "seal",
                 "stack",
                 "bleed",

@@ -90,12 +90,13 @@ python3 scripts/build_brand_assets.py --check
 - 两个根 `NavigationStack` 保持各自的页面导航状态；不可见根页不得响应触控或辅助功能焦点。
 - 设置属于根页面之上的次级导航层；进入设置时隐藏主导航并释放底部安全区，返回根页面后恢复，禁止两层导航同时占据屏幕。
 
-## 5A. Home Screen Widget：七种仪式物件
+## 5A. Home Screen Widget：八种仪式物件
 
-构图方向真源是 [`docs/prototypes/widget-ritual-objects/`](../docs/prototypes/widget-ritual-objects/) 的正式清单：落印、叠印、数影、手札、静场、来路、潮痕；潮痕的像素构图真源是 [`01-tide-mark/pulse-widget-tide-mark.html`](../docs/prototypes/widget-style-experiments/01-tide-mark/pulse-widget-tide-mark.html)。正式 `PulseWidgetHomeRenderer` 与逐实例枚举只实现这七式；旧五式「呼吸环 / 深景 / 静序 / 七日谱」以及任何「状态—日期—承诺—七日—按钮」仪表盘骨架都不再编译或作为视觉依据。
+构图方向真源是 [`docs/prototypes/widget-ritual-objects/`](../docs/prototypes/widget-ritual-objects/) 的正式清单：待落之处、落印、叠印、数影、手札、静场、来路、潮痕；待落之处的像素构图真源是 [`widget-awaiting-place/pulse-widget-awaiting-place.html`](../docs/prototypes/widget-awaiting-place/pulse-widget-awaiting-place.html)，潮痕的像素构图真源是 [`01-tide-mark/pulse-widget-tide-mark.html`](../docs/prototypes/widget-style-experiments/01-tide-mark/pulse-widget-tide-mark.html)。正式 `PulseWidgetHomeRenderer` 与逐实例枚举只实现这八式；旧五式「呼吸环 / 深景 / 静序 / 七日谱」以及任何「状态—日期—承诺—七日—按钮」仪表盘骨架都不再编译或作为视觉依据。
 
-- Home Screen 小号与中号提供七种物件构图。落印是唯一免费构图；叠印、数影、手札、静场、来路、潮痕由同一个高阶权益 entitlement 解锁。构图类型由 WidgetKit 逐实例配置持有，App Group 不保存全局样式；同一主屏可同时放置不同构图。
-- 七式是七种能认出来的物件，不是背景皮肤。斜眼看去剪影必须不同：一枚印、一叠印、一个溢出的日子、一封短笺、一片静场、一条来路、一段天岸潮线。不得用颜色场、圆形装饰或位置微调伪装成新构图。静场不是手札的放大版，潮痕也不是数影加一层水纹。
+- Home Screen 小号与中号提供八种物件构图。待落之处是唯一免费构图；落印、叠印、数影、手札、静场、来路、潮痕由同一个高阶权益 entitlement 解锁。构图类型由 WidgetKit 逐实例配置持有，App Group 不保存全局样式；同一主屏可同时放置不同构图。
+- 八式是八种能认出来的物件，不是背景皮肤。斜眼看去剪影必须不同：一处承印空坑、一枚印、一叠印、一个溢出的日子、一封短笺、一片静场、一条来路、一段天岸潮线。不得用颜色场、圆形装饰或位置微调伪装成新构图。待落之处不是缩小版落印，静场不是手札的放大版，潮痕也不是数影加一层水纹。
+- 「待落之处」：免费默认是一块等待承印的位置，不是印本身。小号按日期 / 圆角印垫与空坑 / 主承诺组成单轴；中号左侧保持正方形印垫，右侧依次放日期、主承诺和状态句。待签到坑心写“空着”；完成后坑心由草叶色实心与勾占满。禁止开放日环、七日轨、连续天数、分数和渐变；系统逐实例默认值必须是 `place`。
 - 「落印」：大开口日环就是物件。浅底、淡残影、洗色环带加细开口，内核几乎透明；待办在环心写「留印」。日期用 `08 / 13` 一类说明写法，不做 `13/8`，也不占半屏——半屏日号留给数影。中号日号保持说明级，环继续占左。完成时环闭合、内核实心、勾压在核上。
 - 「叠印」：同一枚印压在最多三层错位纸边上，纸叠铺满画布。今天这一枚在最上面。日号是说明，不是第二主角；半屏大数字留给数影。漏签不占一层。
 - 「数影」：日号用粗体半透明剪影占住画面。小号潮面只铺下沿，中号潮面横贯。月份贴上沿，承诺在右上。右下角保留一枚小开口日环作今日示意；整张卡是唯一签到命中面，印不是第二块按钮。完成时环闭合打勾，日号仍是主角。不重复七日轨、次数汇总或第二个日期。
@@ -103,21 +104,21 @@ python3 scripts/build_brand_assets.py --check
 - 「静场」：墙上的海报。残影从右下角印的圆心扩开，字在场上，印在原点。今日印与其他式同一草叶色开口日环，「留印」用深绿；完成时环闭合打勾。不为了「显得完整」补回七日轨，也不能把脉冲场挪成角落装饰。
 - 「来路」：走过来的一串印，不是折线加点的健康图。过去六日由远到近、由小到大；漏签空心，已留下实心。今天是开口日环，环心是今日日号。完成时环闭合，勾只作小记。不写「近七日 N 次」。
 - 「潮痕」：先认天际线，再认潮。上天空与地平线、下潮唇与一尾水下剪影鱼，开放日环停在岸上且环心不写日号；完成时潮线上移贴近日环并闭环。禁止百分比水位、鱼群、气象图标和数影式大日号。潮痕唯一允许使用由 `widgetSky` / `widgetSkyMiddle` / `surface` 组成的单轴语义渐变；这不是其他构图引入任意 RGB 渐变的许可。
-- 七式消费同一个不可变 `PulseWidgetSnapshot`，但只投影各自完成任务所需的事实。日期、主承诺、今日状态或七日信息在同一构图中不得用文字、节点与统计重复表达。照片、备注、连续天数和 4/7 分数不进入 Widget。
+- 八式消费同一个不可变 `PulseWidgetSnapshot`，但只投影各自完成任务所需的事实。日期、主承诺、今日状态或七日信息在同一构图中不得用文字、节点与统计重复表达。照片、备注、连续天数和 4/7 分数不进入 Widget。
 - 小号与中号必须使用明确的响应尺寸参数，不把小号等比拉宽，也不把中号当成松散小号；以 `1 / 10 / 11 / 31` 日号、长承诺、中英文和七日全状态组合检查密度、截断与完整字形边界。
 - 日期使用系统圆角字与等宽数字，不使用负字距、日期位数特判、硬编码假日期或缩放整张布局补救裁切。半屏数字允许低对比，但完整字形必须始终在安全边界内。
 - 七日状态中，已签到为大实心，漏签为小实心低强调，项目开始前为小空心，今天待签到为大空心强调；状态不能只依赖颜色。手札邮戳可在已留下节点内增加勾形；来路的今日勾不得盖住日号。
 - Home Screen 未签到时，系统分配的完整可见区域是同一个单向签到 `Button`；完成态整块静态且不可撤销。禁止只让日印或某个日期节点可点，也禁止一张 Widget 出现多个等价签到入口。
 - Home Screen 与 Accessory 共用代码原生日环：312° 环段、9% 线宽、圆润端点；Home Screen 未签到使用 `action`，完成后使用 `grass`，Accessory 交给系统单色或着色调色板。完成态由实心内核、勾形、状态文字和辅助功能标签共同表达。
 - App 内构图画廊与 Widget Extension 必须编译同一份 `PulseWidgetHomeRenderer`；画廊只使用当前主承诺和当前七日事实生成的正式快照。禁止独立近似预览、硬编码日期、按索引伪造签到状态或在画廊提供不能配置已安装 Widget 的“已选择”状态。
-- Home Screen 构图选择只存在于系统“编辑小组件”的 `WidgetConfigurationIntent`；无构图参数的 Lock Screen“节律汇印”是独立 Widget kind。Widget extension 在每次 snapshot/timeline 独立验证 entitlement；收费构图在权益未验证或撤销时必须明确显示“构图尚未解锁”，不得静默替换为落印，也不能读取 App 侧购买布尔副本。
+- Home Screen 构图选择只存在于系统“编辑小组件”的 `WidgetConfigurationIntent`；无构图参数的 Lock Screen“节律汇印”是独立 Widget kind。Widget extension 在每次 snapshot/timeline 独立验证 entitlement；收费构图在权益未验证或撤销时必须明确显示“构图尚未解锁”，不得静默替换为待落之处，也不能读取 App 侧购买布尔副本。
 - Home Screen 固定显示主承诺名称且只读取 `Habit` 真源；Lock Screen、StandBy 与 Always-On 不显示主承诺正文，任何 Widget 都不显示可选备注或媒体。
 - Accessory 使用唯一“节律汇印”语法：圆形在今日开放环或完成印内部显示本地化当日纯数字；矩形左上显示今日短状态，过去六日节点上方显示真实日号并以连接线流向右侧唯一今日印记。不得把今天重复成第七个小节点。
 - Accessory 待签到圆形与矩形的完整可见区域都是同一个单向签到 `Button`；完成态静态。矩形内部节点从辅助功能树隐藏，整块只朗读今日状态、过去六日结果与操作提示。
 - Home Screen 全彩模式只使用品牌语义 Color Set；除潮痕已定义的单轴天空渐变外，禁止其他自绘渐变。系统着色或透明外观通过 `widgetRenderingMode` 分离主内容与强调内容。`containerBackground(for: .widget)` 保持可移除；禁止自绘毛玻璃、霓虹调色板、粗黑装饰线、emoji、随机旋转和不可预测裁切。
 - 所有 Widget 都静态响应权威事实更新，不用 timeline 伪造连续动画。Reduce Motion、Accessory 与 Always-On 始终有完整静态等价表达。
 - 共享 store 未就绪、身份未确认或快照损坏时显示明确“打开一日一印 / Open Pulse”或不可用状态，不能显示虚假待签到。App Group UserDefaults 只允许 `interface.language`，不存在 `widget.style` 旧路径。
-- 七种物件的小号与中号，以及 Accessory Circular / Rectangular，必须分别在系统 Widget Gallery 与真实表面验收待签到、已签到、浅色、深色、accented、vibrant 和 Clear；App 内画廊、Preview、编译成功、HTML 实验室或资产尺寸检查不能替代运行证据。
+- 八种物件的小号与中号，以及 Accessory Circular / Rectangular，必须分别在系统 Widget Gallery 与真实表面验收待签到、已签到、浅色、深色、accented、vibrant 和 Clear；App 内画廊、Preview、编译成功、HTML 实验室或资产尺寸检查不能替代运行证据。
 
 ## 5B. 独立高阶权益页
 

@@ -53,6 +53,8 @@ extension PulseInterfaceLanguage {
 extension PulseWidgetStyle {
     func localizedName(locale: Locale) -> String {
         switch self {
+        case .place:
+            PulseLocalization.string("settings.widget.style.place", locale: locale)
         case .seal:
             PulseLocalization.string("settings.widget.style.seal", locale: locale)
         case .stack:
@@ -72,6 +74,11 @@ extension PulseWidgetStyle {
 
     func localizedDescription(locale: Locale) -> String {
         switch self {
+        case .place:
+            PulseLocalization.string(
+                "settings.widget.style.place.detail",
+                locale: locale
+            )
         case .seal:
             PulseLocalization.string(
                 "settings.widget.style.seal.detail",

@@ -451,6 +451,16 @@ private struct PulseLocalizedWidgetView: View {
             actionText: String(
                 localized: "widget.action.check_in.short",
                 locale: locale
+            ),
+            emptyPlaceText: String(
+                localized: "widget.place.empty",
+                locale: locale
+            ),
+            placeStatusText: String(
+                localized: snapshot.isCheckedToday
+                    ? "widget.place.checked"
+                    : "widget.place.pending",
+                locale: locale
             )
         )
 

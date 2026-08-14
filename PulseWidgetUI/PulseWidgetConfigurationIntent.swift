@@ -5,6 +5,7 @@ extension PulseWidgetStyle: AppEnum {
         "widget.configuration.style.title"
 
     static let caseDisplayRepresentations: [PulseWidgetStyle: DisplayRepresentation] = [
+        .place: "widget.configuration.style.place",
         .seal: "widget.configuration.style.seal",
         .stack: "widget.configuration.style.stack",
         .bleed: "widget.configuration.style.bleed",
@@ -21,7 +22,7 @@ struct PulseWidgetConfigurationIntent: WidgetConfigurationIntent {
 
     @Parameter(
         title: "widget.configuration.style.parameter",
-        default: .seal
+        default: .place
     )
     var style: PulseWidgetStyle
 }

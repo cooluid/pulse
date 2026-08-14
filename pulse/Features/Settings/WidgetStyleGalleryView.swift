@@ -227,6 +227,16 @@ struct PulseWidgetStylePreview: View {
             actionText: PulseLocalization.string(
                 "widget.gallery.action.short",
                 locale: locale
+            ),
+            emptyPlaceText: PulseLocalization.string(
+                "widget.place.empty",
+                locale: locale
+            ),
+            placeStatusText: PulseLocalization.string(
+                snapshot.isCheckedToday
+                    ? "widget.place.checked"
+                    : "widget.place.pending",
+                locale: locale
             )
         )
         .clipShape(RoundedRectangle(

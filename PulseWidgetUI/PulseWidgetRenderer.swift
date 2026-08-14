@@ -3,6 +3,7 @@ import SwiftUI
 import WidgetKit
 
 enum PulseWidgetStyle: String, CaseIterable, Codable, Identifiable, Sendable {
+    case place
     case seal
     case stack
     case bleed
@@ -15,7 +16,7 @@ enum PulseWidgetStyle: String, CaseIterable, Codable, Identifiable, Sendable {
 }
 
 enum PulseWidgetStyleAccessPolicy {
-    static let freeStyle = PulseWidgetStyle.seal
+    static let freeStyle = PulseWidgetStyle.place
 
     static func requiresEnhancement(_ style: PulseWidgetStyle) -> Bool {
         style != freeStyle
@@ -37,6 +38,8 @@ struct PulseWidgetHomeRenderer: View {
     let usesFullColorPalette: Bool
     let statusText: String
     let actionText: String
+    let emptyPlaceText: String
+    let placeStatusText: String
 
     @Environment(\.locale) private var locale
 
@@ -44,6 +47,8 @@ struct PulseWidgetHomeRenderer: View {
         GeometryReader { proxy in
             Group {
                 switch style {
+                case .place:
+                    place(size: proxy.size)
                 case .seal:
                     seal(size: proxy.size)
                 case .stack:
@@ -68,6 +73,104 @@ struct PulseWidgetHomeRenderer: View {
             .clipped()
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+
+    private func place(size: CGSize) -> some View {
+        let blotterSide = pt(usesMediumMetrics ? 122 : 86, in: size)
+
+        return ZStack(alignment: .topLeading) {
+            surfaceBackground
+
+            if usesMediumMetrics {
+                awaitingPlaceBlotter(side: blotterSide, size: size)
+                    .position(
+                        x: pt(18, in: size) + blotterSide / 2,
+                        y: size.height / 2
+                    )
+
+                VStack(alignment: .leading, spacing: pt(10, in: size)) {
+                    Text(verbatim: PulseLocalizedDateFormatting.monthDayAndWeekday(
+                        snapshot.today,
+                        locale: locale
+                    ))
+                    .font(.system(size: pt(13, in: size), weight: .bold))
+                    .tracking(pt(0.5, in: size))
+                    .foregroundStyle(actionColor)
+                    .lineLimit(1)
+
+                    habitName(
+                        size: pt(22, in: size),
+                        width: pt(166, in: size),
+                        alignment: .leading
+                    )
+
+                    Spacer(minLength: 0)
+
+                    Text(verbatim: placeStatusText)
+                        .font(.system(size: pt(12, in: size), weight: .medium))
+                        .foregroundStyle(secondaryColor)
+                        .lineLimit(1)
+                }
+                .frame(
+                    width: pt(166, in: size),
+                    height: size.height - pt(40, in: size),
+                    alignment: .topLeading
+                )
+                .padding(.leading, pt(154, in: size))
+                .padding(.top, pt(20, in: size))
+            } else {
+                VStack(spacing: 0) {
+                    Text(verbatim: monthAndDay)
+                        .font(.system(size: pt(11, in: size), weight: .bold))
+                        .tracking(pt(0.7, in: size))
+                        .foregroundStyle(actionColor)
+                        .monospacedDigit()
+                        .lineLimit(1)
+
+                    Spacer(minLength: pt(7, in: size))
+
+                    awaitingPlaceBlotter(side: blotterSide, size: size)
+
+                    Spacer(minLength: pt(7, in: size))
+
+                    habitName(
+                        size: pt(13, in: size),
+                        width: pt(130, in: size),
+                        alignment: .center
+                    )
+                }
+                .padding(.top, pt(12, in: size))
+                .padding(.bottom, pt(12, in: size))
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+            }
+        }
+    }
+
+    private func awaitingPlaceBlotter(side: CGFloat, size: CGSize) -> some View {
+        RoundedRectangle(
+            cornerRadius: side * (usesMediumMetrics ? 32 / 122 : 24 / 86),
+            style: .continuous
+        )
+        .fill((snapshot.isCheckedToday ? grassColor : fieldColor).opacity(0.09))
+        .overlay {
+            RoundedRectangle(
+                cornerRadius: side * (usesMediumMetrics ? 32 / 122 : 24 / 86),
+                style: .continuous
+            )
+            .stroke(primaryColor.opacity(0.05), lineWidth: pt(1, in: size))
+        }
+        .overlay {
+            PulseAwaitingPlaceWell(
+                isChecked: snapshot.isCheckedToday,
+                usesFullColorPalette: usesFullColorPalette,
+                emptyText: emptyPlaceText
+            )
+            .frame(
+                width: side * (usesMediumMetrics ? 74 / 122 : 52 / 86),
+                height: side * (usesMediumMetrics ? 74 / 122 : 52 / 86)
+            )
+        }
+        .frame(width: side, height: side)
     }
 
     private func seal(size: CGSize) -> some View {
@@ -825,6 +928,71 @@ struct PulseWidgetHomeRenderer: View {
 
     private func pt(_ value: CGFloat, in size: CGSize) -> CGFloat {
         value * size.height / 158
+    }
+}
+
+private struct PulseAwaitingPlaceWell: View {
+    let isChecked: Bool
+    let usesFullColorPalette: Bool
+    let emptyText: String
+
+    var body: some View {
+        GeometryReader { proxy in
+            let side = min(proxy.size.width, proxy.size.height)
+
+            ZStack {
+                Circle()
+                    .stroke(fieldColor.opacity(isChecked ? 0.40 : 0.28), lineWidth: side * 0.03)
+
+                Circle()
+                    .stroke(fieldColor.opacity(isChecked ? 0.09 : 0.07), lineWidth: side * 0.18)
+                    .padding(side * 0.09)
+
+                if isChecked {
+                    ZStack {
+                        Circle().fill(completedColor)
+                        Image(systemName: "checkmark")
+                            .font(.system(size: side * 0.31, weight: .semibold))
+                            .foregroundStyle(usesFullColorPalette
+                                ? PulseWidgetDesign.grassForeground
+                                : Color.black)
+                            .blendMode(usesFullColorPalette ? .normal : .destinationOut)
+                    }
+                    .compositingGroup()
+                    .frame(width: side * 0.70, height: side * 0.70)
+                } else {
+                    Circle()
+                        .fill(surfaceColor.opacity(0.82))
+                        .frame(width: side * 0.58, height: side * 0.58)
+
+                    Text(verbatim: emptyText)
+                        .font(.system(size: side * 0.22, weight: .bold))
+                        .foregroundStyle(actionColor)
+                        .minimumScaleFactor(0.70)
+                        .lineLimit(1)
+                        .frame(width: side * 0.52)
+                }
+            }
+            .frame(width: side, height: side)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+        }
+        .accessibilityHidden(true)
+    }
+
+    private var fieldColor: Color {
+        usesFullColorPalette ? PulseWidgetDesign.field : .primary
+    }
+
+    private var actionColor: Color {
+        usesFullColorPalette ? PulseWidgetDesign.action : .primary
+    }
+
+    private var surfaceColor: Color {
+        usesFullColorPalette ? PulseWidgetDesign.surface : .clear
+    }
+
+    private var completedColor: Color {
+        usesFullColorPalette ? PulseWidgetDesign.grass : .primary
     }
 }
 

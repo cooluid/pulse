@@ -10,7 +10,7 @@
 
 Widget 是同一签到事实的系统入口，不是第二个应用：
 
-- Home Screen 小号/中号可逐实例选择落印 / 叠印 / 数影 / 手札 / 静场 / 来路 / 潮痕七种仪式物件；构图与任务以 [widget-ritual-objects](./prototypes/widget-ritual-objects/) 的正式清单为准，潮痕像素真源为 [01-tide-mark](./prototypes/widget-style-experiments/01-tide-mark/pulse-widget-tide-mark.html)，不是共享骨架的换肤。落印免费，其余六式由同一高阶权益解锁。旧五式「呼吸环 / 深景 / 静序 / 七日谱」已从正式枚举和渲染源删除；
+- Home Screen 小号/中号可逐实例选择待落之处 / 落印 / 叠印 / 数影 / 手札 / 静场 / 来路 / 潮痕八种仪式物件；构图与任务以 [widget-ritual-objects](./prototypes/widget-ritual-objects/) 的正式清单为准，待落之处像素真源为 [widget-awaiting-place](./prototypes/widget-awaiting-place/pulse-widget-awaiting-place.html)，潮痕像素真源为 [01-tide-mark](./prototypes/widget-style-experiments/01-tide-mark/pulse-widget-tide-mark.html)，不是共享骨架的换肤。待落之处免费，其余七式由同一高阶权益解锁。旧五式「呼吸环 / 深景 / 静序 / 七日谱」已从正式枚举和渲染源删除；
 - Lock Screen 圆形显示带当日日号的开放环或实心完成印；
 - Lock Screen 矩形把过去六日节点以连接线汇入右侧今日印记，今天不重复成第七个小节点；
 - 未签到只提供单向签到；已签到无撤销入口；删除仍只在 App 内二次确认；
@@ -43,7 +43,7 @@ FileManager.containerURL(forSecurityApplicationGroupIdentifier:)
 - 不存在 App 私有 store、旧库迁移、journal、staging、fallback 或双写。
 - 旧开发安装不属于公开数据合同，进入此首发基线时必须清洁安装。
 
-App Group UserDefaults 只允许 `PulseSharedInterfacePreferences` 管理 `interface.language`。缺失键表示 `system`，未知值必须失败关闭；不得保存构图、业务事实或可反向覆盖 store 的投影。Home Screen 构图由 `WidgetConfigurationIntent` 逐实例持有：正式枚举只含 `seal` / `stack` / `bleed` / `letter` / `field` / `path` / `tide`，其中落印是唯一免费构图，其余六式需要统一高阶权益 entitlement。Widget extension 在生成 snapshot/timeline 时验证 StoreKit 权益，未验证或撤销时明确返回未解锁状态，不得用免费构图伪装成功。Lock Screen“节律汇印”使用独立 StaticConfiguration kind，不接收 Home Screen 构图参数。
+App Group UserDefaults 只允许 `PulseSharedInterfacePreferences` 管理 `interface.language`。缺失键表示 `system`，未知值必须失败关闭；不得保存构图、业务事实或可反向覆盖 store 的投影。Home Screen 构图由 `WidgetConfigurationIntent` 逐实例持有：正式枚举只含 `place` / `seal` / `stack` / `bleed` / `letter` / `field` / `path` / `tide`，其中待落之处是唯一免费构图，其余七式需要统一高阶权益 entitlement。Widget extension 在生成 snapshot/timeline 时验证 StoreKit 权益，未验证或撤销时明确返回未解锁状态，不得用免费构图伪装成功。Lock Screen“节律汇印”使用独立 StaticConfiguration kind，不接收 Home Screen 构图参数。
 
 ## 4. 共享代码边界
 
@@ -54,7 +54,7 @@ App Group UserDefaults 只允许 `PulseSharedInterfacePreferences` 管理 `inter
 - 加密备份恢复合同；
 - 不可变 Widget 快照与 timeline 计划；
 - 不含业务事实的 `PulseSharedInterfacePreferences` 与纯 Foundation 日期本地化器；
-- `PulseWidgetUI/PulseWidgetRenderer.swift` 是 App 画廊与 Widget Extension 共同编译的唯一 Home Screen 渲染源，包含正式构图枚举、访问策略、物件渲染和原生日印，不保存状态也不写 Repository。它只实现落印 / 叠印 / 数影 / 手札 / 静场 / 来路 / 潮痕，构图跟正式原型清单，不编译旧五式。
+- `PulseWidgetUI/PulseWidgetRenderer.swift` 是 App 画廊与 Widget Extension 共同编译的唯一 Home Screen 渲染源，包含正式构图枚举、访问策略、物件渲染和原生日印，不保存状态也不写 Repository。它只实现待落之处 / 落印 / 叠印 / 数影 / 手札 / 静场 / 来路 / 潮痕，构图跟正式原型清单，不编译旧五式。
 
 Core 不含 SwiftUI 页面、WidgetKit 布局、通知调度、触觉或宿主本地化资源。共享渲染源只接收不可变快照和宿主提供的本地化短文案。禁止复制 model、Repository、构图枚举、渲染器、偏好键或建立近似预览/写入路径。
 
@@ -110,7 +110,7 @@ store 缺失或身份未确认显示“打开 App”；store 打不开、偏好�
 - 两个独立 ModelContainer 同日写入最终只有一个 `recordKey`；
 - timeline 跨项目时区零点刷新，七日投影与 App 一致；
 - 三值 `interface.language` 的单一共享持久化、默认值与未知值失败关闭；
-- 构图 AppEnum、逐实例默认值、未授权时的明确拒绝，以及不同 Home Screen 实例可同时使用不同构图；枚举必须只覆盖落印 / 叠印 / 数影 / 手札 / 静场 / 来路 / 潮痕，且不接受旧五式标识；
+- 构图 AppEnum、逐实例默认值、未授权时的明确拒绝，以及不同 Home Screen 实例可同时使用不同构图；枚举必须只覆盖待落之处 / 落印 / 叠印 / 数影 / 手札 / 静场 / 来路 / 潮痕，且不接受旧五式标识；
 - Lock Screen 独立 kind 不暴露构图参数，App/Widget 写入后同时刷新两个正式 kind；
 - English / 简体中文下的 Widget 状态文案、日期、月份、数字和 VoiceOver 组合；App 切换语言只刷新一次 timeline；
 - Home Screen 显示名称，Accessory 不泄露名称或说明；
@@ -121,7 +121,7 @@ store 缺失或身份未确认显示“打开 App”；store 打不开、偏好�
 自动化工程 GO 不替代以下证据：
 
 - 真实 iPhone / iPad 上 App 未运行、设备锁定、系统杀进程、跨午夜、快速双击和 App/Widget 同日竞争；
-- Home Screen 七式小号/中号的待办/完成、深浅色、长名称和完整数字边界；验收以正式原型清单为准，不以旧五式画廊冒充；
+- Home Screen 八式小号/中号的待办/完成、深浅色、长名称和完整数字边界；验收以正式原型清单为准，不以旧五式画廊冒充；
 - Lock Screen 圆形/矩形、StandBy、Always-On、accented、vibrant、Clear 与降低透明度；
 - 最大 Dynamic Type、VoiceOver、Reduce Motion 和整块命中；
 - Apple Distribution、Archive、TestFlight 和 App Store 分发。
