@@ -323,119 +323,112 @@
     }
 
     /* 03 Bleed — bold day silhouette over soft mist (not waves; water belongs to 潮痕) */
+    /* 03 Bleed — diagonal grass/paper split; paper material, no floating object */
     .bleed { background: var(--bg); }
-    .bleed .haze {
+    .bleed .tone {
       position: absolute;
       inset: 0;
       z-index: 0;
-      pointer-events: none;
-      color: var(--field);
+      background: linear-gradient(155deg, color-mix(in srgb, var(--action) 92%, white 8%), var(--action) 42%, color-mix(in srgb, var(--action) 88%, black 12%));
+      clip-path: polygon(0 0, 50% 0, 34% 100%, 0 100%);
+      box-shadow: inset -22px 0 36px color-mix(in srgb, var(--shadow) 18%, transparent);
+      transition: clip-path 720ms var(--ease), background 720ms var(--ease);
     }
-    body.checked .bleed .haze { color: var(--grass); }
-    .bleed .ghost {
+    body.checked .bleed .tone {
+      background: linear-gradient(155deg, color-mix(in srgb, var(--grass) 88%, white 12%), var(--grass) 46%, color-mix(in srgb, var(--grass) 82%, var(--action) 18%));
+      clip-path: polygon(0 0, 74% 0, 58% 100%, 0 100%);
+    }
+    .bleed .paper {
       position: absolute;
-      left: 8px;
-      top: 34px;
-      bottom: auto;
-      font-size: 76px;
-      font-weight: 700;
-      letter-spacing: 0;
-      line-height: 1;
-      color: color-mix(in srgb, var(--action) 44%, transparent);
-      font-variant-numeric: tabular-nums;
+      inset: 0;
+      z-index: 1;
       pointer-events: none;
-      z-index: 0;
+      background:
+        radial-gradient(ellipse at 78% 72%, color-mix(in srgb, var(--field) 10%, transparent), transparent 46%),
+        linear-gradient(180deg, color-mix(in srgb, var(--surface) 70%, transparent), transparent 36%);
     }
-    body.checked .bleed .ghost { color: color-mix(in srgb, var(--grass) 52%, transparent); }
     .bleed .month {
       position: absolute;
       left: 12px;
       top: 11px;
-      color: var(--action);
+      color: var(--action-fg);
       font-size: 11px;
       font-weight: 720;
       letter-spacing: .06em;
-      z-index: 1;
+      z-index: 3;
+      text-shadow: 0 1px 0 color-mix(in srgb, var(--shadow) 18%, transparent);
     }
     .bleed .habit {
       position: absolute;
-      right: 12px;
-      top: 12px;
-      left: auto;
+      left: 12px;
+      top: 36px;
+      right: auto;
       bottom: auto;
       max-width: 4.4em;
       font-size: 16px;
       font-weight: 650;
-      text-align: right;
+      text-align: left;
       line-height: 1.05;
-      z-index: 1;
+      color: var(--action-fg);
+      z-index: 3;
+      text-shadow: 0 1px 0 color-mix(in srgb, var(--shadow) 16%, transparent);
     }
+    .bleed .day {
+      position: absolute;
+      right: 12px;
+      bottom: 34px;
+      z-index: 3;
+      font-size: 42px;
+      font-weight: 700;
+      letter-spacing: -.05em;
+      line-height: 1;
+      color: var(--action);
+      font-variant-numeric: tabular-nums;
+    }
+    body.dark .bleed .day { color: var(--grass); }
+    body.checked .bleed .day { color: var(--grass-fg); }
+    body.dark.checked .bleed .day { color: var(--ink); }
     .bleed .status {
       position: absolute;
-      left: 12px;
+      right: 12px;
       bottom: 12px;
-      z-index: 1;
+      left: auto;
+      z-index: 3;
       font-size: 10px;
       font-weight: 560;
       color: var(--secondary);
       max-width: 6.5em;
+      text-align: right;
     }
-    /* Today’s seal is the action cue; the whole card is still one hit target */
-    .bleed .today-hit {
-      position: absolute;
-      right: 10px;
-      bottom: 10px;
-      width: 40px;
-      height: 40px;
-      z-index: 2;
-      color: var(--field);
+    .bleed-medium .tone {
+      clip-path: polygon(0 0, 50% 0, 41% 100%, 0 100%);
     }
-    .bleed .today-hit svg {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      overflow: visible;
-    }
-    .bleed .today-hit svg.only-checked { display: none; }
-    body.checked .bleed .today-hit svg.only-pending { display: none; }
-    body.checked .bleed .today-hit svg.only-checked { display: block; }
-    .bleed .today-hit .core { fill: currentColor; opacity: .10; }
-    .bleed .today-hit .mark-label {
-      position: absolute;
-      inset: 0;
-      display: grid;
-      place-items: center;
-      margin: 0;
-      font-size: 9px;
-      font-weight: 700;
-      letter-spacing: -.04em;
-      color: var(--action);
-      pointer-events: none;
-    }
-    body.checked .bleed .today-hit .mark-label { display: none; }
-    body.checked .bleed .today-hit { color: var(--grass); }
-    body.checked .bleed .today-hit .core { opacity: 1; }
-    .bleed-medium .ghost {
-      left: 12px;
-      top: 18px;
-      font-size: 112px;
+    body.checked .bleed-medium .tone {
+      clip-path: polygon(0 0, 68% 0, 56% 100%, 0 100%);
     }
     .bleed-medium .month { left: 16px; top: 14px; }
     .bleed-medium .habit {
-      top: 14px;
-      right: 16px;
+      top: 44px;
+      left: 16px;
       font-size: 22px;
-      max-width: 5.4em;
+      max-width: 8em;
     }
-    .bleed-medium .status { left: 16px; bottom: 14px; font-size: 11px; }
-    .bleed-medium .today-hit {
-      right: 14px;
-      bottom: 12px;
-      width: 48px;
-      height: 48px;
+    .bleed-medium .day {
+      right: 16px;
+      bottom: 14px;
+      font-size: 56px;
     }
-    .bleed-medium .today-hit .mark-label { font-size: 10px; }
+    .bleed-medium .status {
+      left: 16px;
+      right: auto;
+      bottom: 14px;
+      font-size: 11px;
+      text-align: left;
+      color: color-mix(in srgb, var(--action-fg) 82%, transparent);
+    }
+    body.checked .bleed-medium .status {
+      color: color-mix(in srgb, var(--grass-fg) 78%, transparent);
+    }
 
     /* 04 Letter — one sheet of stationery; one primary date seal and six past marks */
     .letter {
@@ -1031,55 +1024,25 @@
         <div>
           <span class="idx">03 · BLEED</span>
           <h3>数影</h3>
-          <p>日号用粗体半透明剪影，是这张唯一主角。底场改成软雾团，不再画波浪——水与岸留给潮痕。月份贴上沿，承诺在右上。右下角小开口日环只作「今天」示意。完成时环闭合打勾，日号仍压在雾上。</p>
+          <p>斜向双色填满整卡：松绿纸面切开浅绿底。月份与承诺落在色块上，日号落在纸面。完成时草绿一侧扩张。早/日/晚只挪分割比例。轻拟物纸面，不摆独立物件。</p>
           <span class="job">任务：今天是哪一天 · 现有快照</span>
         </div>
         <div class="frames">
           <div class="widget bleed">
-            <svg class="haze" viewBox="0 0 160 160" preserveAspectRatio="none" aria-hidden="true">
-              <ellipse cx="48" cy="118" rx="70" ry="34" fill="currentColor" opacity=".10"/>
-              <ellipse cx="110" cy="132" rx="58" ry="28" fill="currentColor" opacity=".14"/>
-              <ellipse cx="78" cy="146" rx="80" ry="26" fill="currentColor" opacity=".08"/>
-            </svg>
-            <div class="ghost">13</div>
+            <div class="tone" aria-hidden="true"></div>
+            <div class="paper" aria-hidden="true"></div>
             <div class="month">八月</div>
             <div class="habit">晨间<br>书写</div>
+            <div class="day">13</div>
             <div class="status state"></div>
-            <div class="today-hit" aria-hidden="true">
-              <svg class="only-pending" viewBox="0 0 100 100">
-                <circle cx="50" cy="50" r="39" fill="none" stroke="currentColor" stroke-width="5.5" stroke-linecap="round" pathLength="100" stroke-dasharray="86.7 13.3" transform="rotate(-18 50 50)"/>
-                <circle class="core" cx="50" cy="50" r="20"/>
-              </svg>
-              <svg class="only-checked" viewBox="0 0 100 100">
-                <circle cx="50" cy="50" r="39" fill="none" stroke="currentColor" stroke-width="5.5"/>
-                <circle class="core" cx="50" cy="50" r="20"/>
-                <path d="M42 51 L48 58 L60 43" fill="none" stroke="var(--grass-fg)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-              <span class="mark-label">留印</span>
-            </div>
           </div>
           <div class="widget medium bleed bleed-medium">
-            <svg class="haze" viewBox="0 0 160 160" preserveAspectRatio="none" aria-hidden="true">
-              <ellipse cx="40" cy="72" rx="78" ry="36" fill="currentColor" opacity=".10"/>
-              <ellipse cx="118" cy="88" rx="70" ry="32" fill="currentColor" opacity=".14"/>
-              <ellipse cx="78" cy="108" rx="96" ry="30" fill="currentColor" opacity=".08"/>
-            </svg>
-            <div class="ghost">13</div>
+            <div class="tone" aria-hidden="true"></div>
+            <div class="paper" aria-hidden="true"></div>
             <div class="month">八月</div>
-            <div class="habit">晨间<br>书写</div>
+            <div class="habit">晨间书写</div>
+            <div class="day">13</div>
             <div class="status state"></div>
-            <div class="today-hit" aria-hidden="true">
-              <svg class="only-pending" viewBox="0 0 100 100">
-                <circle cx="50" cy="50" r="39" fill="none" stroke="currentColor" stroke-width="5.5" stroke-linecap="round" pathLength="100" stroke-dasharray="86.7 13.3" transform="rotate(-18 50 50)"/>
-                <circle class="core" cx="50" cy="50" r="20"/>
-              </svg>
-              <svg class="only-checked" viewBox="0 0 100 100">
-                <circle cx="50" cy="50" r="39" fill="none" stroke="currentColor" stroke-width="5.5"/>
-                <circle class="core" cx="50" cy="50" r="20"/>
-                <path d="M42 51 L48 58 L60 43" fill="none" stroke="var(--grass-fg)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-              <span class="mark-label">留印</span>
-            </div>
           </div>
         </div>
       </article>

@@ -2499,13 +2499,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Uses a large date so today and its check-in status are easy to scan."
+            "value" : "A diagonal grass-and-paper split for today; the grass side expands after check-in."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "以大号日期为主，快速查看今天和签到状态。"
+            "value" : "斜向草绿与纸面对切开今天；完成时草绿一侧扩张。"
           }
         }
       }

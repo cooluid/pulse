@@ -120,7 +120,9 @@ enum PulseWidgetMotionPresentation {
         case .paper:
             amplitude = AmbientPose(horizontalPoints: 1.8, verticalPoints: 0.7, rotationDegrees: -0.8)
         case .number:
-            amplitude = AmbientPose(horizontalPoints: -2.6, verticalPoints: -2.1, rotationDegrees: 0)
+            // Split ratio is driven by ambient period in the bleed renderer;
+            // keep a distinct low-amplitude pose so material identity stays unique.
+            amplitude = AmbientPose(horizontalPoints: 3.4, verticalPoints: 0.6, rotationDegrees: 0)
         case .letter:
             amplitude = AmbientPose(horizontalPoints: 2.1, verticalPoints: 0.9, rotationDegrees: 0.6)
         case .echo:

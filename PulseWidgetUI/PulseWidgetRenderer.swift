@@ -43,6 +43,7 @@ struct PulseWidgetHomeRenderer: View {
     let placeStatusText: String
 
     @Environment(\.locale) private var locale
+    @Environment(\.colorScheme) private var colorScheme
 
     var body: some View {
         GeometryReader { proxy in
@@ -361,49 +362,243 @@ struct PulseWidgetHomeRenderer: View {
 
     private func bleed(size: CGSize) -> some View {
         let inset = pt(usesMediumMetrics ? 16 : 12, in: size)
+        let topSplit = bleedTopSplitFraction
+        let bottomSplit = bleedBottomSplitFraction(top: topSplit)
 
         return ZStack(alignment: .topLeading) {
             baseBackground
-            mistField(size: size)
+            bleedPaperWash(size: size)
 
-            Text(verbatim: dayNumber)
-                .font(.system(size: pt(usesMediumMetrics ? 112 : 76, in: size), weight: .bold))
-                .foregroundStyle((snapshot.isCheckedToday ? grassColor : actionColor)
-                    .opacity(snapshot.isCheckedToday ? 0.52 : 0.44))
-                .monospacedDigit()
-                .lineLimit(1)
-                .minimumScaleFactor(0.82)
-                .frame(width: usesMediumMetrics ? size.width * 0.56 : size.width * 0.72)
-                .offset(
-                    x: pt(usesMediumMetrics ? 12 : 8, in: size)
-                        + ambientHorizontalShift(in: size) * 0.55,
-                    y: pt(usesMediumMetrics ? 18 : 34, in: size)
-                )
-                .scaleEffect(snapshot.isCheckedToday ? 1 : 1.035, anchor: .leading)
+            bleedSplitTone(size: size, topSplit: topSplit, bottomSplit: bottomSplit)
                 .animation(motion(.number), value: snapshot.isCheckedToday)
+                .animation(ambientMotion(.number), value: ambientPeriod)
+
+            bleedSeamHighlight(size: size, topSplit: topSplit, bottomSplit: bottomSplit)
+                .animation(motion(.number), value: snapshot.isCheckedToday)
+                .animation(ambientMotion(.number), value: ambientPeriod)
 
             Text(verbatim: monthName)
                 .font(.system(size: pt(11, in: size), weight: .bold))
-                .tracking(pt(0.7, in: size))
-                .foregroundStyle(actionColor)
+                .tracking(pt(0.6, in: size))
+                .foregroundStyle(actionForegroundColor)
+                .shadow(
+                    color: shadowColor.opacity(usesFullColorPalette ? 0.18 : 0),
+                    radius: 0,
+                    y: pt(1, in: size)
+                )
                 .padding(.leading, inset)
                 .padding(.top, pt(usesMediumMetrics ? 14 : 11, in: size))
 
-            habitName(
-                size: pt(usesMediumMetrics ? 22 : 16, in: size),
-                width: pt(usesMediumMetrics ? 118 : 70, in: size),
-                alignment: .trailing
-            )
-            .padding(.trailing, inset)
-            .padding(.top, pt(usesMediumMetrics ? 14 : 12, in: size))
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
-
-            statusLabel(size: pt(usesMediumMetrics ? 11 : 10, in: size))
+            Text(verbatim: snapshot.habitName)
+                .font(.system(size: pt(usesMediumMetrics ? 22 : 16, in: size), weight: .semibold))
+                .foregroundStyle(actionForegroundColor)
+                .multilineTextAlignment(.leading)
+                .lineLimit(2)
+                .minimumScaleFactor(0.62)
+                .allowsTightening(true)
+                .shadow(
+                    color: shadowColor.opacity(usesFullColorPalette ? 0.16 : 0),
+                    radius: 0,
+                    y: pt(1, in: size)
+                )
+                .frame(
+                    width: pt(usesMediumMetrics ? 168 : 70, in: size),
+                    alignment: .leading
+                )
                 .padding(.leading, inset)
-                .padding(.bottom, pt(usesMediumMetrics ? 14 : 12, in: size))
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomLeading)
+                .padding(.top, pt(usesMediumMetrics ? 44 : 36, in: size))
 
+            Text(verbatim: dayNumber)
+                .font(.system(size: pt(usesMediumMetrics ? 56 : 42, in: size), weight: .bold))
+                .foregroundStyle(bleedDayColor)
+                .monospacedDigit()
+                .lineLimit(1)
+                .minimumScaleFactor(0.82)
+                .shadow(
+                    color: bleedDayShadow,
+                    radius: 0,
+                    y: pt(1, in: size)
+                )
+                .padding(.trailing, inset)
+                .padding(.bottom, pt(usesMediumMetrics ? 14 : 34, in: size))
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
+                .animation(motion(.number), value: snapshot.isCheckedToday)
+
+            Text(verbatim: statusText)
+                .font(.system(size: pt(usesMediumMetrics ? 11 : 10, in: size), weight: .medium))
+                .foregroundStyle(bleedStatusColor)
+                .lineLimit(1)
+                .shadow(
+                    color: usesMediumMetrics
+                        ? shadowColor.opacity(usesFullColorPalette ? 0.14 : 0)
+                        : .clear,
+                    radius: 0,
+                    y: pt(1, in: size)
+                )
+                .padding(.leading, usesMediumMetrics ? inset : 0)
+                .padding(.trailing, usesMediumMetrics ? 0 : inset)
+                .padding(.bottom, pt(usesMediumMetrics ? 14 : 12, in: size))
+                .frame(
+                    maxWidth: .infinity,
+                    maxHeight: .infinity,
+                    alignment: usesMediumMetrics ? .bottomLeading : .bottomTrailing
+                )
         }
+    }
+
+    private func bleedSplitTone(
+        size: CGSize,
+        topSplit: CGFloat,
+        bottomSplit: CGFloat
+    ) -> some View {
+        let shape = PulseBleedSplitShape(topFraction: topSplit, bottomFraction: bottomSplit)
+        let pendingGradient = LinearGradient(
+            colors: [
+                actionColor.opacity(usesFullColorPalette ? 0.96 : 0.90),
+                actionColor,
+                actionColor.opacity(usesFullColorPalette ? 0.88 : 0.82),
+            ],
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+        )
+        let checkedGradient = LinearGradient(
+            colors: [
+                grassColor.opacity(usesFullColorPalette ? 0.94 : 0.88),
+                grassColor,
+                grassColor.opacity(usesFullColorPalette ? 0.86 : 0.80),
+            ],
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+        )
+
+        return shape
+            .fill(snapshot.isCheckedToday ? checkedGradient : pendingGradient)
+            .overlay {
+                shape
+                    .fill(
+                        LinearGradient(
+                            colors: [
+                                .white.opacity(usesFullColorPalette ? 0.16 : 0.08),
+                                .clear,
+                                shadowColor.opacity(usesFullColorPalette ? 0.16 : 0.08),
+                            ],
+                            startPoint: .leading,
+                            endPoint: .trailing
+                        )
+                    )
+                    .allowsHitTesting(false)
+            }
+            .frame(width: size.width, height: size.height)
+    }
+
+    private func bleedPaperWash(size: CGSize) -> some View {
+        ZStack {
+            RadialGradient(
+                colors: [
+                    fieldColor.opacity(usesFullColorPalette ? 0.10 : 0.04),
+                    .clear,
+                ],
+                center: UnitPoint(x: 0.78, y: 0.72),
+                startRadius: 0,
+                endRadius: max(size.width, size.height) * 0.62
+            )
+            LinearGradient(
+                colors: [
+                    surfaceColor.opacity(usesFullColorPalette ? 0.55 : 0.18),
+                    .clear,
+                ],
+                startPoint: .top,
+                endPoint: UnitPoint(x: 0.5, y: 0.42)
+            )
+        }
+        .frame(width: size.width, height: size.height)
+        .allowsHitTesting(false)
+    }
+
+    private func bleedSeamHighlight(
+        size: CGSize,
+        topSplit: CGFloat,
+        bottomSplit: CGFloat
+    ) -> some View {
+        let midX = size.width * ((topSplit + bottomSplit) * 0.5)
+        return Rectangle()
+            .fill(
+                LinearGradient(
+                    colors: [
+                        .clear,
+                        shadowColor.opacity(usesFullColorPalette ? 0.10 : 0.05),
+                        Color.white.opacity(usesFullColorPalette ? 0.22 : 0.10),
+                        .clear,
+                    ],
+                    startPoint: .leading,
+                    endPoint: .trailing
+                )
+            )
+            .frame(width: pt(16, in: size), height: size.height * 1.16)
+            .rotationEffect(.degrees(-10))
+            .position(x: midX, y: size.height * 0.5)
+            .blendMode(.softLight)
+            .opacity(snapshot.isCheckedToday ? 0.72 : 0.92)
+            .allowsHitTesting(false)
+    }
+
+    private var bleedTopSplitFraction: CGFloat {
+        if snapshot.isCheckedToday {
+            return usesMediumMetrics
+                ? PulseWidgetDesign.bleedCheckedTopSplitMedium
+                : PulseWidgetDesign.bleedCheckedTopSplitSmall
+        }
+
+        let base: CGFloat
+        switch ambientPeriod {
+        case .morning:
+            base = PulseWidgetDesign.bleedPendingTopSplitMorning
+        case .daylight:
+            base = PulseWidgetDesign.bleedPendingTopSplitDaylight
+        case .evening:
+            base = PulseWidgetDesign.bleedPendingTopSplitEvening
+        }
+        return base
+    }
+
+    private func bleedBottomSplitFraction(top: CGFloat) -> CGFloat {
+        if snapshot.isCheckedToday {
+            return usesMediumMetrics
+                ? PulseWidgetDesign.bleedCheckedBottomSplitMedium
+                : PulseWidgetDesign.bleedCheckedBottomSplitSmall
+        }
+        let skew = usesMediumMetrics
+            ? PulseWidgetDesign.bleedPendingSkewMedium
+            : PulseWidgetDesign.bleedPendingSkewSmall
+        return min(top - 0.04, max(0.16, top - skew))
+    }
+
+    private var bleedDayColor: Color {
+        guard usesFullColorPalette else { return .primary }
+        if colorScheme == .dark {
+            return snapshot.isCheckedToday ? primaryColor : grassColor
+        }
+        return snapshot.isCheckedToday ? PulseWidgetDesign.grassForeground : actionColor
+    }
+
+    private var bleedDayShadow: Color {
+        guard usesFullColorPalette else { return .clear }
+        if colorScheme == .dark {
+            return shadowColor.opacity(0.45)
+        }
+        return Color.white.opacity(0.35)
+    }
+
+    private var bleedStatusColor: Color {
+        guard usesMediumMetrics else { return secondaryColor }
+        guard usesFullColorPalette else { return .secondary }
+        return snapshot.isCheckedToday
+            ? PulseWidgetDesign.grassForeground.opacity(0.82)
+            : actionForegroundColor.opacity(0.86)
+    }
+
+    private var actionForegroundColor: Color {
+        usesFullColorPalette ? PulseWidgetDesign.actionForeground : .white
     }
 
     private func letter(size: CGSize) -> some View {
@@ -742,30 +937,6 @@ struct PulseWidgetHomeRenderer: View {
             )
     }
 
-    private func mistField(size: CGSize) -> some View {
-        let color = snapshot.isCheckedToday ? grassColor : fieldColor
-        return ZStack {
-            Ellipse()
-                .fill(color.opacity(0.10))
-                .frame(width: size.width * 0.88, height: size.height * 0.43)
-                .position(x: size.width * 0.30, y: size.height * (usesMediumMetrics ? 0.62 : 0.74))
-            Ellipse()
-                .fill(color.opacity(0.14))
-                .frame(width: size.width * 0.73, height: size.height * 0.36)
-                .position(x: size.width * 0.69, y: size.height * (usesMediumMetrics ? 0.70 : 0.83))
-            Ellipse()
-                .fill(color.opacity(0.08))
-                .frame(width: size.width, height: size.height * 0.33)
-                .position(x: size.width * 0.49, y: size.height * (usesMediumMetrics ? 0.84 : 0.92))
-        }
-        .scaleEffect(x: snapshot.isCheckedToday ? 0.98 : 1.03, y: 1)
-        .offset(
-            x: ambientHorizontalShift(in: size) * 0.45,
-            y: ambientVerticalShift(in: size) * 0.48
-        )
-        .animation(motion(.number), value: snapshot.isCheckedToday)
-    }
-
     private func pastPostmarkRow(size: CGSize) -> some View {
         HStack(spacing: 0) {
             ForEach(Array(snapshot.recentDays.dropLast()), id: \.id) { item in
@@ -1058,6 +1229,29 @@ struct PulseWidgetHomeRenderer: View {
 
     private func pt(_ value: CGFloat, in size: CGSize) -> CGFloat {
         value * size.height / 158
+    }
+}
+
+private struct PulseBleedSplitShape: Shape {
+    var topFraction: CGFloat
+    var bottomFraction: CGFloat
+
+    var animatableData: AnimatablePair<CGFloat, CGFloat> {
+        get { AnimatablePair(topFraction, bottomFraction) }
+        set {
+            topFraction = newValue.first
+            bottomFraction = newValue.second
+        }
+    }
+
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        path.move(to: CGPoint(x: rect.minX, y: rect.minY))
+        path.addLine(to: CGPoint(x: rect.minX + rect.width * topFraction, y: rect.minY))
+        path.addLine(to: CGPoint(x: rect.minX + rect.width * bottomFraction, y: rect.maxY))
+        path.addLine(to: CGPoint(x: rect.minX, y: rect.maxY))
+        path.closeSubpath()
+        return path
     }
 }
 
@@ -2186,6 +2380,16 @@ enum PulseWidgetDesign {
     static let field = Color("PulseField")
     static let shadow = Color("PulseShadow")
     static let stackPhysicalSheetCount = 4
+
+    static let bleedPendingTopSplitMorning: CGFloat = 0.60
+    static let bleedPendingTopSplitDaylight: CGFloat = 0.50
+    static let bleedPendingTopSplitEvening: CGFloat = 0.40
+    static let bleedPendingSkewSmall: CGFloat = 0.16
+    static let bleedPendingSkewMedium: CGFloat = 0.09
+    static let bleedCheckedTopSplitSmall: CGFloat = 0.74
+    static let bleedCheckedBottomSplitSmall: CGFloat = 0.58
+    static let bleedCheckedTopSplitMedium: CGFloat = 0.68
+    static let bleedCheckedBottomSplitMedium: CGFloat = 0.56
 
     static let stackPendingLayerStepMedium: CGFloat = 6.5
     static let stackPendingLayerStepSmall: CGFloat = 5.5
