@@ -1041,15 +1041,10 @@ struct PulseWidgetHomeRenderer: View {
     }
 
     private var pathSummaryText: String {
-        let count = snapshot.recentDays.dropLast().reduce(into: 0) { result, item in
-            if item.state == .checked {
-                result += 1
-            }
-        }
         return String(
             format: pathSummaryFormat,
             locale: locale,
-            Int32(count)
+            Int32(snapshot.previousSixCheckedCount)
         )
     }
 
