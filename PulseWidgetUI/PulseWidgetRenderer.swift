@@ -77,7 +77,7 @@ struct PulseWidgetHomeRenderer: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .contentTransition(allowsMotion ? .interpolate : .identity)
         .animation(motion(materialForCurrentStyle), value: snapshot.isCheckedToday)
-        .animation(motion(materialForCurrentStyle), value: ambientPeriod)
+        .animation(ambientMotion(materialForCurrentStyle), value: ambientPeriod)
     }
 
     private func place(size: CGSize) -> some View {
@@ -276,7 +276,7 @@ struct PulseWidgetHomeRenderer: View {
                 .padding(.leading, paperInset)
                 .padding(.top, paperInset)
 
-                PulsePaperClosureMark(
+                PulsePaperPressMark(
                     isChecked: snapshot.isCheckedToday,
                     usesFullColorPalette: usesFullColorPalette
                 )
@@ -312,12 +312,15 @@ struct PulseWidgetHomeRenderer: View {
             baseBackground
             tideShore(size: size, shoreHeight: shoreHeight)
 
-            PulseTideGaugeMark(
+            PulseTideStaffMark(
                 isChecked: snapshot.isCheckedToday,
                 usesFullColorPalette: usesFullColorPalette
             )
             .frame(width: markSide, height: markSide)
-            .position(x: markX, y: markY)
+            .position(
+                x: markX,
+                y: markY + ambientVerticalShift(in: size) * 0.62
+            )
             .animation(motion(.tide), value: snapshot.isCheckedToday)
 
             VStack(alignment: .leading, spacing: pt(isMedium ? 10 : 8, in: size)) {
@@ -364,7 +367,10 @@ struct PulseWidgetHomeRenderer: View {
                 )
         }
         .frame(width: size.width, height: shoreHeight)
-        .offset(x: ambientHorizontalShift(in: size) * 0.72)
+        .offset(
+            x: ambientHorizontalShift(in: size) * 0.72,
+            y: ambientVerticalShift(in: size) * 0.62
+        )
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
         .animation(motion(.tide), value: snapshot.isCheckedToday)
     }
@@ -607,7 +613,7 @@ struct PulseWidgetHomeRenderer: View {
                 .padding(.bottom, pt(usesMediumMetrics ? 4 : 8, in: size))
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
 
-            PulsePathTodayFootprint(
+            PulsePathTodayShoePrint(
                 isChecked: snapshot.isCheckedToday,
                 dayNumber: dayNumber,
                 usesFullColorPalette: usesFullColorPalette
@@ -622,15 +628,21 @@ struct PulseWidgetHomeRenderer: View {
 
     private func sealAfterimage(side: CGFloat, size: CGSize) -> some View {
         ZStack {
-            Circle()
+            PulseOrganicInkShape()
                 .stroke(fieldColor.opacity(0.22), lineWidth: pt(1, in: size))
-                .frame(width: side * 0.84, height: side * 0.84)
-            Circle()
+                .frame(width: side * 0.78, height: side * 0.66)
+                .rotationEffect(.degrees(-7))
+                .offset(x: -side * 0.035, y: side * 0.02)
+            PulseOrganicInkShape()
                 .stroke(fieldColor.opacity(0.07), lineWidth: pt(14, in: size))
-                .frame(width: side * 0.84 + pt(14, in: size), height: side * 0.84 + pt(14, in: size))
-            Circle()
+                .frame(width: side * 0.86, height: side * 0.70)
+                .rotationEffect(.degrees(5))
+                .offset(x: side * 0.05, y: -side * 0.015)
+            PulseOrganicInkShape()
                 .stroke(fieldColor.opacity(0.04), lineWidth: pt(14, in: size))
-                .frame(width: side * 0.84 + pt(42, in: size), height: side * 0.84 + pt(42, in: size))
+                .frame(width: side * 1.02, height: side * 0.82)
+                .rotationEffect(.degrees(-13))
+                .offset(x: side * 0.09, y: side * 0.035)
         }
     }
 
@@ -656,26 +668,28 @@ struct PulseWidgetHomeRenderer: View {
         let color = snapshot.isCheckedToday ? grassColor : fieldColor
 
         return ZStack {
-            Circle()
+            PulseOrganicInkShape()
                 .fill(color.opacity(usesFullColorPalette ? 0.075 : 0.045))
                 .frame(
-                    width: size.height * (usesMediumMetrics ? 1.32 : 1.08),
-                    height: size.height * (usesMediumMetrics ? 1.32 : 1.08)
+                    width: size.height * (usesMediumMetrics ? 1.44 : 1.18),
+                    height: size.height * (usesMediumMetrics ? 1.08 : 0.88)
                 )
+                .rotationEffect(.degrees(-9))
                 .position(
                     x: size.width * (usesMediumMetrics ? 0.22 : 0.28),
                     y: size.height * 0.50
                 )
 
-            Circle()
+            PulseOrganicInkShape()
                 .stroke(
                     color.opacity(usesFullColorPalette ? 0.10 : 0.06),
                     lineWidth: pt(18, in: size)
                 )
                 .frame(
-                    width: size.height * (usesMediumMetrics ? 1.56 : 1.28),
-                    height: size.height * (usesMediumMetrics ? 1.56 : 1.28)
+                    width: size.height * (usesMediumMetrics ? 1.60 : 1.34),
+                    height: size.height * (usesMediumMetrics ? 1.20 : 0.98)
                 )
+                .rotationEffect(.degrees(7))
                 .position(
                     x: size.width * (usesMediumMetrics ? 0.22 : 0.28),
                     y: size.height * 0.50
@@ -800,7 +814,10 @@ struct PulseWidgetHomeRenderer: View {
                 .position(x: size.width * 0.49, y: size.height * (usesMediumMetrics ? 0.84 : 0.92))
         }
         .scaleEffect(x: snapshot.isCheckedToday ? 0.98 : 1.03, y: 1)
-        .offset(x: ambientHorizontalShift(in: size) * 0.45)
+        .offset(
+            x: ambientHorizontalShift(in: size) * 0.45,
+            y: ambientVerticalShift(in: size) * 0.48
+        )
         .animation(motion(.number), value: snapshot.isCheckedToday)
     }
 
@@ -849,6 +866,7 @@ struct PulseWidgetHomeRenderer: View {
             x: size.width - pt(usesMediumMetrics ? 8 : 4, in: size)
                 + ambientHorizontalShift(in: size) * 0.42,
             y: size.height - pt(usesMediumMetrics ? 7 : 6, in: size)
+                + ambientVerticalShift(in: size) * 0.42
         )
         let color = snapshot.isCheckedToday ? grassColor : fieldColor
 
@@ -940,30 +958,24 @@ struct PulseWidgetHomeRenderer: View {
     ) -> some View {
         let isChecked = item.state == .checked
 
-        return ZStack(alignment: .top) {
-            HStack(alignment: .bottom, spacing: side * 0.055) {
-                Circle()
-                    .frame(width: side * 0.17, height: side * 0.17)
-                Circle()
-                    .frame(width: side * 0.20, height: side * 0.20)
-                Circle()
-                    .frame(width: side * 0.15, height: side * 0.15)
-            }
-            .foregroundStyle(isChecked ? fieldColor.opacity(0.84) : secondaryColor.opacity(0.42))
-
-            Capsule(style: .continuous)
+        return ZStack {
+            PulseShoeSoleShape()
                 .fill(isChecked ? fieldColor : .clear)
                 .overlay {
-                    Capsule(style: .continuous)
+                    PulseShoeSoleShape()
                         .stroke(
                             isChecked ? fieldColor.opacity(0.76) : secondaryColor.opacity(0.48),
                             lineWidth: max(1, side * 0.11)
                         )
                 }
-                .frame(width: side * 0.58, height: side * 0.82)
-                .offset(y: side * 0.28)
+                .frame(width: side * 0.62, height: side)
+
+            Rectangle()
+                .fill(isChecked ? surfaceColor.opacity(0.62) : secondaryColor.opacity(0.38))
+                .frame(width: side * 0.28, height: max(1, side * 0.08))
+                .offset(y: -side * 0.18)
         }
-        .frame(width: side, height: side * 1.12)
+        .frame(width: side, height: side)
         .rotationEffect(.degrees(angle))
         .opacity(item.state == .beforeHabit ? 0.42 : 1)
     }
@@ -1060,20 +1072,23 @@ struct PulseWidgetHomeRenderer: View {
         )
     }
 
+    private var ambientPose: PulseWidgetMotionPresentation.AmbientPose {
+        PulseWidgetMotionPresentation.ambientPose(
+            for: materialForCurrentStyle,
+            period: ambientPeriod
+        )
+    }
+
     private var ambientRotation: Double {
-        switch ambientPeriod {
-        case .morning: -PulseWidgetDesign.ambientRotationDegrees
-        case .daylight: 0
-        case .evening: PulseWidgetDesign.ambientRotationDegrees
-        }
+        ambientPose.rotationDegrees
     }
 
     private func ambientHorizontalShift(in size: CGSize) -> CGFloat {
-        switch ambientPeriod {
-        case .morning: -pt(PulseWidgetDesign.ambientHorizontalShiftPoints, in: size)
-        case .daylight: 0
-        case .evening: pt(PulseWidgetDesign.ambientHorizontalShiftPoints, in: size)
-        }
+        pt(ambientPose.horizontalPoints, in: size)
+    }
+
+    private func ambientVerticalShift(in size: CGSize) -> CGFloat {
+        pt(ambientPose.verticalPoints, in: size)
     }
 
     private var materialForCurrentStyle: PulseWidgetMotionPresentation.Material {
@@ -1090,7 +1105,17 @@ struct PulseWidgetHomeRenderer: View {
     }
 
     private func motion(_ material: PulseWidgetMotionPresentation.Material) -> Animation? {
-        PulseWidgetMotionPresentation.animation(for: material, allowsMotion: allowsMotion)
+        PulseWidgetMotionPresentation.completionAnimation(
+            for: material,
+            allowsMotion: allowsMotion
+        )
+    }
+
+    private func ambientMotion(_ material: PulseWidgetMotionPresentation.Material) -> Animation? {
+        PulseWidgetMotionPresentation.ambientAnimation(
+            for: material,
+            allowsMotion: allowsMotion
+        )
     }
 
     private func pt(_ value: CGFloat, in size: CGSize) -> CGFloat {
@@ -1174,7 +1199,10 @@ private struct PulseInkImpressionMark: View {
             ZStack {
                 PulseOrganicInkShape()
                     .fill(markColor.opacity(isChecked ? 0.18 : 0.06))
-                    .scaleEffect(isChecked ? 1.02 : 0.82)
+                    .frame(width: side * 0.84, height: side * 0.68)
+                    .rotationEffect(.degrees(isChecked ? -7 : 10))
+                    .offset(x: isChecked ? side * 0.035 : -side * 0.025)
+                    .scaleEffect(isChecked ? 1.03 : 0.84)
 
                 PulseOrganicInkShape()
                     .fill(isChecked ? markColor : .clear)
@@ -1189,8 +1217,16 @@ private struct PulseInkImpressionMark: View {
                                 )
                             )
                     }
-                    .frame(width: side * 0.68, height: side * 0.62)
-                    .rotationEffect(.degrees(isChecked ? -4 : 7))
+                    .frame(width: side * 0.72, height: side * 0.56)
+                    .rotationEffect(.degrees(isChecked ? -6 : 8))
+
+                if isChecked {
+                    PulseOrganicInkShape()
+                        .fill(markColor.opacity(0.28))
+                        .frame(width: side * 0.17, height: side * 0.08)
+                        .rotationEffect(.degrees(-18))
+                        .offset(x: side * 0.30, y: side * 0.15)
+                }
 
                 if isChecked {
                     Image(systemName: "checkmark")
@@ -1227,12 +1263,12 @@ private struct PulseInkImpressionMark: View {
 private struct PulseOrganicInkShape: Shape {
     func path(in rect: CGRect) -> Path {
         let points: [CGPoint] = [
-            CGPoint(x: 0.50, y: 0.02), CGPoint(x: 0.70, y: 0.08),
-            CGPoint(x: 0.91, y: 0.25), CGPoint(x: 0.97, y: 0.48),
-            CGPoint(x: 0.89, y: 0.72), CGPoint(x: 0.67, y: 0.94),
-            CGPoint(x: 0.43, y: 0.98), CGPoint(x: 0.20, y: 0.86),
-            CGPoint(x: 0.04, y: 0.62), CGPoint(x: 0.06, y: 0.34),
-            CGPoint(x: 0.25, y: 0.12),
+            CGPoint(x: 0.47, y: 0.01), CGPoint(x: 0.72, y: 0.07),
+            CGPoint(x: 0.94, y: 0.20), CGPoint(x: 0.98, y: 0.43),
+            CGPoint(x: 0.87, y: 0.66), CGPoint(x: 0.75, y: 0.83),
+            CGPoint(x: 0.55, y: 0.96), CGPoint(x: 0.31, y: 0.92),
+            CGPoint(x: 0.12, y: 0.77), CGPoint(x: 0.02, y: 0.55),
+            CGPoint(x: 0.10, y: 0.30), CGPoint(x: 0.27, y: 0.16),
         ].map { CGPoint(x: rect.minX + $0.x * rect.width, y: rect.minY + $0.y * rect.height) }
 
         var path = Path()
@@ -1251,7 +1287,7 @@ private struct PulseOrganicInkShape: Shape {
     }
 }
 
-private struct PulsePaperClosureMark: View {
+private struct PulsePaperPressMark: View {
     let isChecked: Bool
     let usesFullColorPalette: Bool
 
@@ -1259,28 +1295,39 @@ private struct PulsePaperClosureMark: View {
         GeometryReader { proxy in
             let width = proxy.size.width
             let height = proxy.size.height
-            ZStack {
-                RoundedRectangle(cornerRadius: height * 0.22, style: .continuous)
-                    .fill(isChecked ? markColor.opacity(0.14) : surfaceColor.opacity(0.74))
-                    .overlay {
-                        RoundedRectangle(cornerRadius: height * 0.22, style: .continuous)
-                            .stroke(markColor.opacity(0.62), lineWidth: max(1, height * 0.04))
+            ZStack(alignment: .bottomTrailing) {
+                VStack(alignment: .trailing, spacing: height * (isChecked ? 0.045 : 0.12)) {
+                    ForEach(0..<3, id: \.self) { index in
+                        Rectangle()
+                            .fill(markColor.opacity(isChecked ? 0.34 : 0.22 + Double(index) * 0.10))
+                            .frame(
+                                width: width * (0.68 - CGFloat(index) * 0.12),
+                                height: max(1, height * 0.045)
+                            )
                     }
-
-                Rectangle()
-                    .fill(markColor.opacity(isChecked ? 0.72 : 0.26))
-                    .frame(width: width * (isChecked ? 0.58 : 0.36), height: max(1, height * 0.055))
-                    .offset(x: -width * 0.12, y: -height * 0.13)
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
+                .rotationEffect(.degrees(isChecked ? 0 : -6))
+                .offset(x: -width * 0.10, y: -height * (isChecked ? 0.12 : 0.04))
 
                 if isChecked {
-                    Image(systemName: "checkmark")
-                        .font(.system(size: height * 0.34, weight: .bold))
-                        .foregroundStyle(markColor)
-                        .offset(x: width * 0.22, y: height * 0.14)
+                    PulsePressedPaperCorner()
+                        .fill(markColor.opacity(0.18))
+                        .overlay {
+                            PulsePressedPaperCorner()
+                                .stroke(markColor.opacity(0.72), lineWidth: max(1, height * 0.035))
+                        }
+                        .frame(width: width * 0.62, height: height * 0.68)
+                        .overlay(alignment: .bottomTrailing) {
+                            Image(systemName: "checkmark")
+                                .font(.system(size: height * 0.21, weight: .bold))
+                                .foregroundStyle(markColor)
+                                .padding(.trailing, width * 0.10)
+                                .padding(.bottom, height * 0.08)
+                        }
                 }
             }
-            .rotationEffect(.degrees(isChecked ? 0 : -5))
-            .offset(y: isChecked ? height * 0.08 : -height * 0.04)
+            .frame(width: width, height: height)
         }
         .accessibilityHidden(true)
     }
@@ -1290,8 +1337,16 @@ private struct PulsePaperClosureMark: View {
         return isChecked ? PulseWidgetDesign.grass : PulseWidgetDesign.field
     }
 
-    private var surfaceColor: Color {
-        usesFullColorPalette ? PulseWidgetDesign.surface : .clear
+}
+
+private struct PulsePressedPaperCorner: Shape {
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        path.move(to: CGPoint(x: rect.minX + rect.width * 0.08, y: rect.maxY))
+        path.addLine(to: CGPoint(x: rect.maxX, y: rect.minY + rect.height * 0.08))
+        path.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY))
+        path.closeSubpath()
+        return path
     }
 }
 
@@ -1395,40 +1450,40 @@ private struct PulseEchoCompletionMark: View {
     }
 }
 
-private struct PulseTideGaugeMark: View {
+private struct PulseTideStaffMark: View {
     let isChecked: Bool
     let usesFullColorPalette: Bool
 
     var body: some View {
         GeometryReader { proxy in
             let side = min(proxy.size.width, proxy.size.height)
-            ZStack {
-                Capsule(style: .continuous)
-                    .fill(markColor.opacity(0.18))
-                    .frame(width: side * 0.22, height: side * 0.86)
+            HStack(spacing: 0) {
+                ZStack {
+                    RoundedRectangle(cornerRadius: side * 0.06, style: .continuous)
+                        .fill(markColor.opacity(0.11))
+                        .frame(width: side * 0.18, height: side * 0.90)
 
-                Capsule(style: .continuous)
-                    .fill(markColor)
-                    .frame(width: side * 0.08, height: side * 0.78)
+                    RoundedRectangle(cornerRadius: side * 0.025, style: .continuous)
+                        .fill(markColor.opacity(0.72))
+                        .frame(width: max(1, side * 0.055), height: side * 0.84)
+                }
+                .frame(width: side * 0.18)
 
-                VStack(spacing: side * 0.10) {
-                    ForEach(0..<3, id: \.self) { index in
+                VStack(spacing: side * 0.075) {
+                    ForEach(0..<4, id: \.self) { index in
+                        let isWaterLevel = index == (isChecked ? 0 : 3)
                         Rectangle()
-                            .fill(markColor.opacity(index == (isChecked ? 0 : 2) ? 1 : 0.38))
-                            .frame(width: side * (index == 1 ? 0.52 : 0.38), height: max(1, side * 0.045))
+                            .fill(markColor.opacity(isWaterLevel ? 0.96 : 0.38))
+                            .frame(
+                                width: side * (isWaterLevel ? 0.36 : (index.isMultiple(of: 2) ? 0.24 : 0.18)),
+                                height: max(1, side * (isWaterLevel ? 0.055 : 0.028))
+                            )
+                            .frame(maxWidth: .infinity, alignment: .leading)
                     }
                 }
-
-                RoundedRectangle(cornerRadius: side * 0.05, style: .continuous)
-                    .fill(isChecked ? markColor : surfaceColor)
-                    .overlay {
-                        RoundedRectangle(cornerRadius: side * 0.05, style: .continuous)
-                            .stroke(markColor, lineWidth: max(1, side * 0.035))
-                    }
-                    .frame(width: side * 0.34, height: side * 0.22)
-                    .offset(y: side * (isChecked ? -0.20 : 0.20))
+                .frame(width: side * 0.36)
             }
-            .frame(width: side, height: side)
+            .frame(width: side * 0.54, height: side)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .accessibilityHidden(true)
@@ -1439,9 +1494,6 @@ private struct PulseTideGaugeMark: View {
         return isChecked ? PulseWidgetDesign.grass : PulseWidgetDesign.field
     }
 
-    private var surfaceColor: Color {
-        usesFullColorPalette ? PulseWidgetDesign.surface : .clear
-    }
 }
 
 private struct PulseTideCurve: Shape {
@@ -1519,7 +1571,7 @@ private struct PulseTideCurve: Shape {
     }
 }
 
-private struct PulsePathTodayFootprint: View {
+private struct PulsePathTodayShoePrint: View {
     let isChecked: Bool
     let dayNumber: String
     let usesFullColorPalette: Bool
@@ -1527,27 +1579,26 @@ private struct PulsePathTodayFootprint: View {
     var body: some View {
         GeometryReader { proxy in
             let side = min(proxy.size.width, proxy.size.height)
-            ZStack(alignment: .top) {
-                HStack(alignment: .bottom, spacing: side * 0.035) {
-                    ForEach([0.15, 0.19, 0.18, 0.13], id: \.self) { scale in
-                        Circle()
-                            .fill(isChecked ? markColor : .clear)
-                            .overlay {
-                                Circle().stroke(markColor.opacity(0.74), lineWidth: max(1, side * 0.025))
-                            }
-                            .frame(width: side * scale, height: side * scale)
-                    }
-                }
-                .offset(y: side * 0.03)
-
-                Capsule(style: .continuous)
+            ZStack {
+                PulseShoeSoleShape()
                     .fill(isChecked ? markColor : markColor.opacity(0.08))
                     .overlay {
-                        Capsule(style: .continuous)
+                        PulseShoeSoleShape()
                             .stroke(markColor.opacity(0.80), lineWidth: max(1, side * 0.035))
                     }
-                    .frame(width: side * 0.58, height: side * 0.70)
-                    .offset(y: side * 0.22)
+                    .frame(width: side * 0.58, height: side * 0.84)
+
+                VStack(spacing: side * 0.055) {
+                    Rectangle()
+                        .frame(width: side * 0.28, height: max(1, side * 0.025))
+                    Rectangle()
+                        .frame(width: side * 0.20, height: max(1, side * 0.025))
+                    Spacer().frame(height: side * 0.18)
+                    Rectangle()
+                        .frame(width: side * 0.18, height: max(1, side * 0.025))
+                }
+                .foregroundStyle(isChecked ? completedForeground.opacity(0.50) : markColor.opacity(0.48))
+                .frame(height: side * 0.62)
 
                 Text(verbatim: dayNumber)
                     .font(.system(size: side * 0.21, weight: .bold))
@@ -1555,17 +1606,17 @@ private struct PulsePathTodayFootprint: View {
                     .monospacedDigit()
                     .minimumScaleFactor(0.74)
                     .lineLimit(1)
-                    .offset(y: side * 0.43)
+                    .offset(y: side * 0.02)
 
                 if isChecked {
                     Image(systemName: "checkmark")
                         .font(.system(size: side * 0.12, weight: .bold))
                         .foregroundStyle(completedForeground)
-                        .offset(x: side * 0.24, y: side * 0.70)
+                        .offset(x: side * 0.16, y: side * 0.27)
                 }
             }
             .rotationEffect(.degrees(isChecked ? 9 : -8))
-            .scaleEffect(isChecked ? 1 : 0.86)
+            .scaleEffect(isChecked ? 0.90 : 0.80)
         }
         .accessibilityHidden(true)
     }
@@ -1581,6 +1632,39 @@ private struct PulsePathTodayFootprint: View {
 
     private var completedForeground: Color {
         usesFullColorPalette ? PulseWidgetDesign.grassForeground : .black
+    }
+}
+
+private struct PulseShoeSoleShape: Shape {
+    func path(in rect: CGRect) -> Path {
+        let points: [CGPoint] = [
+            CGPoint(x: 0.43, y: 0.01), CGPoint(x: 0.66, y: 0.07),
+            CGPoint(x: 0.82, y: 0.22), CGPoint(x: 0.85, y: 0.38),
+            CGPoint(x: 0.72, y: 0.53), CGPoint(x: 0.64, y: 0.67),
+            CGPoint(x: 0.62, y: 0.90), CGPoint(x: 0.51, y: 0.98),
+            CGPoint(x: 0.35, y: 0.94), CGPoint(x: 0.29, y: 0.76),
+            CGPoint(x: 0.33, y: 0.58), CGPoint(x: 0.19, y: 0.42),
+            CGPoint(x: 0.18, y: 0.23), CGPoint(x: 0.28, y: 0.08),
+        ].map {
+            CGPoint(
+                x: rect.minX + $0.x * rect.width,
+                y: rect.minY + $0.y * rect.height
+            )
+        }
+
+        var path = Path()
+        path.move(to: midpoint(points.last!, points[0]))
+        for index in points.indices {
+            let point = points[index]
+            let next = points[(index + 1) % points.count]
+            path.addQuadCurve(to: midpoint(point, next), control: point)
+        }
+        path.closeSubpath()
+        return path
+    }
+
+    private func midpoint(_ lhs: CGPoint, _ rhs: CGPoint) -> CGPoint {
+        CGPoint(x: (lhs.x + rhs.x) / 2, y: (lhs.y + rhs.y) / 2)
     }
 }
 
@@ -1764,8 +1848,6 @@ enum PulseWidgetDesign {
     static let field = Color("PulseField")
     static let shadow = Color("PulseShadow")
     static let stackPhysicalSheetCount = 4
-    static let ambientRotationDegrees = 2.2
-    static let ambientHorizontalShiftPoints: CGFloat = 4
 
     static let stackPendingLayerStepMedium: CGFloat = 3.5
     static let stackPendingLayerStepSmall: CGFloat = 3

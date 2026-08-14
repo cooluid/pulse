@@ -35,21 +35,23 @@ Widget 不是持续运行的动画画布。它首先必须准确表达“今天�
 | --- | --- | --- |
 | 待落之处 | 印垫与空坑轻微横移 | 空坑被独立墨迹填满并出现勾 |
 | 落印 | 印面轻微转向 | 不规则开放墨迹收束为完整印面 |
-| 叠印 | 纸叠桌面轻移 | 纸层压紧，顶纸出现纸张专属封口印 |
+| 叠印 | 纸叠按材料自己的方向轻移 | 纸层压紧，顶纸形成压痕与折角，不出现复选框式徽记 |
 | 数影 | 数字雾影轻移 | 大号日数本身显色、缩放归稳，不附加统计或通用完成徽记 |
 | 手札 | 信纸与桌面轻移 | 信纸归位，独立封缄折页闭合 |
 | 静场 | 回响场轻移 | 多层残影收束成回声核心，不使用通用圆环 |
-| 来路 | 地面与足迹轻移 | 今日鞋印由轮廓压成实印并出现确认纹 |
-| 潮痕 | 岸线与潮面轻移 | 潮面一次上移，潮位刻度由开放转为完成 |
+| 来路 | 地面与鞋印沿路径方向轻移 | 今日鞋底由轮廓压成实印并出现确认纹，不使用脚趾或爪印语法 |
+| 潮痕 | 岸线按潮面方向轻移 | 潮面一次上移，岸尺由低位刻度切换到高位刻度 |
 
 每式只保留一个主物件。潮痕禁止天空、云、太阳、鱼、气象隐喻、黑色装饰块和独立天空色 token。
 
 ## 4. 曲线与 Reduce Motion
 
-- 每种材料的 duration、spring 或 easing 统一由 `PulseWidgetMotionPresentation` 管理；Renderer 不散落自定义曲线。正常材料变化控制在 0.90...1.25 秒；画廊完整串联三种时段与签到变化仍小于 2 秒。
+- Apple 的 [Widget 动效文档](https://developer.apple.com/documentation/widgetkit/animating-data-updates-in-widgets-and-live-activities) 与 [Widgets HIG](https://developer.apple.com/design/human-interface-guidelines/widgets) 明确规定 Widget / Live Activity 单次动画最长为两秒。`PulseWidgetMotionPresentation.systemMaximumAnimationDuration` 是同一上限的唯一工程定义，测试逐材料失败关闭，不能依赖系统静默截断。
+- 每种材料的事实变装、时段氛围 duration、spring/easing 与早中晚姿态统一由 `PulseWidgetMotionPresentation` 管理；Renderer 不散落自定义曲线。事实变装按材料为 1.45...1.90 秒，时段氛围为 0.76...0.96 秒，每次独立变化均不超过官方两秒上限。
+- 两秒上限约束一次系统 Widget 变化，不约束 App 内串联多个独立状态的教学时长。画廊依次展示早间、日间、晚间与完成态，总时长允许超过两秒；每个氛围态必须至少等待上一段氛围过渡完成，完成态必须覆盖对应材料的完整事实变装。不得为了追求短总时长而在动画尚未完成时重新指定下一目标。
 - 事实变装只绑定 `snapshot.isCheckedToday`；时段氛围只绑定集中解析的 `snapshot.generatedAt` 与项目时区。两者都不使用随机数或持续 timer。
-- Reduce Motion 为真时，Renderer 传入 `allowsMotion = false`，取消插值但保留完全相同的事实终态、层级与颜色。
-- Accessory Widget 维持静态事实表达；不为 Lock Screen、StandBy 或 Always-On 另存动效副本。
+- Reduce Motion 为真时，Renderer 传入 `allowsMotion = false`，取消插值但保留完全相同的事实终态、层级与颜色；画廊跳过早间 / 日间 / 晚间串联，只呈现当前时段的待办静态等价与完成静态等价。
+- Accessory Widget 维持静态事实表达；不为 Lock Screen、StandBy 或 Always-On 另存动效副本。Always-On 的 `isLuminanceReduced` 与 Reduce Motion 都会显式关闭 Renderer 动效，不能只依赖系统停止播放。
 - 画廊每张卡使用独立标准 Button 重播；播放中禁用该按钮，离页或权威事实变化立即取消任务并恢复当前事实。锁定构图可以预览，但购买入口必须是独立 Button，不得嵌套交互。
 
 ## 5. 自动化门禁
@@ -61,6 +63,7 @@ Widget 不是持续运行的动画画布。它首先必须准确表达“今天�
 - Gallery 与 Extension 初始化同一 Renderer，不存在 legacy variant 参数；
 - Gallery 预览投影只改变展示时间与今天状态，过去六日事实保持不变，且不会触发正式签到；
 - 源码、token、Asset Catalog、原型和文档均无 sky / cloud / fish、密集 phase keyframe 或持久化视觉状态遗留；
+- Always-On 与 Reduce Motion 都向正式 Renderer 传入静态模式；
 - Debug、Release、Analyze 与 Widget UI 截图通过。
 
 ## 6. 真机验收

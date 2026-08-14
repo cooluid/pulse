@@ -83,7 +83,8 @@ private struct PulseWidgetStyleCard: View {
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.locale) private var locale
-    @State private var previewPhase = PreviewPhase.current
+    @State private var previewState = PreviewState.idle
+    @State private var previewSnapshot: PulseWidgetSnapshot?
     @State private var previewTask: Task<Void, Never>?
 
     var body: some View {
@@ -123,26 +124,7 @@ private struct PulseWidgetStyleCard: View {
                 Spacer()
                 previewControl
                 if isLocked {
-                    galleryBadge(
-                        title: "widget.gallery.locked",
-                        systemImage: "lock.fill",
-                        foreground: PulseDesign.action,
-                        background: PulseDesign.field.opacity(0.12)
-                    )
-                } else if PulseWidgetStyleAccessPolicy.requiresEnhancement(style) {
-                    galleryBadge(
-                        title: "widget.gallery.unlocked",
-                        systemImage: "checkmark",
-                        foreground: PulseDesign.action,
-                        background: PulseDesign.field.opacity(0.10)
-                    )
-                } else {
-                    galleryBadge(
-                        title: "widget.gallery.included",
-                        systemImage: "checkmark",
-                        foreground: PulseDesign.action,
-                        background: PulseDesign.field.opacity(0.10)
-                    )
+                    lockedBadge
                 }
             }
 
@@ -191,7 +173,6 @@ private struct PulseWidgetStyleCard: View {
             style: .continuous
         ))
         .accessibilityElement(children: .contain)
-        .accessibilityLabel(Text(verbatim: accessibilitySummary))
         .accessibilityIdentifier("widget.gallery.style.\(style.rawValue)")
         .onChange(of: snapshot.isCheckedToday) { _, _ in
             cancelPreviewAndRestoreFact()
@@ -233,50 +214,18 @@ private struct PulseWidgetStyleCard: View {
     }
 
     private var presentedSnapshot: PulseWidgetSnapshot {
-        switch previewPhase {
-        case .current:
-            return snapshot
-        case .morning:
-            return snapshot.projectingGallery(period: .morning, isChecked: false)
-        case .daylight:
-            return snapshot.projectingGallery(period: .daylight, isChecked: false)
-        case .evening:
-            return snapshot.projectingGallery(period: .evening, isChecked: false)
-        case .animating, .completed:
-            return snapshot.projectingGallery(period: .evening, isChecked: true)
-        }
-    }
-
-    private var accessibilitySummary: String {
-        let accessKey: String
-        if isLocked {
-            accessKey = "widget.gallery.locked"
-        } else if PulseWidgetStyleAccessPolicy.requiresEnhancement(style) {
-            accessKey = "widget.gallery.unlocked"
-        } else {
-            accessKey = "widget.gallery.included"
-        }
-        return [
-            style.localizedName(locale: locale),
-            PulseLocalization.string(accessKey, locale: locale),
-            style.localizedDescription(locale: locale),
-        ].joined(separator: ", ")
+        previewSnapshot ?? snapshot
     }
 
     private var isPreviewRunning: Bool {
-        switch previewPhase {
-        case .morning, .daylight, .evening, .animating:
-            true
-        case .current, .completed:
-            false
-        }
+        previewState == .playing
     }
 
     private var previewButtonTitle: LocalizedStringKey {
-        switch previewPhase {
-        case .current:
+        switch previewState {
+        case .idle:
             return "widget.gallery.preview.play"
-        case .morning, .daylight, .evening, .animating:
+        case .playing:
             return "widget.gallery.preview.playing"
         case .completed:
             return "widget.gallery.preview.replay"
@@ -284,10 +233,10 @@ private struct PulseWidgetStyleCard: View {
     }
 
     private var previewButtonSystemImage: String {
-        switch previewPhase {
-        case .current:
+        switch previewState {
+        case .idle:
             return "play.fill"
-        case .morning, .daylight, .evening, .animating:
+        case .playing:
             return "hourglass"
         case .completed:
             return "arrow.counterclockwise"
@@ -297,28 +246,58 @@ private struct PulseWidgetStyleCard: View {
     @MainActor
     private func replayPreview() {
         previewTask?.cancel()
+        let pendingSnapshot = snapshot.projectingTodayCheckInForGallery(false)
         var transaction = Transaction(animation: nil)
         transaction.disablesAnimations = true
         withTransaction(transaction) {
-            previewPhase = .morning
+            previewState = .playing
+            previewSnapshot = reduceMotion
+                ? pendingSnapshot
+                : pendingSnapshot.projectingGallery(period: .morning, isChecked: false)
         }
 
         previewTask = Task { @MainActor in
             do {
-                try await Task.sleep(for: PulseWidgetMotionPresentation.previewPreparationDelay)
+                if reduceMotion {
+                    try await Task.sleep(
+                        for: PulseWidgetMotionPresentation.reducedMotionPendingStateHold
+                    )
+                    try Task.checkCancellation()
+                    previewSnapshot = pendingSnapshot.projectingTodayCheckInForGallery(true)
+                    try await Task.sleep(
+                        for: PulseWidgetMotionPresentation.reducedMotionCompletionStateHold
+                    )
+                } else {
+                    try await Task.sleep(
+                        for: PulseWidgetMotionPresentation.galleryInitialStateHold
+                    )
+                    try Task.checkCancellation()
+                    previewSnapshot = pendingSnapshot.projectingGallery(
+                        period: .daylight,
+                        isChecked: false
+                    )
+                    try await Task.sleep(
+                        for: PulseWidgetMotionPresentation.galleryAmbientStateHold
+                    )
+                    try Task.checkCancellation()
+                    previewSnapshot = pendingSnapshot.projectingGallery(
+                        period: .evening,
+                        isChecked: false
+                    )
+                    try await Task.sleep(
+                        for: PulseWidgetMotionPresentation.galleryAmbientStateHold
+                    )
+                    try Task.checkCancellation()
+                    previewSnapshot = pendingSnapshot.projectingGallery(
+                        period: .evening,
+                        isChecked: true
+                    )
+                    try await Task.sleep(
+                        for: PulseWidgetMotionPresentation.galleryCompletionStateHold
+                    )
+                }
                 try Task.checkCancellation()
-                previewPhase = .daylight
-                try await Task.sleep(for: PulseWidgetMotionPresentation.previewAmbientPeriodDelay)
-                try Task.checkCancellation()
-                previewPhase = .evening
-                try await Task.sleep(for: PulseWidgetMotionPresentation.previewAmbientPeriodDelay)
-                try Task.checkCancellation()
-                previewPhase = .animating
-                try await Task.sleep(for: reduceMotion
-                    ? PulseWidgetMotionPresentation.reducedMotionPreviewCompletionDelay
-                    : PulseWidgetMotionPresentation.previewCompletionDelay)
-                try Task.checkCancellation()
-                previewPhase = .completed
+                previewState = .completed
                 previewTask = nil
             } catch {
                 return
@@ -333,30 +312,23 @@ private struct PulseWidgetStyleCard: View {
         var transaction = Transaction(animation: nil)
         transaction.disablesAnimations = true
         withTransaction(transaction) {
-            previewPhase = .current
+            previewState = .idle
+            previewSnapshot = nil
         }
     }
 
-    private func galleryBadge(
-        title: LocalizedStringKey,
-        systemImage: String,
-        foreground: Color,
-        background: Color
-    ) -> some View {
-        Label(title, systemImage: systemImage)
+    private var lockedBadge: some View {
+        Label("widget.gallery.locked", systemImage: "lock.fill")
             .font(.caption2.weight(.medium))
-            .foregroundStyle(foreground)
+            .foregroundStyle(PulseDesign.action)
             .padding(.horizontal, PulseDesign.spacing8)
             .padding(.vertical, PulseDesign.spacing4)
-            .background(background, in: Capsule())
+            .background(PulseDesign.field.opacity(0.12), in: Capsule())
     }
 
-    private enum PreviewPhase {
-        case current
-        case morning
-        case daylight
-        case evening
-        case animating
+    private enum PreviewState {
+        case idle
+        case playing
         case completed
     }
 }

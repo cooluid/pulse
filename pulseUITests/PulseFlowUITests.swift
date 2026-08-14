@@ -231,7 +231,7 @@ final class PulseFlowUITests: XCTestCase {
         XCTAssertTrue(app.buttons["today.checkin.button"].waitForExistence(timeout: 3))
     }
 
-    func testFreeWidgetStyleDisclosesIncludedAndEnhancementOptions() throws {
+    func testWidgetGalleryKeepsAccessStatusOnlyWhereActionIsRequired() throws {
         configureApp()
         launchAndConfirmDefaultCommitment()
 
@@ -251,15 +251,16 @@ final class PulseFlowUITests: XCTestCase {
         let premiumStoreButton = app.buttons["widget.gallery.enhancement.seal"]
         XCTAssertTrue(includedOption.waitForExistence(timeout: 3))
         XCTAssertTrue(premiumOption.waitForExistence(timeout: 3))
-        XCTAssertTrue(includedOption.label.contains("已包含"))
-        XCTAssertTrue(premiumOption.label.contains("高级功能"))
+        XCTAssertFalse(includedOption.label.contains("已包含"))
+        XCTAssertFalse(includedOption.label.contains("已解锁"))
+        XCTAssertTrue(premiumStoreButton.label.contains("高级功能"))
 
         let previewButton = app.buttons["widget.gallery.preview.place"]
         XCTAssertTrue(previewButton.waitForExistence(timeout: 3))
         previewButton.tap()
         let replayLabel = NSPredicate(format: "label == %@", "再次预览")
         expectation(for: replayLabel, evaluatedWith: previewButton)
-        waitForExpectations(timeout: 4)
+        waitForExpectations(timeout: 7)
 
         let previewAttachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
         previewAttachment.name = "Widget ambient periods and check-in preview completed"

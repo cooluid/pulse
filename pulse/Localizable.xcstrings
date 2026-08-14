@@ -3496,23 +3496,6 @@
         }
       }
     },
-    "widget.gallery.included" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Included"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "已包含"
-          }
-        }
-      }
-    },
     "widget.gallery.preview.hint" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -3679,23 +3662,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "暂时无法显示预览"
-          }
-        }
-      }
-    },
-    "widget.gallery.unlocked" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Unlocked"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "已解锁"
           }
         }
       }

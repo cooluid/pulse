@@ -296,6 +296,45 @@ final class PulseWidgetSnapshotTests: XCTestCase {
         )
     }
 
+    func testWidgetMotionSpecificationsRespectSystemLimitAndMaterialIdentity() {
+        let materials = PulseWidgetMotionPresentation.Material.allCases
+
+        for material in materials {
+            let completionDuration = PulseWidgetMotionPresentation.completionDuration(for: material)
+            let ambientDuration = PulseWidgetMotionPresentation.ambientDuration(for: material)
+            XCTAssertLessThanOrEqual(
+                completionDuration,
+                PulseWidgetMotionPresentation.systemMaximumAnimationDuration
+            )
+            XCTAssertLessThanOrEqual(
+                ambientDuration,
+                PulseWidgetMotionPresentation.systemMaximumAnimationDuration
+            )
+            XCTAssertLessThan(
+                ambientDuration,
+                completionDuration,
+                "Ambient changes must settle before the material completion transition."
+            )
+        }
+
+        let morningPoses = Set(materials.map {
+            PulseWidgetMotionPresentation.ambientPose(for: $0, period: .morning)
+        })
+        XCTAssertEqual(
+            morningPoses.count,
+            materials.count,
+            "Every Widget material needs its own ambient motion grammar."
+        )
+        XCTAssertGreaterThan(
+            PulseWidgetMotionPresentation.galleryAmbientStateHold,
+            .milliseconds(960)
+        )
+        XCTAssertGreaterThan(
+            PulseWidgetMotionPresentation.galleryCompletionStateHold,
+            .milliseconds(1_900)
+        )
+    }
+
     func testGalleryCheckInProjectionDoesNotMutateAuthoritativeSnapshot() throws {
         let timeZone = try XCTUnwrap(TimeZone(identifier: "Asia/Shanghai"))
         let now = makeDate(2026, 8, 11, 8, timeZone: timeZone)

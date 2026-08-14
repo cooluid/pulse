@@ -381,6 +381,7 @@ private struct PulseLocalizedWidgetView: View {
     @Environment(\.widgetContentMargins) private var widgetContentMargins
     @Environment(\.locale) private var locale
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.isLuminanceReduced) private var isLuminanceReduced
 
     var body: some View {
         Group {
@@ -442,7 +443,7 @@ private struct PulseLocalizedWidgetView: View {
             style: style,
             usesMediumMetrics: usesMediumMetrics,
             usesFullColorPalette: usesFullColorPalette,
-            allowsMotion: !reduceMotion,
+            allowsMotion: !reduceMotion && !isLuminanceReduced,
             statusText: String(
                 localized: snapshot.isCheckedToday
                     ? "widget.state.checked.editorial"
