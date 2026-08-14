@@ -33,6 +33,11 @@ public struct PulseWidgetSnapshot: Codable, Equatable, Sendable {
     public let recentDays: [PulseWidgetDaySnapshot]
     public let generatedAt: Date
     public let nextDayBoundary: Date
+    public let projectTimeZoneIdentifier: String
+
+    public var projectTimeZone: TimeZone {
+        TimeZone(identifier: projectTimeZoneIdentifier) ?? .current
+    }
 
     public var isCheckedToday: Bool { checkedAt != nil }
     public var recentCheckedCount: Int {
@@ -49,11 +54,16 @@ public struct PulseWidgetSnapshot: Codable, Equatable, Sendable {
         checkedAt: Date?,
         recentDays: [PulseWidgetDaySnapshot],
         generatedAt: Date,
-        nextDayBoundary: Date
+        nextDayBoundary: Date,
+        projectTimeZoneIdentifier: String
     ) {
         precondition(recentDays.count == 7, "Widget snapshot requires exactly seven days.")
         precondition(recentDays.last?.day == today, "Widget snapshot must end on today.")
         precondition(nextDayBoundary > generatedAt, "Widget refresh boundary must be in the future.")
+        precondition(
+            TimeZone(identifier: projectTimeZoneIdentifier) != nil,
+            "Widget snapshot requires a valid project time zone identifier."
+        )
         self.habitID = habitID
         self.habitName = habitName
         self.today = today
@@ -61,16 +71,35 @@ public struct PulseWidgetSnapshot: Codable, Equatable, Sendable {
         self.recentDays = recentDays
         self.generatedAt = generatedAt
         self.nextDayBoundary = nextDayBoundary
+        self.projectTimeZoneIdentifier = projectTimeZoneIdentifier
     }
 }
 
 public struct PulseWidgetTimelinePlan: Equatable, Sendable {
-    public let snapshot: PulseWidgetSnapshot
-    public let refreshAfter: Date
+    public let entries: [PulseWidgetTimelineEntry]
 
-    public init(snapshot: PulseWidgetSnapshot) {
-        self.snapshot = snapshot
-        refreshAfter = snapshot.nextDayBoundary
+    public var snapshot: PulseWidgetSnapshot {
+        guard let first = entries.first else {
+            preconditionFailure("Widget timeline plan requires at least one entry.")
+        }
+        return first.snapshot
+    }
+
+    public var reloadAfter: Date {
+        guard let last = entries.last else {
+            preconditionFailure("Widget timeline plan requires at least one entry.")
+        }
+        return last.date
+    }
+
+    public init(entries: [PulseWidgetTimelineEntry]) {
+        precondition(!entries.isEmpty, "Widget timeline plan requires at least one entry.")
+        let sorted = entries.sorted { $0.date < $1.date }
+        precondition(
+            sorted.map(\.date) == entries.map(\.date),
+            "Widget timeline entries must be strictly chronological."
+        )
+        self.entries = entries
     }
 }
 
@@ -85,8 +114,25 @@ public enum PulseWidgetProjector {
     public static func makeTimelinePlan(
         habit: HabitSnapshot,
         records: [CheckInRecordSnapshot],
-        at date: Date
+        at date: Date,
+        presentationMode: PulseWidgetMotionContract.PresentationMode = .phaseKeyframes
     ) throws -> PulseWidgetTimelinePlan {
+        let snapshot = try makeSnapshot(habit: habit, records: records, at: date)
+        let entries = try PulseWidgetTimelineSchedule.buildEntries(
+            habit: habit,
+            records: records,
+            snapshot: snapshot,
+            at: date,
+            includePhaseKeyframes: presentationMode == .phaseKeyframes
+        )
+        return PulseWidgetTimelinePlan(entries: entries)
+    }
+
+    public static func makeSnapshot(
+        habit: HabitSnapshot,
+        records: [CheckInRecordSnapshot],
+        at date: Date
+    ) throws -> PulseWidgetSnapshot {
         guard habit.isIdentityConfirmed else {
             throw PulseWidgetProjectionError.identityNotConfirmed
         }
@@ -123,16 +169,16 @@ public enum PulseWidgetProjector {
             throw PulseWidgetProjectionError.invalidNextDayBoundary
         }
 
-        let snapshot = PulseWidgetSnapshot(
+        return PulseWidgetSnapshot(
             habitID: habit.id,
             habitName: habit.name,
             today: today,
             checkedAt: recordsByDay[today]?.checkedAt,
             recentDays: recentDays,
             generatedAt: date,
-            nextDayBoundary: nextDayBoundary
+            nextDayBoundary: nextDayBoundary,
+            projectTimeZoneIdentifier: habit.timeZoneIdentifier
         )
-        return PulseWidgetTimelinePlan(snapshot: snapshot)
     }
 }
 
@@ -140,14 +186,16 @@ public enum PulseWidgetProjector {
 public enum PulseWidgetSnapshotReader {
     public static func readTimelinePlan(
         repository: any PulseRepositoryProtocol,
-        at date: Date
+        at date: Date,
+        presentationMode: PulseWidgetMotionContract.PresentationMode = .phaseKeyframes
     ) throws -> PulseWidgetTimelinePlan? {
         guard let habit = try repository.existingPrimaryHabit() else { return nil }
         let records = try repository.allRecords(habitID: habit.id)
         return try PulseWidgetProjector.makeTimelinePlan(
             habit: habit,
             records: records,
-            at: date
+            at: date,
+            presentationMode: presentationMode
         )
     }
 }

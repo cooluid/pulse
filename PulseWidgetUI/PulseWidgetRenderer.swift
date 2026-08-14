@@ -34,6 +34,7 @@ enum PulseWidgetStyleAccessPolicy {
 struct PulseWidgetHomeRenderer: View {
     let snapshot: PulseWidgetSnapshot
     let style: PulseWidgetStyle
+    let visualVariant: PulseWidgetVisualVariant
     let usesMediumMetrics: Bool
     let usesFullColorPalette: Bool
     let statusText: String
@@ -43,6 +44,10 @@ struct PulseWidgetHomeRenderer: View {
     let placeStatusText: String
 
     @Environment(\.locale) private var locale
+
+    private var atmosphere: PulseWidgetPhaseAtmosphere {
+        PulseWidgetPhaseAtmosphere(variant: visualVariant)
+    }
 
     var body: some View {
         GeometryReader { proxy in
@@ -276,9 +281,10 @@ struct PulseWidgetHomeRenderer: View {
         let isMedium = usesMediumMetrics
         let inset = pt(isMedium ? 16 : 12, in: size)
         let markSide = pt(isMedium ? 58 : 40, in: size)
+        let horizonLift = CGFloat(visualVariant.tideHorizonLift)
         let markBottomRatio: CGFloat = snapshot.isCheckedToday
-            ? (isMedium ? 0.32 : 0.36)
-            : (isMedium ? 0.24 : 0.28)
+            ? (isMedium ? 0.32 : 0.36) + horizonLift
+            : (isMedium ? 0.24 : 0.28) + horizonLift
         let markX = isMedium
             ? size.width - pt(28, in: size) - markSide / 2
             : size.width / 2
@@ -338,8 +344,22 @@ struct PulseWidgetHomeRenderer: View {
     private func tideSky(size: CGSize) -> some View {
         let sunSide = pt(16, in: size)
         let skyHeight = size.height * (usesMediumMetrics ? 0.50 : 0.46)
+        let cloudDrift = CGFloat(visualVariant.cloudDrift)
+        let cloudBaseX = size.width * (0.34 + cloudDrift * 0.14)
+        let cloudY = skyHeight * (usesMediumMetrics ? 0.34 : 0.38)
 
         return ZStack(alignment: .topLeading) {
+            tideCloud(size: size, widthScale: 1.0, opacity: 0.16)
+                .position(x: cloudBaseX, y: cloudY)
+                .animation(PulseWidgetMotionPresentation.entryTransition, value: visualVariant)
+
+            tideCloud(size: size, widthScale: 0.72, opacity: 0.11)
+                .position(
+                    x: cloudBaseX + size.width * 0.16,
+                    y: cloudY + pt(6, in: size)
+                )
+                .animation(PulseWidgetMotionPresentation.entryTransition, value: visualVariant)
+
             Circle()
                 .fill(fieldColor.opacity(0.35))
                 .frame(width: sunSide, height: sunSide)
@@ -360,15 +380,43 @@ struct PulseWidgetHomeRenderer: View {
         .frame(width: size.width, height: skyHeight, alignment: .topLeading)
     }
 
+    private func tideCloud(size: CGSize, widthScale: CGFloat, opacity: Double) -> some View {
+        let cloudWidth = size.width * 0.22 * widthScale
+        let cloudHeight = pt(usesMediumMetrics ? 11 : 9, in: size) * widthScale
+
+        return Capsule(style: .continuous)
+            .fill(primaryColor.opacity(opacity))
+            .frame(width: cloudWidth, height: cloudHeight)
+            .overlay {
+                HStack(spacing: cloudWidth * 0.08) {
+                    Circle()
+                        .fill(primaryColor.opacity(opacity * 0.92))
+                        .frame(width: cloudHeight * 1.05, height: cloudHeight * 1.05)
+                    Circle()
+                        .fill(primaryColor.opacity(opacity * 0.88))
+                        .frame(width: cloudHeight * 0.92, height: cloudHeight * 0.92)
+                }
+            }
+    }
+
     private func tideShore(size: CGSize) -> some View {
+        let horizonLift = CGFloat(visualVariant.tideHorizonLift)
         let shoreHeightRatio: CGFloat = snapshot.isCheckedToday
-            ? (usesMediumMetrics ? 0.48 : 0.50)
-            : (usesMediumMetrics ? 0.40 : 0.42)
+            ? (usesMediumMetrics ? 0.48 : 0.50) + horizonLift
+            : (usesMediumMetrics ? 0.40 : 0.42) + horizonLift
         let shoreHeight = size.height * shoreHeightRatio
         let shoreColor = snapshot.isCheckedToday ? grassColor : fieldColor
         let fishXRatio: CGFloat = usesMediumMetrics ? 250 / 340 : 118 / 160
+        let fishX = size.width * (fishXRatio + CGFloat(visualVariant.cloudDrift) * 0.018)
+        let fishDepth = snapshot.isCheckedToday
+            ? 1 - CGFloat(visualVariant.fishLeap) * 0.22
+            : CGFloat(visualVariant.fishDepth)
         let fishYRatio: CGFloat = usesMediumMetrics ? 62 / 100 : 58 / 90
+        let fishY = shoreHeight * (fishYRatio + (1 - fishDepth) * 0.08)
         let fishScale = pt(usesMediumMetrics ? 1.15 : 0.9, in: size)
+        let fishRotation = snapshot.isCheckedToday
+            ? Angle(degrees: -18 * Double(visualVariant.fishLeap))
+            : Angle(degrees: 8 * Double(visualVariant.fishDepth - 0.5))
 
         return ZStack(alignment: .topLeading) {
             PulseTideCurve(kind: .water, usesMediumMetrics: usesMediumMetrics)
@@ -390,7 +438,10 @@ struct PulseWidgetHomeRenderer: View {
                     width: (usesMediumMetrics ? 21 : 18) * fishScale,
                     height: (usesMediumMetrics ? 8 : 7) * fishScale
                 )
-                .position(x: size.width * fishXRatio, y: shoreHeight * fishYRatio)
+                .rotationEffect(fishRotation)
+                .position(x: fishX, y: fishY)
+                .animation(PulseWidgetMotionPresentation.entryTransition, value: visualVariant)
+                .animation(PulseWidgetMotionPresentation.entryTransition, value: snapshot.isCheckedToday)
         }
         .frame(width: size.width, height: shoreHeight)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
@@ -666,14 +717,16 @@ struct PulseWidgetHomeRenderer: View {
 
     private func placeAmbientField(size: CGSize) -> some View {
         let color = snapshot.isCheckedToday ? grassColor : fieldColor
+        let opacityScale = atmosphere.ambientOpacityScale
 
         return Ellipse()
-            .fill(color.opacity(usesFullColorPalette ? 0.085 : 0.055))
+            .fill(color.opacity((usesFullColorPalette ? 0.085 : 0.055) * opacityScale))
             .frame(
                 width: size.width * (usesMediumMetrics ? 0.58 : 0.92),
                 height: size.height * (usesMediumMetrics ? 1.18 : 0.72)
             )
-            .rotationEffect(.degrees(usesMediumMetrics ? -8 : -4))
+            .rotationEffect(.degrees((usesMediumMetrics ? -8 : -4) + atmosphere.ambientRotationOffset))
+            .animation(PulseWidgetMotionPresentation.entryTransition, value: visualVariant)
             .position(
                 x: size.width * (usesMediumMetrics ? 0.20 : 0.46),
                 y: size.height * (usesMediumMetrics ? 0.54 : 0.50)
@@ -682,10 +735,11 @@ struct PulseWidgetHomeRenderer: View {
 
     private func sealAmbientField(size: CGSize) -> some View {
         let color = snapshot.isCheckedToday ? grassColor : fieldColor
+        let opacityScale = atmosphere.ambientOpacityScale
 
         return ZStack {
             Circle()
-                .fill(color.opacity(usesFullColorPalette ? 0.075 : 0.045))
+                .fill(color.opacity((usesFullColorPalette ? 0.075 : 0.045) * opacityScale))
                 .frame(
                     width: size.height * (usesMediumMetrics ? 1.32 : 1.08),
                     height: size.height * (usesMediumMetrics ? 1.32 : 1.08)
@@ -696,7 +750,10 @@ struct PulseWidgetHomeRenderer: View {
                 )
 
             Circle()
-                .stroke(color.opacity(usesFullColorPalette ? 0.10 : 0.06), lineWidth: pt(18, in: size))
+                .stroke(
+                    color.opacity((usesFullColorPalette ? 0.10 : 0.06) * opacityScale),
+                    lineWidth: pt(18, in: size)
+                )
                 .frame(
                     width: size.height * (usesMediumMetrics ? 1.56 : 1.28),
                     height: size.height * (usesMediumMetrics ? 1.56 : 1.28)
@@ -706,21 +763,24 @@ struct PulseWidgetHomeRenderer: View {
                     y: size.height * 0.50
                 )
         }
+        .animation(PulseWidgetMotionPresentation.entryTransition, value: visualVariant)
     }
 
     private func stackDeskMat(size: CGSize) -> some View {
         let color = snapshot.isCheckedToday ? grassColor : fieldColor
+        let opacityScale = atmosphere.ambientOpacityScale
 
         return RoundedRectangle(
             cornerRadius: pt(usesMediumMetrics ? 26 : 22, in: size),
             style: .continuous
         )
-        .fill(color.opacity(usesFullColorPalette ? 0.085 : 0.05))
+        .fill(color.opacity((usesFullColorPalette ? 0.085 : 0.05) * opacityScale))
         .frame(
             width: size.width - pt(usesMediumMetrics ? 10 : 12, in: size),
             height: size.height - pt(usesMediumMetrics ? 8 : 10, in: size)
         )
-        .rotationEffect(.degrees(usesMediumMetrics ? 1.3 : 1.8))
+        .rotationEffect(.degrees((usesMediumMetrics ? 1.3 : 1.8) + atmosphere.ambientRotationOffset))
+        .animation(PulseWidgetMotionPresentation.entryTransition, value: visualVariant)
         .position(x: size.width / 2, y: size.height / 2 + pt(2, in: size))
     }
 
@@ -791,20 +851,22 @@ struct PulseWidgetHomeRenderer: View {
 
     private func mistField(size: CGSize) -> some View {
         let color = snapshot.isCheckedToday ? grassColor : fieldColor
+        let opacityScale = atmosphere.ambientOpacityScale
         return ZStack {
             Ellipse()
-                .fill(color.opacity(0.10))
+                .fill(color.opacity(0.10 * opacityScale))
                 .frame(width: size.width * 0.88, height: size.height * 0.43)
                 .position(x: size.width * 0.30, y: size.height * (usesMediumMetrics ? 0.62 : 0.74))
             Ellipse()
-                .fill(color.opacity(0.14))
+                .fill(color.opacity(0.14 * opacityScale))
                 .frame(width: size.width * 0.73, height: size.height * 0.36)
                 .position(x: size.width * 0.69, y: size.height * (usesMediumMetrics ? 0.70 : 0.83))
             Ellipse()
-                .fill(color.opacity(0.08))
+                .fill(color.opacity(0.08 * opacityScale))
                 .frame(width: size.width, height: size.height * 0.33)
                 .position(x: size.width * 0.49, y: size.height * (usesMediumMetrics ? 0.84 : 0.92))
         }
+        .animation(PulseWidgetMotionPresentation.entryTransition, value: visualVariant)
     }
 
     private func postmarkRow(size: CGSize) -> some View {
@@ -853,40 +915,47 @@ struct PulseWidgetHomeRenderer: View {
             y: size.height - pt(usesMediumMetrics ? 7 : 6, in: size)
         )
         let color = snapshot.isCheckedToday ? grassColor : fieldColor
+        let opacityScale = atmosphere.ambientOpacityScale
 
         return ZStack {
             Circle()
-                .fill(color.opacity(snapshot.isCheckedToday ? 0.15 : 0.12))
+                .fill(color.opacity((snapshot.isCheckedToday ? 0.15 : 0.12) * opacityScale))
                 .frame(width: ringSide * 0.82, height: ringSide * 0.82)
             Circle()
-                .stroke(color.opacity(0.38), lineWidth: pt(1.2, in: size))
+                .stroke(color.opacity(0.38 * opacityScale), lineWidth: pt(1.2, in: size))
                 .frame(width: ringSide, height: ringSide)
             Circle()
-                .stroke(color.opacity(0.13), lineWidth: pt(16, in: size))
+                .stroke(color.opacity(0.13 * opacityScale), lineWidth: pt(16, in: size))
                 .frame(width: ringSide + pt(20, in: size), height: ringSide + pt(20, in: size))
             Circle()
-                .stroke(color.opacity(0.065), lineWidth: pt(20, in: size))
+                .stroke(color.opacity(0.065 * opacityScale), lineWidth: pt(20, in: size))
                 .frame(width: ringSide + pt(58, in: size), height: ringSide + pt(58, in: size))
         }
+        .animation(PulseWidgetMotionPresentation.entryTransition, value: visualVariant)
         .position(center)
     }
 
     private func pathGround(size: CGSize) -> some View {
         let color = snapshot.isCheckedToday ? grassColor : fieldColor
+        let opacityScale = atmosphere.ambientOpacityScale
 
         return ZStack {
             Ellipse()
-                .fill(color.opacity(usesFullColorPalette ? 0.075 : 0.045))
+                .fill(color.opacity((usesFullColorPalette ? 0.075 : 0.045) * opacityScale))
                 .frame(width: size.width * 1.12, height: size.height * 0.45)
                 .rotationEffect(.degrees(-6))
                 .position(x: size.width * 0.43, y: size.height * 0.78)
 
             Ellipse()
-                .stroke(color.opacity(usesFullColorPalette ? 0.12 : 0.07), lineWidth: pt(1, in: size))
+                .stroke(
+                    color.opacity((usesFullColorPalette ? 0.12 : 0.07) * opacityScale),
+                    lineWidth: pt(1, in: size)
+                )
                 .frame(width: size.width * 0.82, height: size.height * 0.28)
                 .rotationEffect(.degrees(-6))
                 .position(x: size.width * 0.48, y: size.height * 0.76)
         }
+        .animation(PulseWidgetMotionPresentation.entryTransition, value: visualVariant)
     }
 
     private func pathTrail(size: CGSize) -> some View {

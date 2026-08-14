@@ -216,6 +216,11 @@ struct PulseWidgetStylePreview: View {
         PulseWidgetHomeRenderer(
             snapshot: snapshot,
             style: style,
+            visualVariant: PulseWidgetVisualVariant.make(
+                for: snapshot.today,
+                at: snapshot.generatedAt,
+                timeZone: snapshot.projectTimeZone
+            ),
             usesMediumMetrics: usesMediumMetrics,
             usesFullColorPalette: true,
             statusText: PulseLocalization.string(

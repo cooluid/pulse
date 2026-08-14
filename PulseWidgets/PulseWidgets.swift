@@ -3,6 +3,7 @@ import AppIntents
 import Foundation
 import PulseCore
 import SwiftUI
+import UIKit
 import WidgetKit
 
 @main
@@ -175,6 +176,7 @@ private struct PulseWidgetEntry: TimelineEntry {
     let date: Date
     let state: PulseWidgetEntryState
     let language: PulseInterfaceLanguage
+    let visualVariant: PulseWidgetVisualVariant
 }
 
 @MainActor
@@ -183,7 +185,8 @@ private struct PulseWidgetProvider: AppIntentTimelineProvider {
         PulseWidgetEntry(
             date: .now,
             state: .ready(.placeholder, PulseWidgetStyleAccessPolicy.freeStyle),
-            language: .system
+            language: .system,
+            visualVariant: .placeholder
         )
     }
 
@@ -197,11 +200,12 @@ private struct PulseWidgetProvider: AppIntentTimelineProvider {
         let hasEnhancement = await PulseStoreKitEntitlementReader.hasCurrentEntitlement(
             for: PulseEnhancementContract.productIdentifier
         )
-        return PulseWidgetRuntime.loadEntry(
+        return PulseWidgetRuntime.loadTimeline(
             at: .now,
             requestedStyle: configuration.style,
-            hasEnhancementEntitlement: hasEnhancement
-        ).entry
+            hasEnhancementEntitlement: hasEnhancement,
+            presentationMode: PulseWidgetRuntime.presentationMode
+        ).entries[0]
     }
 
     func timeline(
@@ -211,14 +215,11 @@ private struct PulseWidgetProvider: AppIntentTimelineProvider {
         let hasEnhancement = await PulseStoreKitEntitlementReader.hasCurrentEntitlement(
             for: PulseEnhancementContract.productIdentifier
         )
-        let result = PulseWidgetRuntime.loadEntry(
+        return PulseWidgetRuntime.loadTimeline(
             at: .now,
             requestedStyle: configuration.style,
-            hasEnhancementEntitlement: hasEnhancement
-        )
-        return Timeline(
-            entries: [result.entry],
-            policy: .after(result.refreshAfter)
+            hasEnhancementEntitlement: hasEnhancement,
+            presentationMode: PulseWidgetRuntime.presentationMode
         )
     }
 }
@@ -229,7 +230,8 @@ private struct PulseAccessoryProvider: TimelineProvider {
         PulseWidgetEntry(
             date: .now,
             state: .ready(.placeholder, PulseWidgetStyleAccessPolicy.freeStyle),
-            language: .system
+            language: .system,
+            visualVariant: .placeholder
         )
     }
 
@@ -242,11 +244,12 @@ private struct PulseAccessoryProvider: TimelineProvider {
             return
         }
         completion(
-            PulseWidgetRuntime.loadEntry(
+            PulseWidgetRuntime.loadTimeline(
                 at: .now,
                 requestedStyle: PulseWidgetStyleAccessPolicy.freeStyle,
-                hasEnhancementEntitlement: false
-            ).entry
+                hasEnhancementEntitlement: false,
+                presentationMode: PulseWidgetRuntime.presentationMode
+            ).entries[0]
         )
     }
 
@@ -254,41 +257,50 @@ private struct PulseAccessoryProvider: TimelineProvider {
         in context: Context,
         completion: @escaping (Timeline<PulseWidgetEntry>) -> Void
     ) {
-        let result = PulseWidgetRuntime.loadEntry(
-            at: .now,
-            requestedStyle: PulseWidgetStyleAccessPolicy.freeStyle,
-            hasEnhancementEntitlement: false
+        completion(
+            PulseWidgetRuntime.loadTimeline(
+                at: .now,
+                requestedStyle: PulseWidgetStyleAccessPolicy.freeStyle,
+                hasEnhancementEntitlement: false,
+                presentationMode: PulseWidgetRuntime.presentationMode
+            )
         )
-        completion(Timeline(entries: [result.entry], policy: .after(result.refreshAfter)))
     }
 }
 
 @MainActor
 private enum PulseWidgetRuntime {
-    struct LoadResult {
-        let entry: PulseWidgetEntry
-        let refreshAfter: Date
+    struct TimelineResult {
+        let entries: [PulseWidgetEntry]
+        let policy: TimelineReloadPolicy
+
+        var timeline: Timeline<PulseWidgetEntry> {
+            Timeline(entries: entries, policy: policy)
+        }
     }
 
-    static func loadEntry(
+    static var presentationMode: PulseWidgetMotionContract.PresentationMode {
+        UIAccessibility.isReduceMotionEnabled ? .currentFrameOnly : .phaseKeyframes
+    }
+
+    static func loadTimeline(
         at date: Date,
         requestedStyle: PulseWidgetStyle,
-        hasEnhancementEntitlement: Bool
-    ) -> LoadResult {
+        hasEnhancementEntitlement: Bool,
+        presentationMode: PulseWidgetMotionContract.PresentationMode
+    ) -> Timeline<PulseWidgetEntry> {
         let context: PulseWidgetSharedRuntime.Context
         let language: PulseInterfaceLanguage
         do {
             context = try PulseWidgetSharedRuntime.makeContext()
             language = try context.interfacePreferences.loadLanguage()
         } catch {
-            return LoadResult(
-                entry: PulseWidgetEntry(
-                    date: date,
-                    state: .unavailable,
-                    language: .system
-                ),
-                refreshAfter: date.addingTimeInterval(15 * 60)
-            )
+            return failureTimeline(
+                at: date,
+                state: .unavailable,
+                language: .system,
+                retryAfter: 15 * 60
+            ).timeline
         }
 
         do {
@@ -301,69 +313,77 @@ private enum PulseWidgetRuntime {
                 requestedStyle,
                 hasEnhancementEntitlement: hasEnhancementEntitlement
             ) else {
-                return LoadResult(
-                    entry: PulseWidgetEntry(
-                        date: date,
-                        state: .enhancementRequired,
-                        language: language
-                    ),
-                    refreshAfter: date.addingTimeInterval(
-                        PulseEnhancementContract.entitlementRefreshInterval
-                    )
-                )
+                return failureTimeline(
+                    at: date,
+                    state: .enhancementRequired,
+                    language: language,
+                    retryAfter: PulseEnhancementContract.entitlementRefreshInterval
+                ).timeline
             }
             guard let plan = try PulseWidgetSnapshotReader.readTimelinePlan(
                 repository: repository,
-                at: date
+                at: date,
+                presentationMode: presentationMode
             ) else {
                 throw PulseWidgetSharedRuntime.RuntimeError.missingPrimaryHabit
             }
-            return LoadResult(
-                entry: PulseWidgetEntry(
-                    date: date,
-                    state: .ready(plan.snapshot, requestedStyle),
-                    language: language
-                ),
-                refreshAfter: PulseWidgetStyleAccessPolicy.requiresEnhancement(requestedStyle)
-                    ? min(
-                        plan.refreshAfter,
-                        date.addingTimeInterval(
-                            PulseEnhancementContract.entitlementRefreshInterval
-                        )
-                    )
-                    : plan.refreshAfter
-            )
+            let entries = plan.entries.map { timelineEntry in
+                PulseWidgetEntry(
+                    date: timelineEntry.date,
+                    state: .ready(timelineEntry.snapshot, requestedStyle),
+                    language: language,
+                    visualVariant: timelineEntry.variant
+                )
+            }
+            return TimelineResult(entries: entries, policy: .atEnd).timeline
         } catch PulseWidgetSharedRuntime.RuntimeError.sharedStoreMissing,
                 PulseWidgetSharedRuntime.RuntimeError.missingPrimaryHabit {
-            return LoadResult(
-                entry: PulseWidgetEntry(
-                    date: date,
-                    state: .needsOpenApp,
-                    language: language
-                ),
-                refreshAfter: date.addingTimeInterval(15 * 60)
-            )
+            return failureTimeline(
+                at: date,
+                state: .needsOpenApp,
+                language: language,
+                retryAfter: 15 * 60
+            ).timeline
         } catch PulseWidgetProjectionError.identityNotConfirmed {
-            return LoadResult(
-                entry: PulseWidgetEntry(
-                    date: date,
-                    state: .needsOpenApp,
-                    language: language
-                ),
-                refreshAfter: date.addingTimeInterval(15 * 60)
-            )
+            return failureTimeline(
+                at: date,
+                state: .needsOpenApp,
+                language: language,
+                retryAfter: 15 * 60
+            ).timeline
         } catch {
-            return LoadResult(
-                entry: PulseWidgetEntry(
-                    date: date,
-                    state: .unavailable,
-                    language: language
-                ),
-                refreshAfter: date.addingTimeInterval(15 * 60)
-            )
+            return failureTimeline(
+                at: date,
+                state: .unavailable,
+                language: language,
+                retryAfter: 15 * 60
+            ).timeline
         }
     }
 
+    private static func failureTimeline(
+        at date: Date,
+        state: PulseWidgetEntryState,
+        language: PulseInterfaceLanguage,
+        retryAfter: TimeInterval
+    ) -> TimelineResult {
+        let variant = PulseWidgetVisualVariant.make(
+            for: LogicalDay.resolve(at: date, timeZone: .current),
+            at: date,
+            timeZone: .current
+        )
+        return TimelineResult(
+            entries: [
+                PulseWidgetEntry(
+                    date: date,
+                    state: state,
+                    language: language,
+                    visualVariant: variant
+                ),
+            ],
+            policy: .after(date.addingTimeInterval(retryAfter))
+        )
+    }
 }
 
 private struct PulseWidgetView: View {
@@ -440,6 +460,7 @@ private struct PulseLocalizedWidgetView: View {
         let content = PulseWidgetHomeRenderer(
             snapshot: snapshot,
             style: style,
+            visualVariant: entry.visualVariant,
             usesMediumMetrics: usesMediumMetrics,
             usesFullColorPalette: usesFullColorPalette,
             statusText: String(
@@ -891,7 +912,21 @@ private extension PulseWidgetSnapshot {
             generatedAt: generatedAt,
             nextDayBoundary: today.addingDays(1, timeZone: timeZone).startDate(
                 timeZone: timeZone
-            )
+            ),
+            projectTimeZoneIdentifier: timeZone.identifier
+        )
+    }
+}
+
+private extension PulseWidgetVisualVariant {
+    static var placeholder: PulseWidgetVisualVariant {
+        let generatedAt = Date.now
+        let timeZone = TimeZone.current
+        let today = LogicalDay.resolve(at: generatedAt, timeZone: timeZone)
+        return PulseWidgetVisualVariant.make(
+            for: today,
+            at: generatedAt,
+            timeZone: timeZone
         )
     }
 }

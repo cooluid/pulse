@@ -73,14 +73,18 @@ App 与 Widget 的签到都通过 `SwiftDataPulseRepository.checkIn`：
 
 Widget 不能调用删除、清除、导入、修改时区或编辑承诺。
 
-## 6. Timeline 与隐私
+## 6. Timeline、动效与隐私
 
 `PulseWidgetSnapshotReader` 每次从正式 store 生成可丢弃快照：
 
 - 当前已确认主承诺名称；
 - 当前逻辑日和今日正式记录；
 - 最近七日状态；
-- 快照生成时间和项目时区的下一个零点。
+- 快照生成时间、项目时区标识与下一个逻辑日零点。
+
+`PulseWidgetTimelinePlan` 返回严格按时间排序的 `[PulseWidgetTimelineEntry]`：每条 entry 绑定同一时刻的权威 snapshot 与纯视觉 `PulseWidgetVisualVariant`。时段关键帧只改变 variant，不改变签到事实；逻辑日零点 entry 必须重投影 snapshot。动效分级、phase 边界与禁止项见 [WIDGET_MOTION_CONTRACT.md](./WIDGET_MOTION_CONTRACT.md)。
+
+Reduce Motion 时 Extension 必须使用 `PresentationMode.currentFrameOnly`。成功 plan 使用 `TimelineReloadPolicy.atEnd`。
 
 Home Screen 可以显示已确认名称；Lock Screen、StandBy 和 Always-On 不显示名称；任何 Widget 都不显示可选说明。逐实例构图只改变 Home Screen 投影视角，不改变事实和 Accessory 结构。
 
@@ -99,7 +103,7 @@ store 缺失或身份未确认显示“打开 App”；store 打不开、偏好�
 - 状态不只依赖颜色；使用形状、实心/开放、节点和统一辅助功能标签共同表达。
 - Accessory 的内部日号和历史节点从辅助功能树隐藏，由整块元素朗读今日状态与过去六日结果。
 - 着色、vibrant、透明、Lock Screen 和 Always-On 使用系统 rendering mode，不自绘毛玻璃。
-- Reduce Motion 直接呈现静态最终状态。
+- Reduce Motion 下 Widget 只保留当前视觉帧；其余情况下 Home Screen 与 Accessory 使用 phase 关键帧 plan，详见 [WIDGET_MOTION_CONTRACT.md](./WIDGET_MOTION_CONTRACT.md)。
 
 ## 8. 自动化门禁
 
@@ -108,7 +112,7 @@ store 缺失或身份未确认显示“打开 App”；store 打不开、偏好�
 - App Group identifier 解析、唯一相对路径与 group URL 缺失失败；
 - Widget 在 store 不存在、身份未确认和事实损坏时不可写且不显示虚假完成；
 - 两个独立 ModelContainer 同日写入最终只有一个 `recordKey`；
-- timeline 跨项目时区零点刷新，七日投影与 App 一致；
+- timeline 跨项目时区零点刷新，phase 关键帧与 Reduce Motion 单帧模式，七日投影与 App 一致；
 - 三值 `interface.language` 的单一共享持久化、默认值与未知值失败关闭；
 - 构图 AppEnum、逐实例默认值、未授权时的明确拒绝，以及不同 Home Screen 实例可同时使用不同构图；枚举必须只覆盖待落之处 / 落印 / 叠印 / 数影 / 手札 / 静场 / 来路 / 潮痕，且不接受旧五式标识；
 - Lock Screen 独立 kind 不暴露构图参数，App/Widget 写入后同时刷新两个正式 kind；
