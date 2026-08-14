@@ -6,7 +6,7 @@
 
 ## 当前状态
 
-- 产品阶段：核心功能与“草野脉冲”视觉进入发布前工程收口；自动化结果见实现状态，真机、通知、最终视觉与分发仍是独立门禁
+- 产品阶段：核心功能进入发布前工程收口；外观可继续迭代、人工验收。自动化结果见实现状态，真机、通知、最终视觉与分发仍是独立门禁
 - 共享业务 target：`PulseCore`（静态、extension-safe，领域、schema、Repository 与导入导出唯一实现）
 - App target：`pulse`
 - 测试 target：`pulseTests`、`pulseUITests`

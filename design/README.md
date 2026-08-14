@@ -1,11 +1,11 @@
-# Pulse 生产设计合同
+# Pulse 生产设计
 
-本目录保存品牌工程真源与产品文案，**不**把每一次美术探索锁成永久合同：
+本目录是**工程与产品**入口，不是把每次美术稿锁死的仓库：
 
-- [品牌与界面规范](./BRAND_SPEC.md)（Widget 美术见 §5A：自由发挥，人工验收）
+- [品牌与界面规范](./BRAND_SPEC.md)：**全 App 美术自由、人工验收**；硬边界是事实 / 无障碍 / 权益 / 颜色工程
 - [产品文案合同](./CONTENT_DESIGN_SPEC.md)
-- [AppIcon 评审图](./app-icon-review.png)
-- [`brand-tokens.json`](./brand-tokens.json)：语义颜色工程真源（可增删角色；不是“禁止别的画法”）
-- `app-icon-source/`：AppIcon 遮罩工程入口
+- [`brand-tokens.json`](./brand-tokens.json)：语义色工程真源（可扩展）
+- `app-icon-source/` + `scripts/build_brand_assets.py`：图标生成链
+- [app-icon-review.png](./app-icon-review.png)
 
-SwiftUI、AccentColor、AppIcon 生成链共用令牌与 `scripts/build_brand_assets.py`。Widget 八式枚举与共享渲染器是产品/工程边界；**外观以代码与截图为准，HTML 原型仅为探索参考，改画不必先改长文档。**
+改今日页、历史、设置、权益、Widget 外观：优先改 SwiftUI；不必先写长文档。

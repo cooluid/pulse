@@ -102,7 +102,7 @@ store 缺失或身份未确认显示“打开 App”；store 打不开、偏好�
 - 可见月日、月份、日号与 VoiceOver 日期统一使用 `PulseLocalizedDateFormatting`；禁止固定 `MM/DD`、`day/month` 或 ISO `storageValue` 作为用户文案。
 - 状态不只依赖颜色；使用形状、实心/开放、节点和统一辅助功能标签共同表达。
 - Accessory 的内部日号和历史节点从辅助功能树隐藏，由整块元素朗读今日状态与过去六日结果。
-- 着色、vibrant、透明、Lock Screen 和 Always-On 使用系统 rendering mode，不自绘毛玻璃。
+- 着色、vibrant、透明、Lock Screen 和 Always-On 走系统 rendering mode；外观表现以系统为准，不另造第二套事实。
 - Reduce Motion 不改变事实或 Timeline；Home Screen 取消插值并直接显示相同终态，Accessory 始终使用静态事实表达，详见 [WIDGET_MOTION_CONTRACT.md](./WIDGET_MOTION_CONTRACT.md)。
 
 ## 8. 自动化门禁
