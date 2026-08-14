@@ -14,6 +14,17 @@ final class PulseBackupArchiveTests: XCTestCase {
         XCTAssertEqual(PulseBackupContract.payloadSchemaVersion, 2)
     }
 
+    func testBackupExportCarriesANonemptySuggestedFilename() throws {
+        let root = try makeTemporaryDirectory()
+        let fileURL = root.appendingPathComponent("source.pulsebackup")
+        try Data([0x01]).write(to: fileURL)
+        let filename = PulseBackupContract.filename(day: "2026-08-15")
+        let export = PulseBackupExport(fileURL: fileURL, suggestedFilename: filename)
+
+        XCTAssertEqual(export.suggestedFilename, "pulse-2026-08-15.pulsebackup")
+        XCTAssertFalse(export.suggestedFilename.isEmpty)
+    }
+
     func testArchiveRoundTripIncludesAuthenticatedMediaEntries() throws {
         let fixture = try makeMediaFixture()
         let archiveURL = fixture.root.appendingPathComponent("roundtrip.pulsebackup")
@@ -46,6 +57,47 @@ final class PulseBackupArchiveTests: XCTestCase {
         )
         decoded.discard()
         XCTAssertFalse(FileManager.default.fileExists(atPath: stagingURL.path))
+    }
+
+    func testFileStoreArchiveZeroizesDiskBackedMediaWithoutCrashing() async throws {
+        let original = Data(repeating: 0x4f, count: 256 * 1_024)
+        let thumbnail = Data(repeating: 0x54, count: 128 * 1_024)
+        let fixture = try makeMediaFixture(original: original, thumbnail: thumbnail)
+        let mediaRoot = fixture.root.appendingPathComponent("Media", isDirectory: true)
+        let store = try PulseMediaFileStore(rootURL: mediaRoot)
+
+        for (relativePath, data) in fixture.files {
+            try data.write(to: mediaRoot.appendingPathComponent(relativePath), options: [.atomic])
+        }
+
+        let archiveURL = fixture.root.appendingPathComponent("disk-backed.pulsebackup")
+        try await store.writeArchive(
+            payload: fixture.payload,
+            to: archiveURL,
+            passphrase: passphrase
+        )
+
+        let decoded = try PulseEncryptedBackupCodec.read(
+            from: archiveURL,
+            stagingDirectoryURL: fixture.root.appendingPathComponent(
+                "disk-backed-restore",
+                isDirectory: true
+            ),
+            passphrase: passphrase
+        )
+        XCTAssertEqual(decoded.payload.media.count, 1)
+        XCTAssertEqual(
+            try Data(contentsOf: decoded.mediaDirectoryURL.appendingPathComponent(
+                fixture.payload.media[0].originalRelativePath
+            )),
+            original
+        )
+        XCTAssertEqual(
+            try Data(contentsOf: decoded.mediaDirectoryURL.appendingPathComponent(
+                fixture.payload.media[0].thumbnailRelativePath
+            )),
+            thumbnail
+        )
     }
 
     func testExactMinimumLengthPassphraseRoundTrips() throws {
@@ -182,7 +234,10 @@ final class PulseBackupArchiveTests: XCTestCase {
         }
     }
 
-    private func makeMediaFixture() throws -> (
+    private func makeMediaFixture(
+        original: Data = Data([0xff, 0xd8, 0x50, 0x55, 0x4c, 0x53, 0x45, 0xff, 0xd9]),
+        thumbnail: Data = Data([0xff, 0xd8, 0x54, 0x48, 0x4d, 0xff, 0xd9])
+    ) throws -> (
         root: URL,
         payload: PulseBackupPayload,
         files: [String: Data]
@@ -197,8 +252,6 @@ final class PulseBackupArchiveTests: XCTestCase {
         let exportedAt = capturedAt.addingTimeInterval(60)
         let originalPath = "originals/\(mediaID.uuidString.lowercased()).jpg"
         let thumbnailPath = "thumbnails/\(mediaID.uuidString.lowercased()).jpg"
-        let original = Data([0xff, 0xd8, 0x50, 0x55, 0x4c, 0x53, 0x45, 0xff, 0xd9])
-        let thumbnail = Data([0xff, 0xd8, 0x54, 0x48, 0x4d, 0xff, 0xd9])
         let hash = SHA256.hash(data: original).map { String(format: "%02x", $0) }.joined()
         let payload = PulseBackupPayload(
             format: PulseBackupContract.payloadFormatIdentifier,

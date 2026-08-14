@@ -513,7 +513,10 @@ final class PulseAppModel {
             to: destinationURL,
             passphrase: passphrase
         )
-        return PulseBackupExport(fileURL: destinationURL)
+        return PulseBackupExport(
+            fileURL: destinationURL,
+            suggestedFilename: PulseBackupContract.filename(day: today?.storageValue)
+        )
     }
 
     func decodeBackup(from url: URL, passphrase: String) async throws -> PulseDecodedBackup {

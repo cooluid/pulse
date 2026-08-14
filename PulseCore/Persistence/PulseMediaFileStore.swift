@@ -221,7 +221,9 @@ public actor PulseMediaFileStore {
               fileSize <= maximumBytes else {
             throw PulseCoreError.mediaFileUnavailable
         }
-        return try Data(contentsOf: url, options: [.mappedIfSafe])
+        // Backup encryption zeroizes plaintext media after use. A mapped Data value can
+        // point at a read-only file mapping, so it must not cross that mutable boundary.
+        return try Data(contentsOf: url)
     }
 
     private func resolvedURL(for relativePath: String) throws -> URL {
