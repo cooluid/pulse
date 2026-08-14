@@ -215,22 +215,6 @@
         }
       }
     },
-    "widget.action.check_in.short" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Check In"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "签到"
-          }
-        }
-      }
-    },
     "widget.configuration.description" : {
       "localizations" : {
         "en" : {
@@ -391,22 +375,6 @@
         }
       }
     },
-    "widget.configuration.style.seal" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Seal"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "落印"
-          }
-        }
-      }
-    },
     "widget.configuration.style.stack" : {
       "localizations" : {
         "en" : {
@@ -419,6 +387,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "叠印"
+          }
+        }
+      }
+    },
+    "widget.configuration.style.orbit" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Star Ring"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "星环"
           }
         }
       }
@@ -487,23 +471,6 @@
         }
       }
     },
-    "widget.place.checked" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Imprinted today"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "今天已落印"
-          }
-        }
-      }
-    },
     "widget.path.summary.format" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -517,6 +484,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "六日 · %d 印"
+          }
+        }
+      }
+    },
+    "widget.place.checked" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Imprinted today"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "今天已落印"
           }
         }
       }

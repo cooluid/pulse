@@ -73,7 +73,7 @@ final class PulseWidgetStyleAccessPolicyTests: XCTestCase {
     func testAwaitingPlaceIsTheOnlyIncludedStyle() {
         XCTAssertEqual(PulseWidgetStyleAccessPolicy.freeStyle, .place)
         XCTAssertFalse(PulseWidgetStyleAccessPolicy.requiresEnhancement(.place))
-        XCTAssertTrue(PulseWidgetStyleAccessPolicy.requiresEnhancement(.seal))
+        XCTAssertTrue(PulseWidgetStyleAccessPolicy.requiresEnhancement(.orbit))
         XCTAssertEqual(
             PulseWidgetStyle.allCases.filter {
                 PulseWidgetStyleAccessPolicy.requiresEnhancement($0)
@@ -96,7 +96,7 @@ final class PulseWidgetStyleAccessPolicyTests: XCTestCase {
             PulseWidgetStyle.allCases.map(\.rawValue),
             [
                 "place",
-                "seal",
+                "orbit",
                 "stack",
                 "bleed",
                 "letter",
@@ -110,6 +110,8 @@ final class PulseWidgetStyleAccessPolicyTests: XCTestCase {
     func testRetiredStyleIdentifiersFailClosed() {
         for rawValue in [
             "breathingOrbit",
+            "starTrail",
+            "seal",
             "numberSilhouette",
             "depthRhythm",
             "quietOrder",

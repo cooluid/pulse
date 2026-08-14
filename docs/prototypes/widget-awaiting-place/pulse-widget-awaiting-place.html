@@ -2,7 +2,7 @@
 <!--
   Formal free default Home Screen Widget pixel source.
   Object: 待落之处 (Awaiting Place) — where today's imprint still waits to land.
-  Paid seal (落印) is intentionally NOT the free hero.
+  Paid star ring (星环) is intentionally NOT the free hero.
   See README.md in this folder.
 -->
 <html lang="zh-CN">
@@ -261,26 +261,28 @@
     body.checked .only-pending { display: none; }
     body.checked .only-checked { display: block; }
 
-    /* Locked tease — paid 落印 silhouette, not interactive free content */
+    /* Locked tease — paid 星环 silhouette, not interactive free content */
     .locked-tease {
       background: color-mix(in srgb, var(--surface) 70%, transparent);
       opacity: .72;
     }
-    .locked-tease .stamp-ghost {
+    .locked-tease .orbit-ghost {
       position: absolute;
       left: 10px;
       top: 50%;
       width: 96px;
       height: 96px;
       transform: translateY(-50%);
-      color: var(--field);
       opacity: .35;
     }
-    .locked-tease .stamp-ghost circle {
+    .locked-tease .orbit-ghost .ring {
       fill: none;
-      stroke: currentColor;
-      stroke-width: 5.5;
+      stroke: var(--field);
+      stroke-width: 6;
       stroke-linecap: round;
+    }
+    .locked-tease .orbit-ghost .today-star {
+      fill: var(--field);
     }
     .locked-tease .lock-copy {
       position: absolute;
@@ -537,7 +539,7 @@
       <div>
         <p class="eyebrow">Pulse Widget · Formal Free Default</p>
         <h1>免费不是另一枚印。<br>是一处还等着落下的地方。</h1>
-        <p class="lede">落印已进入高阶权益，主屏的免费默认是一处等待承印的位置：一眼看出今天空着，一点即可留下。「待落之处」不抢开放日环；日环只属于收费的落印。</p>
+        <p class="lede">星环属于高阶权益，主屏的免费默认仍是一处等待承印的位置：一眼看出今天空着，一点即可留下。「待落之处」不借用收费星环的开口环与单星语法。</p>
       </div>
       <div class="controls" aria-label="原型状态">
         <button class="control state-control" type="button" data-state="pending" aria-pressed="true">待签到</button>
@@ -568,12 +570,12 @@
             <div class="habit">晨间书写</div>
           </div>
           <div class="widget locked-tease">
-            <svg class="stamp-ghost" viewBox="0 0 100 100" aria-hidden="true">
-              <circle cx="50" cy="50" r="39" pathLength="100" stroke-dasharray="86.7 13.3" transform="rotate(-18 50 50)"/>
-              <circle cx="50" cy="50" r="20" fill="currentColor" opacity=".12" stroke="none"/>
+            <svg class="orbit-ghost" viewBox="0 0 100 100" aria-hidden="true">
+              <circle class="ring" cx="48" cy="52" r="36" pathLength="100" stroke-dasharray="86.7 13.3" transform="rotate(-18 48 52)"/>
+              <circle class="today-star" cx="74" cy="28" r="5"/>
             </svg>
             <div class="lock-copy">
-              <div class="title">落印</div>
+              <div class="title">星环</div>
               <div class="hint">高阶物件</div>
             </div>
           </div>
@@ -614,7 +616,7 @@
         <h2>先认空坑，再读字。</h2>
         <p>小号是一条中轴：上日期、中印垫、下承诺。不要再做成左下物件 + 右上文字，右侧会空荡。完成靠坑心被占满 + 勾，不只换色。</p>
         <ul>
-          <li>待落之处 = 等印落下的位置；落印 = 印本身。两套剪影不能混。</li>
+          <li>待落之处 = 等印落下的位置；星环 = 开口环上唯一的一颗星。两套剪影不能混。</li>
           <li>小号单轴构图；中号才左右分栏（印垫左、文字右）。</li>
           <li>未签到时整卡是唯一签到命中面。</li>
           <li>中号禁止把正方形印垫拉宽。</li>
@@ -676,16 +678,16 @@
         <p>承印的位置。剪影是垫 + 空坑。完成 = 坑被占满。回答「今天还空着吗」。</p>
       </article>
       <article>
-        <h2>落印（高阶权益）</h2>
-        <p>品牌印本身。剪影是开放日环 + 留印。完成 = 环闭合打勾。回答「能不能留下这一枚」。</p>
+        <h2>星环（高阶权益）</h2>
+        <p>开口环上只有今天这一颗星。完成 = 开口合上、这颗星点亮，并由行动色转为草绿。回答「今天是否进入自己的星环」。</p>
       </article>
     </section>
 
     <aside class="reject">
       <h2>这轮明确不走的路</h2>
-      <p>不要把待落之处画成缩小版落印；不要用静场大圆弧顶替印垫；不要把数影大日号塞进免费默认；不要为了「多一个免费」去收费七式里挑一件降级。正式实现、权益合同与默认 `WidgetConfigurationIntent` 必须始终共同使用 `place`。</p>
+      <p>不要把待落之处接上星环的开口环或单星；不要用静场大圆弧顶替印垫；不要把数影大日号塞进免费默认；不要为了「多一个免费」去收费七式里挑一件降级。正式实现、权益合同与默认 `WidgetConfigurationIntent` 必须始终共同使用 `place`。</p>
     </aside>
-    <p class="footnote">本页是待落之处的小号/中号、待办/完成、浅色/深色像素构图真源；完整八式清单见 <code>docs/prototypes/widget-ritual-objects/</code>。落印与其余六式使用同一高阶 entitlement，默认构图是待落之处，未解锁收费构图必须明确拒绝。</p>
+    <p class="footnote">本页是待落之处的小号/中号、待办/完成、浅色/深色像素构图真源；完整八式清单见 <code>docs/prototypes/widget-ritual-objects/</code>。星环与其余六式使用同一高阶 entitlement，默认构图是待落之处，未解锁收费构图必须明确拒绝。</p>
   </main>
   <script>
     const stateButtons = [...document.querySelectorAll('.state-control')];

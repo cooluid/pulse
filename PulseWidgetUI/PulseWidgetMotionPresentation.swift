@@ -15,7 +15,7 @@ enum PulseWidgetMotionPresentation {
 
     enum Material: CaseIterable {
         case place
-        case ink
+        case starRing
         case paper
         case number
         case letter
@@ -33,7 +33,7 @@ enum PulseWidgetMotionPresentation {
     static func completionDuration(for material: Material) -> TimeInterval {
         switch material {
         case .place: 1.45
-        case .ink: 1.70
+        case .starRing: 1.70
         case .paper: 1.80
         case .number: 1.45
         case .letter: 1.75
@@ -46,7 +46,7 @@ enum PulseWidgetMotionPresentation {
     static func ambientDuration(for material: Material) -> TimeInterval {
         switch material {
         case .place: 0.82
-        case .ink: 0.92
+        case .starRing: 0.88
         case .paper: 0.88
         case .number: 0.76
         case .letter: 0.86
@@ -67,8 +67,8 @@ enum PulseWidgetMotionPresentation {
         switch material {
         case .place:
             return .easeInOut(duration: duration)
-        case .ink:
-            return .easeOut(duration: duration)
+        case .starRing:
+            return .easeInOut(duration: duration)
         case .paper:
             return .spring(duration: duration, bounce: 0.035)
         case .number:
@@ -115,8 +115,8 @@ enum PulseWidgetMotionPresentation {
         switch material {
         case .place:
             amplitude = AmbientPose(horizontalPoints: 4.0, verticalPoints: 0.4, rotationDegrees: 1.0)
-        case .ink:
-            amplitude = AmbientPose(horizontalPoints: 1.2, verticalPoints: -0.3, rotationDegrees: 3.1)
+        case .starRing:
+            amplitude = AmbientPose(horizontalPoints: 1.1, verticalPoints: -2.4, rotationDegrees: 0.5)
         case .paper:
             amplitude = AmbientPose(horizontalPoints: 1.8, verticalPoints: 0.7, rotationDegrees: -0.8)
         case .number:

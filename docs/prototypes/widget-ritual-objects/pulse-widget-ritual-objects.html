@@ -116,118 +116,72 @@
     .only-checked { display: none; }
     body.checked .only-pending { display: none; }
     body.checked svg.only-checked { display: block; width: 100%; height: 100%; }
+    body.checked path.only-checked,
     body.checked use.only-checked,
     body.checked circle.only-checked { display: inline; }
 
-    /* 01 Seal — large complete ring, same soft field language as 静场 */
-    .seal { background: var(--surface); color: var(--ink); }
-    .seal .stamp {
-      position: absolute;
-      left: 4px;
-      top: 50%;
-      width: 110px;
-      height: 110px;
-      transform: translateY(-50%);
-      color: var(--field);
-      z-index: 1;
-      overflow: visible;
+    /* 01 星环 — brand open ring with one today star in the gap */
+    .orbit { background: var(--bg); color: var(--ink); }
+    .orbit .orbit-art { position: absolute; inset: 0; z-index: 1; }
+    .orbit .orbit-art svg { width: 100%; height: 100%; overflow: hidden; }
+    .orbit .orbit-ambient {
+      fill: color-mix(in srgb, var(--field) 14%, transparent);
     }
-    .seal .stamp::before {
-      content: "";
-      position: absolute;
-      inset: 8%;
-      border-radius: 50%;
-      border: 1px solid color-mix(in srgb, var(--field) 22%, transparent);
-      box-shadow:
-        0 0 0 14px color-mix(in srgb, var(--field) 7%, transparent),
-        0 0 0 28px color-mix(in srgb, var(--field) 4%, transparent);
-      pointer-events: none;
-      z-index: 0;
+    body.checked .orbit .orbit-ambient {
+      fill: color-mix(in srgb, var(--grass) 16%, transparent);
     }
-    .seal .stamp svg {
-      position: relative;
-      z-index: 1;
-      width: 100%;
-      height: 100%;
-      display: block;
-      overflow: visible;
+    .orbit .ring-well {
+      fill: color-mix(in srgb, var(--action) 20%, transparent);
     }
-    .seal .stamp .wash { stroke: currentColor; fill: none; opacity: .22; }
-    .seal .stamp .core { fill: currentColor; opacity: .10; }
-    .seal .stamp .tick {
+    body.checked .orbit .ring-well {
+      fill: color-mix(in srgb, var(--grass) 32%, transparent);
+    }
+    .orbit .ring {
       fill: none;
-      stroke: var(--grass-fg);
-      stroke-width: 7;
+      stroke: var(--action);
+      stroke-width: 13;
       stroke-linecap: round;
-      stroke-linejoin: round;
     }
-    .seal .stamp .mark-label {
+    .orbit-medium .ring { stroke-width: 14; }
+    .orbit .star-halo {
+      fill: color-mix(in srgb, var(--grass) 28%, transparent);
+    }
+    .orbit .today-star {
+      fill: var(--bg);
+      stroke: var(--action);
+      stroke-width: 2.2;
+    }
+    .orbit .today-core { fill: var(--action); }
+    body.checked .orbit .ring {
+      stroke: var(--grass);
+      stroke-dasharray: none;
+    }
+    body.checked .orbit .today-star { fill: var(--action-fg); stroke: var(--grass); }
+    body.checked .orbit .today-core { fill: color-mix(in srgb, var(--grass) 22%, transparent); }
+    .orbit .copy .day {
       position: absolute;
-      inset: 0;
-      display: grid;
-      place-items: center;
+      left: 12px;
+      top: 13px;
       z-index: 2;
-      margin: 0;
-      font-size: 16px;
+      font-size: 11px;
       font-weight: 700;
-      letter-spacing: -.04em;
-      color: var(--action);
-      pointer-events: none;
-    }
-    .seal-medium .stamp .mark-label { font-size: 18px; }
-    body.checked .seal .stamp .mark-label { display: none; }
-    .seal .copy {
-      position: static;
-      inset: auto;
-    }
-    .seal .copy .day {
-      position: absolute;
-      top: 12px;
-      right: 12px;
-      z-index: 2;
-      text-align: right;
-      font-size: 12px;
-      font-weight: 700;
-      letter-spacing: .04em;
-      line-height: 1;
+      letter-spacing: .06em;
       color: var(--action);
       font-variant-numeric: tabular-nums;
     }
-    .seal .copy .habit {
+    .orbit .copy .habit {
       position: absolute;
-      right: 12px;
-      bottom: 12px;
+      left: 12px;
+      top: 46px;
       z-index: 2;
       margin: 0;
-      font-size: 13px;
-      max-width: 4.8em;
-      text-align: right;
+      max-width: 5.4em;
+      font-size: 15px;
+      text-align: left;
       color: var(--ink);
     }
-    body.checked .seal .stamp { color: var(--grass); }
-    body.checked .seal .stamp .core { opacity: 1; }
-    .seal-medium .stamp {
-      left: 10px;
-      width: 128px;
-      height: 128px;
-    }
-    .seal-medium .copy .day {
-      top: 16px;
-      right: auto;
-      left: 156px;
-      font-size: 15px;
-      font-weight: 650;
-      letter-spacing: .06em;
-      text-align: left;
-    }
-    .seal-medium .copy .habit {
-      right: auto;
-      left: 156px;
-      bottom: 18px;
-      font-size: 22px;
-      max-width: 7.5em;
-      text-align: left;
-    }
+    .orbit-medium .copy .day { left: 18px; top: 16px; font-size: 14px; }
+    .orbit-medium .copy .habit { left: 18px; top: 52px; max-width: 6em; font-size: 22px; }
 
     /* 02 叠印 — fixed four-sheet material object; thickness never expresses data */
     .stack { background: var(--bg); }
@@ -860,7 +814,7 @@
       <div>
         <p class="eyebrow">Pulse Widget Lab · Ritual Objects</p>
         <h1>不要仪表盘。<br>要能认出来的物件。</h1>
-        <p class="lede">按真实小号 158×158、中号 338×158 画。斜眼看去，剪影必须不同：一枚印、一叠印、一个溢出的日子、一封短笺、一片静场、一条来路。静场不是手札的放大版——它是墙上的海报，不是写给自己的信。</p>
+        <p class="lede">按真实小号 158×158、中号 338×158 画。斜眼看去，剪影必须不同：一个开口环上只有一颗星、一叠印、一个溢出的日子、一封短笺、一片静场、一条来路。星环不是统计轨道，静场也不是手札的放大版。</p>
       </div>
       <div class="controls" aria-label="原型状态">
         <button class="control state-control" type="button" data-state="pending" aria-pressed="true">待签到</button>
@@ -874,20 +828,17 @@
       <div class="phone" aria-hidden="true">
         <div class="status-bar"><span>9:41</span><span>一日一印</span></div>
         <div class="hs-grid">
-          <div class="widget seal">
-            <div class="stamp">
-              <svg class="only-pending" viewBox="0 0 100 100">
-                <circle class="wash" cx="50" cy="50" r="40" stroke-width="18" stroke-linecap="round" pathLength="100" stroke-dasharray="86.7 13.3" transform="rotate(-18 50 50)"/>
-                <circle cx="50" cy="50" r="39" fill="none" stroke="currentColor" stroke-width="5.5" stroke-linecap="round" pathLength="100" stroke-dasharray="86.7 13.3" transform="rotate(-18 50 50)"/>
-                <circle class="core" cx="50" cy="50" r="20"/>
+          <div class="widget orbit">
+            <div class="orbit-art">
+              <svg viewBox="0 0 158 158" aria-hidden="true">
+                <ellipse class="orbit-ambient" cx="88.5" cy="94.8" rx="80.6" ry="72.7"/>
+                <circle class="ring-well" cx="91.6" cy="98" r="40.7"/>
+                <circle class="ring" cx="91.6" cy="98" r="52.1" pathLength="100" stroke-dasharray="86.7 13.3" transform="rotate(-18 91.6 98)"/>
+                <circle class="star-halo only-checked" cx="130.3" cy="63.1" r="18.8"/>
+                <circle class="today-star" cx="130.3" cy="63.1" r="9.9"/>
+                <circle class="today-core only-pending" cx="130.3" cy="63.1" r="2.6"/>
+                <circle class="today-core only-checked" cx="128.9" cy="61.9" r="3.4"/>
               </svg>
-              <svg class="only-checked" viewBox="0 0 100 100">
-                <circle class="wash" cx="50" cy="50" r="40" stroke-width="18"/>
-                <circle cx="50" cy="50" r="39" fill="none" stroke="currentColor" stroke-width="5.5"/>
-                <circle class="core" cx="50" cy="50" r="20"/>
-                <path class="tick" d="M34 52 L46 66 L70 36"/>
-              </svg>
-              <span class="mark-label">留印</span>
             </div>
             <div class="copy">
               <div class="day">08 / 13</div>
@@ -948,8 +899,8 @@
         <h2>主屏上先认形状，再读字。</h2>
         <p>现稿差意思，不是颜色不够绿，而是五张都在说同一句话：「这里有一个大数字，下面有一排指标」。那是健康 App 和打卡工具的语言，不是一日一印。</p>
         <ul>
-          <li>开放日环是印，不是进度环。缺口永远在，绝不画成百分比。</li>
-          <li>完成靠形状闭合 + 勾，不只换色。</li>
+          <li>星环是品牌开口环上唯一的一颗星，不是气态主星、六颗伴星或统计轨道。环心是低透明色场，与环壁留沟槽；完成后这颗星必须亮过环壁。</li>
+          <li>完成靠开口合上、这颗星点亮，并由主题色转为草绿，不只换色。</li>
           <li>现有七日快照就够本页六式；月历比分和连续天数不要做成主角。</li>
           <li>静场的残影必须从右下角印的圆心扩开，字在场上，印在原点。不能把脉冲场挪成角落装饰。</li>
         </ul>
@@ -959,46 +910,40 @@
     <section class="list">
       <article class="concept">
         <div>
-          <span class="idx">01 · SEAL</span>
-          <h3>落印</h3>
-          <p>大圆环仍是这张的物件，但环本身走静场的草叶色场，不再用深绿实线。浅底、淡残影、一层洗色环带加细开口，内核几乎透明，「留印」才用深绿。日期是说明（08 / 13），不做 13/8，也不抢半屏数字——那留给数影。中号日号降到说明级，环继续占左。完成时环闭合、内核实心、勾压在核上。</p>
-          <span class="job">任务：今天能不能留下 · 现有快照</span>
+          <span class="idx">01 · ORBIT</span>
+          <h3>星环</h3>
+          <p>品牌开口环占住主要画幅，环上只有今天这一颗星：待办时落在开口里，空心带芯；完成后开口合上，这颗星被环收住并以亮过环壁的填色点亮。环心是低透明色场，与环壁之间留出沟槽，看起来是箍在色池上的环，不是实心行星。早间 / 日间 / 晚间只让这颗星沿环低幅移动，不增加第二颗星，也不映射六日历史、次数或真实天象。</p>
+          <span class="job">任务：让今天进入自己的星环 · 今日权威状态</span>
         </div>
         <div class="frames">
-          <div class="widget seal">
-            <div class="stamp">
-              <svg class="only-pending" viewBox="0 0 100 100">
-                <circle class="wash" cx="50" cy="50" r="40" stroke-width="18" stroke-linecap="round" pathLength="100" stroke-dasharray="86.7 13.3" transform="rotate(-18 50 50)"/>
-                <circle cx="50" cy="50" r="39" fill="none" stroke="currentColor" stroke-width="5.5" stroke-linecap="round" pathLength="100" stroke-dasharray="86.7 13.3" transform="rotate(-18 50 50)"/>
-                <circle class="core" cx="50" cy="50" r="20"/>
+          <div class="widget orbit">
+            <div class="orbit-art">
+              <svg viewBox="0 0 158 158" aria-hidden="true">
+                <ellipse class="orbit-ambient" cx="88.5" cy="94.8" rx="80.6" ry="72.7"/>
+                <circle class="ring-well" cx="91.6" cy="98" r="40.7"/>
+                <circle class="ring" cx="91.6" cy="98" r="52.1" pathLength="100" stroke-dasharray="86.7 13.3" transform="rotate(-18 91.6 98)"/>
+                <circle class="star-halo only-checked" cx="130.3" cy="63.1" r="18.8"/>
+                <circle class="today-star" cx="130.3" cy="63.1" r="9.9"/>
+                <circle class="today-core only-pending" cx="130.3" cy="63.1" r="2.6"/>
+                <circle class="today-core only-checked" cx="128.9" cy="61.9" r="3.4"/>
               </svg>
-              <svg class="only-checked" viewBox="0 0 100 100">
-                <circle class="wash" cx="50" cy="50" r="40" stroke-width="18"/>
-                <circle cx="50" cy="50" r="39" fill="none" stroke="currentColor" stroke-width="5.5"/>
-                <circle class="core" cx="50" cy="50" r="20"/>
-                <path class="tick" d="M34 52 L46 66 L70 36"/>
-              </svg>
-              <span class="mark-label">留印</span>
             </div>
             <div class="copy">
               <div class="day">08 / 13</div>
               <div class="habit">晨间书写</div>
             </div>
           </div>
-          <div class="widget medium seal seal-medium">
-            <div class="stamp">
-              <svg class="only-pending" viewBox="0 0 100 100">
-                <circle class="wash" cx="50" cy="50" r="40" stroke-width="18" stroke-linecap="round" pathLength="100" stroke-dasharray="86.7 13.3" transform="rotate(-18 50 50)"/>
-                <circle cx="50" cy="50" r="39" fill="none" stroke="currentColor" stroke-width="5.5" stroke-linecap="round" pathLength="100" stroke-dasharray="86.7 13.3" transform="rotate(-18 50 50)"/>
-                <circle class="core" cx="50" cy="50" r="20"/>
+          <div class="widget medium orbit orbit-medium">
+            <div class="orbit-art">
+              <svg viewBox="0 0 338 158" aria-hidden="true">
+                <ellipse class="orbit-ambient" cx="236.6" cy="91.6" rx="131.8" ry="88.5"/>
+                <circle class="ring-well" cx="236.6" cy="88.5" r="45.1"/>
+                <circle class="ring" cx="236.6" cy="88.5" r="57.7" pathLength="100" stroke-dasharray="86.7 13.3" transform="rotate(-18 236.6 88.5)"/>
+                <circle class="star-halo only-checked" cx="279.4" cy="49.9" r="18.8"/>
+                <circle class="today-star" cx="279.4" cy="49.9" r="9.9"/>
+                <circle class="today-core only-pending" cx="279.4" cy="49.9" r="2.6"/>
+                <circle class="today-core only-checked" cx="278" cy="48.7" r="3.4"/>
               </svg>
-              <svg class="only-checked" viewBox="0 0 100 100">
-                <circle class="wash" cx="50" cy="50" r="40" stroke-width="18"/>
-                <circle cx="50" cy="50" r="39" fill="none" stroke="currentColor" stroke-width="5.5"/>
-                <circle class="core" cx="50" cy="50" r="20"/>
-                <path class="tick" d="M34 52 L46 66 L70 36"/>
-              </svg>
-              <span class="mark-label">留印</span>
             </div>
             <div class="copy">
               <div class="day">08 / 13</div>
@@ -1200,7 +1145,7 @@
         <div>
           <span class="idx">05 · FIELD</span>
           <h3>静场</h3>
-          <p>残影圆心仍在右下角外侧，所以看见的是扫过整张卡的大圆弧。只把回响核心、第一圈和环带加深一个语义层级，不整体压暗画布；右下今日印与落印 / 数影同一套草叶色开口日环，「留印」才用深绿；完成时环闭合、内核实心、换成勾。</p>
+          <p>残影圆心仍在右下角外侧，所以看见的是扫过整张卡的大圆弧。只把回响核心、第一圈和环带加深一个语义层级，不整体压暗画布；右下今日印沿用数影的草叶色开口日环，「留印」才用深绿；完成时环闭合、内核实心、换成勾。它不能借用星环「环上唯一一颗星」的语法。</p>
           <span class="job">任务：让承诺安静地占住这块屏 · 现有快照</span>
         </div>
         <div class="frames">
@@ -1304,7 +1249,7 @@
       <h2>这轮明确不走的路</h2>
       <p>4/7 分数、柱状「日强度」、GitHub 月点阵、连续 N 日奖杯、CSS 进度环、左右色块分栏、用七日同心圆去顶「年轮」这个名字。它们能让信息变多，但会把一日一印变成打卡看板。叠印是固定四页纸的材质物件，不承担七日计数；月度密度和连续天数若以后要做，也必须先是独立物件，而不是比分。</p>
     </aside>
-    <p class="footnote">本页是六种 Home Screen 构图的像素真源：落印、叠印、数影、手札、静场、来路；正式编号 00 待落之处见同级 widget-awaiting-place，编号 07 潮痕见同级实验序列中的 01-tide-mark，完整八式清单以本目录 README 为准。`PulseWidgetHomeRenderer` 消费同一份 `PulseWidgetSnapshot`，使用系统字体与品牌语义色。照片、备注、最长纪录不进入 Widget。中号按 338×158 构图，禁止把正方形物件拉宽。不能把静场和手札做成同一骨架的两种字号。</p>
+    <p class="footnote">本页是六种 Home Screen 构图的像素真源：星环、叠印、数影、手札、静场、来路；正式编号 00 待落之处见同级 widget-awaiting-place，编号 07 潮痕见同级实验序列中的 01-tide-mark，完整八式清单以本目录 README 为准。`PulseWidgetHomeRenderer` 消费同一份 `PulseWidgetSnapshot`，使用系统字体与品牌语义色。照片、备注、最长纪录不进入 Widget。中号按 338×158 构图，禁止把正方形物件拉宽。不能把静场和手札做成同一骨架的两种字号。</p>
   </main>
   <script>
     const stateButtons = [...document.querySelectorAll('.state-control')];

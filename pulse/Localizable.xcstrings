@@ -2408,36 +2408,36 @@
         }
       }
     },
-    "settings.widget.style.seal" : {
+    "settings.widget.style.orbit" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Seal"
+            "value" : "Star Ring"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "落印"
+            "value" : "星环"
           }
         }
       }
     },
-    "settings.widget.style.seal.detail" : {
+    "settings.widget.style.orbit.detail" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Places today’s check-in status at the center for quick recognition."
+            "value" : "Today is the only star on the ring. After you check in, the opening closes and the star lights."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "把今天的签到状态放在中心，醒目直接。"
+            "value" : "今天是环上唯一的一颗星。签到后开口合上，这颗星亮起来。"
           }
         }
       }
@@ -2817,13 +2817,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Unlock Seal, Stacked Imprints, Day Silhouette, Letter, Quiet Field, Path, and Tide Mark styles."
+            "value" : "Unlock Star Ring, Stacked Imprints, Day Silhouette, Letter, Quiet Field, Path, and Tide Mark styles."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "解锁落印、叠印、数影、手札、静场、来路和潮痕七种样式。"
+            "value" : "解锁星环、叠印、数影、手札、静场、来路和潮痕七种样式。"
           }
         }
       }
@@ -3462,23 +3462,6 @@
         }
       }
     },
-    "widget.gallery.action.short" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Check In"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "签到"
-          }
-        }
-      }
-    },
     "widget.gallery.enhancement.open" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -3802,19 +3785,19 @@
         }
       }
     },
-    "widget.configuration.style.seal" : {
+    "widget.configuration.style.orbit" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Seal"
+            "value" : "Star Ring"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "落印"
+            "value" : "星环"
           }
         }
       }

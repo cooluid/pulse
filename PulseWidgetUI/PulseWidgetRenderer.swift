@@ -4,7 +4,7 @@ import WidgetKit
 
 enum PulseWidgetStyle: String, CaseIterable, Codable, Identifiable, Sendable {
     case place
-    case seal
+    case orbit
     case stack
     case bleed
     case letter
@@ -39,7 +39,6 @@ struct PulseWidgetHomeRenderer: View {
     let allowsMotion: Bool
     let statusText: String
     let pathSummaryFormat: String
-    let actionText: String
     let emptyPlaceText: String
     let placeStatusText: String
 
@@ -51,8 +50,8 @@ struct PulseWidgetHomeRenderer: View {
                 switch style {
                 case .place:
                     place(size: proxy.size)
-                case .seal:
-                    seal(size: proxy.size)
+                case .orbit:
+                    orbit(size: proxy.size)
                 case .stack:
                     stack(size: proxy.size)
                 case .bleed:
@@ -182,59 +181,41 @@ struct PulseWidgetHomeRenderer: View {
         .animation(motion(.place), value: snapshot.isCheckedToday)
     }
 
-    private func seal(size: CGSize) -> some View {
-        let stampSide = pt(usesMediumMetrics ? 128 : 110, in: size)
-        let stampX = pt(usesMediumMetrics ? 10 : 4, in: size) + stampSide / 2
-        let copyX = pt(usesMediumMetrics ? 156 : 12, in: size)
-
+    private func orbit(size: CGSize) -> some View {
         return ZStack(alignment: .topLeading) {
             baseBackground
-            sealAmbientField(size: size)
+            orbitAmbientField(size: size)
 
-            sealAfterimage(side: stampSide, size: size)
-                .position(x: stampX, y: size.height / 2)
-
-            PulseInkImpressionMark(
+            PulseStarRingArtwork(
                 isChecked: snapshot.isCheckedToday,
                 usesFullColorPalette: usesFullColorPalette,
-                actionText: actionText
+                ambientPeriod: ambientPeriod
             )
-                .frame(width: stampSide, height: stampSide)
-                .rotationEffect(.degrees(ambientRotation * 1.4))
-                .animation(motion(.ink), value: snapshot.isCheckedToday)
-                .position(x: stampX, y: size.height / 2)
+            .frame(width: size.width, height: size.height)
+            .offset(
+                x: ambientHorizontalShift(in: size) * 0.10,
+                y: ambientVerticalShift(in: size) * 0.10
+            )
 
             Text(verbatim: monthAndDay)
                 .font(.system(
-                    size: pt(usesMediumMetrics ? 15 : 12, in: size),
-                    weight: .semibold
+                    size: pt(usesMediumMetrics ? 14 : 11, in: size),
+                    weight: .bold
                 ))
-                .tracking(pt(usesMediumMetrics ? 0.9 : 0.5, in: size))
+                .tracking(pt(usesMediumMetrics ? 0.8 : 0.6, in: size))
                 .foregroundStyle(actionColor)
                 .monospacedDigit()
                 .lineLimit(1)
-                .padding(.leading, usesMediumMetrics ? copyX : 0)
-                .padding(.trailing, usesMediumMetrics ? 0 : pt(12, in: size))
-                .padding(.top, pt(usesMediumMetrics ? 16 : 12, in: size))
-                .frame(
-                    maxWidth: .infinity,
-                    maxHeight: .infinity,
-                    alignment: usesMediumMetrics ? .topLeading : .topTrailing
-                )
+                .padding(.leading, pt(usesMediumMetrics ? 18 : 12, in: size))
+                .padding(.top, pt(usesMediumMetrics ? 16 : 13, in: size))
 
             habitName(
-                size: pt(usesMediumMetrics ? 22 : 13, in: size),
-                width: pt(usesMediumMetrics ? 150 : 70, in: size),
-                alignment: usesMediumMetrics ? .leading : .trailing
+                size: pt(usesMediumMetrics ? 22 : 16, in: size),
+                width: pt(usesMediumMetrics ? 148 : 88, in: size),
+                alignment: .leading
             )
-            .padding(.leading, usesMediumMetrics ? copyX : 0)
-            .padding(.trailing, usesMediumMetrics ? 0 : pt(12, in: size))
-            .padding(.bottom, pt(usesMediumMetrics ? 18 : 12, in: size))
-            .frame(
-                maxWidth: .infinity,
-                maxHeight: .infinity,
-                alignment: usesMediumMetrics ? .bottomLeading : .bottomTrailing
-            )
+            .padding(.leading, pt(usesMediumMetrics ? 18 : 12, in: size))
+            .padding(.top, pt(usesMediumMetrics ? 52 : 46, in: size))
         }
     }
 
@@ -604,24 +585,21 @@ struct PulseWidgetHomeRenderer: View {
         }
     }
 
-    private func sealAfterimage(side: CGFloat, size: CGSize) -> some View {
-        ZStack {
-            PulseOrganicInkShape()
-                .stroke(fieldColor.opacity(0.22), lineWidth: pt(1, in: size))
-                .frame(width: side * 0.78, height: side * 0.66)
-                .rotationEffect(.degrees(-7))
-                .offset(x: -side * 0.035, y: side * 0.02)
-            PulseOrganicInkShape()
-                .stroke(fieldColor.opacity(0.07), lineWidth: pt(14, in: size))
-                .frame(width: side * 0.86, height: side * 0.70)
-                .rotationEffect(.degrees(5))
-                .offset(x: side * 0.05, y: -side * 0.015)
-            PulseOrganicInkShape()
-                .stroke(fieldColor.opacity(0.04), lineWidth: pt(14, in: size))
-                .frame(width: side * 1.02, height: side * 0.82)
-                .rotationEffect(.degrees(-13))
-                .offset(x: side * 0.09, y: side * 0.035)
-        }
+    private func orbitAmbientField(size: CGSize) -> some View {
+        let color = snapshot.isCheckedToday ? grassColor : fieldColor
+
+        return Ellipse()
+            .fill(color.opacity(usesFullColorPalette ? (snapshot.isCheckedToday ? 0.16 : 0.14) : 0.08))
+            .frame(
+                width: size.width * (usesMediumMetrics ? 0.78 : 1.02),
+                height: size.height * (usesMediumMetrics ? 1.12 : 0.92)
+            )
+            .animation(motion(.starRing), value: snapshot.isCheckedToday)
+            .position(
+                x: size.width * (usesMediumMetrics ? 0.70 : 0.56)
+                    + ambientHorizontalShift(in: size) * 0.35,
+                y: size.height * (usesMediumMetrics ? 0.58 : 0.60)
+            )
     }
 
     private func placeAmbientField(size: CGSize) -> some View {
@@ -640,42 +618,6 @@ struct PulseWidgetHomeRenderer: View {
                 x: size.width * (usesMediumMetrics ? 0.20 : 0.46) + ambientHorizontalShift(in: size),
                 y: size.height * (usesMediumMetrics ? 0.54 : 0.50)
             )
-    }
-
-    private func sealAmbientField(size: CGSize) -> some View {
-        let color = snapshot.isCheckedToday ? grassColor : fieldColor
-
-        return ZStack {
-            PulseOrganicInkShape()
-                .fill(color.opacity(usesFullColorPalette ? 0.075 : 0.045))
-                .frame(
-                    width: size.height * (usesMediumMetrics ? 1.44 : 1.18),
-                    height: size.height * (usesMediumMetrics ? 1.08 : 0.88)
-                )
-                .rotationEffect(.degrees(-9))
-                .position(
-                    x: size.width * (usesMediumMetrics ? 0.22 : 0.28),
-                    y: size.height * 0.50
-                )
-
-            PulseOrganicInkShape()
-                .stroke(
-                    color.opacity(usesFullColorPalette ? 0.10 : 0.06),
-                    lineWidth: pt(18, in: size)
-                )
-                .frame(
-                    width: size.height * (usesMediumMetrics ? 1.60 : 1.34),
-                    height: size.height * (usesMediumMetrics ? 1.20 : 0.98)
-                )
-                .rotationEffect(.degrees(7))
-                .position(
-                    x: size.width * (usesMediumMetrics ? 0.22 : 0.28),
-                    y: size.height * 0.50
-                )
-        }
-        .scaleEffect(snapshot.isCheckedToday ? 1.04 : 0.98)
-        .rotationEffect(.degrees(ambientRotation * 0.6))
-        .animation(motion(.ink), value: snapshot.isCheckedToday)
     }
 
     private func stackDeskMat(size: CGSize) -> some View {
@@ -1065,7 +1007,7 @@ struct PulseWidgetHomeRenderer: View {
     private var materialForCurrentStyle: PulseWidgetMotionPresentation.Material {
         switch style {
         case .place: .place
-        case .seal: .ink
+        case .orbit: .starRing
         case .stack: .paper
         case .bleed: .number
         case .letter: .letter
@@ -1159,75 +1101,219 @@ private struct PulseAwaitingPlaceWell: View {
     }
 }
 
-private struct PulseInkImpressionMark: View {
+private struct PulseStarRingArtwork: View {
     let isChecked: Bool
     let usesFullColorPalette: Bool
-    let actionText: String
+    let ambientPeriod: PulseWidgetAmbientPeriod
 
     var body: some View {
         GeometryReader { proxy in
-            let side = min(proxy.size.width, proxy.size.height)
+            let geometry = PulseStarRingGeometry(
+                size: proxy.size,
+                period: ambientPeriod,
+                isChecked: isChecked
+            )
+
             ZStack {
-                PulseOrganicInkShape()
-                    .fill(markColor.opacity(isChecked ? 0.18 : 0.06))
-                    .frame(width: side * 0.84, height: side * 0.68)
-                    .rotationEffect(.degrees(isChecked ? -7 : 10))
-                    .offset(x: isChecked ? side * 0.035 : -side * 0.025)
-                    .scaleEffect(isChecked ? 1.03 : 0.84)
+                Circle()
+                    .fill(ringColor.opacity(isChecked ? 0.32 : 0.20))
+                    .frame(
+                        width: geometry.innerWellDiameter,
+                        height: geometry.innerWellDiameter
+                    )
+                    .position(geometry.ringCenter)
 
-                PulseOrganicInkShape()
-                    .fill(isChecked ? markColor : .clear)
-                    .overlay {
-                        PulseOrganicInkShape()
-                            .stroke(
-                                markColor.opacity(isChecked ? 0.72 : 0.68),
-                                style: StrokeStyle(
-                                    lineWidth: side * 0.035,
-                                    lineCap: .round,
-                                    dash: isChecked ? [] : [side * 0.06, side * 0.045]
-                                )
-                            )
-                    }
-                    .frame(width: side * 0.72, height: side * 0.56)
-                    .rotationEffect(.degrees(isChecked ? -6 : 8))
+                Circle()
+                    .trim(from: 0, to: isChecked ? 1 : PulseWidgetDesign.openRingTrim)
+                    .stroke(
+                        ringColor,
+                        style: StrokeStyle(
+                            lineWidth: geometry.ringLineWidth,
+                            lineCap: .round
+                        )
+                    )
+                    .rotationEffect(.degrees(PulseWidgetDesign.openRingRotationDegrees))
+                    .frame(
+                        width: geometry.ringPathDiameter,
+                        height: geometry.ringPathDiameter
+                    )
+                    .position(geometry.ringCenter)
 
-                if isChecked {
-                    PulseOrganicInkShape()
-                        .fill(markColor.opacity(0.28))
-                        .frame(width: side * 0.17, height: side * 0.08)
-                        .rotationEffect(.degrees(-18))
-                        .offset(x: side * 0.30, y: side * 0.15)
-                }
-
-                if isChecked {
-                    Image(systemName: "checkmark")
-                        .font(.system(size: side * 0.21, weight: .bold))
-                        .foregroundStyle(completedForeground)
-                } else {
-                    Text(verbatim: actionText)
-                        .font(.system(size: side * 0.12, weight: .bold))
-                        .foregroundStyle(actionColor)
-                        .minimumScaleFactor(0.7)
-                        .lineLimit(1)
-                }
+                todayStar(diameter: geometry.starDiameter)
+                    .position(geometry.starPosition)
             }
-            .frame(width: side, height: side)
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .frame(width: proxy.size.width, height: proxy.size.height)
         }
         .accessibilityHidden(true)
     }
 
-    private var markColor: Color {
-        guard usesFullColorPalette else { return .primary }
-        return isChecked ? PulseWidgetDesign.grass : PulseWidgetDesign.field
+    private func todayStar(diameter: CGFloat) -> some View {
+        ZStack {
+            Circle()
+                .fill(ringColor.opacity(isChecked ? 0.28 : 0))
+                .frame(width: diameter * 1.90, height: diameter * 1.90)
+
+            Circle()
+                .fill(isChecked ? litStarColor : backgroundColor)
+                .overlay {
+                    Circle()
+                        .stroke(
+                            ringColor,
+                            lineWidth: max(1.6, diameter * 0.11)
+                        )
+                }
+                .overlay {
+                    Circle()
+                        .fill(isChecked ? ringColor.opacity(0.22) : ringColor.opacity(0.90))
+                        .frame(
+                            width: diameter * (isChecked ? 0.34 : 0.26),
+                            height: diameter * (isChecked ? 0.34 : 0.26)
+                        )
+                        .offset(
+                            x: isChecked ? -diameter * 0.14 : 0,
+                            y: isChecked ? -diameter * 0.12 : 0
+                        )
+                }
+                .clipShape(Circle())
+                .frame(width: diameter, height: diameter)
+        }
+        .frame(width: diameter * 1.90, height: diameter * 1.90)
     }
 
-    private var actionColor: Color {
-        usesFullColorPalette ? PulseWidgetDesign.action : .primary
+    private var backgroundColor: Color {
+        usesFullColorPalette ? PulseWidgetDesign.background : .clear
     }
 
-    private var completedForeground: Color {
-        usesFullColorPalette ? PulseWidgetDesign.grassForeground : .black
+    private var ringColor: Color {
+        usesFullColorPalette
+            ? (isChecked ? PulseWidgetDesign.grass : PulseWidgetDesign.action)
+            : .primary
+    }
+
+    private var litStarColor: Color {
+        usesFullColorPalette ? PulseWidgetDesign.actionForeground : .white
+    }
+}
+
+struct PulseStarRingGeometry {
+    let safeFrame: CGRect
+    let ringCenter: CGPoint
+    let ringDiameter: CGFloat
+    let ringPathDiameter: CGFloat
+    let ringLineWidth: CGFloat
+    let midlineRadius: CGFloat
+    let innerWellDiameter: CGFloat
+    let starDiameter: CGFloat
+    let starPosition: CGPoint
+    let starAngleDegrees: CGFloat
+
+    static let periodAngleSpan: CGFloat = 14
+    static let completionAngleSpan: CGFloat = 4
+    static let ringLineRatio: CGFloat = 0.11
+    static var midlineRatio: CGFloat { (1 - ringLineRatio) / 2 }
+    static var worldGapMidpointDegrees: CGFloat {
+        336 + PulseWidgetDesign.openRingRotationDegrees
+    }
+
+    init(
+        size: CGSize,
+        period: PulseWidgetAmbientPeriod,
+        isChecked: Bool
+    ) {
+        let usesMediumMetrics = size.width > size.height * 1.5
+        let safeInset = max(8, size.height * 0.05)
+        let safeFrame = CGRect(origin: .zero, size: size).insetBy(dx: safeInset, dy: safeInset)
+        let starDiameter = max(16, size.height * 0.125)
+        let starRadius = starDiameter / 2
+        let center = CGPoint(
+            x: size.width * (usesMediumMetrics ? 0.70 : 0.58),
+            y: size.height * (usesMediumMetrics ? 0.56 : 0.62)
+        )
+
+        let periodOffset: CGFloat
+        switch period {
+        case .morning: periodOffset = -Self.periodAngleSpan
+        case .daylight: periodOffset = 0
+        case .evening: periodOffset = Self.periodAngleSpan
+        }
+        let starAngle = Self.worldGapMidpointDegrees
+            + periodOffset
+            + (isChecked ? Self.completionAngleSpan : 0)
+
+        let desiredOuter = min(
+            size.height * (usesMediumMetrics ? 0.82 : 0.76),
+            size.width * (usesMediumMetrics ? 0.40 : 0.76)
+        )
+        let extremeAngles: [CGFloat] = [
+            Self.worldGapMidpointDegrees - Self.periodAngleSpan,
+            Self.worldGapMidpointDegrees,
+            Self.worldGapMidpointDegrees + Self.periodAngleSpan + Self.completionAngleSpan,
+        ]
+        let allowedMidline = extremeAngles
+            .map { angle in
+                Self.maximumMidline(
+                    center: center,
+                    angleDegrees: angle,
+                    starRadius: starRadius,
+                    safeFrame: safeFrame
+                )
+            }
+            .min() ?? 1
+        let outerDiameter = min(desiredOuter, allowedMidline / Self.midlineRatio)
+        let lineWidth = max(8, outerDiameter * Self.ringLineRatio)
+        let pathDiameter = max(1, outerDiameter - lineWidth)
+        let midlineRadius = pathDiameter / 2
+        let gutter = max(4.8, outerDiameter * 0.042)
+        let innerWellDiameter = max(1, outerDiameter - (lineWidth * 2) - (gutter * 2))
+        let radians = starAngle * .pi / 180
+
+        self.safeFrame = safeFrame
+        self.ringCenter = center
+        self.ringDiameter = outerDiameter
+        self.ringPathDiameter = pathDiameter
+        self.ringLineWidth = lineWidth
+        self.midlineRadius = midlineRadius
+        self.innerWellDiameter = innerWellDiameter
+        self.starDiameter = starDiameter
+        self.starPosition = CGPoint(
+            x: center.x + midlineRadius * cos(radians),
+            y: center.y + midlineRadius * sin(radians)
+        )
+        self.starAngleDegrees = starAngle
+    }
+
+    var starFrame: CGRect {
+        CGRect(
+            x: starPosition.x - starDiameter / 2,
+            y: starPosition.y - starDiameter / 2,
+            width: starDiameter,
+            height: starDiameter
+        )
+    }
+
+    private static func maximumMidline(
+        center: CGPoint,
+        angleDegrees: CGFloat,
+        starRadius: CGFloat,
+        safeFrame: CGRect
+    ) -> CGFloat {
+        let radians = angleDegrees * .pi / 180
+        let direction = CGVector(dx: cos(radians), dy: sin(radians))
+        var limit = CGFloat.greatestFiniteMagnitude
+
+        if direction.dx > 0.001 {
+            limit = min(limit, (safeFrame.maxX - starRadius - center.x) / direction.dx)
+        } else if direction.dx < -0.001 {
+            limit = min(limit, (safeFrame.minX + starRadius - center.x) / direction.dx)
+        }
+
+        if direction.dy > 0.001 {
+            limit = min(limit, (safeFrame.maxY - starRadius - center.y) / direction.dy)
+        } else if direction.dy < -0.001 {
+            limit = min(limit, (safeFrame.minY + starRadius - center.y) / direction.dy)
+        }
+
+        return max(1, limit - 1)
     }
 }
 

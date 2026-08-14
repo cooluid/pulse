@@ -6,7 +6,7 @@ extension PulseWidgetStyle: AppEnum {
 
     static let caseDisplayRepresentations: [PulseWidgetStyle: DisplayRepresentation] = [
         .place: "widget.configuration.style.place",
-        .seal: "widget.configuration.style.seal",
+        .orbit: "widget.configuration.style.orbit",
         .stack: "widget.configuration.style.stack",
         .bleed: "widget.configuration.style.bleed",
         .letter: "widget.configuration.style.letter",

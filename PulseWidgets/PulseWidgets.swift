@@ -454,10 +454,6 @@ private struct PulseLocalizedWidgetView: View {
                 localized: "widget.path.summary.format",
                 locale: locale
             ),
-            actionText: String(
-                localized: "widget.action.check_in.short",
-                locale: locale
-            ),
             emptyPlaceText: String(
                 localized: "widget.place.empty",
                 locale: locale

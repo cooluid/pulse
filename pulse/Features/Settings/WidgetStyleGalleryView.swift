@@ -423,10 +423,6 @@ struct PulseWidgetStylePreview: View {
                 "widget.path.summary.format",
                 locale: locale
             ),
-            actionText: PulseLocalization.string(
-                "widget.gallery.action.short",
-                locale: locale
-            ),
             emptyPlaceText: PulseLocalization.string(
                 "widget.place.empty",
                 locale: locale

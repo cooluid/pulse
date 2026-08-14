@@ -55,8 +55,8 @@ extension PulseWidgetStyle {
         switch self {
         case .place:
             PulseLocalization.string("settings.widget.style.place", locale: locale)
-        case .seal:
-            PulseLocalization.string("settings.widget.style.seal", locale: locale)
+        case .orbit:
+            PulseLocalization.string("settings.widget.style.orbit", locale: locale)
         case .stack:
             PulseLocalization.string("settings.widget.style.stack", locale: locale)
         case .bleed:
@@ -79,9 +79,9 @@ extension PulseWidgetStyle {
                 "settings.widget.style.place.detail",
                 locale: locale
             )
-        case .seal:
+        case .orbit:
             PulseLocalization.string(
-                "settings.widget.style.seal.detail",
+                "settings.widget.style.orbit.detail",
                 locale: locale
             )
         case .stack:

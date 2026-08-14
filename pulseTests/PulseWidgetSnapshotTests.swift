@@ -93,7 +93,6 @@ final class PulseWidgetSnapshotTests: XCTestCase {
                 allowsMotion: false,
                 statusText: "今天还未签到",
                 pathSummaryFormat: "六日 · %d 印",
-                actionText: "留印",
                 emptyPlaceText: "空着",
                 placeStatusText: "今天还未签到"
             )
@@ -110,6 +109,208 @@ final class PulseWidgetSnapshotTests: XCTestCase {
             attachment.name = "Letter mixed history \(configuration.name)"
             attachment.lifetime = .keepAlways
             add(attachment)
+        }
+    }
+
+    func testOrbitCleanBreakRendersPendingAndCompletedAcrossSupportedHomeSizes() throws {
+        let projectRoot = URL(fileURLWithPath: #filePath)
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+        let rendererSource = try String(
+            contentsOf: projectRoot
+                .appendingPathComponent("PulseWidgetUI", isDirectory: true)
+                .appendingPathComponent("PulseWidgetRenderer.swift", isDirectory: false),
+            encoding: .utf8
+        )
+        let prototypeSource = try String(
+            contentsOf: projectRoot
+                .appendingPathComponent("docs", isDirectory: true)
+                .appendingPathComponent("prototypes", isDirectory: true)
+                .appendingPathComponent("widget-ritual-objects", isDirectory: true)
+                .appendingPathComponent("pulse-widget-ritual-objects.html", isDirectory: false),
+            encoding: .utf8
+        )
+
+        XCTAssertTrue(rendererSource.contains("case orbit"))
+        XCTAssertTrue(rendererSource.contains("private func orbit"))
+        XCTAssertTrue(rendererSource.contains("private struct PulseStarRingArtwork"))
+        XCTAssertTrue(rendererSource.contains("struct PulseStarRingGeometry"))
+        XCTAssertTrue(rendererSource.contains("innerWellDiameter"))
+        XCTAssertTrue(rendererSource.contains("orbitAmbientField"))
+        XCTAssertTrue(rendererSource.contains("litStarColor"))
+        XCTAssertFalse(rendererSource.contains("case seal"))
+        XCTAssertFalse(rendererSource.contains("private func seal(size:"))
+        XCTAssertFalse(rendererSource.contains("PulseInkImpressionMark"))
+        XCTAssertFalse(rendererSource.contains("sealAmbientField"))
+        XCTAssertFalse(rendererSource.contains("PulseOrbitalPlanetArtwork"))
+        XCTAssertFalse(rendererSource.contains("PulseCelestialLightShape"))
+        XCTAssertFalse(rendererSource.contains("PulsePlanetBandsShape"))
+        XCTAssertFalse(rendererSource.contains("PulsePlanetStormShape"))
+        XCTAssertFalse(rendererSource.contains("class=\"moon\""))
+        XCTAssertFalse(rendererSource.contains("class=\"planet\""))
+        XCTAssertTrue(prototypeSource.contains("01 · ORBIT"))
+        XCTAssertTrue(prototypeSource.contains("class=\"widget orbit\""))
+        XCTAssertTrue(prototypeSource.contains("class=\"today-star\""))
+        XCTAssertEqual(
+            prototypeSource.components(separatedBy: "class=\"ring-well\"").count - 1,
+            3,
+            "Phone, small, and medium orbit prototypes must each render an inner well."
+        )
+        XCTAssertEqual(
+            prototypeSource.components(separatedBy: "class=\"orbit-ambient\"").count - 1,
+            3,
+            "Phone, small, and medium orbit prototypes must each render an ambient field."
+        )
+        XCTAssertFalse(prototypeSource.contains("01 · SEAL"))
+        XCTAssertFalse(prototypeSource.contains("class=\"moon\""))
+        XCTAssertFalse(prototypeSource.contains("class=\"planet\""))
+        XCTAssertFalse(prototypeSource.contains("class=\"storm\""))
+        XCTAssertEqual(
+            prototypeSource.components(separatedBy: "class=\"today-star\"").count - 1,
+            3,
+            "Phone, small, and medium orbit prototypes must each render exactly one today star."
+        )
+
+        let timeZone = try XCTUnwrap(TimeZone(identifier: "Asia/Shanghai"))
+        let today = LogicalDay(year: 2026, month: 8, day: 15)
+        let generatedAt = makeDate(2026, 8, 15, 12, timeZone: timeZone)
+        let pending = PulseWidgetSnapshot(
+            habitID: try XCTUnwrap(
+                UUID(uuidString: "7832FF6C-AEAE-4C04-BD22-5DE680439423")
+            ),
+            habitName: "晨间书写",
+            today: today,
+            checkedAt: nil,
+            recentDays: [
+                PulseWidgetDaySnapshot(day: LogicalDay(year: 2026, month: 8, day: 9), state: .checked),
+                PulseWidgetDaySnapshot(day: LogicalDay(year: 2026, month: 8, day: 10), state: .missed),
+                PulseWidgetDaySnapshot(day: LogicalDay(year: 2026, month: 8, day: 11), state: .checked),
+                PulseWidgetDaySnapshot(day: LogicalDay(year: 2026, month: 8, day: 12), state: .checked),
+                PulseWidgetDaySnapshot(day: LogicalDay(year: 2026, month: 8, day: 13), state: .missed),
+                PulseWidgetDaySnapshot(day: LogicalDay(year: 2026, month: 8, day: 14), state: .checked),
+                PulseWidgetDaySnapshot(day: today, state: .todayPending),
+            ],
+            generatedAt: generatedAt,
+            nextDayBoundary: makeDate(2026, 8, 16, 0, timeZone: timeZone),
+            projectTimeZoneIdentifier: timeZone.identifier
+        )
+        let completed = PulseWidgetSnapshot(
+            habitID: pending.habitID,
+            habitName: pending.habitName,
+            today: pending.today,
+            checkedAt: generatedAt,
+            recentDays: Array(pending.recentDays.dropLast()) + [
+                PulseWidgetDaySnapshot(day: today, state: .checked)
+            ],
+            generatedAt: pending.generatedAt,
+            nextDayBoundary: pending.nextDayBoundary,
+            projectTimeZoneIdentifier: pending.projectTimeZoneIdentifier
+        )
+        let states: [(name: String, snapshot: PulseWidgetSnapshot)] = [
+            ("pending", pending),
+            ("completed", completed),
+        ]
+        let configurations: [(name: String, size: CGSize, usesMediumMetrics: Bool)] = [
+            ("small-158", CGSize(width: 158, height: 158), false),
+            ("small-170", CGSize(width: 170, height: 170), false),
+            ("medium-338", CGSize(width: 338, height: 158), true),
+            ("medium-364", CGSize(width: 364, height: 170), true),
+        ]
+
+        for state in states {
+            for configuration in configurations {
+                let content = PulseWidgetHomeRenderer(
+                    snapshot: state.snapshot,
+                    style: .orbit,
+                    usesMediumMetrics: configuration.usesMediumMetrics,
+                    usesFullColorPalette: true,
+                    allowsMotion: false,
+                    statusText: state.snapshot.isCheckedToday ? "今天已签到" : "今天还未签到",
+                    pathSummaryFormat: "六日 · %d 印",
+                    emptyPlaceText: "空着",
+                    placeStatusText: state.snapshot.isCheckedToday ? "今天已签到" : "今天还未签到"
+                )
+                .environment(\.locale, Locale(identifier: "zh-Hans"))
+                .frame(width: configuration.size.width, height: configuration.size.height)
+
+                let renderer = ImageRenderer(content: content)
+                renderer.scale = 3
+                let image = try XCTUnwrap(renderer.uiImage)
+                XCTAssertEqual(image.size.width, configuration.size.width, accuracy: 0.5)
+                XCTAssertEqual(image.size.height, configuration.size.height, accuracy: 0.5)
+
+                let attachment = XCTAttachment(image: image)
+                attachment.name = "Orbit \(state.name) \(configuration.name)"
+                attachment.lifetime = .keepAlways
+                add(attachment)
+            }
+        }
+    }
+
+    func testStarRingGeometryKeepsASingleStarOnTheBrandRing() {
+        let sizes = [
+            CGSize(width: 145, height: 145),
+            CGSize(width: 155, height: 155),
+            CGSize(width: 158, height: 158),
+            CGSize(width: 169, height: 169),
+            CGSize(width: 170, height: 170),
+            CGSize(width: 180, height: 180),
+            CGSize(width: 329, height: 155),
+            CGSize(width: 338, height: 158),
+            CGSize(width: 360, height: 169),
+            CGSize(width: 364, height: 170),
+        ]
+
+        for size in sizes {
+            for period in PulseWidgetAmbientPeriod.allCases {
+                for isChecked in [false, true] {
+                    let geometry = PulseStarRingGeometry(
+                        size: size,
+                        period: period,
+                        isChecked: isChecked
+                    )
+
+                    XCTAssertGreaterThanOrEqual(
+                        geometry.ringDiameter / min(size.width, size.height),
+                        0.62,
+                        "Ring is too small to be the main object at \(size)."
+                    )
+                    XCTAssertEqual(
+                        geometry.ringPathDiameter,
+                        geometry.ringDiameter - geometry.ringLineWidth,
+                        accuracy: 0.001
+                    )
+                    XCTAssertGreaterThanOrEqual(
+                        geometry.starDiameter / geometry.ringLineWidth,
+                        1.25,
+                        "Today's star must read as a bead, not a thickened stroke."
+                    )
+                    XCTAssertLessThan(
+                        geometry.innerWellDiameter,
+                        geometry.ringPathDiameter - geometry.ringLineWidth,
+                        "Inner well must leave a gutter inside the ring wall at \(size)."
+                    )
+                    XCTAssertGreaterThanOrEqual(
+                        geometry.innerWellDiameter / geometry.ringDiameter,
+                        0.48,
+                        "Inner well is too small to fill the hollow at \(size)."
+                    )
+                    XCTAssertTrue(
+                        geometry.safeFrame.contains(geometry.starFrame),
+                        "Today's star escaped the safe frame at \(size), \(period), checked=\(isChecked)."
+                    )
+
+                    let dx = geometry.starPosition.x - geometry.ringCenter.x
+                    let dy = geometry.starPosition.y - geometry.ringCenter.y
+                    let distance = (dx * dx + dy * dy).squareRoot()
+                    XCTAssertEqual(
+                        distance,
+                        geometry.midlineRadius,
+                        accuracy: 0.001,
+                        "Today's star is not on the ring at \(size), \(period), checked=\(isChecked)."
+                    )
+                }
+            }
         }
     }
 
@@ -406,6 +607,12 @@ final class PulseWidgetSnapshotTests: XCTestCase {
 
     func testWidgetMotionSpecificationsRespectSystemLimitAndMaterialIdentity() {
         let materials = PulseWidgetMotionPresentation.Material.allCases
+
+        XCTAssertEqual(
+            PulseWidgetMotionPresentation.completionDuration(for: .starRing),
+            1.70,
+            accuracy: 0.001
+        )
 
         for material in materials {
             let completionDuration = PulseWidgetMotionPresentation.completionDuration(for: material)
