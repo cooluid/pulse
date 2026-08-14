@@ -2397,13 +2397,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "A simple open space shows whether you have checked in today."
+            "value" : "A soft field holds today’s open place and check-in state."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "用简洁的留白显示今天是否已签到。"
+            "value" : "用柔和场域托住今天的留位与签到状态。"
           }
         }
       }
@@ -2465,13 +2465,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Shows today together with your three most recent check-ins."
+            "value" : "Sets today’s imprint on a tactile stack of paper."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "同时显示今天和最近三次签到。"
+            "value" : "把今天的印压在一叠有厚度的纸面上。"
           }
         }
       }
@@ -2533,13 +2533,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Shows the date, your one thing, and the last seven days in a note layout."
+            "value" : "Writes the date, your one thing, and seven marks on a single piece of stationery."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "以便签式布局显示日期、我的一件事和最近七天。"
+            "value" : "在一张有笺纹的手札上写下日期、我的一件事与七枚日印。"
           }
         }
       }
@@ -2567,13 +2567,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Keeps the focus on your one thing and today’s check-in status."
+            "value" : "Lets your one thing rest inside a quiet echo, with only today in view."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "突出我的一件事和今天的签到状态，减少其他信息。"
+            "value" : "让我的一件事停在安静回响里，只留下今天。"
           }
         }
       }
@@ -2601,13 +2601,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Shows the previous six days and today in chronological order."
+            "value" : "Brings six footprints toward today and states how many were kept."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "按时间顺序显示过去六天和今天的签到状态。"
+            "value" : "让过去六天的足印走向今天，并写明其中留下了几印。"
           }
         }
       }
@@ -3808,13 +3808,30 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Checked in today"
+            "value" : "Imprinted today"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "今天已签到"
+            "value" : "今天已落印"
+          }
+        }
+      }
+    },
+    "widget.path.summary.format" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "6 days · %d"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "六日 · %d 印"
           }
         }
       }
@@ -3825,13 +3842,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Not checked in"
+            "value" : "Open"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "未签到"
+            "value" : "空着"
           }
         }
       }
@@ -3842,13 +3859,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Not checked in yet"
+            "value" : "Today is still open"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "今天还未签到"
+            "value" : "今天还空着"
           }
         }
       }

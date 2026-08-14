@@ -229,13 +229,38 @@
       text-align: left;
     }
 
-    /* 02 叠印 — the stack occupies the card; day number is caption, not a second hero */
-    .stack { background: var(--surface); }
+    /* 02 叠印 — fixed four-sheet material object; thickness never expresses data */
+    .stack { background: var(--bg); }
+    .stack .desk-mat {
+      position: absolute;
+      inset: 5px 6px;
+      z-index: 0;
+      border-radius: 24px;
+      background: color-mix(in srgb, var(--field) 9%, transparent);
+      transform: rotate(1.8deg);
+    }
+    .stack .paper-stack {
+      position: absolute;
+      inset: 12px;
+      z-index: 1;
+    }
+    .stack .paper-stack span {
+      position: absolute;
+      inset: 0;
+      border: 1px solid color-mix(in srgb, var(--field) 17%, transparent);
+      border-radius: 17px;
+      background: var(--surface);
+      box-shadow: 0 3px 8px color-mix(in srgb, var(--shadow) 8%, transparent);
+    }
+    .stack .paper-stack span:nth-child(1) { transform: translate(-9px, 9px) rotate(-2.7deg); opacity: .84; }
+    .stack .paper-stack span:nth-child(2) { transform: translate(-6px, 6px) rotate(-1.8deg); opacity: .90; }
+    .stack .paper-stack span:nth-child(3) { transform: translate(-3px, 3px) rotate(-.9deg); opacity: .95; }
+    .stack .paper-stack span:nth-child(4) { transform: none; }
     .stack .copy {
       position: absolute;
-      left: 12px;
-      top: 11px;
-      z-index: 2;
+      left: 20px;
+      top: 20px;
+      z-index: 3;
       max-width: 5.4em;
     }
     .stack .meta {
@@ -250,48 +275,13 @@
       max-width: 4.6em;
       font-weight: 750;
     }
-    .stack .day-num {
-      position: absolute;
-      right: 12px;
-      top: 6px;
-      z-index: 2;
-      font-size: 40px;
-      font-weight: 200;
-      letter-spacing: -.06em;
-      line-height: .82;
-      color: var(--action);
-      font-variant-numeric: tabular-nums;
-    }
-    .stack .pile {
-      position: absolute;
-      width: 196px;
-      height: 196px;
-      right: -42px;
-      bottom: -36px;
-      z-index: 0;
-      color: var(--field);
-      overflow: visible;
-      pointer-events: none;
-    }
-    .stack .ghost {
-      transform-box: fill-box;
-      transform-origin: center;
-    }
-    .stack .ghost circle {
-      fill: currentColor;
-      stroke: var(--surface);
-      stroke-width: 1.4;
-    }
-    .stack .g1 { transform: translate(-34px, -8px) rotate(-8deg); opacity: .11; }
-    .stack .g2 { transform: translate(-20px, 2px) rotate(-3deg); opacity: .17; }
-    .stack .g3 { transform: translate(-8px, 8px) rotate(4deg); opacity: .24; }
     .stack .today-hit {
       position: absolute;
-      right: -8px;
-      bottom: 4px;
-      width: 100px;
-      height: 100px;
-      z-index: 1;
+      right: 20px;
+      bottom: 20px;
+      width: 78px;
+      height: 78px;
+      z-index: 3;
       color: var(--field);
     }
     .stack .today-hit svg {
@@ -314,18 +304,18 @@
       color: var(--action);
       pointer-events: none;
     }
-    .stack-medium .today-hit .mark-label { font-size: 17px; }
+    .stack-medium .today-hit .mark-label { font-size: 15px; }
     body.checked .stack .today-hit .mark-label { display: none; }
     body.checked .stack .today-hit { color: var(--grass); }
     body.checked .stack .today-hit .core { opacity: 1; }
     body.checked .stack .today-hit text { fill: var(--grass-fg); }
     .stack-medium .copy {
       position: absolute;
-      inset: 16px auto 14px 18px;
+      inset: 21px auto 21px 21px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      z-index: 2;
+      z-index: 3;
       max-width: 150px;
     }
     .stack-medium .habit {
@@ -333,31 +323,14 @@
       font-size: 24px;
       max-width: 150px;
     }
-    .stack-medium .day-num {
-      position: static;
-      right: auto;
-      top: auto;
-      margin-top: 10px;
-      font-size: 52px;
-    }
-    .stack-medium .pile {
-      width: 220px;
-      height: 220px;
-      right: -40px;
-      bottom: -48px;
-      left: auto;
-      top: auto;
-    }
-    .stack-medium .g1 { transform: translate(-36px, -4px) rotate(-7deg); }
-    .stack-medium .g2 { transform: translate(-20px, 4px) rotate(-2deg); }
-    .stack-medium .g3 { transform: translate(-8px, 8px) rotate(4deg); }
+    .stack-medium .paper-stack { inset: 11px; }
     .stack-medium .today-hit {
       left: auto;
-      right: 10px;
+      right: 21px;
       top: auto;
-      bottom: 8px;
-      width: 118px;
-      height: 118px;
+      bottom: 21px;
+      width: 106px;
+      height: 106px;
     }
 
     /* 03 Bleed — bold day silhouette over soft mist (not waves; water belongs to 潮痕) */
@@ -478,18 +451,29 @@
     /* 04 Letter — one sheet of stationery; ink and wax on the same paper */
     .letter {
       padding: 0;
-      background: var(--surface);
+      background: var(--bg);
       display: flex;
       flex-direction: column;
+    }
+    .letter::after {
+      content: "";
+      position: absolute;
+      inset: 7px 6px;
+      border-radius: 15px;
+      border: 1px solid color-mix(in srgb, var(--field) 18%, transparent);
+      background: var(--surface);
+      box-shadow: 0 3px 10px color-mix(in srgb, var(--shadow) 7%, transparent);
+      z-index: 0;
     }
     .letter::before {
       content: "";
       position: absolute;
-      left: 0;
-      right: 0;
-      top: 0;
-      height: 5px;
-      background: color-mix(in srgb, var(--field) 28%, var(--surface));
+      left: 6px;
+      top: 7px;
+      bottom: 7px;
+      width: 7px;
+      border-radius: 15px 0 0 15px;
+      background: color-mix(in srgb, var(--field) 11%, var(--surface));
       z-index: 1;
     }
     .letter .letterhead {
@@ -553,16 +537,29 @@
     .letter.medium .seal .mark-label { font-size: 11px; }
     body.checked .letter .seal .mark-label { display: none; }
     body.checked .letter::before {
-      background: color-mix(in srgb, var(--grass) 36%, var(--surface));
+      background: color-mix(in srgb, var(--grass) 13%, var(--surface));
     }
     body.checked .letter .seal { color: var(--grass); }
     body.checked .letter .seal .core { opacity: 1; }
     .letter .body {
+      position: relative;
+      z-index: 2;
       flex: 1;
-      padding: 18px 14px 12px;
+      padding: 18px 18px 12px;
       display: flex;
       flex-direction: column;
       min-height: 0;
+    }
+    .letter .body::before {
+      content: "";
+      position: absolute;
+      left: 18px;
+      top: 44px;
+      width: 60%;
+      height: 1px;
+      background: color-mix(in srgb, var(--secondary) 12%, transparent);
+      box-shadow: 0 9px 0 color-mix(in srgb, var(--secondary) 9%, transparent);
+      pointer-events: none;
     }
     .letter .habit {
       margin: 0;
@@ -584,12 +581,6 @@
       width: 100%;
       height: 34px;
       overflow: visible;
-    }
-    .letter .thread {
-      fill: none;
-      stroke: color-mix(in srgb, var(--field) 34%, transparent);
-      stroke-width: 1;
-      stroke-linecap: round;
     }
     .letter .mark text {
       font-family: inherit;
@@ -639,14 +630,15 @@
       width: 58px;
       height: 58px;
     }
-    .letter.medium .body { padding: 4px 18px 10px; }
+    .letter.medium .body { padding: 4px 22px 10px; }
+    .letter.medium .body::before { left: 22px; top: 50px; width: 58%; }
     .letter.medium .habit { font-size: 28px; max-width: 8em; }
     .letter.medium .postmarks { height: 36px; }
     .letter.medium .mark text { font-size: 10px; }
     .letter.medium .today circle { stroke-width: 2; }
 
     /* 06 Path — impressions approach and arrive at today's seal */
-    .path { background: var(--surface); }
+    .path { background: var(--bg); }
     .path .caption {
       position: absolute;
       left: 12px;
@@ -675,11 +667,10 @@
       color: var(--field);
       display: block;
     }
-    .path .way {
-      fill: none;
-      stroke: color-mix(in srgb, var(--field) 32%, transparent);
-      stroke-width: 1.35;
-      stroke-linecap: round;
+    .path .ground {
+      fill: color-mix(in srgb, var(--field) 8%, transparent);
+      stroke: color-mix(in srgb, var(--field) 12%, transparent);
+      stroke-width: 1;
     }
     .path .kept { fill: var(--field); }
     .path .missed {
@@ -739,20 +730,8 @@
       width: 92px;
       height: 92px;
     }
-    .path .pin-day {
-      font-family: inherit;
-      font-size: 7.5px;
-      font-weight: 650;
-      fill: var(--secondary);
-      text-anchor: middle;
-    }
-    body.dark .path .pin-day {
-      fill: color-mix(in srgb, var(--ink) 72%, transparent);
-    }
-    .path-medium .pin-day { font-size: 9px; }
-
     /* 静场 — same afterimage as original poster, scaled to 158 / 338×158 */
-    .quiet { background: var(--surface); padding: 12px; }
+    .quiet { background: var(--bg); padding: 12px; }
     .quiet::before {
       content: "";
       position: absolute;
@@ -760,11 +739,12 @@
       height: 170px;
       right: -90px;
       bottom: -95px;
-      border: 1px solid color-mix(in srgb, var(--field) 25%, transparent);
+      border: 1.2px solid color-mix(in srgb, var(--field) 38%, transparent);
       border-radius: 50%;
+      background: color-mix(in srgb, var(--field) 12%, transparent);
       box-shadow:
-        0 0 0 14px color-mix(in srgb, var(--field) 6%, transparent),
-        0 0 0 32px color-mix(in srgb, var(--field) 5%, transparent);
+        0 0 0 16px color-mix(in srgb, var(--field) 13%, transparent),
+        0 0 0 38px color-mix(in srgb, var(--field) 6.5%, transparent);
       pointer-events: none;
       z-index: 0;
     }
@@ -820,6 +800,13 @@
     body.checked .quiet .today-hit .mark-label { display: none; }
     body.checked .quiet .today-hit { color: var(--grass); }
     body.checked .quiet .today-hit .core { opacity: 1; }
+    body.checked .quiet::before {
+      border-color: color-mix(in srgb, var(--grass) 38%, transparent);
+      background: color-mix(in srgb, var(--grass) 15%, transparent);
+      box-shadow:
+        0 0 0 16px color-mix(in srgb, var(--grass) 13%, transparent),
+        0 0 0 38px color-mix(in srgb, var(--grass) 6.5%, transparent);
+    }
     .quiet.medium { padding: 13px 15px; }
     .quiet.medium .habit { margin-top: 22px; max-width: 9em; font-size: 28px; }
     .quiet.medium .today-hit {
@@ -930,19 +917,13 @@
             <div class="caption"><span class="meta">八月十三日</span><span class="meta state"></span></div>
             <div class="habit">晨间书写</div>
             <svg class="trail" viewBox="0 0 294 120" preserveAspectRatio="none" aria-hidden="true">
+              <ellipse class="ground" cx="128" cy="92" rx="148" ry="24" transform="rotate(-6 128 92)"/>
               <circle class="kept" cx="16" cy="104" r="4"/>
               <circle class="missed" cx="56" cy="98" r="3.6"/>
               <circle class="kept" cx="98" cy="88" r="6.2"/>
               <circle class="kept" cx="140" cy="80" r="7.4"/>
               <circle class="missed" cx="180" cy="74" r="4.6"/>
               <circle class="kept" cx="220" cy="70" r="8.5"/>
-              <path class="way" d="M16 104 C 29.33 102, 42.33 100.67, 56 98 C 69.67 95.33, 84 91, 98 88 C 112 85, 126.33 82.33, 140 80 C 153.67 77.67, 166.67 75.67, 180 74 C 193.33 72.33, 203.67 71, 220 70 C 236.33 69, 258.67 68.67, 278 68"/>
-              <text class="pin-day" x="16" y="94">7</text>
-              <text class="pin-day" x="56" y="88">8</text>
-              <text class="pin-day" x="98" y="76">9</text>
-              <text class="pin-day" x="140" y="66">10</text>
-              <text class="pin-day" x="180" y="63">11</text>
-              <text class="pin-day" x="220" y="55">12</text>
             </svg>
             <div class="today-hit" aria-hidden="true">
               <svg class="only-pending" viewBox="0 0 100 100">
@@ -1032,21 +1013,17 @@
         <div>
           <span class="idx">02 · STACK</span>
           <h3>叠印</h3>
-          <p>叠印是同一枚印压在一叠淡色纸片上，纸叠铺满画布，不是缩在角落的小章。过去留下的日子只露出错位的纸边，最多三层；今天这一枚压在最上面。日号用轻字重坐在场上，是说明不是第二主角——半屏大数字留给数影。漏签不占一层。装饰场、同心残影和角标一律不加。</p>
-          <span class="job">任务：这一周沉下来的分量 · 现有七日快照</span>
+          <p>叠印是同一枚印压在固定四页的淡色纸叠上：最上面一页承载今天的日期、承诺、状态和印，其余三页只露出稳定纸边，表达厚度与触感，不映射历史、连续天数或计数。纸叠下只有一块低透明桌垫建立环境层次；全部文字和印必须收在最上层纸面内，不能沿组件外框定位。</p>
+          <span class="job">任务：把今天留在一叠有厚度的纸上 · 今日快照</span>
         </div>
         <div class="frames">
           <div class="widget stack">
+            <div class="desk-mat" aria-hidden="true"></div>
+            <div class="paper-stack" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
             <div class="copy">
-              <div class="meta">八月</div>
+              <div class="meta">08 / 13</div>
               <div class="habit">晨间<br>书写</div>
             </div>
-            <div class="day-num">13</div>
-            <svg class="pile" viewBox="0 0 160 160" aria-hidden="true">
-              <g class="ghost g1"><circle cx="80" cy="80" r="40"/></g>
-              <g class="ghost g2"><circle cx="80" cy="80" r="40"/></g>
-              <g class="ghost g3"><circle cx="80" cy="80" r="40"/></g>
-            </svg>
             <div class="today-hit" aria-hidden="true">
               <svg class="only-pending" viewBox="0 0 100 100">
                 <circle cx="50" cy="50" r="39" fill="none" stroke="currentColor" stroke-width="5.5" stroke-linecap="round" pathLength="100" stroke-dasharray="86.7 13.3" transform="rotate(-18 50 50)"/>
@@ -1061,19 +1038,15 @@
             </div>
           </div>
           <div class="widget medium stack stack-medium">
+            <div class="desk-mat" aria-hidden="true"></div>
+            <div class="paper-stack" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
             <div class="copy">
               <div>
-                <div class="meta">过去七日</div>
+                <div class="meta">08 / 13</div>
                 <div class="habit">晨间书写</div>
-                <div class="day-num">13</div>
               </div>
               <div class="meta state"></div>
             </div>
-            <svg class="pile" viewBox="0 0 160 160" aria-hidden="true">
-              <g class="ghost g1"><circle cx="80" cy="80" r="40"/></g>
-              <g class="ghost g2"><circle cx="80" cy="80" r="40"/></g>
-              <g class="ghost g3"><circle cx="80" cy="80" r="40"/></g>
-            </svg>
             <div class="today-hit" aria-hidden="true">
               <svg class="only-pending" viewBox="0 0 100 100">
                 <circle cx="50" cy="50" r="39" fill="none" stroke="currentColor" stroke-width="5.5" stroke-linecap="round" pathLength="100" stroke-dasharray="86.7 13.3" transform="rotate(-18 50 50)"/>
@@ -1151,7 +1124,7 @@
         <div>
           <span class="idx">04 · LETTER</span>
           <h3>手札</h3>
-          <p>手札是一张浅色信纸。右上蜡封是今天，下沿才是一串等大的邮戳日环，细线连着，日号写在环上。它是信纸的附言，不是来路的轨迹，也不是七日谱的看板。漏签空心，已留下实心，今天开口；完成时今天这枚邮戳才闭合，蜡封同时打勾。</p>
+          <p>手札是一张独立浅色笺纸，不叠第二张垫纸。左笺边与两条低对比书写纹建立文具身份；右上蜡封是今天，下沿是一串彼此独立、等大的邮戳日印，不画连接轨，也不重复日期。它是单张笺纸上的附言，不是摆正的叠印。漏签空心，已留下实心，今天开口；完成时今天这枚邮戳才闭合，蜡封同时打勾。</p>
           <span class="job">任务：我守住的那一件事 · 现有快照</span>
         </div>
         <div class="frames">
@@ -1174,7 +1147,6 @@
               <div class="habit">晨间<br>书写</div>
               <div class="foot">
                 <svg class="postmarks" viewBox="0 0 132 34" aria-hidden="true">
-                  <line class="thread" x1="9" y1="23" x2="123" y2="23"/>
                   <g class="mark kept" transform="translate(9 23)"><circle r="5"/><text y="-9">7</text></g>
                   <g class="mark missed" transform="translate(28 23)"><circle r="5"/><text y="-9">8</text></g>
                   <g class="mark kept" transform="translate(47 23)"><circle r="5"/><text y="-9">9</text></g>
@@ -1208,7 +1180,6 @@
               <div class="habit">晨间书写</div>
               <div class="foot">
                 <svg class="postmarks" viewBox="0 0 220 36" aria-hidden="true">
-                  <line class="thread" x1="12" y1="21" x2="208" y2="21"/>
                   <g class="mark kept" transform="translate(12 21)"><circle r="7"/><text y="-11">7</text></g>
                   <g class="mark missed" transform="translate(45 21)"><circle r="7"/><text y="-11">8</text></g>
                   <g class="mark kept" transform="translate(78 21)"><circle r="7"/><text y="-11">9</text></g>
@@ -1227,7 +1198,7 @@
         <div>
           <span class="idx">05 · FIELD</span>
           <h3>静场</h3>
-          <p>残影几何与原稿相同，画布和其他式一样是小号 158、中号 338×158。圆心仍在右下角外侧，所以看见的是扫过整张卡的大圆弧。右下今日印与落印 / 数影同一套草叶色开口日环，「留印」才用深绿；完成时环闭合、内核实心、换成勾。</p>
+          <p>残影圆心仍在右下角外侧，所以看见的是扫过整张卡的大圆弧。只把回响核心、第一圈和环带加深一个语义层级，不整体压暗画布；右下今日印与落印 / 数影同一套草叶色开口日环，「留印」才用深绿；完成时环闭合、内核实心、换成勾。</p>
           <span class="job">任务：让承诺安静地占住这块屏 · 现有快照</span>
         </div>
         <div class="frames">
@@ -1271,27 +1242,21 @@
         <div>
           <span class="idx">06 · PATH</span>
           <h3>来路</h3>
-          <p>来路是走过来的一串印，不是折线加点的健康图。过去六日由远到近、由小到大，日号轻标在点上；漏签空心，已留下实心。今天这一枚是开口日环，环心是今日日号，不写「留印」。完成时只闭合日环，日号仍用墨色留在环心——不灌实心核，也不打勾。勾和实心是落印的语言，套在来路上会把日子压成徽章。不写「近七日 N 次」，也不把连续天数做成奖杯。</p>
+          <p>来路是走过来的一串独立足印，不是折线加点的健康图。过去六日由远到近、由小到大，不画连接线，也不在每个印迹旁重复日期；漏签空心，已留下实心。顶部只写一次由真实快照即时派生的「六日 · N 印」，不保存派生状态，也不做连续天数或比例。今天这一枚才是开口日环，环心保留今日日号。</p>
           <span class="job">任务：我怎么走到今天 · 现有七日快照</span>
         </div>
         <div class="frames">
           <div class="widget path">
-            <div class="caption"><span class="meta">8 / 13</span><span class="meta state"></span></div>
+            <div class="caption"><span class="meta">8 / 13</span><span class="meta">六日 · 4 印</span></div>
             <div class="habit">晨间书写</div>
             <svg class="trail" viewBox="0 0 142 86" preserveAspectRatio="none" aria-hidden="true">
-              <circle class="kept" cx="10" cy="74" r="2.4"/>
-              <circle class="missed" cx="24" cy="70" r="2.2"/>
-              <circle class="kept" cx="38" cy="65" r="3.5"/>
-              <circle class="kept" cx="52" cy="61" r="4.2"/>
-              <circle class="missed" cx="66" cy="58" r="2.6"/>
-              <circle class="kept" cx="80" cy="56" r="4.8"/>
-              <path class="way" d="M10 74 C 16 72, 18 71, 24 70 S 32 67, 38 65 S 46 62, 52 61 S 60 59, 66 58 S 74 57, 80 56 S 96 54, 112 54"/>
-              <text class="pin-day" x="10" y="66">7</text>
-              <text class="pin-day" x="24" y="62">8</text>
-              <text class="pin-day" x="38" y="56">9</text>
-              <text class="pin-day" x="52" y="50">10</text>
-              <text class="pin-day" x="66" y="49">11</text>
-              <text class="pin-day" x="80" y="45">12</text>
+              <ellipse class="ground" cx="61" cy="68" rx="70" ry="16" transform="rotate(-6 61 68)"/>
+              <g class="kept" transform="translate(10 74) rotate(-16) scale(.35)"><ellipse cy="2" rx="4" ry="8"/><circle cx="-4" cy="-7" r="1.6"/><circle cy="-9" r="1.8"/><circle cx="4" cy="-7" r="1.6"/></g>
+              <g class="missed" transform="translate(24 70) rotate(12) scale(.38)"><ellipse cy="2" rx="4" ry="8"/><circle cx="-4" cy="-7" r="1.6"/><circle cy="-9" r="1.8"/><circle cx="4" cy="-7" r="1.6"/></g>
+              <g class="kept" transform="translate(38 65) rotate(-12) scale(.48)"><ellipse cy="2" rx="4" ry="8"/><circle cx="-4" cy="-7" r="1.6"/><circle cy="-9" r="1.8"/><circle cx="4" cy="-7" r="1.6"/></g>
+              <g class="kept" transform="translate(52 61) rotate(10) scale(.58)"><ellipse cy="2" rx="4" ry="8"/><circle cx="-4" cy="-7" r="1.6"/><circle cy="-9" r="1.8"/><circle cx="4" cy="-7" r="1.6"/></g>
+              <g class="missed" transform="translate(66 58) rotate(-9) scale(.62)"><ellipse cy="2" rx="4" ry="8"/><circle cx="-4" cy="-7" r="1.6"/><circle cy="-9" r="1.8"/><circle cx="4" cy="-7" r="1.6"/></g>
+              <g class="kept" transform="translate(80 56) rotate(8) scale(.72)"><ellipse cy="2" rx="4" ry="8"/><circle cx="-4" cy="-7" r="1.6"/><circle cy="-9" r="1.8"/><circle cx="4" cy="-7" r="1.6"/></g>
             </svg>
             <div class="today-hit" aria-hidden="true">
               <svg class="only-pending" viewBox="0 0 100 100">
@@ -1306,22 +1271,16 @@
             </div>
           </div>
           <div class="widget medium path path-medium">
-            <div class="caption"><span class="meta">八月十三日</span><span class="meta state"></span></div>
+            <div class="caption"><span class="meta">八月十三日</span><span class="meta">六日 · 4 印</span></div>
             <div class="habit">晨间书写</div>
             <svg class="trail" viewBox="0 0 294 120" preserveAspectRatio="none" aria-hidden="true">
-              <circle class="kept" cx="16" cy="104" r="4"/>
-              <circle class="missed" cx="56" cy="98" r="3.6"/>
-              <circle class="kept" cx="98" cy="88" r="6.2"/>
-              <circle class="kept" cx="140" cy="80" r="7.4"/>
-              <circle class="missed" cx="180" cy="74" r="4.6"/>
-              <circle class="kept" cx="220" cy="70" r="8.5"/>
-              <path class="way" d="M16 104 C 29.33 102, 42.33 100.67, 56 98 C 69.67 95.33, 84 91, 98 88 C 112 85, 126.33 82.33, 140 80 C 153.67 77.67, 166.67 75.67, 180 74 C 193.33 72.33, 203.67 71, 220 70 C 236.33 69, 258.67 68.67, 278 68"/>
-              <text class="pin-day" x="16" y="94">7</text>
-              <text class="pin-day" x="56" y="88">8</text>
-              <text class="pin-day" x="98" y="76">9</text>
-              <text class="pin-day" x="140" y="66">10</text>
-              <text class="pin-day" x="180" y="63">11</text>
-              <text class="pin-day" x="220" y="55">12</text>
+              <ellipse class="ground" cx="128" cy="92" rx="148" ry="24" transform="rotate(-6 128 92)"/>
+              <g class="kept" transform="translate(16 104) rotate(-16) scale(.55)"><ellipse cy="2" rx="4" ry="8"/><circle cx="-4" cy="-7" r="1.6"/><circle cy="-9" r="1.8"/><circle cx="4" cy="-7" r="1.6"/></g>
+              <g class="missed" transform="translate(56 98) rotate(12) scale(.62)"><ellipse cy="2" rx="4" ry="8"/><circle cx="-4" cy="-7" r="1.6"/><circle cy="-9" r="1.8"/><circle cx="4" cy="-7" r="1.6"/></g>
+              <g class="kept" transform="translate(98 88) rotate(-12) scale(.82)"><ellipse cy="2" rx="4" ry="8"/><circle cx="-4" cy="-7" r="1.6"/><circle cy="-9" r="1.8"/><circle cx="4" cy="-7" r="1.6"/></g>
+              <g class="kept" transform="translate(140 80) rotate(10) scale(1)"><ellipse cy="2" rx="4" ry="8"/><circle cx="-4" cy="-7" r="1.6"/><circle cy="-9" r="1.8"/><circle cx="4" cy="-7" r="1.6"/></g>
+              <g class="missed" transform="translate(180 74) rotate(-9) scale(1.08)"><ellipse cy="2" rx="4" ry="8"/><circle cx="-4" cy="-7" r="1.6"/><circle cy="-9" r="1.8"/><circle cx="4" cy="-7" r="1.6"/></g>
+              <g class="kept" transform="translate(220 70) rotate(8) scale(1.22)"><ellipse cy="2" rx="4" ry="8"/><circle cx="-4" cy="-7" r="1.6"/><circle cy="-9" r="1.8"/><circle cx="4" cy="-7" r="1.6"/></g>
             </svg>
             <div class="today-hit" aria-hidden="true">
               <svg class="only-pending" viewBox="0 0 100 100">
@@ -1341,7 +1300,7 @@
 
     <aside class="reject">
       <h2>这轮明确不走的路</h2>
-      <p>4/7 分数、柱状「日强度」、GitHub 月点阵、连续 N 日奖杯、CSS 进度环、左右色块分栏、用七日同心圆去顶「年轮」这个名字。它们能让信息变多，但会把一日一印变成打卡看板。年轮留给一年一圈的长期物件；七天是叠印，不是木头。月度密度和连续天数若以后要做，也必须先是物件（草甸、一条未折断的线），而不是比分。</p>
+      <p>4/7 分数、柱状「日强度」、GitHub 月点阵、连续 N 日奖杯、CSS 进度环、左右色块分栏、用七日同心圆去顶「年轮」这个名字。它们能让信息变多，但会把一日一印变成打卡看板。叠印是固定四页纸的材质物件，不承担七日计数；月度密度和连续天数若以后要做，也必须先是独立物件，而不是比分。</p>
     </aside>
     <p class="footnote">本页是六种 Home Screen 构图的像素真源：落印、叠印、数影、手札、静场、来路；正式编号 00 待落之处见同级 widget-awaiting-place，编号 07 潮痕见同级实验序列中的 01-tide-mark，完整八式清单以本目录 README 为准。`PulseWidgetHomeRenderer` 消费同一份 `PulseWidgetSnapshot`，使用系统字体与品牌语义色。照片、备注、最长纪录不进入 Widget。中号按 338×158 构图，禁止把正方形物件拉宽。不能把静场和手札做成同一骨架的两种字号。</p>
   </main>

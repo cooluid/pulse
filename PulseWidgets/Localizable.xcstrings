@@ -493,13 +493,30 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Checked in today"
+            "value" : "Imprinted today"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "今天已签到"
+            "value" : "今天已落印"
+          }
+        }
+      }
+    },
+    "widget.path.summary.format" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "6 days · %d"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "六日 · %d 印"
           }
         }
       }
@@ -509,13 +526,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Not checked in"
+            "value" : "Open"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "未签到"
+            "value" : "空着"
           }
         }
       }
@@ -526,13 +543,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Not checked in yet"
+            "value" : "Today is still open"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "今天还未签到"
+            "value" : "今天还空着"
           }
         }
       }

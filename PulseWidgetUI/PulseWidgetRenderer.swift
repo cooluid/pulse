@@ -37,6 +37,7 @@ struct PulseWidgetHomeRenderer: View {
     let usesMediumMetrics: Bool
     let usesFullColorPalette: Bool
     let statusText: String
+    let pathSummaryFormat: String
     let actionText: String
     let emptyPlaceText: String
     let placeStatusText: String
@@ -79,7 +80,8 @@ struct PulseWidgetHomeRenderer: View {
         let blotterSide = pt(usesMediumMetrics ? 122 : 86, in: size)
 
         return ZStack(alignment: .topLeading) {
-            surfaceBackground
+            baseBackground
+            placeAmbientField(size: size)
 
             if usesMediumMetrics {
                 awaitingPlaceBlotter(side: blotterSide, size: size)
@@ -179,7 +181,8 @@ struct PulseWidgetHomeRenderer: View {
         let copyX = pt(usesMediumMetrics ? 156 : 12, in: size)
 
         return ZStack(alignment: .topLeading) {
-            surfaceBackground
+            baseBackground
+            sealAmbientField(size: size)
 
             sealAfterimage(side: stampSide, size: size)
                 .position(x: stampX, y: size.height / 2)
@@ -222,76 +225,50 @@ struct PulseWidgetHomeRenderer: View {
     }
 
     private func stack(size: CGSize) -> some View {
-        let sealSide = pt(usesMediumMetrics ? 118 : 100, in: size)
-        let sealTrailing = pt(usesMediumMetrics ? 10 : -8, in: size)
-        let sealBottom = pt(usesMediumMetrics ? 8 : 4, in: size)
+        let sealSide = pt(usesMediumMetrics ? 106 : 78, in: size)
+        let paperFrame = stackTopPaperFrame(in: size)
+        let paperInset = pt(usesMediumMetrics ? 10 : 8, in: size)
 
         return ZStack(alignment: .topLeading) {
-            surfaceBackground
-            stackLayers(size: size)
+            baseBackground
+            stackDeskMat(size: size)
+            stackedPaperBackdrop(size: size)
 
-            if usesMediumMetrics {
-                VStack(alignment: .leading, spacing: pt(8, in: size)) {
-                    Text(verbatim: monthName)
-                        .font(.system(size: pt(11, in: size), weight: .bold))
+            ZStack(alignment: .topLeading) {
+                VStack(alignment: .leading, spacing: pt(usesMediumMetrics ? 7 : 6, in: size)) {
+                    Text(verbatim: monthAndDay)
+                        .font(.system(size: pt(usesMediumMetrics ? 12 : 11, in: size), weight: .bold))
+                        .tracking(pt(usesMediumMetrics ? 0.5 : 0.4, in: size))
                         .foregroundStyle(actionColor)
-                    habitName(
-                        size: pt(24, in: size),
-                        width: pt(150, in: size),
-                        alignment: .leading
-                    )
-                    Text(verbatim: dayNumber)
-                        .font(.system(size: pt(52, in: size), weight: .ultraLight))
-                        .foregroundStyle(actionColor)
-                        .tracking(pt(-2.5, in: size))
                         .monospacedDigit()
                         .lineLimit(1)
-                    Spacer(minLength: 0)
-                    statusLabel(size: pt(11, in: size))
-                }
-                .frame(width: pt(150, in: size), alignment: .leading)
-                .frame(
-                    height: size.height - pt(30, in: size),
-                    alignment: .topLeading
-                )
-                .padding(.leading, pt(18, in: size))
-                .padding(.top, pt(16, in: size))
-                .padding(.bottom, pt(14, in: size))
-            } else {
-                let dayWidth = pt(58, in: size)
-                let dayHeight = pt(40, in: size)
 
-                VStack(alignment: .leading, spacing: pt(6, in: size)) {
-                    Text(verbatim: monthName)
-                        .font(.system(size: pt(11, in: size), weight: .bold))
-                        .foregroundStyle(actionColor)
                     habitName(
-                        size: pt(16, in: size),
-                        width: pt(72, in: size),
+                        size: pt(usesMediumMetrics ? 23 : 16, in: size),
+                        width: pt(usesMediumMetrics ? 154 : 88, in: size),
                         alignment: .leading
                     )
+
+                    if usesMediumMetrics {
+                        Spacer(minLength: 0)
+                        statusLabel(size: pt(11, in: size))
+                    }
                 }
-                .padding(.leading, pt(12, in: size))
-                .padding(.top, pt(11, in: size))
-
-                Text(verbatim: dayNumber)
-                    .font(.system(size: pt(40, in: size), weight: .ultraLight))
-                    .foregroundStyle(actionColor)
-                    .tracking(pt(-2.4, in: size))
-                    .monospacedDigit()
-                    .lineLimit(1)
-                    .frame(width: dayWidth, height: dayHeight, alignment: .topTrailing)
-                    .position(
-                        x: size.width - pt(12, in: size) - dayWidth / 2,
-                        y: pt(6, in: size) + dayHeight / 2
-                    )
-            }
-
-            ritualSeal(side: sealSide, showsWash: false, showsCheck: true)
-                .position(
-                    x: size.width - sealTrailing - sealSide / 2,
-                    y: size.height - sealBottom - sealSide / 2
+                .frame(
+                    width: pt(usesMediumMetrics ? 154 : 88, in: size),
+                    height: usesMediumMetrics ? paperFrame.height - paperInset * 2 : nil,
+                    alignment: .topLeading
                 )
+                .padding(.leading, paperInset)
+                .padding(.top, paperInset)
+
+                ritualSeal(side: sealSide, showsWash: false, showsCheck: true)
+                    .padding(.trailing, paperInset)
+                    .padding(.bottom, paperInset)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
+            }
+            .frame(width: paperFrame.width, height: paperFrame.height)
+            .position(x: paperFrame.midX, y: paperFrame.midY)
         }
     }
 
@@ -469,15 +446,14 @@ struct PulseWidgetHomeRenderer: View {
     }
 
     private func letter(size: CGSize) -> some View {
-        let inset = pt(usesMediumMetrics ? 18 : 14, in: size)
-        let sealSide = pt(usesMediumMetrics ? 58 : 52, in: size)
+        let inset = pt(usesMediumMetrics ? 22 : 18, in: size)
+        let sealSide = pt(usesMediumMetrics ? 62 : 48, in: size)
 
         return ZStack(alignment: .topLeading) {
-            surfaceBackground
-
-            Rectangle()
-                .fill((snapshot.isCheckedToday ? grassColor : fieldColor).opacity(0.30))
-                .frame(height: pt(5, in: size))
+            baseBackground
+            letterDeskField(size: size)
+            letterPaper(size: size)
+            letterWritingLines(size: size)
 
             if usesMediumMetrics {
                 Text(verbatim: monthName)
@@ -486,8 +462,8 @@ struct PulseWidgetHomeRenderer: View {
                     .padding(.leading, inset)
                     .padding(.top, pt(14, in: size))
                 Text(verbatim: dayNumber)
-                    .font(.system(size: pt(40, in: size), weight: .ultraLight))
-                    .tracking(pt(-2, in: size))
+                    .font(.system(size: pt(38, in: size), weight: .light))
+                    .tracking(pt(-1.5, in: size))
                     .foregroundStyle(actionColor)
                     .monospacedDigit()
                     .padding(.leading, inset)
@@ -508,16 +484,16 @@ struct PulseWidgetHomeRenderer: View {
             .padding(.leading, inset)
             .padding(.top, pt(usesMediumMetrics ? 72 : 48, in: size))
 
-            postmarkRail(size: size)
+            postmarkRow(size: size)
                 .padding(.horizontal, inset)
-                .padding(.bottom, pt(10, in: size))
+                .padding(.bottom, pt(usesMediumMetrics ? 14 : 12, in: size))
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
 
             ZStack {
                 Circle()
-                    .fill(fieldColor.opacity(usesFullColorPalette ? 0.08 : 0.06))
+                    .fill(fieldColor.opacity(usesFullColorPalette ? 0.11 : 0.07))
                     .shadow(
-                        color: shadowColor.opacity(usesFullColorPalette ? 0.08 : 0),
+                        color: shadowColor.opacity(usesFullColorPalette ? 0.10 : 0),
                         radius: pt(5, in: size),
                         y: pt(2, in: size)
                     )
@@ -530,12 +506,59 @@ struct PulseWidgetHomeRenderer: View {
         }
     }
 
+    private func letterPaper(size: CGSize) -> some View {
+        let cornerRadius = pt(usesMediumMetrics ? 17 : 15, in: size)
+        let paperWidth = size.width - pt(usesMediumMetrics ? 14 : 12, in: size)
+        let paperHeight = size.height - pt(usesMediumMetrics ? 16 : 14, in: size)
+
+        return ZStack(alignment: .leading) {
+            RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                .fill(surfaceColor)
+                .overlay {
+                    RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                        .stroke(fieldColor.opacity(0.18), lineWidth: pt(1, in: size))
+                }
+                .shadow(
+                    color: shadowColor.opacity(0.07),
+                    radius: pt(6, in: size),
+                    y: pt(3, in: size)
+                )
+                .frame(width: paperWidth, height: paperHeight)
+
+            Rectangle()
+                .fill(fieldColor.opacity(usesFullColorPalette ? 0.11 : 0.06))
+                .frame(width: pt(7, in: size), height: paperHeight)
+        }
+        .frame(width: paperWidth, height: paperHeight, alignment: .leading)
+        .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
+        .frame(width: size.width, height: size.height)
+    }
+
+    private func letterWritingLines(size: CGSize) -> some View {
+        let paperInset = pt(usesMediumMetrics ? 22 : 18, in: size)
+        let lineWidth = size.width * (usesMediumMetrics ? 0.58 : 0.60)
+        let firstY = size.height * (usesMediumMetrics ? 0.61 : 0.59)
+
+        return VStack(alignment: .leading, spacing: pt(usesMediumMetrics ? 11 : 9, in: size)) {
+            Rectangle()
+                .fill(secondaryColor.opacity(usesFullColorPalette ? 0.12 : 0.08))
+                .frame(width: lineWidth, height: pt(1, in: size))
+            Rectangle()
+                .fill(secondaryColor.opacity(usesFullColorPalette ? 0.09 : 0.06))
+                .frame(width: lineWidth * 0.72, height: pt(1, in: size))
+        }
+        .position(
+            x: paperInset + lineWidth / 2,
+            y: firstY
+        )
+    }
+
     private func field(size: CGSize) -> some View {
         let inset = pt(usesMediumMetrics ? 15 : 12, in: size)
         let sealSide = pt(usesMediumMetrics ? 48 : 40, in: size)
 
         return ZStack(alignment: .topLeading) {
-            surfaceBackground
+            baseBackground
             quietFieldAfterimage(size: size)
 
             Text(verbatim: monthAndDay)
@@ -571,12 +594,15 @@ struct PulseWidgetHomeRenderer: View {
         let todaySide = pt(usesMediumMetrics ? 92 : 56, in: size)
 
         return ZStack(alignment: .topLeading) {
-            surfaceBackground
+            baseBackground
+            pathGround(size: size)
 
             HStack(alignment: .firstTextBaseline) {
                 Text(verbatim: monthAndDay)
                 Spacer(minLength: pt(8, in: size))
-                statusLabel(size: pt(11, in: size))
+                Text(verbatim: pathSummaryText)
+                    .font(.system(size: pt(11, in: size), weight: .medium))
+                    .lineLimit(1)
             }
             .font(.system(size: pt(11, in: size), weight: .semibold))
             .foregroundStyle(secondaryColor)
@@ -638,36 +664,129 @@ struct PulseWidgetHomeRenderer: View {
         }
     }
 
-    private func stackLayers(size: CGSize) -> some View {
-        let pileSide = pt(usesMediumMetrics ? 220 : 196, in: size)
-        let ringSide = pileSide * 0.50
-        let trailing = pt(usesMediumMetrics ? -40 : -42, in: size)
-        let bottom = pt(usesMediumMetrics ? -48 : -36, in: size)
-        let offsets: [(CGFloat, CGFloat, Double)] = usesMediumMetrics
-            ? [(-36, -4, -7), (-20, 4, -2), (-8, 8, 4)]
-            : [(-34, -8, -8), (-20, 2, -3), (-8, 8, 4)]
-        let opacities = [0.11, 0.17, 0.24]
+    private func placeAmbientField(size: CGSize) -> some View {
+        let color = snapshot.isCheckedToday ? grassColor : fieldColor
+
+        return Ellipse()
+            .fill(color.opacity(usesFullColorPalette ? 0.085 : 0.055))
+            .frame(
+                width: size.width * (usesMediumMetrics ? 0.58 : 0.92),
+                height: size.height * (usesMediumMetrics ? 1.18 : 0.72)
+            )
+            .rotationEffect(.degrees(usesMediumMetrics ? -8 : -4))
+            .position(
+                x: size.width * (usesMediumMetrics ? 0.20 : 0.46),
+                y: size.height * (usesMediumMetrics ? 0.54 : 0.50)
+            )
+    }
+
+    private func sealAmbientField(size: CGSize) -> some View {
+        let color = snapshot.isCheckedToday ? grassColor : fieldColor
 
         return ZStack {
-            ForEach(0..<3, id: \.self) { index in
-                Circle()
-                    .fill(fieldColor.opacity(opacities[index]))
-                    .overlay {
-                        Circle().stroke(surfaceColor, lineWidth: pt(1.4, in: size))
-                    }
-                    .frame(width: ringSide, height: ringSide)
-                    .rotationEffect(.degrees(offsets[index].2))
-                    .offset(
-                        x: pt(offsets[index].0, in: size),
-                        y: pt(offsets[index].1, in: size)
+            Circle()
+                .fill(color.opacity(usesFullColorPalette ? 0.075 : 0.045))
+                .frame(
+                    width: size.height * (usesMediumMetrics ? 1.32 : 1.08),
+                    height: size.height * (usesMediumMetrics ? 1.32 : 1.08)
+                )
+                .position(
+                    x: size.width * (usesMediumMetrics ? 0.22 : 0.28),
+                    y: size.height * 0.50
+                )
+
+            Circle()
+                .stroke(color.opacity(usesFullColorPalette ? 0.10 : 0.06), lineWidth: pt(18, in: size))
+                .frame(
+                    width: size.height * (usesMediumMetrics ? 1.56 : 1.28),
+                    height: size.height * (usesMediumMetrics ? 1.56 : 1.28)
+                )
+                .position(
+                    x: size.width * (usesMediumMetrics ? 0.22 : 0.28),
+                    y: size.height * 0.50
+                )
+        }
+    }
+
+    private func stackDeskMat(size: CGSize) -> some View {
+        let color = snapshot.isCheckedToday ? grassColor : fieldColor
+
+        return RoundedRectangle(
+            cornerRadius: pt(usesMediumMetrics ? 26 : 22, in: size),
+            style: .continuous
+        )
+        .fill(color.opacity(usesFullColorPalette ? 0.085 : 0.05))
+        .frame(
+            width: size.width - pt(usesMediumMetrics ? 10 : 12, in: size),
+            height: size.height - pt(usesMediumMetrics ? 8 : 10, in: size)
+        )
+        .rotationEffect(.degrees(usesMediumMetrics ? 1.3 : 1.8))
+        .position(x: size.width / 2, y: size.height / 2 + pt(2, in: size))
+    }
+
+    private func stackedPaperBackdrop(size: CGSize) -> some View {
+        let paperFrame = stackTopPaperFrame(in: size)
+        let layerStep = pt(usesMediumMetrics ? 3.5 : 3, in: size)
+
+        return ZStack {
+            ForEach(0..<PulseWidgetDesign.stackPhysicalSheetCount, id: \.self) { index in
+                let depth = PulseWidgetDesign.stackPhysicalSheetCount - 1 - index
+                RoundedRectangle(
+                    cornerRadius: pt(usesMediumMetrics ? 19 : 17, in: size),
+                    style: .continuous
+                )
+                .fill(surfaceColor.opacity(0.98 - Double(depth) * 0.055))
+                .overlay {
+                    RoundedRectangle(
+                        cornerRadius: pt(usesMediumMetrics ? 19 : 17, in: size),
+                        style: .continuous
                     )
+                    .stroke(
+                        fieldColor.opacity(0.13 + Double(depth) * 0.04),
+                        lineWidth: pt(1, in: size)
+                    )
+                }
+                .shadow(
+                    color: shadowColor.opacity(0.05 + Double(depth) * 0.015),
+                    radius: pt(4 + CGFloat(depth), in: size),
+                    y: pt(2, in: size)
+                )
+                .frame(width: paperFrame.width, height: paperFrame.height)
+                .rotationEffect(.degrees(Double(depth) * (usesMediumMetrics ? -0.65 : -0.9)))
+                .offset(
+                    x: -CGFloat(depth) * layerStep,
+                    y: CGFloat(depth) * layerStep
+                )
             }
         }
-        .frame(width: pileSide, height: pileSide)
-        .offset(
-            x: size.width - pileSide - trailing,
-            y: size.height - pileSide - bottom
+        .frame(width: paperFrame.width, height: paperFrame.height)
+        .position(x: paperFrame.midX, y: paperFrame.midY)
+    }
+
+    private func stackTopPaperFrame(in size: CGSize) -> CGRect {
+        let width = size.width - pt(usesMediumMetrics ? 22 : 24, in: size)
+        let height = size.height - pt(usesMediumMetrics ? 22 : 24, in: size)
+        let center = CGPoint(
+            x: size.width / 2 + pt(usesMediumMetrics ? 3 : 4, in: size),
+            y: size.height / 2 - pt(usesMediumMetrics ? 8 : 9, in: size) / 2
         )
+
+        return CGRect(
+            x: center.x - width / 2,
+            y: center.y - height / 2,
+            width: width,
+            height: height
+        )
+    }
+
+    private func letterDeskField(size: CGSize) -> some View {
+        let color = snapshot.isCheckedToday ? grassColor : fieldColor
+
+        return Ellipse()
+            .fill(color.opacity(usesFullColorPalette ? 0.065 : 0.04))
+            .frame(width: size.width * 0.94, height: size.height * 0.68)
+            .rotationEffect(.degrees(-4))
+            .position(x: size.width * 0.48, y: size.height * 0.58)
     }
 
     private func mistField(size: CGSize) -> some View {
@@ -688,39 +807,19 @@ struct PulseWidgetHomeRenderer: View {
         }
     }
 
-    private func postmarkRail(size: CGSize) -> some View {
-        GeometryReader { proxy in
-            let nodeSide = pt(usesMediumMetrics ? 14 : 10, in: size)
-            let todaySide = pt(usesMediumMetrics ? 16 : 11.2, in: size)
-            let centers = snapshot.recentDays.indices.map { index in
-                proxy.size.width * CGFloat(index) / 6
-            }
-            ZStack(alignment: .topLeading) {
-                Path { path in
-                    guard let first = centers.first, let last = centers.last else { return }
-                    let y = proxy.size.height * 0.68
-                    path.move(to: CGPoint(x: first, y: y))
-                    path.addLine(to: CGPoint(x: last, y: y))
-                }
-                .stroke(fieldColor.opacity(0.34), lineWidth: pt(1, in: size))
-
-                ForEach(Array(snapshot.recentDays.enumerated()), id: \.element.id) { index, item in
-                    let isToday = index == snapshot.recentDays.count - 1
-                    Text(verbatim: PulseLocalizedDateFormatting.dayNumber(item.day, locale: locale))
-                        .font(.system(
-                            size: pt(usesMediumMetrics ? 10 : 7.5, in: size),
-                            weight: isToday ? .bold : .semibold
-                        ))
-                        .foregroundStyle(isToday || item.state == .checked ? actionColor : secondaryColor)
-                        .monospacedDigit()
-                        .position(x: centers[index], y: proxy.size.height * 0.22)
-
-                    postmarkNode(item, isToday: isToday, size: isToday ? todaySide : nodeSide)
-                        .position(x: centers[index], y: proxy.size.height * 0.68)
-                }
+    private func postmarkRow(size: CGSize) -> some View {
+        HStack(spacing: 0) {
+            ForEach(Array(snapshot.recentDays.enumerated()), id: \.element.id) { index, item in
+                let isToday = index == snapshot.recentDays.count - 1
+                postmarkNode(
+                    item,
+                    isToday: isToday,
+                    size: pt(usesMediumMetrics ? 16 : 11.5, in: size)
+                )
+                .frame(maxWidth: .infinity)
             }
         }
-        .frame(height: pt(usesMediumMetrics ? 36 : 34, in: size))
+        .frame(height: pt(usesMediumMetrics ? 18 : 13, in: size))
     }
 
     private func postmarkNode(
@@ -735,7 +834,11 @@ struct PulseWidgetHomeRenderer: View {
                     .stroke(fieldColor, style: StrokeStyle(lineWidth: max(1, size * 0.12), lineCap: .round))
                     .rotationEffect(.degrees(-18))
             } else if item.state == .checked {
-                Circle().fill(isToday ? grassColor : fieldColor)
+                Circle()
+                    .fill(isToday ? grassColor : fieldColor)
+                    .overlay {
+                        Circle().stroke(surfaceColor.opacity(0.72), lineWidth: max(1, size * 0.07))
+                    }
             } else {
                 Circle().stroke(secondaryColor.opacity(0.42), lineWidth: max(1, size * 0.10))
             }
@@ -744,20 +847,46 @@ struct PulseWidgetHomeRenderer: View {
     }
 
     private func quietFieldAfterimage(size: CGSize) -> some View {
-        let ringSide = pt(170, in: size)
-        let center = CGPoint(x: size.width - pt(5, in: size), y: size.height - pt(10, in: size))
+        let ringSide = pt(usesMediumMetrics ? 188 : 172, in: size)
+        let center = CGPoint(
+            x: size.width - pt(usesMediumMetrics ? 8 : 4, in: size),
+            y: size.height - pt(usesMediumMetrics ? 7 : 6, in: size)
+        )
+        let color = snapshot.isCheckedToday ? grassColor : fieldColor
+
         return ZStack {
             Circle()
-                .stroke(fieldColor.opacity(0.25), lineWidth: pt(1, in: size))
+                .fill(color.opacity(snapshot.isCheckedToday ? 0.15 : 0.12))
+                .frame(width: ringSide * 0.82, height: ringSide * 0.82)
+            Circle()
+                .stroke(color.opacity(0.38), lineWidth: pt(1.2, in: size))
                 .frame(width: ringSide, height: ringSide)
             Circle()
-                .stroke(fieldColor.opacity(0.06), lineWidth: pt(14, in: size))
-                .frame(width: ringSide + pt(14, in: size), height: ringSide + pt(14, in: size))
+                .stroke(color.opacity(0.13), lineWidth: pt(16, in: size))
+                .frame(width: ringSide + pt(20, in: size), height: ringSide + pt(20, in: size))
             Circle()
-                .stroke(fieldColor.opacity(0.05), lineWidth: pt(18, in: size))
-                .frame(width: ringSide + pt(46, in: size), height: ringSide + pt(46, in: size))
+                .stroke(color.opacity(0.065), lineWidth: pt(20, in: size))
+                .frame(width: ringSide + pt(58, in: size), height: ringSide + pt(58, in: size))
         }
         .position(center)
+    }
+
+    private func pathGround(size: CGSize) -> some View {
+        let color = snapshot.isCheckedToday ? grassColor : fieldColor
+
+        return ZStack {
+            Ellipse()
+                .fill(color.opacity(usesFullColorPalette ? 0.075 : 0.045))
+                .frame(width: size.width * 1.12, height: size.height * 0.45)
+                .rotationEffect(.degrees(-6))
+                .position(x: size.width * 0.43, y: size.height * 0.78)
+
+            Ellipse()
+                .stroke(color.opacity(usesFullColorPalette ? 0.12 : 0.07), lineWidth: pt(1, in: size))
+                .frame(width: size.width * 0.82, height: size.height * 0.28)
+                .rotationEffect(.degrees(-6))
+                .position(x: size.width * 0.48, y: size.height * 0.76)
+        }
     }
 
     private func pathTrail(size: CGSize) -> some View {
@@ -767,82 +896,71 @@ struct PulseWidgetHomeRenderer: View {
             let baseHeight: CGFloat = usesMediumMetrics ? 120 : 86
             let rawPoints: [CGPoint] = usesMediumMetrics
                 ? [
-                    CGPoint(x: 16, y: 104), CGPoint(x: 56, y: 98),
-                    CGPoint(x: 98, y: 88), CGPoint(x: 140, y: 80),
-                    CGPoint(x: 180, y: 74), CGPoint(x: 220, y: 70),
+                    CGPoint(x: 16, y: 106), CGPoint(x: 52, y: 94),
+                    CGPoint(x: 86, y: 102), CGPoint(x: 126, y: 82),
+                    CGPoint(x: 168, y: 90), CGPoint(x: 214, y: 64),
                 ]
                 : [
-                    CGPoint(x: 10, y: 74), CGPoint(x: 24, y: 70),
-                    CGPoint(x: 38, y: 65), CGPoint(x: 52, y: 61),
-                    CGPoint(x: 66, y: 58), CGPoint(x: 80, y: 56),
+                    CGPoint(x: 10, y: 76), CGPoint(x: 24, y: 68),
+                    CGPoint(x: 38, y: 74), CGPoint(x: 53, y: 60),
+                    CGPoint(x: 69, y: 66), CGPoint(x: 87, y: 50),
                 ]
             let points = rawPoints.map {
                 CGPoint(x: $0.x / baseWidth * proxy.size.width, y: $0.y / baseHeight * proxy.size.height)
             }
-            let end = CGPoint(
-                x: (usesMediumMetrics ? 278 : 112) / baseWidth * proxy.size.width,
-                y: (usesMediumMetrics ? 68 : 54) / baseHeight * proxy.size.height
-            )
 
             ZStack(alignment: .topLeading) {
-                Path { path in
-                    guard let first = points.first else { return }
-                    path.move(to: first)
-                    for index in 1..<points.count {
-                        let previous = points[index - 1]
-                        let current = points[index]
-                        let midpoint = (previous.x + current.x) / 2
-                        path.addCurve(
-                            to: current,
-                            control1: CGPoint(x: midpoint, y: previous.y),
-                            control2: CGPoint(x: midpoint, y: current.y)
-                        )
-                    }
-                    if let previous = points.last {
-                        path.addCurve(
-                            to: end,
-                            control1: CGPoint(x: (previous.x + end.x) / 2, y: previous.y),
-                            control2: CGPoint(x: (previous.x + end.x) / 2, y: end.y)
-                        )
-                    }
-                }
-                .stroke(
-                    fieldColor.opacity(0.32),
-                    style: StrokeStyle(lineWidth: pt(1.35, in: size), lineCap: .round)
-                )
-
                 ForEach(Array(days.enumerated()), id: \.element.id) { index, item in
-                    let radii: [CGFloat] = usesMediumMetrics
-                        ? [4, 3.6, 6.2, 7.4, 4.6, 8.5]
-                        : [2.4, 2.2, 3.5, 4.2, 2.6, 4.8]
-                    Text(verbatim: PulseLocalizedDateFormatting.dayNumber(item.day, locale: locale))
-                        .font(.system(size: pt(usesMediumMetrics ? 9 : 7.5, in: size), weight: .semibold))
-                        .foregroundStyle(secondaryColor)
-                        .monospacedDigit()
-                        .position(
-                            x: points[index].x,
-                            y: points[index].y - pt(usesMediumMetrics ? 13 : 9, in: size)
-                        )
+                    let sides: [CGFloat] = usesMediumMetrics
+                        ? [8, 10, 12, 15, 18, 22]
+                        : [5.5, 6.5, 7.5, 9, 10.5, 12.5]
+                    let angles: [Double] = [-22, 18, -14, 20, -12, 16]
 
-                    Circle()
-                        .fill(item.state == .checked ? fieldColor : .clear)
-                        .overlay {
-                            if item.state != .checked {
-                                Circle().stroke(
-                                    secondaryColor.opacity(0.40),
-                                    lineWidth: pt(1.3, in: size)
-                                )
-                            }
-                        }
-                        .frame(
-                            width: pt(radii[index] * 2, in: size),
-                            height: pt(radii[index] * 2, in: size)
-                        )
-                        .position(points[index])
+                    pathFootprint(
+                        item,
+                        side: pt(sides[index], in: size),
+                        angle: angles[index]
+                    )
+                    .position(points[index])
                 }
             }
         }
         .frame(height: pt(usesMediumMetrics ? 120 : 86, in: size))
+    }
+
+    private func pathFootprint(
+        _ item: PulseWidgetDaySnapshot,
+        side: CGFloat,
+        angle: Double
+    ) -> some View {
+        let isChecked = item.state == .checked
+
+        return ZStack(alignment: .top) {
+            HStack(alignment: .bottom, spacing: side * 0.055) {
+                Circle()
+                    .frame(width: side * 0.17, height: side * 0.17)
+                Circle()
+                    .frame(width: side * 0.20, height: side * 0.20)
+                Circle()
+                    .frame(width: side * 0.15, height: side * 0.15)
+            }
+            .foregroundStyle(isChecked ? fieldColor.opacity(0.84) : secondaryColor.opacity(0.42))
+
+            Capsule(style: .continuous)
+                .fill(isChecked ? fieldColor : .clear)
+                .overlay {
+                    Capsule(style: .continuous)
+                        .stroke(
+                            isChecked ? fieldColor.opacity(0.76) : secondaryColor.opacity(0.48),
+                            lineWidth: max(1, side * 0.11)
+                        )
+                }
+                .frame(width: side * 0.58, height: side * 0.82)
+                .offset(y: side * 0.28)
+        }
+        .frame(width: side, height: side * 1.12)
+        .rotationEffect(.degrees(angle))
+        .opacity(item.state == .beforeHabit ? 0.42 : 1)
     }
 
     private func habitName(
@@ -869,10 +987,6 @@ struct PulseWidgetHomeRenderer: View {
 
     private var baseBackground: Color {
         usesFullColorPalette ? PulseWidgetDesign.background : .clear
-    }
-
-    private var surfaceBackground: Color {
-        usesFullColorPalette ? PulseWidgetDesign.surface : .clear
     }
 
     private var surfaceColor: Color {
@@ -924,6 +1038,19 @@ struct PulseWidgetHomeRenderer: View {
     private var tideFootColor: Color {
         guard snapshot.isCheckedToday else { return secondaryColor }
         return usesFullColorPalette ? primaryColor.opacity(0.78) : .primary
+    }
+
+    private var pathSummaryText: String {
+        let count = snapshot.recentDays.dropLast().reduce(into: 0) { result, item in
+            if item.state == .checked {
+                result += 1
+            }
+        }
+        return String(
+            format: pathSummaryFormat,
+            locale: locale,
+            Int32(count)
+        )
     }
 
     private func pt(_ value: CGFloat, in size: CGSize) -> CGFloat {
@@ -1226,6 +1353,18 @@ private struct PulsePathTodayMark: View {
                     .monospacedDigit()
                     .minimumScaleFactor(0.74)
                     .lineLimit(1)
+
+                if isChecked {
+                    Circle()
+                        .fill(ringColor)
+                        .overlay {
+                            Image(systemName: "checkmark")
+                                .font(.system(size: side * 0.12, weight: .bold))
+                                .foregroundStyle(completedForeground)
+                        }
+                        .frame(width: side * 0.27, height: side * 0.27)
+                        .offset(x: side * 0.34, y: side * 0.34)
+                }
             }
         }
         .accessibilityHidden(true)
@@ -1238,6 +1377,10 @@ private struct PulsePathTodayMark: View {
 
     private var inkColor: Color {
         usesFullColorPalette ? PulseWidgetDesign.ink : .primary
+    }
+
+    private var completedForeground: Color {
+        usesFullColorPalette ? PulseWidgetDesign.grassForeground : .black
     }
 }
 
@@ -1403,6 +1546,8 @@ enum PulseWidgetDesign {
     static let shadow = Color("PulseShadow")
     static let widgetSky = Color("PulseWidgetSky")
     static let widgetSkyMiddle = Color("PulseWidgetSkyMiddle")
+
+    static let stackPhysicalSheetCount = 4
 
     static let spacing4: CGFloat = 4
     static let spacing8: CGFloat = 8

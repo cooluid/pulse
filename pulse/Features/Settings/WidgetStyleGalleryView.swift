@@ -134,16 +134,16 @@ struct WidgetStyleGalleryView: View {
                 } else if PulseWidgetStyleAccessPolicy.requiresEnhancement(style) {
                     galleryBadge(
                         title: "widget.gallery.unlocked",
-                        systemImage: "checkmark.seal.fill",
-                        foreground: PulseDesign.grassForeground,
-                        background: PulseDesign.grass
+                        systemImage: "checkmark",
+                        foreground: PulseDesign.action,
+                        background: PulseDesign.field.opacity(0.10)
                     )
                 } else {
                     galleryBadge(
                         title: "widget.gallery.included",
-                        systemImage: "circle.fill",
-                        foreground: PulseDesign.grassForeground,
-                        background: PulseDesign.grass
+                        systemImage: "checkmark",
+                        foreground: PulseDesign.action,
+                        background: PulseDesign.field.opacity(0.10)
                     )
                 }
             }
@@ -187,7 +187,7 @@ struct WidgetStyleGalleryView: View {
         background: Color
     ) -> some View {
         Label(title, systemImage: systemImage)
-            .font(.caption2.weight(.semibold))
+            .font(.caption2.weight(.medium))
             .foregroundStyle(foreground)
             .padding(.horizontal, PulseDesign.spacing8)
             .padding(.vertical, PulseDesign.spacing4)
@@ -222,6 +222,10 @@ struct PulseWidgetStylePreview: View {
                 snapshot.isCheckedToday
                     ? "today.navigation.checked"
                     : "today.navigation.pending",
+                locale: locale
+            ),
+            pathSummaryFormat: PulseLocalization.string(
+                "widget.path.summary.format",
                 locale: locale
             ),
             actionText: PulseLocalization.string(
