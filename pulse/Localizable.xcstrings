@@ -1185,6 +1185,22 @@
         }
       }
     },
+    "history.detail.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This day"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "这一天"
+          }
+        }
+      }
+    },
     "history.longest_streak" : {
       "localizations" : {
         "en" : {
@@ -1249,18 +1265,50 @@
         }
       }
     },
-    "history.record_deleted_media_retained" : {
+    "history.record_actions" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "The check-in was deleted. This day’s photo remains as an independent memory."
+            "value" : "Manage this day"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "签到记录已删除；当天照片仍作为独立记忆保留。"
+            "value" : "管理这一天"
+          }
+        }
+      }
+    },
+    "history.record_actions_hint" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Export or delete content from this day"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "导出或删除这一天的内容"
+          }
+        }
+      }
+    },
+    "history.record_deleted_media_retained" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Photo kept; no check-in remains."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "仅保留照片，不计入签到。"
           }
         }
       }
@@ -1309,6 +1357,38 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "数据不可用"
+          }
+        }
+      }
+    },
+    "media.actions" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Manage photo"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "管理照片"
+          }
+        }
+      }
+    },
+    "media.actions_hint" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Retake or delete this photo"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "重拍或删除这张照片"
           }
         }
       }

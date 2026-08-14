@@ -900,70 +900,53 @@ private struct TodayMediaDetailSheet: View {
     @State private var showsDeleteConfirmation = false
 
     var body: some View {
-        NavigationStack {
-            ZStack {
-                PulseScreenBackground()
-                PulseFieldBackground()
-
-                VStack(spacing: PulseDesign.spacing24) {
-                    ImprintMediaPreview(media: media, load: load)
-                        .frame(maxWidth: PulseDesign.mediaCardMaxWidth)
-
-                    HStack(spacing: PulseDesign.spacing12) {
-                        Button {
-                            onRetake()
-                        } label: {
-                            Label("today.media.retake", systemImage: "camera.rotate")
-                                .frame(minHeight: PulseDesign.minimumHitTarget)
-                        }
-                        .buttonStyle(.borderedProminent)
-                        .tint(PulseDesign.action)
-                        .accessibilityIdentifier("today.media.retake.button")
-
-                        Button(role: .destructive) {
-                            showsDeleteConfirmation = true
-                        } label: {
-                            Label("today.media.delete", systemImage: "trash")
-                                .frame(minHeight: PulseDesign.minimumHitTarget)
-                        }
-                        .buttonStyle(.bordered)
-                        .accessibilityIdentifier("today.media.delete.button")
-                        .confirmationDialog(
-                            "media.delete_confirmation.title",
-                            isPresented: $showsDeleteConfirmation,
-                            titleVisibility: .visible
-                        ) {
-                            Button("media.delete_confirmation.action", role: .destructive) {
-                                Task {
-                                    if await onDelete() {
-                                        dismiss()
-                                    }
-                                }
-                            }
-                            Button("action.cancel", role: .cancel) {}
-                        } message: {
-                            Text("media.delete_confirmation.message")
-                        }
-                    }
+        PulseDetailSheetScaffold(
+            title: "today.media.title",
+            detents: [.large]
+        ) {
+            ImprintMediaPreview(media: media, load: load)
+                .frame(maxWidth: .infinity)
+                .accessibilityIdentifier("today.media.preview")
+        } actions: {
+            PulseDetailActionsMenu(
+                accessibilityLabel: "media.actions",
+                accessibilityHint: "media.actions_hint",
+                accessibilityIdentifier: "today.media.actions.menu"
+            ) {
+                Button {
+                    onRetake()
+                } label: {
+                    Label("today.media.retake", systemImage: "camera.rotate")
                 }
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-                .padding(PulseDesign.spacing24)
+                .accessibilityIdentifier("today.media.retake.action")
+
+                Divider()
+
+                Button(role: .destructive) {
+                    showsDeleteConfirmation = true
+                } label: {
+                    Label("today.media.delete", systemImage: "trash")
+                }
+                .tint(PulseDesign.systemDestructive)
+                .accessibilityIdentifier("today.media.delete.action")
             }
-            .navigationTitle("today.media.title")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .confirmationAction) {
-                    Button {
-                        dismiss()
-                    } label: {
-                        Image(systemName: "xmark")
+            .confirmationDialog(
+                "media.delete_confirmation.title",
+                isPresented: $showsDeleteConfirmation,
+                titleVisibility: .visible
+            ) {
+                Button("media.delete_confirmation.action", role: .destructive) {
+                    Task {
+                        if await onDelete() {
+                            dismiss()
+                        }
                     }
-                    .accessibilityLabel("action.close")
                 }
+                Button("action.cancel", role: .cancel) {}
+            } message: {
+                Text("media.delete_confirmation.message")
             }
         }
-        .presentationDetents([.medium, .large])
-        .presentationDragIndicator(.visible)
     }
 }
 

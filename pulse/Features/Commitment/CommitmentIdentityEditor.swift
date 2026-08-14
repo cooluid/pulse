@@ -56,7 +56,7 @@ struct CommitmentIdentityEditor: View {
     private var onboardingIntroduction: some View {
         Section {
             VStack(alignment: .leading, spacing: PulseDesign.spacing16) {
-                PulseBrandMark(size: PulseDesign.recordDetailBrandMarkSize)
+                PulseBrandMark(size: PulseDesign.onboardingBrandMarkSize)
 
                 Text("commitment.onboarding.title")
                     .font(.largeTitle.bold())

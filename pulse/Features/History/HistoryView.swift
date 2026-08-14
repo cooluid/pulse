@@ -55,8 +55,6 @@ struct HistoryView: View {
         .toolbar(.hidden, for: .navigationBar)
         .sheet(item: $selectedDay) { day in
             DayArchiveDetailView(day: day, model: model)
-                .presentationDetents([.medium, .large])
-                .presentationDragIndicator(.visible)
         }
     }
 
@@ -446,37 +444,35 @@ private struct DayArchiveDetailView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @Environment(\.locale) private var locale
-    @State private var showsDeleteConfirmation = false
-    @State private var showsMediaDeleteConfirmation = false
+    @Environment(\.verticalSizeClass) private var verticalSizeClass
+    @State private var pendingDestructiveAction: DestructiveAction?
     @State private var photoDocument: ImprintPhotoDocument?
     @State private var showsPhotoExporter = false
     @State private var isPreparingPhotoExport = false
+
+    private enum DestructiveAction {
+        case media(UUID)
+        case record(UUID)
+    }
 
     private var record: CheckInRecordSnapshot? { model.record(for: day) }
     private var media: ImprintMediaSnapshot? { model.media(for: day) }
 
     var body: some View {
-        ZStack {
-            PulseScreenBackground()
+        PulseDetailSheetScaffold(
+            title: "history.detail.title",
+            detents: archivePresentationDetents
+        ) {
+            archiveIdentity
 
-            ScrollView {
-                VStack(spacing: PulseDesign.spacing20) {
-                    archiveHeader
-
-                    if let media {
-                        ImprintMediaPreview(media: media, load: model.thumbnailData)
-                            .frame(maxWidth: .infinity)
-                    }
-
-                    archiveActionDock
-                }
-                .frame(maxWidth: PulseDesign.mediaCardMaxWidth)
-                .padding(PulseDesign.spacing24)
-                .frame(maxWidth: .infinity)
+            if let media {
+                ImprintMediaPreview(media: media, load: model.thumbnailData)
+                    .frame(maxWidth: .infinity)
+                    .accessibilityIdentifier("history.media.preview")
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
+        } actions: {
+            archiveActionsMenu
         }
-        .tint(PulseDesign.tint)
         .fileExporter(
             isPresented: $showsPhotoExporter,
             document: photoDocument,
@@ -487,27 +483,15 @@ private struct DayArchiveDetailView: View {
         }
     }
 
-    private var archiveHeader: some View {
-        ViewThatFits(in: .horizontal) {
-            HStack(alignment: .center, spacing: PulseDesign.spacing16) {
-                PulseBrandMark(size: PulseDesign.recordDetailBrandMarkSize)
-                archiveIdentity(alignment: .leading, textAlignment: .leading)
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-
-            VStack(spacing: PulseDesign.spacing12) {
-                PulseBrandMark(size: PulseDesign.recordDetailBrandMarkSize)
-                archiveIdentity(alignment: .center, textAlignment: .center)
-            }
-            .frame(maxWidth: .infinity)
+    private var archivePresentationDetents: Set<PresentationDetent> {
+        if media != nil || dynamicTypeSize.isAccessibilitySize || verticalSizeClass == .compact {
+            return [.large]
         }
+        return [.fraction(PulseDesign.compactDetailDetentFraction), .large]
     }
 
-    private func archiveIdentity(
-        alignment: HorizontalAlignment,
-        textAlignment: TextAlignment
-    ) -> some View {
-        VStack(alignment: alignment, spacing: PulseDesign.spacing4) {
+    private var archiveIdentity: some View {
+        VStack(alignment: .leading, spacing: PulseDesign.spacing4) {
             Text(
                 PulseFormatting.fullDate(
                     day,
@@ -517,7 +501,7 @@ private struct DayArchiveDetailView: View {
             )
             .font(.title3.bold())
             .foregroundStyle(PulseDesign.ink)
-            .multilineTextAlignment(textAlignment)
+            .fixedSize(horizontal: false, vertical: true)
 
             if let record {
                 Text(
@@ -534,205 +518,139 @@ private struct DayArchiveDetailView: View {
                     )
                 )
                 .foregroundStyle(PulseDesign.secondary)
-                .multilineTextAlignment(textAlignment)
+                .fixedSize(horizontal: false, vertical: true)
             } else {
                 Text("history.record_deleted_media_retained")
                     .foregroundStyle(PulseDesign.secondary)
-                    .multilineTextAlignment(textAlignment)
+                    .fixedSize(horizontal: false, vertical: true)
             }
         }
-        .frame(maxWidth: .infinity, alignment: textAlignment == .leading ? .leading : .center)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .accessibilityElement(children: .combine)
+        .accessibilityIdentifier("history.record.detail.identity")
     }
 
-    @ViewBuilder
-    private var archiveActionDock: some View {
-        if media != nil || record != nil {
-            Group {
-                if dynamicTypeSize.isAccessibilitySize {
-                    accessibilityActionGrid
-                } else {
-                    compactActionRow
-                }
-            }
-            .padding(PulseDesign.spacing8)
-            .background(
-                PulseDesign.surface,
-                in: RoundedRectangle(
-                    cornerRadius: PulseDesign.mediaCornerRadius,
-                    style: .continuous
-                )
-            )
-            .overlay {
-                RoundedRectangle(
-                    cornerRadius: PulseDesign.mediaCornerRadius,
-                    style: .continuous
-                )
-                .stroke(PulseDesign.separator, lineWidth: PulseDesign.thinLineWidth)
-            }
-        }
-    }
-
-    private var compactActionRow: some View {
-        HStack(spacing: 0) {
+    private var archiveActionsMenu: some View {
+        PulseDetailActionsMenu(
+            accessibilityLabel: "history.record_actions",
+            accessibilityHint: "history.record_actions_hint",
+            accessibilityIdentifier: "history.record.actions.menu",
+            isBusy: isPreparingPhotoExport
+        ) {
             if let media {
-                photoExportButton(media)
-                actionDivider
-                mediaDeleteButton(media)
-            }
-
-            if record != nil {
-                if media != nil {
-                    actionDivider
+                Button {
+                    preparePhotoExport(media)
+                } label: {
+                    Label("media.export_original", systemImage: "square.and.arrow.up")
                 }
-                deleteButton
-            }
-        }
-        .frame(maxWidth: .infinity)
-    }
+                .accessibilityIdentifier("history.media.export.action")
 
-    private var accessibilityActionGrid: some View {
-        Grid(horizontalSpacing: PulseDesign.spacing8, verticalSpacing: PulseDesign.spacing8) {
-            if let media {
-                photoExportButton(media)
-                    .gridCellColumns(2)
+                Divider()
 
-                if record != nil {
-                    GridRow {
-                        mediaDeleteButton(media)
-                        deleteButton
-                    }
-                } else {
-                    mediaDeleteButton(media)
-                        .gridCellColumns(2)
+                Button(role: .destructive) {
+                    pendingDestructiveAction = .media(media.id)
+                } label: {
+                    Label("today.media.delete", systemImage: "trash")
                 }
-            } else if record != nil {
-                deleteButton
-                    .gridCellColumns(2)
+                .tint(PulseDesign.systemDestructive)
+                .accessibilityIdentifier("history.media.delete.action")
+            }
+
+            if let record {
+                Button(role: .destructive) {
+                    pendingDestructiveAction = .record(record.id)
+                } label: {
+                    Label("history.delete_record", systemImage: "calendar.badge.minus")
+                }
+                .tint(PulseDesign.systemDestructive)
+                .accessibilityIdentifier("history.record.delete.action")
             }
         }
-    }
-
-    private var actionDivider: some View {
-        Divider()
-            .frame(height: PulseDesign.minimumHitTarget)
-            .padding(.horizontal, PulseDesign.spacing4)
-    }
-
-    private func photoExportButton(_ media: ImprintMediaSnapshot) -> some View {
-        Button {
-            guard !isPreparingPhotoExport else { return }
-            isPreparingPhotoExport = true
-            Task {
-                defer { isPreparingPhotoExport = false }
-                guard let data = await model.originalDataForExport(for: media) else { return }
-                photoDocument = ImprintPhotoDocument(data: data)
-                showsPhotoExporter = true
-            }
-        } label: {
-            if isPreparingPhotoExport {
-                archiveActionLabel(
-                    "media.export_original",
-                    systemImage: nil,
-                    showsProgress: true
-                )
-            } else {
-                archiveActionLabel(
-                    "media.export_original",
-                    systemImage: "square.and.arrow.up"
-                )
-            }
-        }
-        .buttonStyle(.plain)
-        .foregroundStyle(PulseDesign.ink)
         .disabled(isPreparingPhotoExport)
-        .accessibilityIdentifier("history.media.export.button")
-    }
-
-    private func mediaDeleteButton(_ media: ImprintMediaSnapshot) -> some View {
-        Button(role: .destructive) {
-            showsMediaDeleteConfirmation = true
-        } label: {
-            archiveActionLabel(
-                "today.media.delete",
-                systemImage: "photo.badge.minus"
-            )
-        }
-        .buttonStyle(.plain)
-        .accessibilityIdentifier("history.media.delete.button")
         .confirmationDialog(
-            "media.delete_confirmation.title",
-            isPresented: $showsMediaDeleteConfirmation,
+            destructiveConfirmationTitle,
+            isPresented: showsDestructiveConfirmation,
             titleVisibility: .visible
         ) {
-            Button("media.delete_confirmation.action", role: .destructive) {
-                Task {
-                    if await model.deleteMedia(id: media.id), record == nil {
-                        dismiss()
-                    }
+            switch pendingDestructiveAction {
+            case .media(let id):
+                Button("media.delete_confirmation.action", role: .destructive) {
+                    confirmDestructiveAction(.media(id))
                 }
+                .accessibilityIdentifier("history.media.delete.confirmation.action")
+            case .record(let id):
+                Button("history.delete_confirmation.action", role: .destructive) {
+                    confirmDestructiveAction(.record(id))
+                }
+                .accessibilityIdentifier("history.record.delete.confirmation.action")
+            case nil:
+                EmptyView()
             }
             Button("action.cancel", role: .cancel) {}
         } message: {
-            Text("media.delete_confirmation.message")
+            Text(destructiveConfirmationMessage)
         }
     }
 
-    private var deleteButton: some View {
-        Button(role: .destructive) {
-            showsDeleteConfirmation = true
-        } label: {
-            archiveActionLabel(
-                "history.delete_record",
-                systemImage: "calendar.badge.minus"
-            )
+    private var showsDestructiveConfirmation: Binding<Bool> {
+        Binding {
+            pendingDestructiveAction != nil
+        } set: { isPresented in
+            if !isPresented {
+                pendingDestructiveAction = nil
+            }
         }
-        .buttonStyle(.plain)
-        .accessibilityIdentifier("history.record.delete.button")
-        .confirmationDialog(
-            "history.delete_confirmation.title",
-            isPresented: $showsDeleteConfirmation,
-            titleVisibility: .visible
-        ) {
-            Button("history.delete_confirmation.action", role: .destructive) {
-                Task {
-                    if let record, await model.delete(recordID: record.id), media == nil {
-                        dismiss()
-                    }
+    }
+
+    private var destructiveConfirmationTitle: LocalizedStringKey {
+        switch pendingDestructiveAction {
+        case .media:
+            "media.delete_confirmation.title"
+        case .record:
+            "history.delete_confirmation.title"
+        case nil:
+            "history.record_actions"
+        }
+    }
+
+    private var destructiveConfirmationMessage: LocalizedStringKey {
+        switch pendingDestructiveAction {
+        case .media:
+            "media.delete_confirmation.message"
+        case .record:
+            "history.delete_confirmation.message"
+        case nil:
+            "history.record_actions_hint"
+        }
+    }
+
+    private func preparePhotoExport(_ media: ImprintMediaSnapshot) {
+        guard !isPreparingPhotoExport else { return }
+        isPreparingPhotoExport = true
+        Task {
+            defer { isPreparingPhotoExport = false }
+            guard let data = await model.originalDataForExport(for: media) else { return }
+            photoDocument = ImprintPhotoDocument(data: data)
+            showsPhotoExporter = true
+        }
+    }
+
+    private func confirmDestructiveAction(_ action: DestructiveAction) {
+        pendingDestructiveAction = nil
+        let dismissAfterMediaDelete = record == nil
+        let dismissAfterRecordDelete = media == nil
+
+        Task {
+            switch action {
+            case .media(let id):
+                if await model.deleteMedia(id: id), dismissAfterMediaDelete {
+                    dismiss()
+                }
+            case .record(let id):
+                if await model.delete(recordID: id), dismissAfterRecordDelete {
+                    dismiss()
                 }
             }
-            .accessibilityIdentifier("history.record.delete.confirm.button")
-            Button("action.cancel", role: .cancel) {}
-        } message: {
-            Text("history.delete_confirmation.message")
         }
-    }
-
-    private func archiveActionLabel(
-        _ title: LocalizedStringKey,
-        systemImage: String?,
-        showsProgress: Bool = false
-    ) -> some View {
-        VStack(spacing: PulseDesign.spacing4) {
-            if showsProgress {
-                ProgressView()
-                    .controlSize(.small)
-            } else if let systemImage {
-                Image(systemName: systemImage)
-                    .font(.headline.weight(.semibold))
-            }
-
-            Text(title)
-                .font(.caption.weight(.semibold))
-                .multilineTextAlignment(.center)
-                .lineLimit(dynamicTypeSize.isAccessibilitySize ? 3 : 2)
-                .minimumScaleFactor(0.78)
-        }
-        .frame(maxWidth: .infinity)
-        .frame(
-            minHeight: dynamicTypeSize.isAccessibilitySize
-                ? PulseDesign.accessibilityActionMinimumHeight
-                : 60
-        )
-        .contentShape(Rectangle())
     }
 }

@@ -530,7 +530,7 @@ final class PulseFlowUITests: XCTestCase {
         }
     }
 
-    func testRecordDetailUsesSheetDismissalAndSourceAnchoredDeleteConfirmation() throws {
+    func testRecordDetailUsesStableCompactSheetAndToolbarActionsMenu() throws {
         configureApp()
         launchAndConfirmDefaultCommitment()
 
@@ -546,14 +546,88 @@ final class PulseFlowUITests: XCTestCase {
         XCTAssertTrue(checkedDay.waitForExistence(timeout: 3))
         checkedDay.tap()
 
-        let deleteButton = app.descendants(matching: .any)["history.record.delete.button"]
-        XCTAssertTrue(deleteButton.waitForExistence(timeout: 3))
+        let identity = app.descendants(matching: .any)["history.record.detail.identity"]
+        let actionsMenu = app.buttons["history.record.actions.menu"]
+        let closeButton = app.buttons["detail.sheet.close"]
+        XCTAssertTrue(identity.waitForExistence(timeout: 3))
+        XCTAssertTrue(identity.label.contains("2026年8月10日"))
+        XCTAssertTrue(actionsMenu.waitForExistence(timeout: 3))
+        XCTAssertTrue(closeButton.exists)
+        XCTAssertTrue(actionsMenu.isHittable)
+        XCTAssertTrue(closeButton.isHittable)
         XCTAssertFalse(app.buttons["完成"].exists)
-        deleteButton.tap()
+        XCTAssertFalse(app.descendants(matching: .any)["history.media.preview"].exists)
+
+        let detailAttachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
+        detailAttachment.name = "Unified compact record detail without media"
+        detailAttachment.lifetime = .keepAlways
+        add(detailAttachment)
+
+        actionsMenu.tap()
+
+        let deleteAction = app.descendants(matching: .any)["history.record.delete.action"]
+        XCTAssertTrue(deleteAction.waitForExistence(timeout: 3))
+        XCTAssertFalse(app.descendants(matching: .any)["history.media.export.action"].exists)
+        XCTAssertFalse(app.descendants(matching: .any)["history.media.delete.action"].exists)
+
+        let menuAttachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
+        menuAttachment.name = "Record detail toolbar actions menu"
+        menuAttachment.lifetime = .keepAlways
+        add(menuAttachment)
+
+        deleteAction.tap()
 
         XCTAssertTrue(
-            app.buttons["history.record.delete.confirm.button"].waitForExistence(timeout: 3)
+            app.buttons["history.record.delete.confirmation.action"]
+                .waitForExistence(timeout: 3)
         )
+    }
+
+    func testAccessibilityXXXLRecordDetailKeepsSingleActionsMenu() throws {
+        configureApp()
+        app.launchArguments += [
+            "-UIPreferredContentSizeCategoryName",
+            "UICTContentSizeCategoryAccessibilityXXXL"
+        ]
+        launchAndConfirmDefaultCommitment()
+
+        let checkInButton = app.buttons["today.checkin.button"]
+        XCTAssertTrue(checkInButton.waitForExistence(timeout: 5))
+        checkInButton.tap()
+
+        let historyNavigation = app.buttons["primary.navigation.history"]
+        XCTAssertTrue(historyNavigation.waitForExistence(timeout: 3))
+        historyNavigation.tap()
+
+        let checkedDay = app.descendants(matching: .any)["calendar.day.2026-08-10"]
+        for _ in 0..<6 where !checkedDay.exists || !checkedDay.isHittable {
+            app.swipeUp()
+        }
+        XCTAssertTrue(checkedDay.waitForExistence(timeout: 3))
+        checkedDay.tap()
+
+        let identity = app.descendants(matching: .any)["history.record.detail.identity"]
+        let actionsMenu = app.buttons["history.record.actions.menu"]
+        let closeButton = app.buttons["detail.sheet.close"]
+        XCTAssertTrue(identity.waitForExistence(timeout: 3))
+        XCTAssertTrue(actionsMenu.waitForExistence(timeout: 3))
+        XCTAssertTrue(closeButton.exists)
+        XCTAssertTrue(actionsMenu.isHittable)
+        XCTAssertTrue(closeButton.isHittable)
+        XCTAssertFalse(app.descendants(matching: .any)["history.media.preview"].exists)
+
+        let attachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
+        attachment.name = "Accessibility XXXL record detail"
+        attachment.lifetime = .keepAlways
+        add(attachment)
+
+        actionsMenu.tap()
+        XCTAssertTrue(
+            app.descendants(matching: .any)["history.record.delete.action"]
+                .waitForExistence(timeout: 3)
+        )
+        XCTAssertFalse(app.descendants(matching: .any)["history.media.export.action"].exists)
+        XCTAssertFalse(app.descendants(matching: .any)["history.media.delete.action"].exists)
     }
 
     func testAccessibilityXXXLUsesExpandableCheckInControl() throws {
