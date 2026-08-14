@@ -68,7 +68,7 @@ AppModel 同时建立 `recordsByDay` 与 `mediaByDay`。照片不参与 CheckInS
 
 ## 8. 视觉与可访问性
 
-影像作为内容层进入 App；不另造第二套签到事实。Today 保留签到主动作；History 可标记有影像日期。操作使用系统 Button/确认、44pt 命中、Dynamic Type、VoiceOver、Reduce Motion 等价。外观自由迭代。
+影像作为内容层进入 App；不另造第二套签到事实。Today 保留签到主动作；History 可标记有影像日期。操作使用系统 Button/确认、44pt 命中、Dynamic Type、VoiceOver、Reduce Motion 等价。外观以实现与人工截图为准。
 
 ## 9. 证据边界
 

@@ -17,7 +17,7 @@ Widget 不是持续运行的动画画布。它首先必须准确表达“今天�
 | L1 | 事实变装 | 权威事实保存并 reload 后的有限过渡 | Home Screen 八式 |
 | L1P | 变化预览 | App 内依次投影三种时段氛围，再播放完成帧 | 构图画廊逐卡重播 |
 
-禁止无限循环、密集 Timeline 帧、准点承诺、伪造签到事实、持久化纯视觉状态，以及用运动掩盖布局或可读性问题。外观题材（含氛围）由美术决定，本合同不列效果黑名单。
+禁止无限循环、密集 Timeline 帧、准点承诺、伪造签到事实、持久化纯视觉状态，以及用运动掩盖布局或可读性问题。外观题材由实现与人工观感决定。
 
 ## 2. 正式数据流
 
@@ -27,13 +27,13 @@ Widget 不是持续运行的动画画布。它首先必须准确表达“今天�
 4. `PulseWidgetHomeRenderer` 根据 `snapshot.generatedAt` 与项目时区推导氛围状态，根据 `snapshot.isCheckedToday` 选择事实终态；氛围状态不能改变日期、签到、历史或文案。
 5. `PulseWidgetMotionPresentation` 为各物件提供一次、有限、可关闭的过渡曲线。
 
-不存在持久化的 `PulseWidgetVisualVariant`、ornament seed 或第二套预览状态。Gallery 与 Widget Extension 使用同一 Renderer；画廊重播只允许从当前权威 snapshot 瞬时投影早间 / 日间 / 晚间与今天的待签到 / 已签到外观，生命周期限于单张卡片，不写 Repository、App Group、UserDefaults 或正式 Widget Timeline。
+不存在第二套可持久化的预览状态。Gallery 与 Widget Extension 使用同一 Renderer；画廊重播只允许从当前权威 snapshot 瞬时投影早间 / 日间 / 晚间与今天的待签到 / 已签到外观，生命周期限于单张卡片，不写 Repository、App Group、UserDefaults 或正式 Widget Timeline。
 
-## 3. 物件变化（实现可改，非美术锁）
+## 3. 物件变化
 
-签到 reload 后，各式用**自己的主物件**做一次有限变装（不要只改共享签到圈）。具体长什么样、用什么材质/渐变，由实现与人工观感决定，本文不锁画法。
+签到 reload 后，各式用**自己的主物件**做一次有限变装。具体长什么样由实现与人工观感决定。
 
-当前实现可参考 `PulseWidgetHomeRenderer`；改画不必先改本合同。
+当前实现可参考 `PulseWidgetHomeRenderer`；改画直接改渲染器即可。
 
 工程上仍遵守：单次动画 ≤ 两秒、Reduce Motion 直接终态、不伪造事实、不密集 Timeline 帧。
 
