@@ -82,7 +82,7 @@ Widget 不能调用删除、清除、导入、修改时区或编辑承诺。
 - 最近七日状态；
 - 快照生成时间、项目时区标识与下一个逻辑日零点。
 
-`PulseWidgetTimelinePlan` 返回严格按时间排序的 `[PulseWidgetTimelineEntry]`：仅包含当前权威 snapshot 与下一逻辑日零点重新投影的 snapshot。时间线不承载装饰时段或伪动画关键帧；事实变化由 App Intent 保存后触发 Widget reload。动效边界与禁止项见 [WIDGET_MOTION_CONTRACT.md](./WIDGET_MOTION_CONTRACT.md)。
+`PulseWidgetTimelinePlan` 返回严格按时间排序的 `[PulseWidgetTimelineEntry]`：包含当前权威 snapshot、当天剩余的 06:00 / 12:00 / 18:00 稀疏氛围边界，以及下一逻辑日零点重新投影的 snapshot，每天最多五条。三种氛围 entry 只改变同一事实的低幅构图，不承担准确报时，不能伪造签到或历史；WidgetKit 的实际交付时机由系统决定。时间线不承载密集动画关键帧；事实变化由 App Intent 保存后触发 Widget reload。动效边界与禁止项见 [WIDGET_MOTION_CONTRACT.md](./WIDGET_MOTION_CONTRACT.md)。
 
 成功 plan 使用 `TimelineReloadPolicy.atEnd`。Reduce Motion 不改变时间线或事实，只让 Renderer 直接呈现相同终态。
 
@@ -112,7 +112,7 @@ store 缺失或身份未确认显示“打开 App”；store 打不开、偏好�
 - App Group identifier 解析、唯一相对路径与 group URL 缺失失败；
 - Widget 在 store 不存在、身份未确认和事实损坏时不可写且不显示虚假完成；
 - 两个独立 ModelContainer 同日写入最终只有一个 `recordKey`；
-- timeline 只包含当前事实与跨项目时区零点重投影，Reduce Motion 保持相同终态，七日投影与 App 一致；
+- timeline 只包含当前事实、当天剩余的集中氛围边界与跨项目时区零点重投影，最多五条；Reduce Motion 保持相同终态，七日投影与 App 一致；
 - 三值 `interface.language` 的单一共享持久化、默认值与未知值失败关闭；
 - 构图 AppEnum、逐实例默认值、未授权时的明确拒绝，以及不同 Home Screen 实例可同时使用不同构图；枚举必须只覆盖待落之处 / 落印 / 叠印 / 数影 / 手札 / 静场 / 来路 / 潮痕，且不接受旧五式标识；
 - Lock Screen 独立 kind 不暴露构图参数，App/Widget 写入后同时刷新两个正式 kind；

@@ -259,10 +259,10 @@ final class PulseFlowUITests: XCTestCase {
         previewButton.tap()
         let replayLabel = NSPredicate(format: "label == %@", "再次预览")
         expectation(for: replayLabel, evaluatedWith: previewButton)
-        waitForExpectations(timeout: 3)
+        waitForExpectations(timeout: 4)
 
         let previewAttachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
-        previewAttachment.name = "Widget change preview completed without check-in"
+        previewAttachment.name = "Widget ambient periods and check-in preview completed"
         previewAttachment.lifetime = .keepAlways
         add(previewAttachment)
 

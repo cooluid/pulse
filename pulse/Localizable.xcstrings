@@ -3519,13 +3519,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Shows the transition without changing today's check-in."
+            "value" : "Shows morning, daylight, evening, and check-in changes without saving anything."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "只演示变化，不会改变今天的签到。"
+            "value" : "依次演示早间、日间、晚间与签到变化，不会保存任何数据。"
           }
         }
       }
@@ -3536,13 +3536,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Preview the visual change here. Home Screen timing is scheduled by iOS."
+            "value" : "Preview each composition across the day and after check-in. Home Screen timing is scheduled by iOS."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "可在这里预览构图变化；主屏幕的实际过渡时机由 iOS 调度。"
+            "value" : "可在这里预览每种构图随时段和签到发生的变化；主屏幕的实际展示时机由 iOS 调度。"
           }
         }
       }

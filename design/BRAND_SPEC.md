@@ -120,7 +120,7 @@ python3 scripts/build_brand_assets.py --check
 - Accessory 使用唯一“节律汇印”语法：圆形在今日开放环或完成印内部显示本地化当日纯数字；矩形左上显示今日短状态，过去六日节点上方显示真实日号并以连接线流向右侧唯一今日印记。不得把今天重复成第七个小节点。
 - Accessory 待签到圆形与矩形的完整可见区域都是同一个单向签到 `Button`；完成态静态。矩形内部节点从辅助功能树隐藏，整块只朗读今日状态、过去六日结果与操作提示。
 - Home Screen 全彩模式只使用品牌语义 Color Set，禁止自绘渐变。系统着色或透明外观通过 `widgetRenderingMode` 分离主内容与强调内容。`containerBackground(for: .widget)` 保持可移除；禁止自绘毛玻璃、霓虹调色板、粗黑装饰线、emoji、随机旋转和不可预测裁切。
-- Widget 动效遵循 [WIDGET_MOTION_CONTRACT.md](../docs/WIDGET_MOTION_CONTRACT.md)：Timeline 只承载当前事实与下一逻辑日；签到事实保存并 reload 后，各构图按自身材料语法完成一次有限变装。禁止时段装饰关键帧、无限循环或伪造业务事实。Reduce Motion 下直接呈现相同终态；Accessory 与 Always-On 保持静态事实表达。
+- Widget 动效遵循 [WIDGET_MOTION_CONTRACT.md](../docs/WIDGET_MOTION_CONTRACT.md)：Timeline 只承载当前状态、当天剩余的早间 / 日间 / 晚间稀疏氛围边界与下一逻辑日，最多五条；氛围不承担准确报时，系统实际展示时机不作准点承诺。签到事实保存并 reload 后，各构图必须由自己的主物件按材料语法完成一次有限变装，不能只变化通用签到圈。禁止密集 Timeline 帧、无限循环、气象装饰或伪造业务事实。Reduce Motion 下直接呈现相同终态；Accessory 与 Always-On 保持静态事实表达。
 - 共享 store 未就绪、身份未确认或快照损坏时显示明确“打开一日一印 / Open Pulse”或不可用状态，不能显示虚假待签到。App Group UserDefaults 只允许 `interface.language`，不存在 `widget.style` 旧路径。
 - 八种物件的小号与中号，以及 Accessory Circular / Rectangular，必须分别在系统 Widget Gallery 与真实表面验收待签到、已签到、浅色、深色、accented、vibrant 和 Clear；App 内画廊、Preview、编译成功、HTML 实验室或资产尺寸检查不能替代运行证据。
 

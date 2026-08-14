@@ -77,6 +77,7 @@ struct PulseWidgetHomeRenderer: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .contentTransition(allowsMotion ? .interpolate : .identity)
         .animation(motion(materialForCurrentStyle), value: snapshot.isCheckedToday)
+        .animation(motion(materialForCurrentStyle), value: ambientPeriod)
     }
 
     private func place(size: CGSize) -> some View {
@@ -176,6 +177,8 @@ struct PulseWidgetHomeRenderer: View {
             )
         }
         .frame(width: side, height: side)
+        .rotationEffect(.degrees(ambientRotation * 0.32))
+        .offset(x: ambientHorizontalShift(in: size) * 0.28)
         .animation(motion(.place), value: snapshot.isCheckedToday)
     }
 
@@ -191,7 +194,14 @@ struct PulseWidgetHomeRenderer: View {
             sealAfterimage(side: stampSide, size: size)
                 .position(x: stampX, y: size.height / 2)
 
-            ritualSeal(side: stampSide, showsWash: true, showsCheck: true)
+            PulseInkImpressionMark(
+                isChecked: snapshot.isCheckedToday,
+                usesFullColorPalette: usesFullColorPalette,
+                actionText: actionText
+            )
+                .frame(width: stampSide, height: stampSide)
+                .rotationEffect(.degrees(ambientRotation * 1.4))
+                .animation(motion(.ink), value: snapshot.isCheckedToday)
                 .position(x: stampX, y: size.height / 2)
 
             Text(verbatim: monthAndDay)
@@ -266,7 +276,11 @@ struct PulseWidgetHomeRenderer: View {
                 .padding(.leading, paperInset)
                 .padding(.top, paperInset)
 
-                ritualSeal(side: sealSide, showsWash: false, showsCheck: true)
+                PulsePaperClosureMark(
+                    isChecked: snapshot.isCheckedToday,
+                    usesFullColorPalette: usesFullColorPalette
+                )
+                    .frame(width: sealSide, height: sealSide * 0.72)
                     .padding(.trailing, paperInset)
                     .padding(.bottom, paperInset)
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
@@ -298,7 +312,7 @@ struct PulseWidgetHomeRenderer: View {
             baseBackground
             tideShore(size: size, shoreHeight: shoreHeight)
 
-            PulseTideDayMark(
+            PulseTideGaugeMark(
                 isChecked: snapshot.isCheckedToday,
                 usesFullColorPalette: usesFullColorPalette
             )
@@ -350,12 +364,12 @@ struct PulseWidgetHomeRenderer: View {
                 )
         }
         .frame(width: size.width, height: shoreHeight)
+        .offset(x: ambientHorizontalShift(in: size) * 0.72)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
         .animation(motion(.tide), value: snapshot.isCheckedToday)
     }
 
     private func bleed(size: CGSize) -> some View {
-        let sealSide = pt(usesMediumMetrics ? 48 : 40, in: size)
         let inset = pt(usesMediumMetrics ? 16 : 12, in: size)
 
         return ZStack(alignment: .topLeading) {
@@ -371,7 +385,8 @@ struct PulseWidgetHomeRenderer: View {
                 .minimumScaleFactor(0.82)
                 .frame(width: usesMediumMetrics ? size.width * 0.56 : size.width * 0.72)
                 .offset(
-                    x: pt(usesMediumMetrics ? 12 : 8, in: size),
+                    x: pt(usesMediumMetrics ? 12 : 8, in: size)
+                        + ambientHorizontalShift(in: size) * 0.55,
                     y: pt(usesMediumMetrics ? 18 : 34, in: size)
                 )
                 .scaleEffect(snapshot.isCheckedToday ? 1 : 1.035, anchor: .leading)
@@ -398,10 +413,6 @@ struct PulseWidgetHomeRenderer: View {
                 .padding(.bottom, pt(usesMediumMetrics ? 14 : 12, in: size))
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomLeading)
 
-            ritualSeal(side: sealSide, showsWash: false, showsCheck: true)
-                .padding(.trailing, pt(usesMediumMetrics ? 14 : 10, in: size))
-                .padding(.bottom, pt(usesMediumMetrics ? 12 : 10, in: size))
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
         }
     }
 
@@ -450,14 +461,18 @@ struct PulseWidgetHomeRenderer: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
 
             ZStack {
-                Circle()
+                RoundedRectangle(cornerRadius: sealSide * 0.16, style: .continuous)
                     .fill(fieldColor.opacity(usesFullColorPalette ? 0.11 : 0.07))
                     .shadow(
                         color: shadowColor.opacity(usesFullColorPalette ? 0.10 : 0),
                         radius: pt(5, in: size),
                         y: pt(2, in: size)
                     )
-                ritualSeal(side: sealSide, showsWash: false, showsCheck: true)
+                PulseLetterClosureMark(
+                    isChecked: snapshot.isCheckedToday,
+                    usesFullColorPalette: usesFullColorPalette
+                )
+                    .frame(width: sealSide, height: sealSide * 0.78)
             }
             .frame(width: sealSide, height: sealSide)
             .scaleEffect(snapshot.isCheckedToday ? 1 : 0.94)
@@ -494,6 +509,8 @@ struct PulseWidgetHomeRenderer: View {
         .frame(width: paperWidth, height: paperHeight, alignment: .leading)
         .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
         .frame(width: size.width, height: size.height)
+        .rotationEffect(.degrees(ambientRotation * 0.18))
+        .offset(x: ambientHorizontalShift(in: size) * 0.24)
     }
 
     private func letterWritingLines(size: CGSize) -> some View {
@@ -544,7 +561,11 @@ struct PulseWidgetHomeRenderer: View {
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomLeading)
             }
 
-            ritualSeal(side: sealSide, showsWash: false, showsCheck: true)
+            PulseEchoCompletionMark(
+                isChecked: snapshot.isCheckedToday,
+                usesFullColorPalette: usesFullColorPalette
+            )
+                .frame(width: sealSide, height: sealSide)
                 .padding(.trailing, pt(usesMediumMetrics ? 15 : 11, in: size))
                 .padding(.bottom, pt(usesMediumMetrics ? 13 : 11, in: size))
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
@@ -580,12 +601,13 @@ struct PulseWidgetHomeRenderer: View {
             .padding(.top, pt(30, in: size))
 
             pathTrail(size: size)
+                .offset(x: ambientHorizontalShift(in: size) * 0.55)
                 .padding(.leading, pt(8, in: size))
                 .padding(.trailing, pt(usesMediumMetrics ? 36 : 8, in: size))
                 .padding(.bottom, pt(usesMediumMetrics ? 4 : 8, in: size))
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
 
-            PulsePathTodayMark(
+            PulsePathTodayFootprint(
                 isChecked: snapshot.isCheckedToday,
                 dayNumber: dayNumber,
                 usesFullColorPalette: usesFullColorPalette
@@ -596,22 +618,6 @@ struct PulseWidgetHomeRenderer: View {
             .padding(.bottom, pt(usesMediumMetrics ? 10 : 12, in: size))
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
         }
-    }
-
-    private func ritualSeal(
-        side: CGFloat,
-        showsWash: Bool,
-        showsCheck: Bool
-    ) -> some View {
-        PulseRitualSealMark(
-            isChecked: snapshot.isCheckedToday,
-            usesFullColorPalette: usesFullColorPalette,
-            actionText: actionText,
-            showsWash: showsWash,
-            showsCheck: showsCheck
-        )
-        .frame(width: side, height: side)
-        .animation(motion(materialForCurrentStyle), value: snapshot.isCheckedToday)
     }
 
     private func sealAfterimage(side: CGFloat, size: CGSize) -> some View {
@@ -637,11 +643,11 @@ struct PulseWidgetHomeRenderer: View {
                 width: size.width * (usesMediumMetrics ? 0.58 : 0.92),
                 height: size.height * (usesMediumMetrics ? 1.18 : 0.72)
             )
-            .rotationEffect(.degrees(usesMediumMetrics ? -8 : -4))
+            .rotationEffect(.degrees((usesMediumMetrics ? -8 : -4) + ambientRotation))
             .scaleEffect(snapshot.isCheckedToday ? 1.03 : 1)
             .animation(motion(.place), value: snapshot.isCheckedToday)
             .position(
-                x: size.width * (usesMediumMetrics ? 0.20 : 0.46),
+                x: size.width * (usesMediumMetrics ? 0.20 : 0.46) + ambientHorizontalShift(in: size),
                 y: size.height * (usesMediumMetrics ? 0.54 : 0.50)
             )
     }
@@ -676,6 +682,7 @@ struct PulseWidgetHomeRenderer: View {
                 )
         }
         .scaleEffect(snapshot.isCheckedToday ? 1.04 : 0.98)
+        .rotationEffect(.degrees(ambientRotation * 0.6))
         .animation(motion(.ink), value: snapshot.isCheckedToday)
     }
 
@@ -691,10 +698,13 @@ struct PulseWidgetHomeRenderer: View {
             width: size.width - pt(usesMediumMetrics ? 10 : 12, in: size),
             height: size.height - pt(usesMediumMetrics ? 8 : 10, in: size)
         )
-        .rotationEffect(.degrees(usesMediumMetrics ? 1.3 : 1.8))
+        .rotationEffect(.degrees((usesMediumMetrics ? 1.3 : 1.8) + ambientRotation * 0.28))
         .scaleEffect(snapshot.isCheckedToday ? 0.99 : 1)
         .animation(motion(.paper), value: snapshot.isCheckedToday)
-        .position(x: size.width / 2, y: size.height / 2 + pt(2, in: size))
+        .position(
+            x: size.width / 2 + ambientHorizontalShift(in: size) * 0.32,
+            y: size.height / 2 + pt(2, in: size)
+        )
     }
 
     private func stackedPaperBackdrop(size: CGSize) -> some View {
@@ -739,6 +749,7 @@ struct PulseWidgetHomeRenderer: View {
             }
         }
         .frame(width: paperFrame.width, height: paperFrame.height)
+        .rotationEffect(.degrees(ambientRotation * 0.22))
         .position(x: paperFrame.midX, y: paperFrame.midY)
         .animation(motion(.paper), value: snapshot.isCheckedToday)
     }
@@ -765,8 +776,11 @@ struct PulseWidgetHomeRenderer: View {
         return Ellipse()
             .fill(color.opacity(usesFullColorPalette ? 0.065 : 0.04))
             .frame(width: size.width * 0.94, height: size.height * 0.68)
-            .rotationEffect(.degrees(-4))
-            .position(x: size.width * 0.48, y: size.height * 0.58)
+            .rotationEffect(.degrees(-4 + ambientRotation * 0.4))
+            .position(
+                x: size.width * 0.48 + ambientHorizontalShift(in: size) * 0.45,
+                y: size.height * 0.58
+            )
     }
 
     private func mistField(size: CGSize) -> some View {
@@ -786,6 +800,7 @@ struct PulseWidgetHomeRenderer: View {
                 .position(x: size.width * 0.49, y: size.height * (usesMediumMetrics ? 0.84 : 0.92))
         }
         .scaleEffect(x: snapshot.isCheckedToday ? 0.98 : 1.03, y: 1)
+        .offset(x: ambientHorizontalShift(in: size) * 0.45)
         .animation(motion(.number), value: snapshot.isCheckedToday)
     }
 
@@ -831,7 +846,8 @@ struct PulseWidgetHomeRenderer: View {
     private func quietFieldAfterimage(size: CGSize) -> some View {
         let ringSide = pt(usesMediumMetrics ? 188 : 172, in: size)
         let center = CGPoint(
-            x: size.width - pt(usesMediumMetrics ? 8 : 4, in: size),
+            x: size.width - pt(usesMediumMetrics ? 8 : 4, in: size)
+                + ambientHorizontalShift(in: size) * 0.42,
             y: size.height - pt(usesMediumMetrics ? 7 : 6, in: size)
         )
         let color = snapshot.isCheckedToday ? grassColor : fieldColor
@@ -862,7 +878,7 @@ struct PulseWidgetHomeRenderer: View {
             Ellipse()
                 .fill(color.opacity(usesFullColorPalette ? 0.075 : 0.045))
                 .frame(width: size.width * 1.12, height: size.height * 0.45)
-                .rotationEffect(.degrees(-6))
+                .rotationEffect(.degrees(-6 + ambientRotation * 0.55))
                 .position(x: size.width * 0.43, y: size.height * 0.78)
 
             Ellipse()
@@ -875,6 +891,7 @@ struct PulseWidgetHomeRenderer: View {
                 .position(x: size.width * 0.48, y: size.height * 0.76)
         }
         .animation(motion(.footprint), value: snapshot.isCheckedToday)
+        .offset(x: ambientHorizontalShift(in: size) * 0.36)
     }
 
     private func pathTrail(size: CGSize) -> some View {
@@ -1036,6 +1053,29 @@ struct PulseWidgetHomeRenderer: View {
         )
     }
 
+    private var ambientPeriod: PulseWidgetAmbientPeriod {
+        PulseWidgetAmbientPeriod.resolve(
+            at: snapshot.generatedAt,
+            timeZone: snapshot.projectTimeZone
+        )
+    }
+
+    private var ambientRotation: Double {
+        switch ambientPeriod {
+        case .morning: -PulseWidgetDesign.ambientRotationDegrees
+        case .daylight: 0
+        case .evening: PulseWidgetDesign.ambientRotationDegrees
+        }
+    }
+
+    private func ambientHorizontalShift(in size: CGSize) -> CGFloat {
+        switch ambientPeriod {
+        case .morning: -pt(PulseWidgetDesign.ambientHorizontalShiftPoints, in: size)
+        case .daylight: 0
+        case .evening: pt(PulseWidgetDesign.ambientHorizontalShiftPoints, in: size)
+        }
+    }
+
     private var materialForCurrentStyle: PulseWidgetMotionPresentation.Material {
         switch style {
         case .place: .place
@@ -1123,23 +1163,46 @@ private struct PulseAwaitingPlaceWell: View {
     }
 }
 
-private struct PulseTideDayMark: View {
+private struct PulseInkImpressionMark: View {
     let isChecked: Bool
     let usesFullColorPalette: Bool
+    let actionText: String
 
     var body: some View {
         GeometryReader { proxy in
             let side = min(proxy.size.width, proxy.size.height)
             ZStack {
-                Circle()
-                    .fill(ringColor.opacity(isChecked ? 0.22 : 0.12))
-                    .frame(width: side * 0.52, height: side * 0.52)
+                PulseOrganicInkShape()
+                    .fill(markColor.opacity(isChecked ? 0.18 : 0.06))
+                    .scaleEffect(isChecked ? 1.02 : 0.82)
 
-                PulseStateRing(
-                    isChecked: isChecked,
-                    color: ringColor,
-                    lineWidth: side * 0.052
-                )
+                PulseOrganicInkShape()
+                    .fill(isChecked ? markColor : .clear)
+                    .overlay {
+                        PulseOrganicInkShape()
+                            .stroke(
+                                markColor.opacity(isChecked ? 0.72 : 0.68),
+                                style: StrokeStyle(
+                                    lineWidth: side * 0.035,
+                                    lineCap: .round,
+                                    dash: isChecked ? [] : [side * 0.06, side * 0.045]
+                                )
+                            )
+                    }
+                    .frame(width: side * 0.68, height: side * 0.62)
+                    .rotationEffect(.degrees(isChecked ? -4 : 7))
+
+                if isChecked {
+                    Image(systemName: "checkmark")
+                        .font(.system(size: side * 0.21, weight: .bold))
+                        .foregroundStyle(completedForeground)
+                } else {
+                    Text(verbatim: actionText)
+                        .font(.system(size: side * 0.12, weight: .bold))
+                        .foregroundStyle(actionColor)
+                        .minimumScaleFactor(0.7)
+                        .lineLimit(1)
+                }
             }
             .frame(width: side, height: side)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -1147,9 +1210,237 @@ private struct PulseTideDayMark: View {
         .accessibilityHidden(true)
     }
 
-    private var ringColor: Color {
+    private var markColor: Color {
         guard usesFullColorPalette else { return .primary }
         return isChecked ? PulseWidgetDesign.grass : PulseWidgetDesign.field
+    }
+
+    private var actionColor: Color {
+        usesFullColorPalette ? PulseWidgetDesign.action : .primary
+    }
+
+    private var completedForeground: Color {
+        usesFullColorPalette ? PulseWidgetDesign.grassForeground : .black
+    }
+}
+
+private struct PulseOrganicInkShape: Shape {
+    func path(in rect: CGRect) -> Path {
+        let points: [CGPoint] = [
+            CGPoint(x: 0.50, y: 0.02), CGPoint(x: 0.70, y: 0.08),
+            CGPoint(x: 0.91, y: 0.25), CGPoint(x: 0.97, y: 0.48),
+            CGPoint(x: 0.89, y: 0.72), CGPoint(x: 0.67, y: 0.94),
+            CGPoint(x: 0.43, y: 0.98), CGPoint(x: 0.20, y: 0.86),
+            CGPoint(x: 0.04, y: 0.62), CGPoint(x: 0.06, y: 0.34),
+            CGPoint(x: 0.25, y: 0.12),
+        ].map { CGPoint(x: rect.minX + $0.x * rect.width, y: rect.minY + $0.y * rect.height) }
+
+        var path = Path()
+        path.move(to: midpoint(points.last!, points[0]))
+        for index in points.indices {
+            let point = points[index]
+            let next = points[(index + 1) % points.count]
+            path.addQuadCurve(to: midpoint(point, next), control: point)
+        }
+        path.closeSubpath()
+        return path
+    }
+
+    private func midpoint(_ lhs: CGPoint, _ rhs: CGPoint) -> CGPoint {
+        CGPoint(x: (lhs.x + rhs.x) / 2, y: (lhs.y + rhs.y) / 2)
+    }
+}
+
+private struct PulsePaperClosureMark: View {
+    let isChecked: Bool
+    let usesFullColorPalette: Bool
+
+    var body: some View {
+        GeometryReader { proxy in
+            let width = proxy.size.width
+            let height = proxy.size.height
+            ZStack {
+                RoundedRectangle(cornerRadius: height * 0.22, style: .continuous)
+                    .fill(isChecked ? markColor.opacity(0.14) : surfaceColor.opacity(0.74))
+                    .overlay {
+                        RoundedRectangle(cornerRadius: height * 0.22, style: .continuous)
+                            .stroke(markColor.opacity(0.62), lineWidth: max(1, height * 0.04))
+                    }
+
+                Rectangle()
+                    .fill(markColor.opacity(isChecked ? 0.72 : 0.26))
+                    .frame(width: width * (isChecked ? 0.58 : 0.36), height: max(1, height * 0.055))
+                    .offset(x: -width * 0.12, y: -height * 0.13)
+
+                if isChecked {
+                    Image(systemName: "checkmark")
+                        .font(.system(size: height * 0.34, weight: .bold))
+                        .foregroundStyle(markColor)
+                        .offset(x: width * 0.22, y: height * 0.14)
+                }
+            }
+            .rotationEffect(.degrees(isChecked ? 0 : -5))
+            .offset(y: isChecked ? height * 0.08 : -height * 0.04)
+        }
+        .accessibilityHidden(true)
+    }
+
+    private var markColor: Color {
+        guard usesFullColorPalette else { return .primary }
+        return isChecked ? PulseWidgetDesign.grass : PulseWidgetDesign.field
+    }
+
+    private var surfaceColor: Color {
+        usesFullColorPalette ? PulseWidgetDesign.surface : .clear
+    }
+}
+
+private struct PulseLetterClosureMark: View {
+    let isChecked: Bool
+    let usesFullColorPalette: Bool
+
+    var body: some View {
+        GeometryReader { proxy in
+            let width = proxy.size.width
+            let height = proxy.size.height
+            ZStack {
+                RoundedRectangle(cornerRadius: height * 0.14, style: .continuous)
+                    .fill(surfaceColor)
+                    .overlay {
+                        RoundedRectangle(cornerRadius: height * 0.14, style: .continuous)
+                            .stroke(markColor.opacity(0.72), lineWidth: max(1, height * 0.035))
+                    }
+
+                Path { path in
+                    path.move(to: CGPoint(x: 0, y: height * 0.16))
+                    path.addLine(to: CGPoint(x: width * 0.50, y: height * (isChecked ? 0.62 : 0.38)))
+                    path.addLine(to: CGPoint(x: width, y: height * 0.16))
+                }
+                .stroke(markColor.opacity(0.58), lineWidth: max(1, height * 0.035))
+
+                RoundedRectangle(cornerRadius: height * 0.08, style: .continuous)
+                    .fill(isChecked ? markColor : markColor.opacity(0.18))
+                    .frame(width: width * 0.24, height: height * 0.28)
+                    .rotationEffect(.degrees(45))
+                    .overlay {
+                        if isChecked {
+                            Image(systemName: "checkmark")
+                                .font(.system(size: height * 0.16, weight: .bold))
+                                .foregroundStyle(completedForeground)
+                        }
+                    }
+                    .offset(y: height * (isChecked ? 0.20 : -0.12))
+            }
+            .rotationEffect(.degrees(isChecked ? 0 : 3))
+        }
+        .accessibilityHidden(true)
+    }
+
+    private var markColor: Color {
+        guard usesFullColorPalette else { return .primary }
+        return isChecked ? PulseWidgetDesign.grass : PulseWidgetDesign.field
+    }
+
+    private var surfaceColor: Color {
+        usesFullColorPalette ? PulseWidgetDesign.surface : .clear
+    }
+
+    private var completedForeground: Color {
+        usesFullColorPalette ? PulseWidgetDesign.grassForeground : .black
+    }
+}
+
+private struct PulseEchoCompletionMark: View {
+    let isChecked: Bool
+    let usesFullColorPalette: Bool
+
+    var body: some View {
+        GeometryReader { proxy in
+            let side = min(proxy.size.width, proxy.size.height)
+            ZStack {
+                ForEach(0..<3, id: \.self) { index in
+                    Circle()
+                        .trim(from: 0, to: isChecked ? 1 : 0.58 + CGFloat(index) * 0.10)
+                        .stroke(
+                            markColor.opacity(0.82 - Double(index) * 0.20),
+                            style: StrokeStyle(lineWidth: max(1, side * 0.045), lineCap: .round)
+                        )
+                        .padding(side * (0.08 + CGFloat(index) * 0.13))
+                        .rotationEffect(.degrees(isChecked ? 0 : Double(index) * 32 - 48))
+                }
+
+                RoundedRectangle(cornerRadius: side * 0.06, style: .continuous)
+                    .fill(markColor)
+                    .frame(width: side * (isChecked ? 0.24 : 0.12), height: side * (isChecked ? 0.24 : 0.12))
+                    .rotationEffect(.degrees(45))
+                    .overlay {
+                        if isChecked {
+                            Image(systemName: "checkmark")
+                                .font(.system(size: side * 0.11, weight: .bold))
+                                .foregroundStyle(completedForeground)
+                        }
+                    }
+            }
+        }
+        .accessibilityHidden(true)
+    }
+
+    private var markColor: Color {
+        guard usesFullColorPalette else { return .primary }
+        return isChecked ? PulseWidgetDesign.grass : PulseWidgetDesign.field
+    }
+
+    private var completedForeground: Color {
+        usesFullColorPalette ? PulseWidgetDesign.grassForeground : .black
+    }
+}
+
+private struct PulseTideGaugeMark: View {
+    let isChecked: Bool
+    let usesFullColorPalette: Bool
+
+    var body: some View {
+        GeometryReader { proxy in
+            let side = min(proxy.size.width, proxy.size.height)
+            ZStack {
+                Capsule(style: .continuous)
+                    .fill(markColor.opacity(0.18))
+                    .frame(width: side * 0.22, height: side * 0.86)
+
+                Capsule(style: .continuous)
+                    .fill(markColor)
+                    .frame(width: side * 0.08, height: side * 0.78)
+
+                VStack(spacing: side * 0.10) {
+                    ForEach(0..<3, id: \.self) { index in
+                        Rectangle()
+                            .fill(markColor.opacity(index == (isChecked ? 0 : 2) ? 1 : 0.38))
+                            .frame(width: side * (index == 1 ? 0.52 : 0.38), height: max(1, side * 0.045))
+                    }
+                }
+
+                RoundedRectangle(cornerRadius: side * 0.05, style: .continuous)
+                    .fill(isChecked ? markColor : surfaceColor)
+                    .overlay {
+                        RoundedRectangle(cornerRadius: side * 0.05, style: .continuous)
+                            .stroke(markColor, lineWidth: max(1, side * 0.035))
+                    }
+                    .frame(width: side * 0.34, height: side * 0.22)
+                    .offset(y: side * (isChecked ? -0.20 : 0.20))
+            }
+            .frame(width: side, height: side)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+        }
+        .accessibilityHidden(true)
+    }
+
+    private var markColor: Color {
+        guard usesFullColorPalette else { return .primary }
+        return isChecked ? PulseWidgetDesign.grass : PulseWidgetDesign.field
+    }
+
+    private var surfaceColor: Color {
+        usesFullColorPalette ? PulseWidgetDesign.surface : .clear
     }
 }
 
@@ -1228,70 +1519,7 @@ private struct PulseTideCurve: Shape {
     }
 }
 
-private struct PulseRitualSealMark: View {
-    let isChecked: Bool
-    let usesFullColorPalette: Bool
-    let actionText: String
-    let showsWash: Bool
-    let showsCheck: Bool
-
-    var body: some View {
-        GeometryReader { proxy in
-            let side = min(proxy.size.width, proxy.size.height)
-            ZStack {
-                if showsWash {
-                    PulseStateRing(
-                        isChecked: isChecked,
-                        color: ringColor.opacity(0.22),
-                        lineWidth: side * 0.18
-                    )
-                }
-                PulseStateRing(
-                    isChecked: isChecked,
-                    color: ringColor,
-                    lineWidth: side * 0.055
-                )
-
-                Circle()
-                    .fill(ringColor.opacity(isChecked ? 1 : 0.10))
-                    .frame(width: side * 0.40, height: side * 0.40)
-
-                if isChecked, showsCheck {
-                    Image(systemName: "checkmark")
-                        .font(.system(size: side * 0.22, weight: .bold))
-                        .foregroundStyle(usesFullColorPalette ? completedForeground : Color.black)
-                        .blendMode(usesFullColorPalette ? .normal : .destinationOut)
-                } else if !isChecked {
-                    Text(verbatim: actionText)
-                        .font(.system(size: side * 0.14, weight: .bold))
-                        .foregroundStyle(actionColor)
-                        .minimumScaleFactor(0.66)
-                        .lineLimit(1)
-                        .padding(.horizontal, side * 0.05)
-                }
-            }
-            .compositingGroup()
-            .frame(width: side, height: side)
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-        }
-        .accessibilityHidden(true)
-    }
-
-    private var ringColor: Color {
-        guard usesFullColorPalette else { return .primary }
-        return isChecked ? PulseWidgetDesign.grass : PulseWidgetDesign.field
-    }
-
-    private var actionColor: Color {
-        usesFullColorPalette ? PulseWidgetDesign.action : .primary
-    }
-
-    private var completedForeground: Color {
-        PulseWidgetDesign.grassForeground
-    }
-}
-
-private struct PulsePathTodayMark: View {
+private struct PulsePathTodayFootprint: View {
     let isChecked: Bool
     let dayNumber: String
     let usesFullColorPalette: Bool
@@ -1299,39 +1527,50 @@ private struct PulsePathTodayMark: View {
     var body: some View {
         GeometryReader { proxy in
             let side = min(proxy.size.width, proxy.size.height)
-            ZStack {
-                PulseStateRing(
-                    isChecked: isChecked,
-                    color: ringColor,
-                    lineWidth: side * 0.055
-                )
-                Circle()
-                    .fill(ringColor.opacity(isChecked ? 0.18 : 0.12))
-                    .frame(width: side * 0.40, height: side * 0.40)
+            ZStack(alignment: .top) {
+                HStack(alignment: .bottom, spacing: side * 0.035) {
+                    ForEach([0.15, 0.19, 0.18, 0.13], id: \.self) { scale in
+                        Circle()
+                            .fill(isChecked ? markColor : .clear)
+                            .overlay {
+                                Circle().stroke(markColor.opacity(0.74), lineWidth: max(1, side * 0.025))
+                            }
+                            .frame(width: side * scale, height: side * scale)
+                    }
+                }
+                .offset(y: side * 0.03)
+
+                Capsule(style: .continuous)
+                    .fill(isChecked ? markColor : markColor.opacity(0.08))
+                    .overlay {
+                        Capsule(style: .continuous)
+                            .stroke(markColor.opacity(0.80), lineWidth: max(1, side * 0.035))
+                    }
+                    .frame(width: side * 0.58, height: side * 0.70)
+                    .offset(y: side * 0.22)
+
                 Text(verbatim: dayNumber)
-                    .font(.system(size: side * 0.39, weight: .semibold))
-                    .foregroundStyle(inkColor)
+                    .font(.system(size: side * 0.21, weight: .bold))
+                    .foregroundStyle(isChecked ? completedForeground : inkColor)
                     .monospacedDigit()
                     .minimumScaleFactor(0.74)
                     .lineLimit(1)
+                    .offset(y: side * 0.43)
 
                 if isChecked {
-                    Circle()
-                        .fill(ringColor)
-                        .overlay {
-                            Image(systemName: "checkmark")
-                                .font(.system(size: side * 0.12, weight: .bold))
-                                .foregroundStyle(completedForeground)
-                        }
-                        .frame(width: side * 0.27, height: side * 0.27)
-                        .offset(x: side * 0.34, y: side * 0.34)
+                    Image(systemName: "checkmark")
+                        .font(.system(size: side * 0.12, weight: .bold))
+                        .foregroundStyle(completedForeground)
+                        .offset(x: side * 0.24, y: side * 0.70)
                 }
             }
+            .rotationEffect(.degrees(isChecked ? 9 : -8))
+            .scaleEffect(isChecked ? 1 : 0.86)
         }
         .accessibilityHidden(true)
     }
 
-    private var ringColor: Color {
+    private var markColor: Color {
         guard usesFullColorPalette else { return .primary }
         return isChecked ? PulseWidgetDesign.grass : PulseWidgetDesign.field
     }
@@ -1525,6 +1764,8 @@ enum PulseWidgetDesign {
     static let field = Color("PulseField")
     static let shadow = Color("PulseShadow")
     static let stackPhysicalSheetCount = 4
+    static let ambientRotationDegrees = 2.2
+    static let ambientHorizontalShiftPoints: CGFloat = 4
 
     static let stackPendingLayerStepMedium: CGFloat = 3.5
     static let stackPendingLayerStepSmall: CGFloat = 3

@@ -1,7 +1,8 @@
 import SwiftUI
 
 enum PulseWidgetMotionPresentation {
-    static let previewPreparationDelay: Duration = .milliseconds(220)
+    static let previewPreparationDelay: Duration = .milliseconds(180)
+    static let previewAmbientPeriodDelay: Duration = .milliseconds(250)
     static let previewCompletionDelay: Duration = .milliseconds(1_250)
     static let reducedMotionPreviewCompletionDelay: Duration = .milliseconds(180)
 

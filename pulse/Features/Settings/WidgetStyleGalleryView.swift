@@ -236,10 +236,14 @@ private struct PulseWidgetStyleCard: View {
         switch previewPhase {
         case .current:
             return snapshot
-        case .pending:
-            return snapshot.projectingTodayCheckInForGallery(false)
+        case .morning:
+            return snapshot.projectingGallery(period: .morning, isChecked: false)
+        case .daylight:
+            return snapshot.projectingGallery(period: .daylight, isChecked: false)
+        case .evening:
+            return snapshot.projectingGallery(period: .evening, isChecked: false)
         case .animating, .completed:
-            return snapshot.projectingTodayCheckInForGallery(true)
+            return snapshot.projectingGallery(period: .evening, isChecked: true)
         }
     }
 
@@ -260,14 +264,19 @@ private struct PulseWidgetStyleCard: View {
     }
 
     private var isPreviewRunning: Bool {
-        previewPhase == .pending || previewPhase == .animating
+        switch previewPhase {
+        case .morning, .daylight, .evening, .animating:
+            true
+        case .current, .completed:
+            false
+        }
     }
 
     private var previewButtonTitle: LocalizedStringKey {
         switch previewPhase {
         case .current:
             return "widget.gallery.preview.play"
-        case .pending, .animating:
+        case .morning, .daylight, .evening, .animating:
             return "widget.gallery.preview.playing"
         case .completed:
             return "widget.gallery.preview.replay"
@@ -278,7 +287,7 @@ private struct PulseWidgetStyleCard: View {
         switch previewPhase {
         case .current:
             return "play.fill"
-        case .pending, .animating:
+        case .morning, .daylight, .evening, .animating:
             return "hourglass"
         case .completed:
             return "arrow.counterclockwise"
@@ -291,12 +300,18 @@ private struct PulseWidgetStyleCard: View {
         var transaction = Transaction(animation: nil)
         transaction.disablesAnimations = true
         withTransaction(transaction) {
-            previewPhase = .pending
+            previewPhase = .morning
         }
 
         previewTask = Task { @MainActor in
             do {
                 try await Task.sleep(for: PulseWidgetMotionPresentation.previewPreparationDelay)
+                try Task.checkCancellation()
+                previewPhase = .daylight
+                try await Task.sleep(for: PulseWidgetMotionPresentation.previewAmbientPeriodDelay)
+                try Task.checkCancellation()
+                previewPhase = .evening
+                try await Task.sleep(for: PulseWidgetMotionPresentation.previewAmbientPeriodDelay)
                 try Task.checkCancellation()
                 previewPhase = .animating
                 try await Task.sleep(for: reduceMotion
@@ -338,13 +353,47 @@ private struct PulseWidgetStyleCard: View {
 
     private enum PreviewPhase {
         case current
-        case pending
+        case morning
+        case daylight
+        case evening
         case animating
         case completed
     }
 }
 
 extension PulseWidgetSnapshot {
+    func projectingGallery(
+        period: PulseWidgetAmbientPeriod,
+        isChecked: Bool
+    ) -> PulseWidgetSnapshot {
+        let projected = projectingTodayCheckInForGallery(isChecked)
+        let calendar = Calendar.pulseGregorian(timeZone: projectTimeZone)
+        let dayStart = today.startDate(timeZone: projectTimeZone)
+        let hour: Int
+        switch period {
+        case .morning:
+            hour = PulseWidgetAmbientPeriod.morningStartHour + 2
+        case .daylight:
+            hour = PulseWidgetAmbientPeriod.daylightStartHour + 2
+        case .evening:
+            hour = PulseWidgetAmbientPeriod.eveningStartHour + 2
+        }
+        guard let projectedDate = calendar.date(byAdding: .hour, value: hour, to: dayStart) else {
+            preconditionFailure("Gallery ambient projection requires a valid project calendar date.")
+        }
+
+        return PulseWidgetSnapshot(
+            habitID: projected.habitID,
+            habitName: projected.habitName,
+            today: projected.today,
+            checkedAt: projected.checkedAt,
+            recentDays: projected.recentDays,
+            generatedAt: projectedDate,
+            nextDayBoundary: projected.nextDayBoundary,
+            projectTimeZoneIdentifier: projected.projectTimeZoneIdentifier
+        )
+    }
+
     func projectingTodayCheckInForGallery(_ isChecked: Bool) -> PulseWidgetSnapshot {
         let projectedRecentDays = recentDays.map { daySnapshot in
             guard daySnapshot.day == today else { return daySnapshot }

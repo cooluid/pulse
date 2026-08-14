@@ -201,12 +201,16 @@ final class PulseWidgetSnapshotTests: XCTestCase {
             plan.reloadAfter,
             makeDate(2026, 8, 12, 0, timeZone: timeZone)
         )
-        XCTAssertEqual(plan.entries.count, 2)
+        XCTAssertEqual(plan.entries.count, 3)
         XCTAssertEqual(plan.entries.first?.snapshot.today.storageValue, "2026-08-11")
+        XCTAssertEqual(
+            plan.entries.dropFirst().first?.date,
+            makeDate(2026, 8, 11, 18, timeZone: timeZone)
+        )
         XCTAssertEqual(plan.entries.last?.date, plan.reloadAfter)
     }
 
-    func testTimelinePlanContainsOnlyCurrentFactAndNextLogicalDay() throws {
+    func testTimelinePlanContainsAmbientPeriodsAndNextLogicalDay() throws {
         let timeZone = try XCTUnwrap(TimeZone(identifier: "Asia/Shanghai"))
         let now = makeDate(2026, 8, 11, 8, timeZone: timeZone)
         let repository = try makeRepository(clock: MutableWidgetClock(now: now))
@@ -222,13 +226,73 @@ final class PulseWidgetSnapshotTests: XCTestCase {
                 at: now
             )
         )
-        XCTAssertEqual(plan.entries.count, 2)
+        XCTAssertEqual(plan.entries.count, 4)
         XCTAssertEqual(plan.entries.first?.date, now)
         XCTAssertEqual(plan.entries.first?.snapshot.isCheckedToday, false)
+        XCTAssertEqual(
+            plan.entries.map(\.date),
+            [
+                now,
+                makeDate(2026, 8, 11, 12, timeZone: timeZone),
+                makeDate(2026, 8, 11, 18, timeZone: timeZone),
+                makeDate(2026, 8, 12, 0, timeZone: timeZone),
+            ]
+        )
+        XCTAssertEqual(
+            plan.entries.dropLast().map(\.snapshot.today.storageValue),
+            ["2026-08-11", "2026-08-11", "2026-08-11"]
+        )
         XCTAssertEqual(plan.entries.last?.date, makeDate(2026, 8, 12, 0, timeZone: timeZone))
         XCTAssertEqual(
             plan.entries.last?.snapshot.today.storageValue,
             "2026-08-12"
+        )
+    }
+
+    func testAmbientPeriodsResolveFromCentralProjectSchedule() throws {
+        let timeZone = try XCTUnwrap(TimeZone(identifier: "Asia/Shanghai"))
+        let start = makeDate(2026, 8, 11, 5, timeZone: timeZone)
+        let midnight = makeDate(2026, 8, 12, 0, timeZone: timeZone)
+
+        XCTAssertEqual(
+            PulseWidgetAmbientPeriod.resolve(
+                at: makeDate(2026, 8, 11, 5, timeZone: timeZone),
+                timeZone: timeZone
+            ),
+            .evening
+        )
+        XCTAssertEqual(
+            PulseWidgetAmbientPeriod.resolve(
+                at: makeDate(2026, 8, 11, 6, timeZone: timeZone),
+                timeZone: timeZone
+            ),
+            .morning
+        )
+        XCTAssertEqual(
+            PulseWidgetAmbientPeriod.resolve(
+                at: makeDate(2026, 8, 11, 12, timeZone: timeZone),
+                timeZone: timeZone
+            ),
+            .daylight
+        )
+        XCTAssertEqual(
+            PulseWidgetAmbientPeriod.resolve(
+                at: makeDate(2026, 8, 11, 18, timeZone: timeZone),
+                timeZone: timeZone
+            ),
+            .evening
+        )
+        XCTAssertEqual(
+            PulseWidgetAmbientPeriod.boundaries(
+                after: start,
+                before: midnight,
+                timeZone: timeZone
+            ),
+            [
+                makeDate(2026, 8, 11, 6, timeZone: timeZone),
+                makeDate(2026, 8, 11, 12, timeZone: timeZone),
+                makeDate(2026, 8, 11, 18, timeZone: timeZone),
+            ]
         )
     }
 
@@ -250,6 +314,9 @@ final class PulseWidgetSnapshotTests: XCTestCase {
 
         let completedPreview = snapshot.projectingTodayCheckInForGallery(true)
         let pendingPreview = completedPreview.projectingTodayCheckInForGallery(false)
+        let morningPreview = snapshot.projectingGallery(period: .morning, isChecked: false)
+        let daylightPreview = snapshot.projectingGallery(period: .daylight, isChecked: false)
+        let eveningPreview = snapshot.projectingGallery(period: .evening, isChecked: true)
 
         XCTAssertFalse(snapshot.isCheckedToday)
         XCTAssertEqual(snapshot.recentDays.last?.state, .todayPending)
@@ -258,6 +325,32 @@ final class PulseWidgetSnapshotTests: XCTestCase {
         XCTAssertFalse(pendingPreview.isCheckedToday)
         XCTAssertEqual(pendingPreview.recentDays.last?.state, .todayPending)
         XCTAssertEqual(completedPreview.previousSixCheckedCount, snapshot.previousSixCheckedCount)
+        XCTAssertEqual(
+            PulseWidgetAmbientPeriod.resolve(
+                at: morningPreview.generatedAt,
+                timeZone: timeZone
+            ),
+            .morning
+        )
+        XCTAssertEqual(
+            PulseWidgetAmbientPeriod.resolve(
+                at: daylightPreview.generatedAt,
+                timeZone: timeZone
+            ),
+            .daylight
+        )
+        XCTAssertEqual(
+            PulseWidgetAmbientPeriod.resolve(
+                at: eveningPreview.generatedAt,
+                timeZone: timeZone
+            ),
+            .evening
+        )
+        XCTAssertEqual(morningPreview.recentDays, snapshot.recentDays)
+        XCTAssertEqual(daylightPreview.recentDays, snapshot.recentDays)
+        XCTAssertEqual(eveningPreview.previousSixCheckedCount, snapshot.previousSixCheckedCount)
+        XCTAssertTrue(eveningPreview.isCheckedToday)
+        XCTAssertFalse(snapshot.isCheckedToday)
     }
 
     func testProjectionIncludesTodayReceipt() throws {
