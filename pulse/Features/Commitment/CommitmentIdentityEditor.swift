@@ -16,6 +16,7 @@ struct CommitmentIdentityEditor: View {
     let mode: CommitmentIdentityEditorMode
 
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.locale) private var locale
     @State private var name: String
     @State private var purpose: String
     @FocusState private var focusedField: Field?
@@ -81,6 +82,7 @@ struct CommitmentIdentityEditor: View {
 
             characterCount(
                 value: name,
+                minimum: HabitIdentity.minimumNameLength,
                 maximum: HabitIdentity.maximumNameLength,
                 identifier: "commitment.name.count"
             )
@@ -154,14 +156,39 @@ struct CommitmentIdentityEditor: View {
 
     private func characterCount(
         value: String,
+        minimum: Int? = nil,
         maximum: Int,
         identifier: String
     ) -> some View {
-        Text(verbatim: "\(value.count)/\(maximum)")
-            .font(.caption.monospacedDigit())
-            .foregroundStyle(value.count > maximum ? PulseDesign.action : PulseDesign.secondary)
-            .frame(maxWidth: .infinity, alignment: .trailing)
-            .accessibilityIdentifier(identifier)
+        HStack {
+            if let minimum {
+                Text(
+                    String(
+                        format: PulseLocalization.string(
+                            "commitment.name.requirement_format",
+                            locale: locale
+                        ),
+                        locale: locale,
+                        Int64(minimum),
+                        Int64(maximum)
+                    )
+                )
+            }
+
+            Spacer()
+
+            Text(verbatim: "\(value.count)/\(maximum)")
+                .monospacedDigit()
+        }
+        .font(.caption)
+        .foregroundStyle(isInvalidLength(value, minimum: minimum, maximum: maximum)
+            ? PulseDesign.action
+            : PulseDesign.secondary)
+        .accessibilityIdentifier(identifier)
+    }
+
+    private func isInvalidLength(_ value: String, minimum: Int?, maximum: Int) -> Bool {
+        value.count > maximum || (!value.isEmpty && value.count < (minimum ?? 0))
     }
 
     private var canSubmit: Bool {

@@ -72,6 +72,65 @@ final class PulseWidgetSnapshotTests: XCTestCase {
         }
     }
 
+    func testUserFacingCopyDoesNotExposeDesignOrEngineeringJargon() throws {
+        let projectRoot = URL(fileURLWithPath: #filePath)
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+        let catalogURLs = [
+            projectRoot
+                .appendingPathComponent("pulse", isDirectory: true)
+                .appendingPathComponent("Localizable.xcstrings", isDirectory: false),
+            projectRoot
+                .appendingPathComponent("PulseWidgets", isDirectory: true)
+                .appendingPathComponent("Localizable.xcstrings", isDirectory: false),
+        ]
+        let forbiddenTerms = [
+            "大开口日环", "开放日环", "承印坑", "潮唇", "巨大剪影", "蜡封", "邮戳",
+            "主承诺", "高阶权益", "小组件构图", "小组件事实", "共享存储", "数据校验",
+            "虚构价格", "open seal", "imprint well", "postmarks", "widget facts",
+            "shared store", "advanced benefits", "main commitment", "widget composition",
+        ]
+
+        for catalogURL in catalogURLs {
+            let catalog = try JSONDecoder().decode(
+                WidgetStringCatalog.self,
+                from: Data(contentsOf: catalogURL)
+            )
+            for (key, entry) in catalog.strings {
+                for localization in entry.localizations.values {
+                    let value = localization.stringUnit.value.lowercased()
+                    for term in forbiddenTerms {
+                        XCTAssertFalse(
+                            value.contains(term.lowercased()),
+                            "User-facing copy for \(key) exposes internal language: \(term)."
+                        )
+                    }
+                }
+            }
+        }
+
+        let metadataURLs = [
+            projectRoot
+                .appendingPathComponent("Config", isDirectory: true)
+                .appendingPathComponent("PulseEnhancements.storekit", isDirectory: false),
+            projectRoot
+                .appendingPathComponent("Config", isDirectory: true)
+                .appendingPathComponent("Pulse-Info.plist", isDirectory: false),
+            projectRoot
+                .appendingPathComponent("pulse", isDirectory: true)
+                .appendingPathComponent("InfoPlist.xcstrings", isDirectory: false),
+        ]
+        for metadataURL in metadataURLs {
+            let value = try String(contentsOf: metadataURL, encoding: .utf8).lowercased()
+            for term in forbiddenTerms {
+                XCTAssertFalse(
+                    value.contains(term.lowercased()),
+                    "User-facing metadata exposes internal language: \(term)."
+                )
+            }
+        }
+    }
+
     func testSharedInterfacePreferencesPersistLanguageAndReset() throws {
         let suiteName = "PulseSharedInterfacePreferences.\(UUID().uuidString)"
         let defaults = try XCTUnwrap(UserDefaults(suiteName: suiteName))
@@ -152,7 +211,7 @@ final class PulseWidgetSnapshotTests: XCTestCase {
         let initialHabit = try repository.primaryHabit(systemTimeZone: timeZone)
         let habit = try repository.updateIdentity(
             habitID: initialHabit.id,
-            identity: HabitIdentity(userName: "写一页", userPurpose: nil)
+            identity: HabitIdentity(userName: "每天写一页", userPurpose: nil)
         )
         let receipt = try repository.checkIn(habitID: habit.id)
 
@@ -164,7 +223,7 @@ final class PulseWidgetSnapshotTests: XCTestCase {
         )
 
         XCTAssertEqual(plan.snapshot.checkedAt, receipt.checkedAt)
-        XCTAssertEqual(plan.snapshot.habitName, "写一页")
+        XCTAssertEqual(plan.snapshot.habitName, "每天写一页")
         XCTAssertTrue(plan.snapshot.isCheckedToday)
         XCTAssertEqual(plan.snapshot.recentDays.last?.state, .checked)
         XCTAssertEqual(plan.snapshot.previousSixCheckedCount, 0)

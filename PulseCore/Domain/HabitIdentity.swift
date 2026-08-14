@@ -1,7 +1,8 @@
 import Foundation
 
 public struct HabitIdentity: Equatable, Sendable {
-    public static let maximumNameLength = 80
+    public static let minimumNameLength = 4
+    public static let maximumNameLength = 12
     public static let maximumPurposeLength = 160
 
     public let name: String
@@ -21,7 +22,7 @@ public struct HabitIdentity: Equatable, Sendable {
         let normalizedPurpose = storedPurpose.map(Self.normalize)
 
         guard normalizedName == storedName,
-              !normalizedName.isEmpty,
+              normalizedName.count >= Self.minimumNameLength,
               normalizedName.count <= Self.maximumNameLength,
               !Self.containsDisallowedScalars(normalizedName) else {
             throw PulseCoreError.invalidHabitIdentity

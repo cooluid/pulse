@@ -3,6 +3,7 @@
 本目录只保存当前生产视觉的权威合同与生成真源：
 
 - [已冻结的品牌与界面规范](./BRAND_SPEC.md)
+- [正式产品文案合同](./CONTENT_DESIGN_SPEC.md)
 - [正式 AppIcon 多外观与小尺寸评审图](./app-icon-review.png)
 - [`brand-tokens.json`](./brand-tokens.json)：所有正式颜色的唯一真源。
 - `app-icon-source/`：正式开放日环遮罩真源。

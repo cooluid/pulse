@@ -10,18 +10,18 @@
       "internalID" : "14CFA85B-CCDF-48DB-BD52-E4C92F402A29",
       "localizations" : [
         {
-          "description" : "Permanently unlock every advanced benefit currently released, including scheduled Live Activities and advanced Widget compositions.",
-          "displayName" : "Pulse · Advanced Benefits",
+          "description" : "Permanently unlock seven additional Widget styles and scheduled Live Activities.",
+          "displayName" : "Pulse · Advanced Features",
           "locale" : "en_US"
         },
         {
-          "description" : "一次买断当前已发布的全部高阶权益，包括定时实时活动与高级小组件构图。",
-          "displayName" : "一日一印 · 高阶权益",
+          "description" : "永久解锁七种额外小组件样式和定时实时活动。",
+          "displayName" : "一日一印 · 高级功能",
           "locale" : "zh_CN"
         }
       ],
       "productID" : "co.fanr.pulse.enhancement.lifetime",
-      "referenceName" : "Pulse Advanced Benefits Lifetime",
+      "referenceName" : "Pulse Advanced Features Lifetime",
       "type" : "NonConsumable"
     }
   ],

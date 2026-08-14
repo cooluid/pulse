@@ -49,7 +49,7 @@ Manifest 是确定性 sorted-key UTF-8 JSON，包含 Habit、Records 和全部 M
 
 - CommonCrypto PBKDF2-HMAC-SHA256，600,000 次，随机 16-byte salt，派生 32-byte key。
 - CryptoKit AES-256-GCM；每个条目独立随机 12-byte nonce / 16-byte tag。
-- 口令至少 12 个字符、UTF-8 最多 1,024 bytes；导出要求二次一致。
+- 口令至少 4 个 Swift `Character`、UTF-8 最多 1,024 bytes；不要求大小写、数字或符号组合，导出要求二次一致。
 - 口令不 trim、不大小写折叠、不 Unicode normalization；UI 流程结束即释放。
 
 ## 4. 导出与恢复

@@ -10,7 +10,7 @@
 
 ### 1.1 Habit
 
-Pulse 只有一个 `slotKey == "primary"` 的主承诺。名称规范化后为 1...80 个 Swift `Character`；可选说明为空时为 `nil`，非空最多 160 个字符；拒绝控制字符、换行和不可见格式控制符。`createdAt`、`startLogicalDay`、创建时区和当前签到时区是稳定事实，页面或 UserDefaults 不保存副本。
+Pulse 只有一个 `slotKey == "primary"` 的“我的一件事”。名称规范化后为 4...12 个 Swift `Character`；可选说明为空时为 `nil`，非空最多 160 个字符；拒绝控制字符、换行和不可见格式控制符。`createdAt`、`startLogicalDay`、创建时区和当前签到时区是稳定事实，页面或 UserDefaults 不保存副本。
 
 ### 1.2 CheckInRecord
 

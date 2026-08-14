@@ -18,6 +18,17 @@ final class HabitIdentityTests: XCTestCase {
         XCTAssertNil(identity.purpose)
     }
 
+    func testNameAcceptsExactCharacterBounds() throws {
+        XCTAssertEqual(
+            try HabitIdentity(userName: "Read", userPurpose: nil).name.count,
+            HabitIdentity.minimumNameLength
+        )
+        XCTAssertEqual(
+            try HabitIdentity(userName: "abcdefghijkl", userPurpose: nil).name.count,
+            HabitIdentity.maximumNameLength
+        )
+    }
+
     func testIdentityAllowsEmojiSequencesThatRequireJoiners() throws {
         let identity = try HabitIdentity(
             userName: "Family 👨‍👩‍👧‍👦",
@@ -41,8 +52,9 @@ final class HabitIdentityTests: XCTestCase {
         }
     }
 
-    func testIdentityRejectsEmptyOversizedAndControlCharacters() {
+    func testIdentityRejectsUndersizedOversizedAndControlCharacters() {
         XCTAssertThrowsError(try HabitIdentity(userName: "   ", userPurpose: nil))
+        XCTAssertThrowsError(try HabitIdentity(userName: "abc", userPurpose: nil))
         XCTAssertThrowsError(
             try HabitIdentity(
                 userName: String(repeating: "a", count: HabitIdentity.maximumNameLength + 1),

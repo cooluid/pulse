@@ -41,19 +41,33 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Pulse uses the camera only when you choose to keep a private photo with today’s imprint."
+            "value" : "Pulse uses the camera only when you choose to take a photo. Photos stay on this device and are not uploaded."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "仅当你主动为今日印记留存私人照片时，一日一印才会使用相机。"
+            "value" : "仅当你主动拍照时，一日一印才会使用相机。照片保存在这台设备上，不会上传。"
           }
         }
       }
     },
     "Pulse Encrypted Backup" : {
-
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pulse Encrypted Backup"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "一日一印加密备份"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

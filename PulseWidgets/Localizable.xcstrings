@@ -24,13 +24,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "You can come back whenever you are ready."
+            "value" : "Come back when you are ready."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "准备好时，随时回来。"
+            "value" : "准备好时再回来即可。"
           }
         }
       }
@@ -58,13 +58,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Today is still open"
+            "value" : "Not checked in today"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "今天还空着"
+            "value" : "今天还未签到"
           }
         }
       }
@@ -75,13 +75,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Today is imprinted. Imprinted on %lld of the previous six days."
+            "value" : "Checked in today and on %lld of the previous six days."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "今天已留印，过去六天已留印 %lld 天。"
+            "value" : "今天已签到，过去六天签到 %lld 天。"
           }
         }
       }
@@ -92,13 +92,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Today is still open. Imprinted on %lld of the previous six days."
+            "value" : "Not checked in today. Checked in on %lld of the previous six days."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "今天还空着，过去六天已留印 %lld 天。"
+            "value" : "今天还未签到，过去六天签到 %lld 天。"
           }
         }
       }
@@ -108,13 +108,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Today is imprinted"
+            "value" : "Checked in today"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "今天已经留下印记"
+            "value" : "今天已签到"
           }
         }
       }
@@ -124,13 +124,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Read today and the previous six days from the Lock Screen."
+            "value" : "View today and the previous six days of check-ins on the Lock Screen."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "在锁定屏幕直读今天与过去六天的节律。"
+            "value" : "在锁定屏幕查看今天和过去六天的签到状态。"
           }
         }
       }
@@ -140,13 +140,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Rhythm Imprint"
+            "value" : "Recent Check-ins"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "节律汇印"
+            "value" : "最近七天"
           }
         }
       }
@@ -156,13 +156,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Imprinted today"
+            "value" : "Checked in today"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "今天已留印"
+            "value" : "今天已签到"
           }
         }
       }
@@ -172,13 +172,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Still open today"
+            "value" : "Not checked in today"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "今天还空着"
+            "value" : "今天还未签到"
           }
         }
       }
@@ -188,13 +188,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Leave today's imprint"
+            "value" : "Check In Today"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "留下今天的印记"
+            "value" : "完成今日签到"
           }
         }
       }
@@ -204,13 +204,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Leaves today's imprint. This cannot be undone from the widget."
+            "value" : "Completes today’s check-in. This cannot be undone from the widget."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "留下今天的印记；小组件中不能撤销。"
+            "value" : "完成今日签到；此操作不能在小组件中撤销。"
           }
         }
       }
@@ -220,13 +220,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Imprint"
+            "value" : "Check In"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "留印"
+            "value" : "签到"
           }
         }
       }
@@ -236,13 +236,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "See today's state and leave today's imprint."
+            "value" : "View today’s status and check in from the widget."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "看见今天的状态，轻点留下今天。"
+            "value" : "查看今天的状态，并可直接签到。"
           }
         }
       }
@@ -252,13 +252,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Choose the composition for this widget instance."
+            "value" : "Choose the style used by this widget."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "为当前这个小组件选择构图。"
+            "value" : "选择这个小组件使用的样式。"
           }
         }
       }
@@ -268,13 +268,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Configure Today's Imprint"
+            "value" : "Choose Widget Style"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "配置今日一印"
+            "value" : "选择小组件样式"
           }
         }
       }
@@ -284,13 +284,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Today's Imprint"
+            "value" : "Today’s Check-in"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "今日一印"
+            "value" : "今日签到"
           }
         }
       }
@@ -348,13 +348,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Composition"
+            "value" : "Style"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "构图"
+            "value" : "样式"
           }
         }
       }
@@ -444,13 +444,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Widget Composition"
+            "value" : "Widget Style"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "小组件构图"
+            "value" : "小组件样式"
           }
         }
       }
@@ -460,13 +460,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Leave today's Pulse imprint."
+            "value" : "Complete today’s check-in."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "留下今天的一日一印。"
+            "value" : "完成今天的签到。"
           }
         }
       }
@@ -476,13 +476,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Leave Today's Imprint"
+            "value" : "Check In Today"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "留下今天"
+            "value" : "今日签到"
           }
         }
       }
@@ -493,13 +493,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Today has landed"
+            "value" : "Checked in today"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "今天已留下"
+            "value" : "今天已签到"
           }
         }
       }
@@ -509,13 +509,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Empty"
+            "value" : "Not checked in"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "空着"
+            "value" : "未签到"
           }
         }
       }
@@ -526,13 +526,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Today is still empty"
+            "value" : "Not checked in yet"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "今天还空着"
+            "value" : "今天还未签到"
           }
         }
       }
@@ -542,13 +542,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "My daily commitment"
+            "value" : "My one thing"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "我的每日承诺"
+            "value" : "我的一件事"
           }
         }
       }
@@ -559,13 +559,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Today imprinted"
+            "value" : "Checked in today"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "今日已印"
+            "value" : "今天已签到"
           }
         }
       }
@@ -575,13 +575,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Unlock this composition in Pulse, or choose Awaiting Place when editing the widget."
+            "value" : "Unlock this style in Pulse, or edit the widget and choose the free Awaiting Place style."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "请在一日一印中解锁，或编辑小组件改用待落之处。"
+            "value" : "请在一日一印中解锁此样式，或编辑小组件并选择免费的“待落之处”。"
           }
         }
       }
@@ -591,13 +591,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Composition Locked"
+            "value" : "Style Locked"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "构图尚未解锁"
+            "value" : "样式尚未解锁"
           }
         }
       }
@@ -613,7 +613,7 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "打开一日一印完成设置，小组件就会准备好。"
+            "value" : "打开一日一印完成设置。"
           }
         }
       }
@@ -640,13 +640,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Still open"
+            "value" : "Not checked in"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "今天还空着"
+            "value" : "今天还未签到"
           }
         }
       }
@@ -656,13 +656,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Pulse could not read the shared store. Open the app to retry."
+            "value" : "The widget could not load its data. Open Pulse and try again."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "无法读取共享存储，请打开 App 重试。"
+            "value" : "小组件无法读取数据，请打开一日一印后重试。"
           }
         }
       }

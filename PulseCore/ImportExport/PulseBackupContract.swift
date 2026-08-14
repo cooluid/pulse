@@ -12,12 +12,17 @@ public enum PulseBackupContract {
     public static let saltByteCount = 16
     public static let nonceByteCount = 12
     public static let authenticationTagByteCount = 16
-    public static let minimumPassphraseCharacterCount = 12
+    public static let minimumPassphraseCharacterCount = 4
     public static let maximumPassphraseByteCount = 1_024
     public static let maximumRecordCount = 50_000
     public static let maximumMediaCount = 20_000
     public static let maximumManifestBytes = 16 * 1_024 * 1_024
     public static let maximumBackupBytes: UInt64 = 512 * 1_024 * 1_024 * 1_024
+
+    public static func accepts(passphrase: String) -> Bool {
+        passphrase.count >= minimumPassphraseCharacterCount
+            && passphrase.utf8.count <= maximumPassphraseByteCount
+    }
 
     static let magic = Data("PULSEBKP".utf8)
     public static let fixedHeaderByteCount = 24

@@ -51,7 +51,7 @@
 	<key>NSSupportsLiveActivities</key>
 	<true/>
 	<key>NSCameraUsageDescription</key>
-	<string>Pulse uses the camera only when you choose to keep a private photo with today’s imprint.</string>
+	<string>Pulse uses the camera only when you choose to take a photo. Photos stay on this device and are not uploaded.</string>
 	<key>UTExportedTypeDeclarations</key>
 	<array>
 		<dict>

@@ -38,6 +38,7 @@
 - 今日与记录照片详情已 clean-break 为同一个内容优先的系统 Sheet 骨架：统一导航栏、关闭、真实像素比例照片和尾侧管理菜单，不再重复 App 标志、保留三栏动作坞或建立两套详情实现。含照片状态统一使用 `.large`；只签到状态使用集中定义的语义紧凑 detent 并保留 `.large`，Accessibility 字号与紧凑高度直接使用 `.large`。已删除内容高度反馈循环、设备型号分支和散落 detent 数值；两种删除仍是独立事务与独立确认。
 - 根页面常态背景加入 18 秒低振幅呼吸与细线漂移，今日页额外使用三层低透明潮面增强可感知性，最高 12 fps；仅在 scene active 且未开启 Reduce Motion 时推进，后台与 Reduce Motion 使用静态相位。该环境层不得驱动按钮持续闪烁或伪装成进度反馈。
 - 首启、今日、记录、设置与购买文案统一为短句；删除运行时“低压力、面向所有用户免费、不是为了打分作证”等解释性废话。
+- “我的一件事”名称统一由领域层约束为 4...12 个 Swift `Character`，首启、设置、恢复校验、Widget 与错误提示不再各自维护长度；加密备份密码统一降为至少 4 个字符，不要求字符组合，仍保留导出二次确认、1024-byte 上限与无法找回提示。
 - 删除旧 `CheckInRepositoryProtocol` / `SwiftDataCheckInRepository` 名称，统一为 `PulseRepositoryProtocol` / `SwiftDataPulseRepository`。
 - 删除旧 `PulseBackupDocument` 路径，系统导出统一使用 `PulseBackupExport: Transferable`；单张原图导出使用独立 JPEG Transferable。
 - 删除 1.0 发布范围与“1.0 后再说”的路线图权威，建立 1.1 发布合同和连续产品路线图。
@@ -46,9 +47,9 @@
 
 ## 当前自动化与构建证据
 
-验证环境：macOS 26.6、Xcode 26.6（17F113）、iPhone 17 Pro / iOS 26.5 Simulator（arm64）。
+验证环境：macOS 26.6、Xcode 26.4（17E192）、iPhone 17 Pro / iOS 26.4 Simulator（arm64）。
 
-- 当前生产渲染器已 clean-break 为八种仪式物件；Debug Simulator 的 App 与 Widget Extension 构建通过，120 项单元/集成测试全部通过。免费权益披露与八种构图逐项可达的两条定向 UI 测试通过，并保留待办/完成两态共十六张当前原始像素截图；统一记录详情的标准字号与 Accessibility XXXL 两条定向 UI 测试通过。当前只签到状态的稳定紧凑 Sheet、全高无障碍结构与来源锚定菜单均已按当前原始像素截图复审；对抗测试还证明仅设置 `destructive` role 会让菜单图标继承品牌绿，因此最终实现以集中 `UIColor.systemRed` 语义 tint 同步图标和文字，复跑截图通过。未重跑全部 UI 套件，也没有统一详情改造后“含照片”状态的新真机截图，不沿用用户提供的改造前真机图冒充当前证据。整个 1.1 仍受媒体真机、系统表面与分发门禁约束，保持 **ENGINEERING CANDIDATE / INTERFACE CANDIDATE**。
+- 当前生产渲染器已 clean-break 为八种仪式物件；Debug Simulator 的 App 与 Widget Extension 构建通过，123 项单元/集成测试全部通过。名称 4 / 12 字符边界、3 字符密码失败关闭、4 字符密码完整归档往返、12 字符首页投影、设置编辑持久化和密码按钮门禁均已覆盖；对应 3 条定向 UI 流程通过并复审首启、首页与加密备份原始截图。免费权益披露与八种构图逐项可达的两条定向 UI 测试通过，并保留待办/完成两态共十六张当前原始像素截图；统一记录详情的标准字号与 Accessibility XXXL 两条定向 UI 测试通过。当前只签到状态的稳定紧凑 Sheet、全高无障碍结构与来源锚定菜单均已按当前原始像素截图复审；对抗测试还证明仅设置 `destructive` role 会让菜单图标继承品牌绿，因此最终实现以集中 `UIColor.systemRed` 语义 tint 同步图标和文字，复跑截图通过。未重跑全部 UI 套件，也没有统一详情改造后“含照片”状态的新真机截图，不沿用用户提供的改造前真机图冒充当前证据。整个 1.1 仍受媒体真机、系统表面与分发门禁约束，保持 **ENGINEERING CANDIDATE / INTERFACE CANDIDATE**。
 - 媒体自动化覆盖独立删除/重新关联、同日替换、文件安装/读取/审计、缩略图损坏、无相册回退、v2 归档往返、随机性、错误口令、篡改、v1 拒绝、缺条目与缩略图身份不匹配。
 - 本轮已取得八种 App 画廊待办/完成两态共十六张当前原始像素截图，并以共用正式渲染器逐张复审；待落之处小号/中号均保持独立印垫构图，待办为空心语义、完成为实心核与对勾，没有复用落印开口日环、七日轨迹或渐变；叠印小号的月份、承诺与两位日号完整回到原型坐标，潮痕小号/中号均出现天际、地平线、潮唇、一尾鱼与无日号日环。结果仍仅是 **INTERFACE CANDIDATE**。App 内画廊不能替代真实 Home Screen 小号/中号 Widget host，也不能证明逐实例系统配置、独立 Lock Screen kind、accented/vibrant/Clear、Reduce Motion 或人体体验 GO。
 - 未签名 Release `generic/platform=iOS` 构建通过；Debug 静态分析通过；Swift 警告按错误处理。

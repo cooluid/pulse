@@ -88,13 +88,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Today is still open. You can come back whenever you are ready."
+            "value" : "You have not checked in today. Come back when you are ready."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "今天还空着，准备好时随时回来。"
+            "value" : "今天还未签到，准备好时再回来。"
           }
         }
       }
@@ -105,13 +105,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Leave today’s mark"
+            "value" : "Today’s check-in"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "留下今天这一印"
+            "value" : "今天还未签到"
           }
         }
       }
@@ -166,19 +166,19 @@
         }
       }
     },
-    "backup.passphrase.export.message" : {
+    "backup.passphrase.export.message_format" : {
       "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Use at least 12 characters. Pulse cannot recover this password, so store it somewhere safe."
+            "value" : "Use at least %lld characters. Short passwords offer less protection, and Pulse cannot recover this one."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "请使用至少 12 个字符。一日一印无法找回此密码，请将它妥善保管。"
+            "value" : "密码至少需要 %lld 个字符。短密码保护较弱，且一日一印无法找回。"
           }
         }
       }
@@ -451,18 +451,35 @@
         }
       }
     },
-    "commitment.navigation_title" : {
+    "commitment.name.requirement_format" : {
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Main Commitment"
+            "value" : "%1$lld–%2$lld characters"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "主承诺"
+            "value" : "%1$lld–%2$lld 个字符"
+          }
+        }
+      }
+    },
+    "commitment.navigation_title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "My One Thing"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "我的一件事"
           }
         }
       }
@@ -472,13 +489,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Begin"
+            "value" : "Start Tracking"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "开始留下印记"
+            "value" : "开始记录"
           }
         }
       }
@@ -488,13 +505,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Your Commitment"
+            "value" : "Set Your One Thing"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "确认主承诺"
+            "value" : "设置我的一件事"
           }
         }
       }
@@ -504,13 +521,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "ONE DAY. ONE MARK."
+            "value" : "Track one thing, every day."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "每天，留一印。"
+            "value" : "每天，记录一件事。"
           }
         }
       }
@@ -520,13 +537,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Stored on this device."
+            "value" : "Stored only on this device."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "只保存在本机。"
+            "value" : "只保存在这台设备上。"
           }
         }
       }
@@ -569,13 +586,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Save Commitment"
+            "value" : "Save"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "保存主承诺"
+            "value" : "保存"
           }
         }
       }
@@ -585,13 +602,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Main Commitment"
+            "value" : "My One Thing"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "主承诺"
+            "value" : "我的一件事"
           }
         }
       }
@@ -630,19 +647,19 @@
         }
       }
     },
-    "error.backup_passphrase" : {
+    "error.backup_passphrase_format" : {
       "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Use a password of at least 12 characters and no more than 1,024 bytes."
+            "value" : "Use at least %lld characters and keep the password reasonably short."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "备份密码至少需要 12 个字符，且不能超过 1,024 bytes。"
+            "value" : "备份密码至少需要 %lld 个字符，且不能过长。"
           }
         }
       }
@@ -721,13 +738,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "This check-in could not be validated."
+            "value" : "This check-in was not saved. Please try again."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "本次签到未通过数据校验，请重试。"
+            "value" : "本次签到没有保存，请重试。"
           }
         }
       }
@@ -738,13 +755,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "This widget composition is included with Advanced Benefits. Awaiting Place and basic reminders stay available without a purchase."
+            "value" : "This widget style requires Advanced Features. Awaiting Place and basic reminders remain free."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "这个小组件构图属于高阶权益；待落之处和基础提醒无需购买。"
+            "value" : "此小组件样式需要解锁高级功能。免费样式“待落之处”和基础提醒仍可使用。"
           }
         }
       }
@@ -766,19 +783,19 @@
         }
       }
     },
-    "error.habit_identity" : {
+    "error.habit_identity_format" : {
       "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Enter a valid commitment name and keep the optional note within the displayed limit."
+            "value" : "Your one thing must be %1$lld–%2$lld characters. The optional note can contain up to %3$lld characters."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "请输入有效的主承诺名称，并让可选备注保持在显示的字数范围内。"
+            "value" : "请用 %1$lld–%2$lld 个字符填写“我的一件事”；可选备注最多 %3$lld 个字符。"
           }
         }
       }
@@ -840,13 +857,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "This photo could not be validated and was not saved."
+            "value" : "The photo could not be verified and was not saved. Please take it again."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "这张照片未通过完整性校验，因此没有保存。"
+            "value" : "照片校验失败，未能保存。请重新拍摄。"
           }
         }
       }
@@ -857,13 +874,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Private photo storage is unavailable. Free device space and try again."
+            "value" : "The photo could not be saved. Free device space and try again."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "私人照片存储当前不可用。请释放设备空间后重试。"
+            "value" : "照片无法保存。请释放设备空间后重试。"
           }
         }
       }
@@ -891,13 +908,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Open Pulse and confirm your commitment before checking in."
+            "value" : "Open Pulse and set your one thing before checking in."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "请先打开一日一印并确认主承诺，再进行签到。"
+            "value" : "请先打开一日一印，设置“我的一件事”，再进行签到。"
           }
         }
       }
@@ -908,13 +925,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "No previous Advanced Benefits purchase was found for this Apple Account."
+            "value" : "No previous Advanced Features purchase was found for this Apple Account."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "当前 Apple 账户没有可恢复的高阶权益购买记录。"
+            "value" : "当前 Apple 账户没有可恢复的高级功能购买记录。"
           }
         }
       }
@@ -925,13 +942,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Advanced Benefits are temporarily unavailable from the App Store. No price or purchase was assumed."
+            "value" : "Product information is temporarily unavailable from the App Store. Please try again later."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "App Store 暂时无法提供高阶权益；当前未展示虚构价格，也没有完成购买。"
+            "value" : "暂时无法从 App Store 获取商品信息，请稍后重试。"
           }
         }
       }
@@ -942,13 +959,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "The purchase could not be verified, so Advanced Benefits remain locked."
+            "value" : "The purchase could not be verified, so Advanced Features remain locked."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "购买验证失败，高阶权益仍保持锁定。"
+            "value" : "购买无法验证，高级功能尚未解锁。"
           }
         }
       }
@@ -959,13 +976,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "A check-in record contains an invalid date."
+            "value" : "A check-in has an invalid date and cannot be opened."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "签到记录包含无效日期。"
+            "value" : "一条签到记录的日期无效，无法打开。"
           }
         }
       }
@@ -976,13 +993,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "No reminder channel is currently available. Check notification and Live Activity settings, then try again."
+            "value" : "Reminders are currently unavailable. Check notification and Live Activity settings, then try again."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "当前没有可用的提醒通道。请检查通知与实时活动设置后重试。"
+            "value" : "当前无法发送提醒。请检查通知与实时活动设置后重试。"
           }
         }
       }
@@ -993,13 +1010,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "The saved app settings are invalid."
+            "value" : "Some app settings could not be read."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "保存的应用设置无效。"
+            "value" : "部分应用设置无法读取。"
           }
         }
       }
@@ -1010,13 +1027,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "The saved check-in time zone is invalid."
+            "value" : "The check-in time zone setting is invalid."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "保存的签到时区无效。"
+            "value" : "签到时区设置无效。"
           }
         }
       }
@@ -1027,13 +1044,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "The selected time zone would move today before this check-in began."
+            "value" : "In the selected time zone, today would fall before you started tracking. Choose another time zone."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "所选签到时区会让当前日期早于项目开始日，请选择其他时区。"
+            "value" : "按所选时区计算，今天会早于开始记录的日期。请选择其他时区。"
           }
         }
       }
@@ -1077,13 +1094,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "ARCHIVE / %@"
+            "value" : "History · %@"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "记录 / %@"
+            "value" : "记录 · %@"
           }
         }
       }
@@ -1270,13 +1287,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Manage this day"
+            "value" : "Manage Record"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "管理这一天"
+            "value" : "管理记录"
           }
         }
       }
@@ -1286,13 +1303,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Export or delete content from this day"
+            "value" : "Export the photo or delete the record"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "导出或删除这一天的内容"
+            "value" : "导出照片或删除记录"
           }
         }
       }
@@ -1511,13 +1528,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Take a moment to record today’s check-in."
+            "value" : "You have not checked in today. Come back when you are ready."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "花一点时间，完成今天的签到吧。"
+            "value" : "今天还未签到，准备好时回来即可。"
           }
         }
       }
@@ -1904,13 +1921,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Reminder schedule is not synchronized"
+            "value" : "Reminder time was not updated"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "提醒计划尚未同步"
+            "value" : "提醒时间尚未更新"
           }
         }
       }
@@ -1921,13 +1938,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Updating reminder schedule…"
+            "value" : "Updating reminder…"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "正在更新提醒计划…"
+            "value" : "正在更新提醒…"
           }
         }
       }
@@ -2067,13 +2084,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Explore Advanced Benefits"
+            "value" : "View Advanced Features"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "查看高阶权益"
+            "value" : "查看高级功能"
           }
         }
       }
@@ -2084,13 +2101,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Advanced Benefits"
+            "value" : "Advanced Features"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "高阶权益"
+            "value" : "高级功能"
           }
         }
       }
@@ -2380,13 +2397,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "An empty imprint well shows whether today is still waiting."
+            "value" : "A simple open space shows whether you have checked in today."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "一处空着的承印坑，等待今天这一印落下。"
+            "value" : "用简洁的留白显示今天是否已签到。"
           }
         }
       }
@@ -2414,13 +2431,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "A large open seal makes today's action the object."
+            "value" : "Places today’s check-in status at the center for quick recognition."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "大开口日环就是今天要留下的那枚印。"
+            "value" : "把今天的签到状态放在中心，醒目直接。"
           }
         }
       }
@@ -2448,13 +2465,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Up to three kept days settle beneath today's imprint."
+            "value" : "Shows today together with your three most recent check-ins."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "最多三层已留下的日子沉在今天这一印之下。"
+            "value" : "同时显示今天和最近三次签到。"
           }
         }
       }
@@ -2482,13 +2499,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Today's day number becomes the single oversized silhouette."
+            "value" : "Uses a large date so today and its check-in status are easy to scan."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "今日日号成为画面里唯一的巨大剪影。"
+            "value" : "以大号日期为主，快速查看今天和签到状态。"
           }
         }
       }
@@ -2516,13 +2533,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "A private note carries today's wax seal and seven postmarks."
+            "value" : "Shows the date, your one thing, and the last seven days in a note layout."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "一封私密短笺，带着今天的蜡封和七枚邮戳。"
+            "value" : "以便签式布局显示日期、我的一件事和最近七天。"
           }
         }
       }
@@ -2550,13 +2567,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "A poster-like field lets the commitment hold the screen quietly."
+            "value" : "Keeps the focus on your one thing and today’s check-in status."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "海报般的静场，让主承诺安静地占住屏幕。"
+            "value" : "突出我的一件事和今天的签到状态，减少其他信息。"
           }
         }
       }
@@ -2584,13 +2601,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Six impressions grow nearer and arrive at today's open seal."
+            "value" : "Shows the previous six days and today in chronological order."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "过去六枚印由远及近，走到今天的开放日环。"
+            "value" : "按时间顺序显示过去六天和今天的签到状态。"
           }
         }
       }
@@ -2618,13 +2635,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sky, shoreline, and one fish let today's tide meet the open seal."
+            "value" : "Places the date, your one thing, and today’s status in a horizontal scene."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "天际、潮唇与一尾水下鱼，让今天的潮线贴近开放日环。"
+            "value" : "在横向画面中显示日期、我的一件事和今天的状态。"
           }
         }
       }
@@ -2635,13 +2652,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Per widget"
+            "value" : "Set for each widget"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "逐个设置"
+            "value" : "每个小组件独立设置"
           }
         }
       }
@@ -2651,13 +2668,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Pulse could not open its data store. Retry first. If the problem continues, contact support before deleting the app."
+            "value" : "Pulse could not read your data. Try again. If the problem continues, contact support before deleting the app."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "一日一印无法打开数据存储。请先重试；如果问题持续存在，请在删除 App 前联系支持。"
+            "value" : "一日一印无法读取你的数据。请先重试；如果问题持续存在，请在删除 App 前联系支持。"
           }
         }
       }
@@ -2683,13 +2700,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Saved app settings are invalid. Resetting settings keeps all check-in records."
+            "value" : "Some app settings could not be read. Resetting settings keeps all check-in records."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "保存的应用设置无效。重置设置不会删除任何签到记录。"
+            "value" : "部分应用设置无法读取。重置设置不会删除任何签到记录。"
           }
         }
       }
@@ -2699,13 +2716,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Pulse could not access the shared App and Widget settings. Retry first. If the problem continues, contact support."
+            "value" : "Pulse could not connect to its widget data. Try again. If the problem continues, contact support."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "一日一印无法访问 App 与小组件的共享设置。请先重试；如果问题持续存在，请联系支持。"
+            "value" : "一日一印无法连接小组件数据。请先重试；如果问题持续存在，请联系支持。"
           }
         }
       }
@@ -2749,13 +2766,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Included with Advanced Benefits"
+            "value" : "Included with Advanced Features"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "高阶权益包括"
+            "value" : "高级功能包括"
           }
         }
       }
@@ -2766,13 +2783,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Put today’s pending mark on supported system surfaces at your chosen time."
+            "value" : "Shows today’s check-in status at your chosen time on supported devices."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "按你设定的时间，让今天的待留印状态出现在受支持的系统表面。"
+            "value" : "在支持的设备上，按设定时间显示今天的签到状态。"
           }
         }
       }
@@ -2800,13 +2817,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Unlock Seal, Stacked Imprints, Day Silhouette, Letter, Quiet Field, Path, and Tide Mark compositions."
+            "value" : "Unlock Seal, Stacked Imprints, Day Silhouette, Letter, Quiet Field, Path, and Tide Mark styles."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "解锁落印、叠印、数影、手札、静场、来路与潮痕构图。"
+            "value" : "解锁落印、叠印、数影、手札、静场、来路和潮痕七种样式。"
           }
         }
       }
@@ -2817,13 +2834,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Advanced Widget Compositions"
+            "value" : "More Widget Styles"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "高级小组件构图"
+            "value" : "更多小组件样式"
           }
         }
       }
@@ -2834,13 +2851,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "One purchase permanently unlocks every advanced benefit listed here. New benefits will be described clearly when they ship."
+            "value" : "One purchase permanently unlocks every feature listed here. New features will appear only after they are released."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "一次买断，永久解锁当前列出的高阶权益。新增内容上线时，会在这里清晰说明。"
+            "value" : "一次购买，永久使用当前列出的功能。新功能发布后才会在这里列出。"
           }
         }
       }
@@ -2851,13 +2868,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "A FINER RHYTHM, EVERY DAY."
+            "value" : "More widget styles and scheduled Live Activities."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "让每天的印记，更有层次。"
+            "value" : "解锁更多小组件样式和定时实时活动。"
           }
         }
       }
@@ -2885,13 +2902,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Loading App Store product…"
+            "value" : "Loading purchase information…"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "读取 App Store 商品…"
+            "value" : "正在读取购买信息…"
           }
         }
       }
@@ -2902,13 +2919,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Advanced Benefits"
+            "value" : "Advanced Features"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "高阶权益"
+            "value" : "高级功能"
           }
         }
       }
@@ -2936,13 +2953,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Widget Compositions"
+            "value" : "Widget Styles"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "小组件构图"
+            "value" : "小组件样式"
           }
         }
       }
@@ -2953,13 +2970,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Contacting the App Store…"
+            "value" : "Processing purchase…"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "连接 App Store…"
+            "value" : "正在处理购买…"
           }
         }
       }
@@ -2970,13 +2987,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Advanced Benefits Unlocked"
+            "value" : "Advanced Features Unlocked"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "高阶权益已解锁"
+            "value" : "高级功能已解锁"
           }
         }
       }
@@ -3021,13 +3038,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Advanced Benefits"
+            "value" : "Advanced Features"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "高阶权益"
+            "value" : "高级功能"
           }
         }
       }
@@ -3038,13 +3055,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "App Store product unavailable"
+            "value" : "Purchase information unavailable"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "App Store 商品不可用"
+            "value" : "暂时无法获取购买信息"
           }
         }
       }
@@ -3138,13 +3155,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Main commitment: %1$@. %2$@"
+            "value" : "Your one thing: %1$@. %2$@"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "主承诺：%1$@。%2$@"
+            "value" : "我的一件事：%1$@。%2$@"
           }
         }
       }
@@ -3155,13 +3172,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Double-tap to check in. Use Check In and Take Photo to open the camera after saving."
+            "value" : "Double-tap to check in. Choose Check In and Take Photo to open the camera after the check-in is saved."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "轻点两下留印；使用“签到并拍照”可在完成后打开相机。"
+            "value" : "轻点两下签到；选择“签到并拍照”会在签到保存后打开相机。"
           }
         }
       }
@@ -3188,13 +3205,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Tap to mark · Hold for camera"
+            "value" : "Tap to check in · Hold to take a photo"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "轻点留印 · 按住入镜"
+            "value" : "轻点签到 · 按住拍照"
           }
         }
       }
@@ -3205,13 +3222,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%@ · MARKED"
+            "value" : "%@ · Checked in"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%@ · 已留印"
+            "value" : "%@ · 已签到"
           }
         }
       }
@@ -3222,13 +3239,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Main commitment: %@"
+            "value" : "Your one thing: %@"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "主承诺：%@"
+            "value" : "我的一件事：%@"
           }
         }
       }
@@ -3238,13 +3255,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Today’s Commitment"
+            "value" : "Your One Thing Today"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "今天守住"
+            "value" : "今天的一件事"
           }
         }
       }
@@ -3277,7 +3294,7 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "入镜"
+            "value" : "拍照"
           }
         }
       }
@@ -3319,13 +3336,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Today, in frame"
+            "value" : "Today’s Photo"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "今日入镜"
+            "value" : "今日照片"
           }
         }
       }
@@ -3341,7 +3358,7 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "查看入镜"
+            "value" : "查看照片"
           }
         }
       }
@@ -3367,13 +3384,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Today complete"
+            "value" : "Checked in today"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "今天已完成"
+            "value" : "今天已签到"
           }
         }
       }
@@ -3383,13 +3400,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Leave today’s mark"
+            "value" : "Not checked in yet"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "待留下印记"
+            "value" : "今天还未签到"
           }
         }
       }
@@ -3434,13 +3451,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Advanced"
+            "value" : "Advanced Features"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "高阶"
+            "value" : "高级功能"
           }
         }
       }
@@ -3451,13 +3468,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Imprint"
+            "value" : "Check In"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "留印"
+            "value" : "签到"
           }
         }
       }
@@ -3485,13 +3502,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Each installed widget has its own composition. Long-press a widget, choose Edit Widget, then choose its composition."
+            "value" : "Each widget can use a different style. On the Home Screen, touch and hold a widget, then choose Edit Widget."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "每个已安装的小组件都有独立构图。长按小组件，选择“编辑小组件”，再选择它的构图。"
+            "value" : "每个小组件都可以单独选择样式。请在主屏幕长按小组件，然后选择“编辑小组件”。"
           }
         }
       }
@@ -3502,13 +3519,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Eight distinct ways to see today"
+            "value" : "Choose a Widget Style"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "八种真正不同的今日视角"
+            "value" : "选择小组件样式"
           }
         }
       }
@@ -3519,13 +3536,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Widget Compositions"
+            "value" : "Widget Styles"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "小组件构图"
+            "value" : "小组件样式"
           }
         }
       }
@@ -3536,13 +3553,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Return after Pulse has loaded your commitment."
+            "value" : "Wait for Pulse to finish loading, then try again."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "请在一日一印载入主承诺后再查看。"
+            "value" : "请等待一日一印加载完成后重试。"
           }
         }
       }
@@ -3553,13 +3570,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Widget facts unavailable"
+            "value" : "Preview Unavailable"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "暂时无法读取小组件事实"
+            "value" : "暂时无法显示预览"
           }
         }
       }
@@ -3587,13 +3604,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Choose the composition for this widget instance."
+            "value" : "Choose the style used by this widget."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "为当前这个小组件选择构图。"
+            "value" : "选择这个小组件使用的样式。"
           }
         }
       }
@@ -3604,13 +3621,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Configure Today's Imprint"
+            "value" : "Choose Widget Style"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "配置今日一印"
+            "value" : "选择小组件样式"
           }
         }
       }
@@ -3672,13 +3689,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Composition"
+            "value" : "Style"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "构图"
+            "value" : "样式"
           }
         }
       }
@@ -3774,13 +3791,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Widget Composition"
+            "value" : "Widget Style"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "小组件构图"
+            "value" : "小组件样式"
           }
         }
       }
@@ -3791,13 +3808,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Today has landed"
+            "value" : "Checked in today"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "今天已留下"
+            "value" : "今天已签到"
           }
         }
       }
@@ -3808,13 +3825,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Empty"
+            "value" : "Not checked in"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "空着"
+            "value" : "未签到"
           }
         }
       }
@@ -3825,13 +3842,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Today is still empty"
+            "value" : "Not checked in yet"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "今天还空着"
+            "value" : "今天还未签到"
           }
         }
       }
@@ -3842,13 +3859,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Leave today's Pulse imprint."
+            "value" : "Complete today’s check-in."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "留下今天的一日一印。"
+            "value" : "完成今天的签到。"
           }
         }
       }
@@ -3859,13 +3876,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Leave Today's Imprint"
+            "value" : "Check In Today"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "留下今天"
+            "value" : "今日签到"
           }
         }
       }

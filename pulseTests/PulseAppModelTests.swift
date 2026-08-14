@@ -27,13 +27,13 @@ final class PulseAppModelTests: XCTestCase {
         let recordID = context.model.todayRecord?.id
 
         let didUpdate = await context.model.updateHabitIdentity(
-            name: "  Daily Reading  ",
+            name: "  Daily Focus  ",
             purpose: "  Stay curious  "
         )
 
         XCTAssertTrue(didUpdate)
         XCTAssertEqual(context.model.habit?.id, habitID)
-        XCTAssertEqual(context.model.habit?.name, "Daily Reading")
+        XCTAssertEqual(context.model.habit?.name, "Daily Focus")
         XCTAssertEqual(context.model.habit?.purpose, "Stay curious")
         XCTAssertTrue(context.model.habit?.isIdentityConfirmed ?? false)
         XCTAssertEqual(context.model.todayRecord?.id, recordID)

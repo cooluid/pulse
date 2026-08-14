@@ -76,7 +76,7 @@ final class PulseRepositoryTests: XCTestCase {
         let clock = MutableRepositoryClock(now: makeDate(day: 10, hour: 9))
         let repository = try makeRepository(clock: clock)
         let habit = try repository.primaryHabit(systemTimeZone: timeZone)
-        let identity = try HabitIdentity(userName: "Daily Reading", userPurpose: nil)
+        let identity = try HabitIdentity(userName: "Daily Focus", userPurpose: nil)
 
         let first = try repository.updateIdentity(habitID: habit.id, identity: identity)
         let second = try repository.updateIdentity(habitID: habit.id, identity: identity)

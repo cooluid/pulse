@@ -50,7 +50,7 @@ final class PulseFlowUITests: XCTestCase {
         checkInButton.tap()
 
         XCTAssertFalse(checkInButton.isEnabled)
-        XCTAssertTrue(checkInButton.label.contains("已留印"))
+        XCTAssertTrue(checkInButton.label.contains("已签到"))
         assertRhythmStatus(equals: "连续 1 天")
         assertWeekRailGeometry()
         assertRedundantTodayCopyIsAbsent()
@@ -64,7 +64,7 @@ final class PulseFlowUITests: XCTestCase {
         let persistedCheckInButton = app.buttons["today.checkin.button"]
         XCTAssertTrue(persistedCheckInButton.waitForExistence(timeout: 5))
         XCTAssertFalse(persistedCheckInButton.isEnabled)
-        XCTAssertTrue(persistedCheckInButton.label.contains("已留印"))
+        XCTAssertTrue(persistedCheckInButton.label.contains("已签到"))
         assertRhythmStatus(equals: "连续 1 天")
         assertRedundantTodayCopyIsAbsent()
         assertHeroGeometry()
@@ -102,7 +102,7 @@ final class PulseFlowUITests: XCTestCase {
         app.buttons["today.checkin.button"].tap()
         let captureButton = app.buttons["today.media.capture.button"]
         XCTAssertTrue(captureButton.waitForExistence(timeout: 3))
-        XCTAssertTrue(captureButton.label.contains("入镜"))
+        XCTAssertTrue(captureButton.label.contains("拍照"))
         XCTAssertFalse(app.navigationBars["照片"].exists)
         XCTAssertFalse(app.descendants(matching: .any)["today.media.strip"].exists)
 
@@ -143,7 +143,7 @@ final class PulseFlowUITests: XCTestCase {
         let completed = NSPredicate(format: "isEnabled == false")
         expectation(for: completed, evaluatedWith: checkInButton)
         waitForExpectations(timeout: 3)
-        XCTAssertTrue(checkInButton.label.contains("已留印"))
+        XCTAssertTrue(checkInButton.label.contains("已签到"))
     }
 
     func testSettingsHidesPrimaryNavigationUntilClosed() throws {
@@ -251,7 +251,7 @@ final class PulseFlowUITests: XCTestCase {
         XCTAssertTrue(includedOption.waitForExistence(timeout: 3))
         XCTAssertTrue(premiumOption.waitForExistence(timeout: 3))
         XCTAssertTrue(includedOption.label.contains("已包含"))
-        XCTAssertTrue(premiumOption.label.contains("高阶"))
+        XCTAssertTrue(premiumOption.label.contains("高级功能"))
 
         let optionsAttachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
         optionsAttachment.name = "Free and advanced widget compositions"
@@ -338,17 +338,17 @@ final class PulseFlowUITests: XCTestCase {
         XCTAssertTrue(confirmationField.exists)
         XCTAssertFalse(submitButton.isEnabled)
 
-        passphraseField.typeText("short")
+        passphraseField.typeText("abc")
         confirmationField.tap()
-        confirmationField.typeText("short")
+        confirmationField.typeText("abc")
+        XCTAssertFalse(submitButton.isEnabled)
+
+        replaceText(in: passphraseField, with: "1234")
+        replaceText(in: confirmationField, with: "1235")
+        XCTAssertTrue(submitButton.isEnabled)
         submitButton.tap()
         let error = app.staticTexts["backup.passphrase.error"]
         XCTAssertTrue(error.waitForExistence(timeout: 3))
-        XCTAssertTrue(error.label.contains("至少需要 12 个字符"))
-
-        replaceText(in: passphraseField, with: "correct horse battery staple")
-        replaceText(in: confirmationField, with: "correct horse battery staplx")
-        submitButton.tap()
         XCTAssertTrue(error.label.contains("两次输入的密码不一致"))
 
         let attachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
@@ -434,7 +434,7 @@ final class PulseFlowUITests: XCTestCase {
         historyNavigation.tap()
 
         let localizedHeading = app.staticTexts
-            .matching(NSPredicate(format: "label == %@", "记录 / 2026"))
+            .matching(NSPredicate(format: "label == %@", "记录 · 2026"))
             .firstMatch
         XCTAssertTrue(localizedHeading.waitForExistence(timeout: 3))
         XCTAssertFalse(
@@ -505,7 +505,7 @@ final class PulseFlowUITests: XCTestCase {
             "settings.widget.gallery.link"
         ]
         XCTAssertTrue(galleryLinkAfterReview.waitForExistence(timeout: 3))
-        XCTAssertTrue(galleryLinkAfterReview.label.contains("逐个设置"))
+        XCTAssertTrue(galleryLinkAfterReview.label.contains("每个小组件独立设置"))
     }
 
     private func reviewWidgetCompositions(
@@ -681,7 +681,7 @@ final class PulseFlowUITests: XCTestCase {
         let nextMonth = app.buttons["history.month.next"]
         XCTAssertTrue(heading.waitForExistence(timeout: 3))
         XCTAssertTrue(heading.label.contains("八月"))
-        XCTAssertTrue(heading.label.contains("记录 / 2026"))
+        XCTAssertTrue(heading.label.contains("记录 · 2026"))
         XCTAssertFalse(heading.label.contains("ARCHIVE"))
         XCTAssertTrue(previousMonth.exists)
         XCTAssertTrue(nextMonth.exists)
@@ -746,7 +746,7 @@ final class PulseFlowUITests: XCTestCase {
         onboardingAttachment.lifetime = .keepAlways
         add(onboardingAttachment)
 
-        let longCommitment = "每日签到，严于律己，坚持，改变，蜕变，积极，心态"
+        let longCommitment = "每天阅读三十分钟并做笔记"
         replaceText(in: nameField, with: longCommitment)
         nameField.typeText(XCUIKeyboardKey.return.rawValue)
         XCTAssertTrue(purposeField.waitForExistence(timeout: 3))
@@ -801,8 +801,11 @@ final class PulseFlowUITests: XCTestCase {
 
         replaceText(
             in: nameField,
-            with: String(repeating: "a", count: 81)
+            with: String(repeating: "a", count: 13)
         )
+        XCTAssertFalse(saveButton.isEnabled)
+
+        replaceText(in: nameField, with: "读书")
         XCTAssertFalse(saveButton.isEnabled)
 
         replaceText(in: nameField, with: "Read")

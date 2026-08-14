@@ -13,6 +13,29 @@ enum PulseAppError: Error, Equatable {
 enum PulseErrorPresentation {
     static func localizedMessage(for error: Error, locale: Locale) -> String? {
         if let coreError = error as? PulseCoreError {
+            if case .invalidHabitIdentity = coreError {
+                return String(
+                    format: PulseLocalization.string(
+                        "error.habit_identity_format",
+                        locale: locale
+                    ),
+                    locale: locale,
+                    Int64(HabitIdentity.minimumNameLength),
+                    Int64(HabitIdentity.maximumNameLength),
+                    Int64(HabitIdentity.maximumPurposeLength)
+                )
+            }
+            if case .invalidBackupPassphrase = coreError {
+                return String(
+                    format: PulseLocalization.string(
+                        "error.backup_passphrase_format",
+                        locale: locale
+                    ),
+                    locale: locale,
+                    Int64(PulseBackupContract.minimumPassphraseCharacterCount)
+                )
+            }
+
             let key = switch coreError {
             case .invalidTimeZone:
                 "error.timezone"
@@ -25,11 +48,11 @@ enum PulseErrorPresentation {
             case .primaryHabitUnavailable:
                 "error.primary_habit_unavailable"
             case .invalidHabitIdentity:
-                "error.habit_identity"
+                "error.habit_identity_format"
             case .backupUnavailable:
                 "error.backup_unavailable"
             case .invalidBackupPassphrase:
-                "error.backup_passphrase"
+                "error.backup_passphrase_format"
             case .backupAuthenticationFailed:
                 "error.backup_authentication"
             case .unsupportedBackupContainerVersion, .unsupportedBackupPayloadVersion:

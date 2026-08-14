@@ -435,8 +435,7 @@ public enum PulseEncryptedBackupCodec {
 
 enum PulsePassphraseKeyDerivation {
     static func validatedPassphraseData(_ passphrase: String) throws -> Data {
-        guard passphrase.count >= PulseBackupContract.minimumPassphraseCharacterCount,
-              passphrase.utf8.count <= PulseBackupContract.maximumPassphraseByteCount else {
+        guard PulseBackupContract.accepts(passphrase: passphrase) else {
             throw PulseCoreError.invalidBackupPassphrase
         }
         return Data(passphrase.utf8)

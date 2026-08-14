@@ -48,6 +48,33 @@ final class PulseBackupArchiveTests: XCTestCase {
         XCTAssertFalse(FileManager.default.fileExists(atPath: stagingURL.path))
     }
 
+    func testExactMinimumLengthPassphraseRoundTrips() throws {
+        let fixture = try makeMediaFixture()
+        let archiveURL = fixture.root.appendingPathComponent("four-characters.pulsebackup")
+        let minimumPassphrase = "1234"
+        XCTAssertEqual(
+            minimumPassphrase.count,
+            PulseBackupContract.minimumPassphraseCharacterCount
+        )
+
+        try PulseEncryptedBackupCodec.write(
+            fixture.payload,
+            to: archiveURL,
+            passphrase: minimumPassphrase
+        ) { path, _ in
+            try XCTUnwrap(fixture.files[path])
+        }
+
+        let decoded = try PulseEncryptedBackupCodec.read(
+            from: archiveURL,
+            stagingDirectoryURL: fixture.root.appendingPathComponent("four-character-restore"),
+            passphrase: minimumPassphrase
+        )
+        XCTAssertEqual(decoded.payload.records.count, 1)
+        XCTAssertEqual(decoded.payload.media.count, 1)
+        decoded.discard()
+    }
+
     func testSamePayloadProducesDifferentCiphertext() throws {
         let fixture = try makeMediaFixture()
         let first = fixture.root.appendingPathComponent("first.pulsebackup")
@@ -121,7 +148,7 @@ final class PulseBackupArchiveTests: XCTestCase {
             try PulseEncryptedBackupCodec.write(
                 fixture.payload,
                 to: fixture.root.appendingPathComponent("short.pulsebackup"),
-                passphrase: "too short"
+                passphrase: "abc"
             ) { path, _ in try XCTUnwrap(fixture.files[path]) }
         ) { error in
             XCTAssertEqual(error as? PulseCoreError, .invalidBackupPassphrase)

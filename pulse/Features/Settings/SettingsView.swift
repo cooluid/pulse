@@ -437,10 +437,19 @@ private enum BackupPassphraseMode: Identifiable {
         }
     }
 
-    var messageKey: String {
+    func message(locale: Locale) -> String {
         switch self {
-        case .export: "backup.passphrase.export.message"
-        case .restore: "backup.passphrase.restore.message"
+        case .export:
+            String(
+                format: PulseLocalization.string(
+                    "backup.passphrase.export.message_format",
+                    locale: locale
+                ),
+                locale: locale,
+                Int64(PulseBackupContract.minimumPassphraseCharacterCount)
+            )
+        case .restore:
+            PulseLocalization.string("backup.passphrase.restore.message", locale: locale)
         }
     }
 
@@ -476,7 +485,7 @@ private struct BackupPassphraseView: View {
         NavigationStack {
             Form {
                 Section {
-                    Text(PulseLocalization.string(mode.messageKey, locale: locale))
+                    Text(mode.message(locale: locale))
                         .font(.footnote)
                         .foregroundStyle(PulseDesign.secondary)
                         .fixedSize(horizontal: false, vertical: true)
@@ -510,7 +519,7 @@ private struct BackupPassphraseView: View {
                 if let errorMessage {
                     Section {
                         Label(errorMessage, systemImage: "exclamationmark.triangle.fill")
-                            .foregroundStyle(PulseDesign.action)
+                            .foregroundStyle(PulseDesign.systemDestructive)
                             .fixedSize(horizontal: false, vertical: true)
                             .accessibilityIdentifier("backup.passphrase.error")
                     }
@@ -532,7 +541,7 @@ private struct BackupPassphraseView: View {
                     }
                     .disabled(
                         isProcessing
-                            || passphrase.isEmpty
+                            || !PulseBackupContract.accepts(passphrase: passphrase)
                             || (mode.requiresConfirmation && confirmation.isEmpty)
                     )
                     .accessibilityIdentifier("backup.passphrase.submit")
