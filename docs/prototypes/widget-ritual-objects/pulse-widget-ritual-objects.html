@@ -618,8 +618,8 @@
     .letter.medium .habit { font-size: 28px; max-width: 8em; }
     .letter.medium .postmarks { height: 36px; }
 
-    /* 06 Path — impressions approach and arrive at today's seal */
-    .path { background: var(--bg); }
+    /* 06 Path — ink line pierces the board; six day nodes ride the trail */
+    .path { background: var(--bg); overflow: hidden; }
     .path .caption {
       position: absolute;
       left: 12px;
@@ -627,90 +627,112 @@
       top: 11px;
       display: flex;
       justify-content: space-between;
-      z-index: 2;
+      z-index: 4;
     }
+    .path .caption .meta:last-child { color: var(--action); font-weight: 650; }
     .path .habit {
       position: absolute;
       left: 12px;
-      top: 30px;
-      z-index: 2;
-      font-size: 17px;
-      font-weight: 750;
-      max-width: 6.5em;
+      top: 32px;
+      z-index: 4;
+      font-size: 16px;
+      font-weight: 650;
+      max-width: 5.5em;
     }
-    .path .trail {
+    .path .stroke {
       position: absolute;
-      left: 8px;
-      right: 8px;
-      bottom: 8px;
-      height: 86px;
-      overflow: visible;
-      color: var(--field);
-      display: block;
+      inset: 0;
+      z-index: 1;
+      color: var(--action);
+      pointer-events: none;
     }
-    .path .ground {
-      fill: color-mix(in srgb, var(--field) 8%, transparent);
-      stroke: color-mix(in srgb, var(--field) 12%, transparent);
-      stroke-width: 1;
-    }
-    .path .kept { fill: var(--field); }
-    .path .missed {
+    body.checked .path .stroke { color: var(--grass); }
+    .path .stroke svg { width: 100%; height: 100%; display: block; overflow: visible; }
+    .path .spine-soft {
       fill: none;
-      stroke: color-mix(in srgb, var(--secondary) 40%, transparent);
-      stroke-width: 1.3;
+      stroke: currentColor;
+      stroke-width: 22;
+      stroke-linecap: round;
+      opacity: .16;
     }
+    .path .spine {
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 8.5;
+      stroke-linecap: round;
+      opacity: .92;
+    }
+    .path .nodes {
+      position: absolute;
+      inset: 0;
+      z-index: 3;
+      pointer-events: none;
+    }
+    .path .node {
+      position: absolute;
+      border-radius: 50%;
+      background: var(--bg);
+      border: 1.7px solid color-mix(in srgb, var(--grass) 42%, transparent);
+    }
+    .path .node.kept {
+      background: var(--action);
+      border-color: var(--action);
+    }
+    body.checked .path .node.kept {
+      background: var(--grass);
+      border-color: var(--grass);
+    }
+    .path .n1 { left: 7%; top: 82%; width: 9px; height: 9px; }
+    .path .n2 { left: 20%; top: 54%; width: 10px; height: 10px; }
+    .path .n3 { left: 34%; top: 72%; width: 11px; height: 11px; }
+    .path .n4 { left: 48%; top: 42%; width: 12px; height: 12px; }
+    .path .n5 { left: 63%; top: 58%; width: 13px; height: 13px; }
+    .path .n6 { left: 78%; top: 24%; width: 14px; height: 14px; }
     .path .today-hit {
       position: absolute;
       right: 10px;
       bottom: 12px;
-      width: 56px;
-      height: 56px;
-      z-index: 1;
-      color: var(--field);
-    }
-    .path .today-hit svg {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      overflow: visible;
-    }
-    .path .today-hit svg.only-checked { display: none; }
-    body.checked .path .today-hit svg.only-pending { display: none; }
-    body.checked .path .today-hit svg.only-checked { display: block; }
-    .path .today-hit .core { fill: currentColor; opacity: .12; }
-    .path .today-hit .day-num {
-      position: absolute;
-      inset: 0;
+      width: 46px;
+      height: 46px;
+      z-index: 4;
+      border-radius: 50%;
+      border: 2.6px solid var(--action);
+      background: color-mix(in srgb, var(--bg) 90%, transparent);
       display: grid;
       place-items: center;
+    }
+    body.checked .path .today-hit {
+      border-color: var(--grass);
+      background: var(--grass);
+    }
+    .path .today-hit .day-num {
       margin: 0;
-      font-size: 22px;
-      font-weight: 650;
-      letter-spacing: -.06em;
-      line-height: 1;
+      font-size: 18px;
+      font-weight: 720;
+      letter-spacing: -.05em;
+      color: var(--action);
       font-variant-numeric: tabular-nums;
-      color: var(--ink);
-      pointer-events: none;
-      z-index: 2;
     }
-    .path-medium .today-hit .day-num { font-size: 32px; }
-    body.checked .path .today-hit { color: var(--grass); }
-    body.checked .path .today-hit .core { opacity: .18; }
-    body.checked .path .today-hit .day-num { color: var(--ink); }
-    .path-medium .habit { font-size: 22px; max-width: 7em; }
-    .path-medium .trail {
-      left: 8px;
-      right: 36px;
-      bottom: 4px;
-      height: 120px;
-    }
+    body.checked .path .today-hit .day-num { color: var(--grass-fg); }
+    body.dark .path .today-hit .day-num { color: var(--grass); }
+    body.dark.checked .path .today-hit .day-num { color: var(--grass-fg); }
+    .path-medium .habit { font-size: 20px; top: 38px; left: 16px; max-width: 10em; }
+    .path-medium .caption { left: 16px; right: 16px; top: 14px; }
+    .path-medium .spine-soft { stroke-width: 28; }
+    .path-medium .spine { stroke-width: 11; }
+    .path-medium .n1 { left: 5%; top: 78%; width: 11px; height: 11px; }
+    .path-medium .n2 { left: 17%; top: 52%; width: 12px; height: 12px; }
+    .path-medium .n3 { left: 30%; top: 70%; width: 13px; height: 13px; }
+    .path-medium .n4 { left: 44%; top: 40%; width: 15px; height: 15px; }
+    .path-medium .n5 { left: 58%; top: 56%; width: 16px; height: 16px; }
+    .path-medium .n6 { left: 72%; top: 26%; width: 17px; height: 17px; }
     .path-medium .today-hit {
-      right: 6px;
-      bottom: 10px;
-      width: 92px;
-      height: 92px;
+      right: 14px;
+      bottom: 14px;
+      width: 60px;
+      height: 60px;
     }
+    .path-medium .today-hit .day-num { font-size: 24px; }
     /* 静场 — same afterimage as original poster, scaled to 158 / 338×158 */
     .quiet { background: var(--bg); padding: 12px; }
     .quiet::before {
@@ -893,26 +915,23 @@
         </div>
         <div class="hs-medium">
           <div class="widget medium path path-medium">
-            <div class="caption"><span class="meta">八月十三日</span><span class="meta state"></span></div>
+            <div class="stroke" aria-hidden="true">
+              <svg viewBox="0 0 338 158" preserveAspectRatio="none">
+                <path class="spine-soft" d="M-30 140 C40 110 48 60 90 92 C130 120 140 42 190 70 C230 92 250 28 370 20"/>
+                <path class="spine" d="M-30 140 C40 110 48 60 90 92 C130 120 140 42 190 70 C230 92 250 28 370 20"/>
+              </svg>
+            </div>
+            <div class="nodes" aria-hidden="true">
+              <span class="node kept n1"></span>
+              <span class="node missed n2"></span>
+              <span class="node kept n3"></span>
+              <span class="node kept n4"></span>
+              <span class="node missed n5"></span>
+              <span class="node kept n6"></span>
+            </div>
+            <div class="caption"><span class="meta">八月十三日</span><span class="meta">六日 · 4 印</span></div>
             <div class="habit">晨间书写</div>
-            <svg class="trail" viewBox="0 0 294 120" preserveAspectRatio="none" aria-hidden="true">
-              <ellipse class="ground" cx="128" cy="92" rx="148" ry="24" transform="rotate(-6 128 92)"/>
-              <circle class="kept" cx="16" cy="104" r="4"/>
-              <circle class="missed" cx="56" cy="98" r="3.6"/>
-              <circle class="kept" cx="98" cy="88" r="6.2"/>
-              <circle class="kept" cx="140" cy="80" r="7.4"/>
-              <circle class="missed" cx="180" cy="74" r="4.6"/>
-              <circle class="kept" cx="220" cy="70" r="8.5"/>
-            </svg>
             <div class="today-hit" aria-hidden="true">
-              <svg class="only-pending" viewBox="0 0 100 100">
-                <circle cx="50" cy="50" r="39" fill="none" stroke="currentColor" stroke-width="5.5" stroke-linecap="round" pathLength="100" stroke-dasharray="86.7 13.3" transform="rotate(-18 50 50)"/>
-                <circle class="core" cx="50" cy="50" r="20"/>
-              </svg>
-              <svg class="only-checked" viewBox="0 0 100 100">
-                <circle cx="50" cy="50" r="39" fill="none" stroke="currentColor" stroke-width="5.5"/>
-                <circle class="core" cx="50" cy="50" r="20"/>
-              </svg>
               <span class="day-num">13</span>
             </div>
           </div>
@@ -1172,55 +1191,49 @@
         <div>
           <span class="idx">06 · PATH</span>
           <h3>来路</h3>
-          <p>来路是走过来的一串独立足印，不是折线加点的健康图。过去六日由远到近、由小到大，不画连接线，也不在每个印迹旁重复日期；漏签空心，已留下实心。顶部只写一次由真实快照即时派生的「六日 · N 印」，不保存派生状态，也不做连续天数或比例。今天这一枚才是开口日环，环心保留今日日号。</p>
+          <p>一条墨线从画框外斜向穿过板面，六日节点落在线上：留下实心、漏签空心淡草绿边。今日是线端日环盘。完成时线与实心点变草绿、今日盘实心。不做大色块填底，也不做折线健康图或连续天数。</p>
           <span class="job">任务：我怎么走到今天 · 现有七日快照</span>
         </div>
         <div class="frames">
           <div class="widget path">
+            <div class="stroke" aria-hidden="true">
+              <svg viewBox="0 0 158 158" preserveAspectRatio="none">
+                <path class="spine-soft" d="M-18 148 C18 120 24 70 48 86 C72 102 68 48 96 66 C118 80 128 20 176 18"/>
+                <path class="spine" d="M-18 148 C18 120 24 70 48 86 C72 102 68 48 96 66 C118 80 128 20 176 18"/>
+              </svg>
+            </div>
+            <div class="nodes" aria-hidden="true">
+              <span class="node kept n1"></span>
+              <span class="node missed n2"></span>
+              <span class="node kept n3"></span>
+              <span class="node kept n4"></span>
+              <span class="node missed n5"></span>
+              <span class="node kept n6"></span>
+            </div>
             <div class="caption"><span class="meta">8 / 13</span><span class="meta">六日 · 4 印</span></div>
             <div class="habit">晨间书写</div>
-            <svg class="trail" viewBox="0 0 142 86" preserveAspectRatio="none" aria-hidden="true">
-              <ellipse class="ground" cx="61" cy="68" rx="70" ry="16" transform="rotate(-6 61 68)"/>
-              <g class="kept" transform="translate(10 74) rotate(-16) scale(.35)"><ellipse cy="2" rx="4" ry="8"/><circle cx="-4" cy="-7" r="1.6"/><circle cy="-9" r="1.8"/><circle cx="4" cy="-7" r="1.6"/></g>
-              <g class="missed" transform="translate(24 70) rotate(12) scale(.38)"><ellipse cy="2" rx="4" ry="8"/><circle cx="-4" cy="-7" r="1.6"/><circle cy="-9" r="1.8"/><circle cx="4" cy="-7" r="1.6"/></g>
-              <g class="kept" transform="translate(38 65) rotate(-12) scale(.48)"><ellipse cy="2" rx="4" ry="8"/><circle cx="-4" cy="-7" r="1.6"/><circle cy="-9" r="1.8"/><circle cx="4" cy="-7" r="1.6"/></g>
-              <g class="kept" transform="translate(52 61) rotate(10) scale(.58)"><ellipse cy="2" rx="4" ry="8"/><circle cx="-4" cy="-7" r="1.6"/><circle cy="-9" r="1.8"/><circle cx="4" cy="-7" r="1.6"/></g>
-              <g class="missed" transform="translate(66 58) rotate(-9) scale(.62)"><ellipse cy="2" rx="4" ry="8"/><circle cx="-4" cy="-7" r="1.6"/><circle cy="-9" r="1.8"/><circle cx="4" cy="-7" r="1.6"/></g>
-              <g class="kept" transform="translate(80 56) rotate(8) scale(.72)"><ellipse cy="2" rx="4" ry="8"/><circle cx="-4" cy="-7" r="1.6"/><circle cy="-9" r="1.8"/><circle cx="4" cy="-7" r="1.6"/></g>
-            </svg>
             <div class="today-hit" aria-hidden="true">
-              <svg class="only-pending" viewBox="0 0 100 100">
-                <circle cx="50" cy="50" r="39" fill="none" stroke="currentColor" stroke-width="5.5" stroke-linecap="round" pathLength="100" stroke-dasharray="86.7 13.3" transform="rotate(-18 50 50)"/>
-                <circle class="core" cx="50" cy="50" r="20"/>
-              </svg>
-              <svg class="only-checked" viewBox="0 0 100 100">
-                <circle cx="50" cy="50" r="39" fill="none" stroke="currentColor" stroke-width="5.5"/>
-                <circle class="core" cx="50" cy="50" r="20"/>
-              </svg>
               <span class="day-num">13</span>
             </div>
           </div>
           <div class="widget medium path path-medium">
+            <div class="stroke" aria-hidden="true">
+              <svg viewBox="0 0 338 158" preserveAspectRatio="none">
+                <path class="spine-soft" d="M-30 140 C40 110 48 60 90 92 C130 120 140 42 190 70 C230 92 250 28 370 20"/>
+                <path class="spine" d="M-30 140 C40 110 48 60 90 92 C130 120 140 42 190 70 C230 92 250 28 370 20"/>
+              </svg>
+            </div>
+            <div class="nodes" aria-hidden="true">
+              <span class="node kept n1"></span>
+              <span class="node missed n2"></span>
+              <span class="node kept n3"></span>
+              <span class="node kept n4"></span>
+              <span class="node missed n5"></span>
+              <span class="node kept n6"></span>
+            </div>
             <div class="caption"><span class="meta">八月十三日</span><span class="meta">六日 · 4 印</span></div>
             <div class="habit">晨间书写</div>
-            <svg class="trail" viewBox="0 0 294 120" preserveAspectRatio="none" aria-hidden="true">
-              <ellipse class="ground" cx="128" cy="92" rx="148" ry="24" transform="rotate(-6 128 92)"/>
-              <g class="kept" transform="translate(16 104) rotate(-16) scale(.55)"><ellipse cy="2" rx="4" ry="8"/><circle cx="-4" cy="-7" r="1.6"/><circle cy="-9" r="1.8"/><circle cx="4" cy="-7" r="1.6"/></g>
-              <g class="missed" transform="translate(56 98) rotate(12) scale(.62)"><ellipse cy="2" rx="4" ry="8"/><circle cx="-4" cy="-7" r="1.6"/><circle cy="-9" r="1.8"/><circle cx="4" cy="-7" r="1.6"/></g>
-              <g class="kept" transform="translate(98 88) rotate(-12) scale(.82)"><ellipse cy="2" rx="4" ry="8"/><circle cx="-4" cy="-7" r="1.6"/><circle cy="-9" r="1.8"/><circle cx="4" cy="-7" r="1.6"/></g>
-              <g class="kept" transform="translate(140 80) rotate(10) scale(1)"><ellipse cy="2" rx="4" ry="8"/><circle cx="-4" cy="-7" r="1.6"/><circle cy="-9" r="1.8"/><circle cx="4" cy="-7" r="1.6"/></g>
-              <g class="missed" transform="translate(180 74) rotate(-9) scale(1.08)"><ellipse cy="2" rx="4" ry="8"/><circle cx="-4" cy="-7" r="1.6"/><circle cy="-9" r="1.8"/><circle cx="4" cy="-7" r="1.6"/></g>
-              <g class="kept" transform="translate(220 70) rotate(8) scale(1.22)"><ellipse cy="2" rx="4" ry="8"/><circle cx="-4" cy="-7" r="1.6"/><circle cy="-9" r="1.8"/><circle cx="4" cy="-7" r="1.6"/></g>
-            </svg>
             <div class="today-hit" aria-hidden="true">
-              <svg class="only-pending" viewBox="0 0 100 100">
-                <circle cx="50" cy="50" r="39" fill="none" stroke="currentColor" stroke-width="5.5" stroke-linecap="round" pathLength="100" stroke-dasharray="86.7 13.3" transform="rotate(-18 50 50)"/>
-                <circle class="core" cx="50" cy="50" r="20"/>
-              </svg>
-              <svg class="only-checked" viewBox="0 0 100 100">
-                <circle cx="50" cy="50" r="39" fill="none" stroke="currentColor" stroke-width="5.5"/>
-                <circle class="core" cx="50" cy="50" r="20"/>
-              </svg>
               <span class="day-num">13</span>
             </div>
           </div>

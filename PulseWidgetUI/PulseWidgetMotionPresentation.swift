@@ -128,7 +128,9 @@ enum PulseWidgetMotionPresentation {
         case .echo:
             amplitude = AmbientPose(horizontalPoints: -1.4, verticalPoints: -1.3, rotationDegrees: 0)
         case .footprint:
-            amplitude = AmbientPose(horizontalPoints: 3.2, verticalPoints: -0.7, rotationDegrees: 0.9)
+            // Inkline pierce uses period-driven rotation in the path renderer;
+            // keep a distinct ambient pose for material identity.
+            amplitude = AmbientPose(horizontalPoints: 4.2, verticalPoints: 0.5, rotationDegrees: 2.8)
         case .tide:
             amplitude = AmbientPose(horizontalPoints: -3.6, verticalPoints: 2.8, rotationDegrees: 0)
         }

@@ -8,3 +8,4 @@
 | --- | --- |
 | [01-tide-mark](./01-tide-mark/) | 潮痕 |
 | [03-day-silhouette](./03-day-silhouette/) | 数影：对切 · 草绿拟物（已迁渲染器） |
+| [04-path](./04-path/) | 来路：墨线穿板（已迁渲染器） |

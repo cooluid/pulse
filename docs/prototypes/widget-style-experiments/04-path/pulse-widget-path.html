@@ -1,0 +1,474 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>一日一印 · 来路 · 墨线穿板</title>
+  <style>
+    :root {
+      --bg: #EDF5E7;
+      --surface: #F6FAEF;
+      --action: #1F5E34;
+      --action-fg: #FFFFFF;
+      --grass: #68B33F;
+      --grass-fg: #102013;
+      --ink: #172119;
+      --secondary: #667064;
+      --field: #68B33F;
+      --shadow: #182D1D;
+      --canvas: #E7EBDF;
+      --ease: cubic-bezier(.22, .8, .28, 1);
+      --s: 158px;
+      --m-w: 338px;
+      --m-h: 158px;
+      --radius: 22px;
+      --trail-shift: 0px;
+      --trail-rot: -14deg;
+    }
+
+    body.dark {
+      --bg: #07120A;
+      --surface: #0D1C10;
+      --action: #276D3D;
+      --action-fg: #F7FBF2;
+      --grass: #91D55B;
+      --grass-fg: #0C1A0E;
+      --ink: #F0F5EC;
+      --secondary: #A6B0A2;
+      --field: #91D55B;
+      --shadow: #000000;
+      --canvas: #111813;
+    }
+
+    body.period-morning { --trail-shift: -8px; --wave: -0.03; }
+    body.period-daylight { --trail-shift: 0px; --wave: 0; }
+    body.period-evening { --trail-shift: 9px; --wave: 0.03; }
+
+    * { box-sizing: border-box; }
+    html { background: var(--canvas); }
+    body {
+      margin: 0;
+      color: var(--ink);
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC", sans-serif;
+      -webkit-font-smoothing: antialiased;
+      background: var(--canvas);
+    }
+    button { font: inherit; }
+
+    .page { width: min(980px, calc(100% - 40px)); margin: 0 auto; padding: 40px 0 88px; }
+    .masthead {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 24px;
+      align-items: end;
+      padding-bottom: 22px;
+      border-bottom: 1px solid color-mix(in srgb, var(--ink) 12%, transparent);
+    }
+    .eyebrow {
+      margin: 0 0 10px;
+      color: var(--action);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+    }
+    h1 {
+      margin: 0;
+      font-size: clamp(30px, 4.4vw, 46px);
+      line-height: 1.05;
+      letter-spacing: -.04em;
+    }
+    .lede {
+      margin: 12px 0 0;
+      max-width: 680px;
+      color: var(--secondary);
+      font-size: 15px;
+      line-height: 1.6;
+    }
+    .lede strong { color: var(--ink); font-weight: 650; }
+    .controls-wrap { display: grid; gap: 10px; justify-items: end; }
+    .controls {
+      display: flex;
+      gap: 6px;
+      padding: 5px;
+      border: 1px solid color-mix(in srgb, var(--ink) 10%, transparent);
+      border-radius: 999px;
+      background: color-mix(in srgb, var(--surface) 90%, transparent);
+    }
+    .control {
+      min-height: 40px;
+      padding: 0 14px;
+      border: 0;
+      border-radius: 999px;
+      color: var(--secondary);
+      background: transparent;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 650;
+    }
+    .control[aria-pressed="true"] {
+      color: var(--action-fg);
+      background: var(--action);
+    }
+
+    .verdict {
+      margin-top: 22px;
+      padding: 16px 18px;
+      border-radius: 18px;
+      background: color-mix(in srgb, var(--grass) 12%, var(--surface));
+      color: var(--secondary);
+      font-size: 14px;
+      line-height: 1.55;
+    }
+    .verdict strong { color: var(--ink); }
+
+    .stage {
+      margin-top: 22px;
+      padding: 26px;
+      border-radius: 28px;
+      border: 1px solid color-mix(in srgb, var(--ink) 9%, transparent);
+      background: color-mix(in srgb, var(--surface) 55%, transparent);
+    }
+    .stage h2 {
+      margin: 0 0 6px;
+      font-size: 13px;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--action);
+    }
+    .stage > p {
+      margin: 0 0 20px;
+      color: var(--secondary);
+      font-size: 14px;
+      line-height: 1.55;
+    }
+    .frames { display: flex; gap: 20px; align-items: center; flex-wrap: wrap; }
+
+    .widget {
+      position: relative;
+      overflow: hidden;
+      width: var(--s);
+      height: var(--s);
+      border-radius: var(--radius);
+      color: var(--ink);
+      background: var(--bg);
+      box-shadow:
+        0 14px 30px color-mix(in srgb, var(--shadow) 12%, transparent),
+        inset 0 0 0 1px color-mix(in srgb, var(--ink) 5%, transparent);
+      isolation: isolate;
+      font-variant-numeric: tabular-nums;
+    }
+    .widget.medium { width: var(--m-w); height: var(--m-h); }
+    .widget::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      border-radius: inherit;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, .22);
+      z-index: 8;
+    }
+
+    .meta {
+      position: absolute;
+      z-index: 5;
+      left: 12px;
+      top: 11px;
+      font-size: 11px;
+      font-weight: 650;
+      color: var(--secondary);
+    }
+    .summary {
+      position: absolute;
+      z-index: 5;
+      right: 12px;
+      top: 11px;
+      font-size: 11px;
+      font-weight: 650;
+      color: var(--action);
+    }
+    .habit {
+      position: absolute;
+      z-index: 5;
+      left: 12px;
+      top: 32px;
+      font-size: 16px;
+      font-weight: 650;
+      letter-spacing: -.02em;
+      line-height: 1.08;
+      max-width: 5.5em;
+    }
+    .medium .meta { left: 16px; top: 14px; }
+    .medium .summary { right: 16px; top: 14px; }
+    .medium .habit { left: 16px; top: 38px; font-size: 20px; max-width: 10em; }
+
+    /* Full-bleed stroke: SVG larger than card, clipped by overflow:hidden */
+    .stroke {
+      position: absolute;
+      z-index: 1;
+      inset: 0;
+      color: var(--action);
+      transform: translateX(var(--trail-shift));
+      transition: color 720ms var(--ease), transform 720ms var(--ease), opacity 720ms var(--ease);
+      opacity: .94;
+      pointer-events: none;
+    }
+    body.checked .stroke { color: var(--grass); opacity: 1; }
+    .stroke svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+      overflow: visible;
+    }
+    .spine-soft {
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 22;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      opacity: .16;
+    }
+    .spine {
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 8.5;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      opacity: .92;
+    }
+    .medium .spine-soft { stroke-width: 28; }
+    .medium .spine { stroke-width: 11; }
+
+    .nodes {
+      position: absolute;
+      z-index: 3;
+      inset: 0;
+      transform: translateX(var(--trail-shift));
+      transition: transform 720ms var(--ease);
+      pointer-events: none;
+    }
+    .node {
+      position: absolute;
+      border-radius: 50%;
+      border: 1.7px solid color-mix(in srgb, var(--action) 50%, transparent);
+      background: var(--bg);
+      box-shadow: 0 1px 0 color-mix(in srgb, var(--shadow) 10%, transparent);
+      transition: background 720ms var(--ease), border-color 720ms var(--ease), transform 720ms var(--ease);
+    }
+    .node.kept {
+      background: var(--action);
+      border-color: var(--action);
+    }
+    body.checked .node.kept {
+      background: var(--grass);
+      border-color: var(--grass);
+    }
+    .node.missed {
+      background: color-mix(in srgb, var(--bg) 88%, transparent);
+      border-color: color-mix(in srgb, var(--grass) 42%, transparent);
+    }
+
+    /* S-curve node layout — matches renderer PulsePathTrailGeometry */
+    .n1 { left: 7%; top: 82%; width: 9px; height: 9px; }
+    .n2 { left: 20%; top: 54%; width: 10px; height: 10px; }
+    .n3 { left: 34%; top: 72%; width: 11px; height: 11px; }
+    .n4 { left: 48%; top: 42%; width: 12px; height: 12px; }
+    .n5 { left: 63%; top: 58%; width: 13px; height: 13px; }
+    .n6 { left: 78%; top: 24%; width: 14px; height: 14px; }
+
+    .medium .n1 { left: 5%; top: 78%; width: 11px; height: 11px; }
+    .medium .n2 { left: 17%; top: 52%; width: 12px; height: 12px; }
+    .medium .n3 { left: 30%; top: 70%; width: 13px; height: 13px; }
+    .medium .n4 { left: 44%; top: 40%; width: 15px; height: 15px; }
+    .medium .n5 { left: 58%; top: 56%; width: 16px; height: 16px; }
+    .medium .n6 { left: 72%; top: 26%; width: 17px; height: 17px; }
+
+    .today {
+      position: absolute;
+      z-index: 4;
+      right: 10px;
+      bottom: 12px;
+      width: 46px;
+      height: 46px;
+      border-radius: 50%;
+      border: 2.6px solid var(--action);
+      background: color-mix(in srgb, var(--bg) 90%, transparent);
+      display: grid;
+      place-items: center;
+      transition: border-color 720ms var(--ease), background 720ms var(--ease), transform 720ms var(--ease);
+      transform: scale(.94);
+    }
+    body.checked .today {
+      border-color: var(--grass);
+      background: var(--grass);
+      transform: scale(1);
+    }
+    .today span {
+      font-size: 18px;
+      font-weight: 720;
+      color: var(--action);
+      transition: color 720ms var(--ease);
+    }
+    body.checked .today span { color: var(--grass-fg); }
+    body.dark .today span { color: var(--grass); }
+    body.dark.checked .today span { color: var(--grass-fg); }
+    .medium .today {
+      width: 60px;
+      height: 60px;
+      right: 14px;
+      bottom: 14px;
+    }
+    .medium .today span { font-size: 24px; }
+
+    .notes {
+      margin-top: 18px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+    .note {
+      padding: 16px;
+      border-radius: 18px;
+      background: var(--surface);
+      border: 1px solid color-mix(in srgb, var(--ink) 7%, transparent);
+    }
+    .note strong { display: block; margin-bottom: 6px; font-size: 13px; }
+    .note p { margin: 0; color: var(--secondary); font-size: 13px; line-height: 1.5; }
+
+    .footnote {
+      margin: 18px 0 0;
+      color: var(--secondary);
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .stroke, .nodes, .today, .node { transition: none; }
+    }
+    @media (max-width: 820px) {
+      .masthead { grid-template-columns: 1fr; }
+      .controls-wrap { justify-items: start; }
+      .notes { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body class="period-daylight">
+  <main class="page">
+    <header class="masthead">
+      <div>
+        <p class="eyebrow">Pulse Widget Lab · Path · Inkline</p>
+        <h1>墨线 · 穿过板面</h1>
+        <p class="lede">线从画框<strong>外</strong>起笔，斜向贯穿整张卡，再从另一侧穿出——靠 <code>overflow: hidden</code> 裁切，所以看见的是「穿板」而不是贴在下半幅的装饰弧。</p>
+      </div>
+      <div class="controls-wrap">
+        <div class="controls" aria-label="签到状态">
+          <button class="control state-control" type="button" data-state="pending" aria-pressed="true">待签到</button>
+          <button class="control state-control" type="button" data-state="checked" aria-pressed="false">已签到</button>
+        </div>
+        <div class="controls" aria-label="时段氛围">
+          <button class="control period-control" type="button" data-period="morning" aria-pressed="false">早间</button>
+          <button class="control period-control" type="button" data-period="daylight" aria-pressed="true">日间</button>
+          <button class="control period-control" type="button" data-period="evening" aria-pressed="false">晚间</button>
+        </div>
+        <div class="controls" aria-label="外观">
+          <button class="control theme-control" type="button" data-theme="light" aria-pressed="true">浅色</button>
+          <button class="control theme-control" type="button" data-theme="dark" aria-pressed="false">深色</button>
+        </div>
+      </div>
+    </header>
+
+    <p class="verdict"><strong>看点：</strong>线两端是否被圆角切掉；六日节点是否落在线上；完成时线变草绿、今日盘实心。仍不做大色块填底。</p>
+
+    <section class="stage">
+      <h2>Pierce · Edge to edge</h2>
+      <p>路径坐标超出 viewBox，再放大描边层，保证小/中号都被线斜劈穿过。</p>
+      <div class="frames">
+        <div class="widget" aria-label="墨线穿板 小号">
+          <div class="stroke" aria-hidden="true">
+            <svg viewBox="0 0 158 158" preserveAspectRatio="none">
+              <!-- S-curve through board; ends outside so the card clips -->
+              <path class="spine-soft" d="M-18 148 C18 120 24 70 48 86 C72 102 68 48 96 66 C118 80 128 20 176 18"/>
+              <path class="spine" d="M-18 148 C18 120 24 70 48 86 C72 102 68 48 96 66 C118 80 128 20 176 18"/>
+            </svg>
+          </div>
+          <div class="nodes" aria-hidden="true">
+            <span class="node kept n1"></span>
+            <span class="node missed n2"></span>
+            <span class="node kept n3"></span>
+            <span class="node kept n4"></span>
+            <span class="node missed n5"></span>
+            <span class="node kept n6"></span>
+          </div>
+          <div class="today"><span>13</span></div>
+          <div class="meta">八月十三</div>
+          <div class="summary">六日 · 4 印</div>
+          <div class="habit">晨间<br>书写</div>
+        </div>
+
+        <div class="widget medium" aria-label="墨线穿板 中号">
+          <div class="stroke" aria-hidden="true">
+            <svg viewBox="0 0 338 158" preserveAspectRatio="none">
+              <path class="spine-soft" d="M-30 140 C40 110 48 60 90 92 C130 120 140 42 190 70 C230 92 250 28 370 20"/>
+              <path class="spine" d="M-30 140 C40 110 48 60 90 92 C130 120 140 42 190 70 C230 92 250 28 370 20"/>
+            </svg>
+          </div>
+          <div class="nodes" aria-hidden="true">
+            <span class="node kept n1"></span>
+            <span class="node missed n2"></span>
+            <span class="node kept n3"></span>
+            <span class="node kept n4"></span>
+            <span class="node missed n5"></span>
+            <span class="node kept n6"></span>
+          </div>
+          <div class="today"><span>13</span></div>
+          <div class="meta">八月十三日 · 周四</div>
+          <div class="summary">六日 · 4 印</div>
+          <div class="habit">晨间书写</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="notes">
+      <div class="note"><strong>穿板</strong><p>线必须被边裁切；若两端都完整落在卡内，就不算穿过。</p></div>
+      <div class="note"><strong>分化</strong><p>相对数影色面：这是一条轨迹，不是第二色平面。</p></div>
+      <div class="note"><strong>下一步</strong><p>已迁入 <code>PulseWidgetHomeRenderer.path</code>；本页作对照。</p></div>
+    </section>
+
+    <p class="footnote">早/日/晚只微移、微转整条线，不改六日事实。</p>
+  </main>
+
+  <script>
+    const stateControls = document.querySelectorAll(".state-control");
+    const themeControls = document.querySelectorAll(".theme-control");
+    const periodControls = document.querySelectorAll(".period-control");
+
+    stateControls.forEach((button) => {
+      button.addEventListener("click", () => {
+        document.body.classList.toggle("checked", button.dataset.state === "checked");
+        stateControls.forEach((item) => {
+          item.setAttribute("aria-pressed", String(item === button));
+        });
+      });
+    });
+
+    themeControls.forEach((button) => {
+      button.addEventListener("click", () => {
+        document.body.classList.toggle("dark", button.dataset.theme === "dark");
+        themeControls.forEach((item) => {
+          item.setAttribute("aria-pressed", String(item === button));
+        });
+      });
+    });
+
+    periodControls.forEach((button) => {
+      button.addEventListener("click", () => {
+        document.body.classList.remove("period-morning", "period-daylight", "period-evening");
+        document.body.classList.add(`period-${button.dataset.period}`);
+        periodControls.forEach((item) => {
+          item.setAttribute("aria-pressed", String(item === button));
+        });
+      });
+    });
+  </script>
+</body>
+</html>
