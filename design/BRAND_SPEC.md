@@ -31,7 +31,7 @@ HTML 原型仅为探索参考。
 
 新增或改色：先改令牌，再生成并 `--check`。**允许**为新氛围扩展令牌；不是“禁止新画法”。
 
-常见语义角色：`background`、`surface`、`grass` / `grassForeground`、`action` / `actionForeground`、`ink` / `secondary`、`field`、`separator` / `shadow`。Widget 的纸张与水面分别使用 `widgetPaper`、`widgetWater`，不以局部 RGB 模拟材质。
+常见语义角色：`background`、`surface`、`grass` / `grassForeground`、`action` / `actionForeground`、`ink` / `secondary`、`field`、`separator` / `shadow`。Widget 的纸张、天光与水面分别使用 `widgetPaper`、`widgetSkyGlow`、`widgetWater`，不以局部 RGB 模拟材质。
 
 完成 / 漏签 / 今天等状态不能**只靠颜色**到不可辨（形状、文案或无障碍标签须有等价）。
 

@@ -38,6 +38,7 @@ COLOR_ASSETS = {
     "PulseShadow": "shadow",
     "PulseSurface": "surface",
     "PulseWidgetPaper": "widgetPaper",
+    "PulseWidgetSkyGlow": "widgetSkyGlow",
     "PulseWidgetWater": "widgetWater",
 }
 

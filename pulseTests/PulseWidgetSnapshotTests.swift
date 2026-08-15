@@ -183,6 +183,180 @@ final class PulseWidgetSnapshotTests: XCTestCase {
         }
     }
 
+    func testTideCompositionRendersSkyAndReflectionAcrossHomeSizesAndStates() throws {
+        let timeZone = try XCTUnwrap(TimeZone(identifier: "Asia/Shanghai"))
+        let today = LogicalDay(year: 2026, month: 8, day: 15)
+        let generatedAt = makeDate(2026, 8, 15, 12, timeZone: timeZone)
+        let pending = PulseWidgetSnapshot(
+            habitID: try XCTUnwrap(
+                UUID(uuidString: "A38DBF61-0D11-43FD-B30B-E0D9A8A80D8B")
+            ),
+            habitName: "晨间书写",
+            today: today,
+            checkedAt: nil,
+            recentDays: [
+                PulseWidgetDaySnapshot(day: LogicalDay(year: 2026, month: 8, day: 9), state: .checked),
+                PulseWidgetDaySnapshot(day: LogicalDay(year: 2026, month: 8, day: 10), state: .missed),
+                PulseWidgetDaySnapshot(day: LogicalDay(year: 2026, month: 8, day: 11), state: .checked),
+                PulseWidgetDaySnapshot(day: LogicalDay(year: 2026, month: 8, day: 12), state: .checked),
+                PulseWidgetDaySnapshot(day: LogicalDay(year: 2026, month: 8, day: 13), state: .missed),
+                PulseWidgetDaySnapshot(day: LogicalDay(year: 2026, month: 8, day: 14), state: .checked),
+                PulseWidgetDaySnapshot(day: today, state: .todayPending),
+            ],
+            generatedAt: generatedAt,
+            nextDayBoundary: makeDate(2026, 8, 16, 0, timeZone: timeZone),
+            projectTimeZoneIdentifier: timeZone.identifier
+        )
+        let states: [(name: String, snapshot: PulseWidgetSnapshot)] = [
+            ("pending", pending),
+            ("completed", pending.projectingTodayCheckInForGallery(true)),
+        ]
+        let configurations: [(name: String, size: CGSize, usesMediumMetrics: Bool)] = [
+            ("small", CGSize(width: 158, height: 158), false),
+            ("medium", CGSize(width: 338, height: 158), true),
+        ]
+        let schemes: [(name: String, value: ColorScheme)] = [
+            ("light", .light),
+            ("dark", .dark),
+        ]
+
+        for state in states {
+            for configuration in configurations {
+                for scheme in schemes {
+                    let content = PulseWidgetHomeRenderer(
+                        snapshot: state.snapshot,
+                        style: .tide,
+                        usesMediumMetrics: configuration.usesMediumMetrics,
+                        usesFullColorPalette: true,
+                        allowsMotion: false,
+                        statusText: state.snapshot.isCheckedToday ? "今天已签到" : "今天还未签到",
+                        pathSummaryFormat: "六日 · %d 印",
+                        emptyPlaceText: "空着",
+                        placeStatusText: state.snapshot.isCheckedToday ? "今天已签到" : "今天还未签到"
+                    )
+                    .environment(\.locale, Locale(identifier: "zh-Hans"))
+                    .environment(\.colorScheme, scheme.value)
+                    .frame(width: configuration.size.width, height: configuration.size.height)
+
+                    let renderer = ImageRenderer(content: content)
+                    renderer.scale = 3
+                    let image = try XCTUnwrap(renderer.uiImage)
+                    XCTAssertEqual(image.size.width, configuration.size.width, accuracy: 0.5)
+                    XCTAssertEqual(image.size.height, configuration.size.height, accuracy: 0.5)
+
+                    let attachment = XCTAttachment(image: image)
+                    attachment.name = "Tide " + state.name + " "
+                        + configuration.name + " " + scheme.name
+                    attachment.lifetime = .keepAlways
+                    add(attachment)
+                }
+            }
+        }
+    }
+
+    func testTideSunTravelsThroughDistinctAmbientPositions() throws {
+        let timeZone = try XCTUnwrap(TimeZone(identifier: "Asia/Shanghai"))
+        let today = LogicalDay(year: 2026, month: 8, day: 15)
+        let recentDays = [
+            PulseWidgetDaySnapshot(day: LogicalDay(year: 2026, month: 8, day: 9), state: .checked),
+            PulseWidgetDaySnapshot(day: LogicalDay(year: 2026, month: 8, day: 10), state: .missed),
+            PulseWidgetDaySnapshot(day: LogicalDay(year: 2026, month: 8, day: 11), state: .checked),
+            PulseWidgetDaySnapshot(day: LogicalDay(year: 2026, month: 8, day: 12), state: .checked),
+            PulseWidgetDaySnapshot(day: LogicalDay(year: 2026, month: 8, day: 13), state: .missed),
+            PulseWidgetDaySnapshot(day: LogicalDay(year: 2026, month: 8, day: 14), state: .checked),
+            PulseWidgetDaySnapshot(day: today, state: .todayPending),
+        ]
+        let periods: [(name: String, value: PulseWidgetAmbientPeriod, hour: Int)] = [
+            ("morning", .morning, 8),
+            ("daylight", .daylight, 13),
+            ("evening", .evening, 20),
+        ]
+        let configurations: [(name: String, size: CGSize, usesMediumMetrics: Bool)] = [
+            ("small", CGSize(width: 158, height: 158), false),
+            ("medium", CGSize(width: 338, height: 158), true),
+        ]
+
+        for configuration in configurations {
+            let morning = PulseTideSkyGeometry(
+                size: configuration.size,
+                usesMediumMetrics: configuration.usesMediumMetrics,
+                period: .morning
+            )
+            let daylight = PulseTideSkyGeometry(
+                size: configuration.size,
+                usesMediumMetrics: configuration.usesMediumMetrics,
+                period: .daylight
+            )
+            let evening = PulseTideSkyGeometry(
+                size: configuration.size,
+                usesMediumMetrics: configuration.usesMediumMetrics,
+                period: .evening
+            )
+
+            XCTAssertLessThan(morning.center.x, daylight.center.x)
+            XCTAssertLessThan(daylight.center.x, evening.center.x)
+            XCTAssertLessThan(daylight.center.y, morning.center.y)
+            XCTAssertLessThan(morning.center.y, evening.center.y)
+            XCTAssertGreaterThan(
+                morning.center.y - daylight.center.y,
+                configuration.size.height * 0.20
+            )
+            XCTAssertGreaterThan(
+                evening.center.y - morning.center.y,
+                configuration.size.height * 0.15
+            )
+
+            for period in periods {
+                let generatedAt = makeDate(
+                    2026,
+                    8,
+                    15,
+                    period.hour,
+                    timeZone: timeZone
+                )
+                XCTAssertEqual(
+                    PulseWidgetAmbientPeriod.resolve(at: generatedAt, timeZone: timeZone),
+                    period.value
+                )
+
+                let snapshot = PulseWidgetSnapshot(
+                    habitID: try XCTUnwrap(
+                        UUID(uuidString: "C299EA0C-75A6-4A44-B1C4-B16055BE184F")
+                    ),
+                    habitName: "晨间书写",
+                    today: today,
+                    checkedAt: nil,
+                    recentDays: recentDays,
+                    generatedAt: generatedAt,
+                    nextDayBoundary: makeDate(2026, 8, 16, 0, timeZone: timeZone),
+                    projectTimeZoneIdentifier: timeZone.identifier
+                )
+                let content = PulseWidgetHomeRenderer(
+                    snapshot: snapshot,
+                    style: .tide,
+                    usesMediumMetrics: configuration.usesMediumMetrics,
+                    usesFullColorPalette: true,
+                    allowsMotion: false,
+                    statusText: "今天还未签到",
+                    pathSummaryFormat: "六日 · %d 印",
+                    emptyPlaceText: "空着",
+                    placeStatusText: "今天还未签到"
+                )
+                .environment(\.locale, Locale(identifier: "zh-Hans"))
+                .environment(\.colorScheme, ColorScheme.light)
+                .frame(width: configuration.size.width, height: configuration.size.height)
+
+                let renderer = ImageRenderer(content: content)
+                renderer.scale = 3
+                let image = try XCTUnwrap(renderer.uiImage)
+                let attachment = XCTAttachment(image: image)
+                attachment.name = "Tide sun " + period.name + " " + configuration.name
+                attachment.lifetime = .keepAlways
+                add(attachment)
+            }
+        }
+    }
+
     func testOrbitCleanBreakRendersPendingAndCompletedAcrossSupportedHomeSizes() throws {
         let projectRoot = URL(fileURLWithPath: #filePath)
             .deletingLastPathComponent()

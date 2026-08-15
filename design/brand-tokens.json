@@ -13,6 +13,7 @@
     "shadow" : "#273027",
     "surface" : "#F6FAEF",
     "widgetPaper" : "#FBF7EA",
+    "widgetSkyGlow" : "#E6C979",
     "widgetWater" : "#70AD91",
     "tint" : "#1F5E34"
   },
@@ -30,6 +31,7 @@
     "shadow" : "#000000",
     "surface" : "#0D1C10",
     "widgetPaper" : "#171A12",
+    "widgetSkyGlow" : "#D8B967",
     "widgetWater" : "#5FA98C",
     "tint" : "#91D55B"
   },

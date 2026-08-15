@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Pulse Widget · 潮痕 V2</title>
+  <title>Pulse Widget · 潮痕</title>
   <style>
     :root {
       color-scheme: light;
@@ -13,9 +13,12 @@
       --ink: #172119;
       --secondary: #667064;
       --action: #1f5e34;
-      --field: #68b33f;
+      --field: #8aa57d;
       --grass: #68b33f;
-      --shadow: #182d1d;
+      --shadow: #273027;
+      --widget-paper: #fbf7ea;
+      --widget-sky-glow: #e6c979;
+      --widget-water: #70ad91;
     }
 
     body.dark {
@@ -26,9 +29,12 @@
       --ink: #f0f5ec;
       --secondary: #a6b0a2;
       --action: #276d3d;
-      --field: #91d55b;
+      --field: #73966d;
       --grass: #91d55b;
       --shadow: #000;
+      --widget-paper: #171a12;
+      --widget-sky-glow: #d8b967;
+      --widget-water: #5fa98c;
     }
 
     * { box-sizing: border-box; }
@@ -66,16 +72,37 @@
       position: relative;
       overflow: hidden;
       isolation: isolate;
-      background: var(--background);
+      background:
+        linear-gradient(145deg, color-mix(in srgb, var(--widget-paper) 52%, transparent), transparent 54%),
+        var(--background);
       box-shadow: 0 18px 45px color-mix(in srgb, var(--shadow) 14%, transparent);
     }
     .widget.small { width: min(100%, 340px); aspect-ratio: 1; border-radius: 58px; margin: 0 auto; }
     .widget.medium { width: 100%; aspect-ratio: 2.08; border-radius: 58px; }
+    body.checked .widget {
+      background:
+        radial-gradient(circle at 92% 12%, color-mix(in srgb, var(--widget-sky-glow) 11%, transparent), transparent 48%),
+        linear-gradient(145deg, color-mix(in srgb, var(--widget-paper) 62%, transparent), color-mix(in srgb, var(--grass) 8%, transparent) 52%, color-mix(in srgb, var(--widget-water) 17%, transparent)),
+        var(--background);
+    }
 
     .copy { position: absolute; z-index: 3; left: 9%; top: 10%; max-width: 47%; }
     .date { color: var(--action); font-size: 13px; font-weight: 760; letter-spacing: .055em; }
     .habit { margin-top: 12px; color: var(--ink); font-size: clamp(17px, 2.5vw, 24px); font-weight: 720; line-height: 1.08; }
     .status { position: absolute; z-index: 3; left: 9%; bottom: 8%; color: var(--secondary); font-size: 12px; font-weight: 650; }
+
+    .sky-glow {
+      position: absolute;
+      z-index: 0;
+      width: 15%;
+      aspect-ratio: 1;
+      right: -5%;
+      top: 10%;
+      border-radius: 50%;
+      background: color-mix(in srgb, var(--widget-sky-glow) 14%, transparent);
+      border: 1px solid color-mix(in srgb, var(--widget-paper) 46%, transparent);
+      box-shadow: 0 0 0 24px color-mix(in srgb, var(--widget-sky-glow) 4%, transparent);
+    }
 
     .shore {
       position: absolute;
@@ -89,11 +116,39 @@
     }
     body.checked .shore { height: 50%; color: var(--grass); }
     .shore svg { width: 100%; height: 100%; overflow: visible; }
-    .water { fill: currentColor; opacity: .18; }
+    .water { fill: color-mix(in srgb, var(--widget-water) 58%, currentColor); opacity: .18; }
     .lip { fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; opacity: .62; }
     .trace { fill: none; stroke: currentColor; stroke-width: 1; stroke-linecap: round; opacity: .22; }
-    body.checked .water { opacity: .24; }
-    body.checked .lip { opacity: .76; }
+    body.checked .water { opacity: .38; }
+    body.checked .lip { opacity: .92; }
+    body.checked .trace { opacity: .34; }
+    body.checked .status { color: var(--action); }
+    body.checked .sky-glow {
+      background: color-mix(in srgb, var(--widget-sky-glow) 20%, transparent);
+      box-shadow: 0 0 0 24px color-mix(in srgb, var(--widget-sky-glow) 7%, transparent);
+    }
+
+    .sun-reflection {
+      position: absolute;
+      z-index: 2;
+      right: -1%;
+      top: 50%;
+      width: 16%;
+      display: grid;
+      justify-items: end;
+      gap: 7px;
+      opacity: .14;
+    }
+    .sun-reflection i {
+      display: block;
+      height: 2px;
+      border-radius: 999px;
+      background: var(--widget-sky-glow);
+    }
+    .sun-reflection i:nth-child(1) { width: 100%; }
+    .sun-reflection i:nth-child(2) { width: 74%; }
+    .sun-reflection i:nth-child(3) { width: 48%; }
+    .sun-reflection i:nth-child(4) { width: 28%; }
 
     .mark {
       position: absolute;
@@ -121,6 +176,7 @@
 
     .small .copy { max-width: 56%; }
     .small .status { bottom: 9%; }
+    .small .sky-glow { width: 22%; right: -7%; top: 11%; }
     .small .mark { width: 25%; right: 17%; bottom: 23%; }
     body.checked .small .mark { bottom: 32%; }
 
@@ -143,8 +199,8 @@
   <main>
     <header>
       <div>
-        <h1>潮痕 V2</h1>
-        <p>只留下潮面、岸线与今日环。物件变化来自签到事实，不来自时段装饰。</p>
+        <h1>潮痕</h1>
+        <p>淡日轮从卡牌边缘进入，倒影落进潮面；签到事实仍只由潮位、岸线与今日刻度表达。</p>
       </div>
       <div class="controls">
         <button type="button" id="state">切换为已留下</button>
@@ -156,9 +212,10 @@
       <article class="panel">
         <h2>Small</h2>
         <div class="widget small">
+          <div class="sky-glow" aria-hidden="true"></div>
           <div class="copy"><div class="date">08 / 14</div><div class="habit">每天走路</div></div>
           <div class="status">今天待留下</div>
-          <div class="shore"><svg viewBox="0 0 340 100" preserveAspectRatio="none"><path class="water" d="M-8 38 C48 22 96 50 160 38 C220 26 278 52 348 34 L348 108 L-8 108 Z"/><path class="lip" d="M-8 38 C48 22 96 50 160 38 C220 26 278 52 348 34"/><path class="trace" d="M-8 50 C52 36 108 58 170 46 C230 34 286 60 348 44"/></svg></div>
+          <div class="shore"><svg viewBox="0 0 340 100" preserveAspectRatio="none"><path class="water" d="M-8 38 C48 22 96 50 160 38 C220 26 278 52 348 34 L348 108 L-8 108 Z"/><path class="lip" d="M-8 38 C48 22 96 50 160 38 C220 26 278 52 348 34"/><path class="trace" d="M-8 50 C52 36 108 58 170 46 C230 34 286 60 348 44"/></svg><div class="sun-reflection" aria-hidden="true"><i></i><i></i><i></i><i></i></div></div>
           <div class="mark"><svg viewBox="0 0 100 100"><circle class="ring" cx="50" cy="50" r="43"/></svg></div>
         </div>
       </article>
@@ -166,9 +223,10 @@
       <article class="panel">
         <h2>Medium</h2>
         <div class="widget medium">
+          <div class="sky-glow" aria-hidden="true"></div>
           <div class="copy"><div class="date">08 / 14</div><div class="habit">每天走路</div></div>
           <div class="status">今天待留下</div>
-          <div class="shore"><svg viewBox="0 0 340 100" preserveAspectRatio="none"><path class="water" d="M-8 38 C48 22 96 50 160 38 C220 26 278 52 348 34 L348 108 L-8 108 Z"/><path class="lip" d="M-8 38 C48 22 96 50 160 38 C220 26 278 52 348 34"/><path class="trace" d="M-8 50 C52 36 108 58 170 46 C230 34 286 60 348 44"/></svg></div>
+          <div class="shore"><svg viewBox="0 0 340 100" preserveAspectRatio="none"><path class="water" d="M-8 38 C48 22 96 50 160 38 C220 26 278 52 348 34 L348 108 L-8 108 Z"/><path class="lip" d="M-8 38 C48 22 96 50 160 38 C220 26 278 52 348 34"/><path class="trace" d="M-8 50 C52 36 108 58 170 46 C230 34 286 60 348 44"/></svg><div class="sun-reflection" aria-hidden="true"><i></i><i></i><i></i><i></i></div></div>
           <div class="mark"><svg viewBox="0 0 100 100"><circle class="ring" cx="50" cy="50" r="43"/></svg></div>
         </div>
       </article>

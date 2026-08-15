@@ -294,11 +294,21 @@ struct PulseWidgetHomeRenderer: View {
             : size.width * PulseWidgetDesign.tideSmallMarkXRatio
         let markY = size.height - shoreHeight * PulseWidgetDesign.tideLipInverseRatio
         let copyWidth = isMedium ? size.width - pt(126, in: size) : pt(76, in: size)
+        let skyGeometry = PulseTideSkyGeometry(
+            size: size,
+            usesMediumMetrics: usesMediumMetrics,
+            period: ambientPeriod
+        )
 
         return ZStack(alignment: .topLeading) {
             baseBackground
             tideAtmosphere(size: size)
-            tideShore(size: size, shoreHeight: shoreHeight)
+            tideSky(size: size, geometry: skyGeometry)
+            tideShore(
+                size: size,
+                shoreHeight: shoreHeight,
+                reflectionX: skyGeometry.center.x
+            )
 
             PulseTideStaffMark(
                 isChecked: snapshot.isCheckedToday,
@@ -329,15 +339,21 @@ struct PulseWidgetHomeRenderer: View {
             .padding(.leading, inset)
             .padding(.top, pt(isMedium ? 16 : 12, in: size))
 
-            statusLabel(size: pt(isMedium ? 12 : 11, in: size))
+            Text(verbatim: statusText)
+                .font(.system(size: pt(isMedium ? 12 : 11, in: size), weight: .medium))
                 .foregroundStyle(tideFootColor)
+                .lineLimit(1)
                 .padding(.leading, inset)
                 .padding(.bottom, pt(isMedium ? 14 : 10, in: size))
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomLeading)
         }
     }
 
-    private func tideShore(size: CGSize, shoreHeight: CGFloat) -> some View {
+    private func tideShore(
+        size: CGSize,
+        shoreHeight: CGFloat,
+        reflectionX: CGFloat
+    ) -> some View {
         let shoreColor = snapshot.isCheckedToday ? grassColor : fieldColor
         let water = waterColor
 
@@ -346,22 +362,27 @@ struct PulseWidgetHomeRenderer: View {
                 .fill(
                     LinearGradient(
                         stops: [
-                            .init(color: water.opacity(snapshot.isCheckedToday ? 0.10 : 0.07), location: 0),
-                            .init(color: water.opacity(snapshot.isCheckedToday ? 0.22 : 0.16), location: 0.46),
-                            .init(color: shoreColor.opacity(snapshot.isCheckedToday ? 0.30 : 0.20), location: 1),
+                            .init(color: water.opacity(snapshot.isCheckedToday ? 0.18 : 0.07), location: 0),
+                            .init(color: water.opacity(snapshot.isCheckedToday ? 0.36 : 0.16), location: 0.46),
+                            .init(color: shoreColor.opacity(snapshot.isCheckedToday ? 0.48 : 0.20), location: 1),
                         ],
                         startPoint: .top,
                         endPoint: .bottom
                     )
                 )
+            tideSunReflection(
+                size: size,
+                shoreHeight: shoreHeight,
+                centerX: reflectionX
+            )
             PulseTideCurve(kind: .lip, usesMediumMetrics: usesMediumMetrics)
                 .stroke(
-                    shoreColor.opacity(snapshot.isCheckedToday ? 0.75 : 0.58),
+                    shoreColor.opacity(snapshot.isCheckedToday ? 0.92 : 0.58),
                     style: StrokeStyle(lineWidth: pt(1.7, in: size), lineCap: .round)
                 )
             PulseTideCurve(kind: .trace, usesMediumMetrics: usesMediumMetrics)
                 .stroke(
-                    shoreColor.opacity(snapshot.isCheckedToday ? 0.24 : 0.18),
+                    shoreColor.opacity(snapshot.isCheckedToday ? 0.34 : 0.18),
                     style: StrokeStyle(lineWidth: pt(1, in: size), lineCap: .round)
                 )
         }
@@ -374,18 +395,134 @@ struct PulseWidgetHomeRenderer: View {
         .animation(motion(.tide), value: snapshot.isCheckedToday)
     }
 
+    private func tideSky(
+        size: CGSize,
+        geometry: PulseTideSkyGeometry
+    ) -> some View {
+        let sunOpacity = min(
+            geometry.opacity * (snapshot.isCheckedToday ? 1.30 : 1),
+            0.24
+        )
+
+        return ZStack {
+            Circle()
+                .fill(
+                    RadialGradient(
+                        colors: [
+                            skyGlowColor.opacity(sunOpacity * 0.70),
+                            skyGlowColor.opacity(sunOpacity * 0.18),
+                            Color.clear,
+                        ],
+                        center: .center,
+                        startRadius: geometry.diameter * 0.18,
+                        endRadius: geometry.diameter * 0.96
+                    )
+                )
+                .frame(
+                    width: geometry.diameter * 1.92,
+                    height: geometry.diameter * 1.92
+                )
+
+            Circle()
+                .fill(skyGlowColor.opacity(sunOpacity))
+                .overlay {
+                    Circle()
+                        .stroke(
+                            usesFullColorPalette
+                                ? paperColor.opacity(0.46)
+                                : skyGlowColor.opacity(0.10),
+                            lineWidth: pt(0.8, in: size)
+                        )
+                }
+                .frame(width: geometry.diameter, height: geometry.diameter)
+        }
+        .frame(
+            width: geometry.diameter * 1.92,
+            height: geometry.diameter * 1.92
+        )
+        .position(geometry.center)
+        .offset(
+            x: ambientHorizontalShift(in: size) * 0.22,
+            y: ambientVerticalShift(in: size) * 0.18
+        )
+        .allowsHitTesting(false)
+        .accessibilityHidden(true)
+    }
+
+    private func tideSunReflection(
+        size: CGSize,
+        shoreHeight: CGFloat,
+        centerX: CGFloat
+    ) -> some View {
+        let segmentWidths = usesMediumMetrics
+            ? [CGFloat(34), 26, 18, 10]
+            : [CGFloat(22), 16, 10, 6]
+        let reflectionOpacity: Double = switch ambientPeriod {
+        case .morning: snapshot.isCheckedToday ? 0.21 : 0.16
+        case .daylight: snapshot.isCheckedToday ? 0.16 : 0.11
+        case .evening: snapshot.isCheckedToday ? 0.20 : 0.15
+        }
+        return ZStack {
+            ForEach(segmentWidths.indices, id: \.self) { index in
+                Capsule(style: .continuous)
+                    .fill(skyGlowColor.opacity(reflectionOpacity - Double(index) * 0.018))
+                    .frame(
+                        width: pt(segmentWidths[index], in: size),
+                        height: pt(index == 0 ? 1.5 : 1.1, in: size)
+                    )
+                    .position(
+                        x: centerX,
+                        y: shoreHeight * (0.50 + CGFloat(index) * 0.12)
+                    )
+            }
+        }
+        .frame(width: size.width, height: shoreHeight)
+        .mask {
+            PulseTideCurve(kind: .water, usesMediumMetrics: usesMediumMetrics)
+                .fill(Color.black)
+        }
+        .allowsHitTesting(false)
+        .accessibilityHidden(true)
+    }
+
     @ViewBuilder
     private func tideAtmosphere(size: CGSize) -> some View {
         if usesFullColorPalette {
-            LinearGradient(
-                stops: [
-                    .init(color: paperColor.opacity(0.52), location: 0),
-                    .init(color: Color.clear, location: 0.52),
-                    .init(color: waterColor.opacity(0.08), location: 1),
-                ],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
+            ZStack {
+                LinearGradient(
+                    stops: [
+                        .init(
+                            color: paperColor.opacity(snapshot.isCheckedToday ? 0.62 : 0.52),
+                            location: 0
+                        ),
+                        .init(
+                            color: snapshot.isCheckedToday
+                                ? grassColor.opacity(0.08)
+                                : Color.clear,
+                            location: 0.52
+                        ),
+                        .init(
+                            color: waterColor.opacity(snapshot.isCheckedToday ? 0.17 : 0.08),
+                            location: 1
+                        ),
+                    ],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+
+                if snapshot.isCheckedToday {
+                    RadialGradient(
+                        colors: [
+                            skyGlowColor.opacity(0.11),
+                            grassColor.opacity(0.055),
+                            Color.clear,
+                        ],
+                        center: .topTrailing,
+                        startRadius: 0,
+                        endRadius: max(size.width, size.height) * 0.72
+                    )
+                }
+            }
             .frame(width: size.width, height: size.height)
         }
     }
@@ -1411,6 +1548,10 @@ struct PulseWidgetHomeRenderer: View {
         usesFullColorPalette ? PulseWidgetDesign.widgetPaper : .clear
     }
 
+    private var skyGlowColor: Color {
+        usesFullColorPalette ? PulseWidgetDesign.widgetSkyGlow : .primary
+    }
+
     private var waterColor: Color {
         usesFullColorPalette ? PulseWidgetDesign.widgetWater : .primary
     }
@@ -1435,7 +1576,8 @@ struct PulseWidgetHomeRenderer: View {
 
     private var tideFootColor: Color {
         guard snapshot.isCheckedToday else { return secondaryColor }
-        return usesFullColorPalette ? primaryColor.opacity(0.78) : .primary
+        guard usesFullColorPalette else { return .primary }
+        return colorScheme == .dark ? grassColor.opacity(0.88) : actionColor
     }
 
     private var pathSummaryText: String {
@@ -2308,6 +2450,42 @@ private struct PulseEchoCompletionMark: View {
     }
 }
 
+struct PulseTideSkyGeometry: Equatable {
+    let diameter: CGFloat
+    let center: CGPoint
+    let opacity: Double
+
+    init(
+        size: CGSize,
+        usesMediumMetrics: Bool,
+        period: PulseWidgetAmbientPeriod
+    ) {
+        let scale = size.height / 158
+        diameter = (usesMediumMetrics ? 48 : 34) * scale
+
+        switch period {
+        case .morning:
+            center = CGPoint(
+                x: size.width - diameter * 0.42,
+                y: size.height * 0.42
+            )
+            opacity = 0.18
+        case .daylight:
+            center = CGPoint(
+                x: size.width - diameter * 0.24,
+                y: size.height * 0.17
+            )
+            opacity = 0.12
+        case .evening:
+            center = CGPoint(
+                x: size.width - diameter * 0.04,
+                y: size.height * 0.62
+            )
+            opacity = 0.17
+        }
+    }
+}
+
 private struct PulseTideStaffMark: View {
     let isChecked: Bool
     let usesFullColorPalette: Bool
@@ -2799,6 +2977,7 @@ enum PulseWidgetDesign {
     static let field = Color("PulseField")
     static let shadow = Color("PulseShadow")
     static let widgetPaper = Color("PulseWidgetPaper")
+    static let widgetSkyGlow = Color("PulseWidgetSkyGlow")
     static let widgetWater = Color("PulseWidgetWater")
     static let stackPhysicalSheetCount = 4
 
