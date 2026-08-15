@@ -619,7 +619,7 @@ struct PulseWidgetHomeRenderer: View {
                 .padding(.leading, inset)
                 .padding(.top, pt(usesMediumMetrics ? 14 : 16, in: size))
 
-            habitName(
+            letterHabitName(
                 size: pt(usesMediumMetrics ? 28 : 22, in: size),
                 width: pt(usesMediumMetrics ? 208 : 70, in: size),
                 alignment: .leading
@@ -681,18 +681,55 @@ struct PulseWidgetHomeRenderer: View {
         let lineWidth = size.width * (usesMediumMetrics ? 0.58 : 0.60)
         let firstY = size.height * (usesMediumMetrics ? 0.61 : 0.59)
 
-        return VStack(alignment: .leading, spacing: pt(usesMediumMetrics ? 11 : 9, in: size)) {
-            Rectangle()
-                .fill(secondaryColor.opacity(usesFullColorPalette ? 0.12 : 0.08))
-                .frame(width: lineWidth, height: pt(1, in: size))
-            Rectangle()
-                .fill(secondaryColor.opacity(usesFullColorPalette ? 0.09 : 0.06))
-                .frame(width: lineWidth * 0.72, height: pt(1, in: size))
+        return PulseLetterPencilRules()
+            .stroke(
+                secondaryColor.opacity(usesFullColorPalette ? 0.14 : 0.09),
+                style: StrokeStyle(
+                    lineWidth: pt(0.9, in: size),
+                    lineCap: .round,
+                    lineJoin: .round
+                )
+            )
+            .frame(
+                width: lineWidth,
+                height: pt(usesMediumMetrics ? 16 : 13, in: size)
+            )
+            .position(
+                x: paperInset + lineWidth / 2,
+                y: firstY
+            )
+    }
+
+    private func letterHabitName(
+        size: CGFloat,
+        width: CGFloat,
+        alignment: TextAlignment
+    ) -> some View {
+        ZStack(alignment: .bottomLeading) {
+            PulseLetterHandUnderline()
+                .stroke(
+                    fieldColor.opacity(usesFullColorPalette ? 0.42 : 0.24),
+                    style: StrokeStyle(
+                        lineWidth: max(1, size * 0.045),
+                        lineCap: .round,
+                        lineJoin: .round
+                    )
+                )
+                .frame(
+                    width: width * (usesMediumMetrics ? 0.74 : 0.90),
+                    height: max(5, size * 0.24)
+                )
+                .offset(x: size * 0.02, y: size * 0.12)
+
+            Text(verbatim: snapshot.habitName)
+                .font(.system(size: size, weight: .semibold))
+                .foregroundStyle(primaryColor)
+                .multilineTextAlignment(alignment)
+                .lineLimit(2)
+                .minimumScaleFactor(0.62)
+                .allowsTightening(true)
+                .frame(width: max(width, 1), alignment: .leading)
         }
-        .position(
-            x: paperInset + lineWidth / 2,
-            y: firstY
-        )
     }
 
     private func field(size: CGSize) -> some View {
@@ -1752,6 +1789,52 @@ private struct PulseLetterPressedInkMark: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .accessibilityHidden(true)
+    }
+}
+
+private struct PulseLetterHandUnderline: Shape {
+    func path(in rect: CGRect) -> Path {
+        func point(_ x: CGFloat, _ y: CGFloat) -> CGPoint {
+            CGPoint(x: rect.minX + rect.width * x, y: rect.minY + rect.height * y)
+        }
+
+        var path = Path()
+        path.move(to: point(0.02, 0.60))
+        path.addCurve(
+            to: point(0.98, 0.42),
+            control1: point(0.22, 0.76),
+            control2: point(0.70, 0.18)
+        )
+        path.move(to: point(0.10, 0.82))
+        path.addCurve(
+            to: point(0.78, 0.66),
+            control1: point(0.30, 0.94),
+            control2: point(0.58, 0.48)
+        )
+        return path
+    }
+}
+
+private struct PulseLetterPencilRules: Shape {
+    func path(in rect: CGRect) -> Path {
+        func point(_ x: CGFloat, _ y: CGFloat) -> CGPoint {
+            CGPoint(x: rect.minX + rect.width * x, y: rect.minY + rect.height * y)
+        }
+
+        var path = Path()
+        path.move(to: point(0.00, 0.18))
+        path.addCurve(
+            to: point(1.00, 0.24),
+            control1: point(0.26, 0.10),
+            control2: point(0.69, 0.33)
+        )
+        path.move(to: point(0.02, 0.82))
+        path.addCurve(
+            to: point(0.73, 0.76),
+            control1: point(0.24, 0.91),
+            control2: point(0.53, 0.66)
+        )
+        return path
     }
 }
 
