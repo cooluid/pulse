@@ -31,7 +31,7 @@ HTML 原型仅为探索参考。
 
 新增或改色：先改令牌，再生成并 `--check`。**允许**为新氛围扩展令牌；不是“禁止新画法”。
 
-常见语义角色：`background`、`surface`、`grass` / `grassForeground`、`action` / `actionForeground`、`ink` / `secondary`、`field`、`separator` / `shadow`。
+常见语义角色：`background`、`surface`、`grass` / `grassForeground`、`action` / `actionForeground`、`ink` / `secondary`、`field`、`separator` / `shadow`。Widget 的纸张与水面分别使用 `widgetPaper`、`widgetWater`，不以局部 RGB 模拟材质。
 
 完成 / 漏签 / 今天等状态不能**只靠颜色**到不可辨（形状、文案或无障碍标签须有等价）。
 
@@ -68,6 +68,8 @@ HTML 原型仅为探索参考。
 ## 5A. Home Screen Widget
 
 见既有条款：产品枚举、权益、整块签到、事实诚实。八式各有一段与主物件唯一对应的双语意境文案，以“物件 + 时间变化 + 未尽动作”连接一日与留痕；精确正文只由 String Catalog 持有。叠印纸层等装饰不得被文案解释成历史事实。外观以渲染器与人工截图为准。
+
+材质分工：`field` 是低彩度等待场，`grass` 是完成后的生长色；叠印与手札用暖纸面，潮痕用独立水面色。残影只承担时间或运动信息，不作为八式共用装饰。
 
 ## 5B. 高阶权益页：产品与诚实
 

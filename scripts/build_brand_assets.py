@@ -37,6 +37,8 @@ COLOR_ASSETS = {
     "PulseSeparator": "separator",
     "PulseShadow": "shadow",
     "PulseSurface": "surface",
+    "PulseWidgetPaper": "widgetPaper",
+    "PulseWidgetWater": "widgetWater",
 }
 
 

@@ -198,6 +198,8 @@ struct PulseWidgetHomeRenderer: View {
                 y: ambientVerticalShift(in: size) * 0.10
             )
 
+            orbitCopyVeil(size: size)
+
             Text(verbatim: monthAndDay)
                 .font(.system(
                     size: pt(usesMediumMetrics ? 14 : 11, in: size),
@@ -295,6 +297,7 @@ struct PulseWidgetHomeRenderer: View {
 
         return ZStack(alignment: .topLeading) {
             baseBackground
+            tideAtmosphere(size: size)
             tideShore(size: size, shoreHeight: shoreHeight)
 
             PulseTideStaffMark(
@@ -336,10 +339,21 @@ struct PulseWidgetHomeRenderer: View {
 
     private func tideShore(size: CGSize, shoreHeight: CGFloat) -> some View {
         let shoreColor = snapshot.isCheckedToday ? grassColor : fieldColor
+        let water = waterColor
 
         return ZStack(alignment: .topLeading) {
             PulseTideCurve(kind: .water, usesMediumMetrics: usesMediumMetrics)
-                .fill(shoreColor.opacity(snapshot.isCheckedToday ? 0.24 : 0.18))
+                .fill(
+                    LinearGradient(
+                        stops: [
+                            .init(color: water.opacity(snapshot.isCheckedToday ? 0.10 : 0.07), location: 0),
+                            .init(color: water.opacity(snapshot.isCheckedToday ? 0.22 : 0.16), location: 0.46),
+                            .init(color: shoreColor.opacity(snapshot.isCheckedToday ? 0.30 : 0.20), location: 1),
+                        ],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                )
             PulseTideCurve(kind: .lip, usesMediumMetrics: usesMediumMetrics)
                 .stroke(
                     shoreColor.opacity(snapshot.isCheckedToday ? 0.75 : 0.58),
@@ -358,6 +372,22 @@ struct PulseWidgetHomeRenderer: View {
         )
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
         .animation(motion(.tide), value: snapshot.isCheckedToday)
+    }
+
+    @ViewBuilder
+    private func tideAtmosphere(size: CGSize) -> some View {
+        if usesFullColorPalette {
+            LinearGradient(
+                stops: [
+                    .init(color: paperColor.opacity(0.52), location: 0),
+                    .init(color: Color.clear, location: 0.52),
+                    .init(color: waterColor.opacity(0.08), location: 1),
+                ],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+            .frame(width: size.width, height: size.height)
+        }
     }
 
     private func bleed(size: CGSize) -> some View {
@@ -380,7 +410,7 @@ struct PulseWidgetHomeRenderer: View {
             Text(verbatim: monthName)
                 .font(.system(size: pt(11, in: size), weight: .bold))
                 .tracking(pt(0.6, in: size))
-                .foregroundStyle(actionForegroundColor)
+                .foregroundStyle(bleedLeadingColor)
                 .shadow(
                     color: shadowColor.opacity(usesFullColorPalette ? 0.18 : 0),
                     radius: 0,
@@ -391,7 +421,7 @@ struct PulseWidgetHomeRenderer: View {
 
             Text(verbatim: snapshot.habitName)
                 .font(.system(size: pt(usesMediumMetrics ? 22 : 16, in: size), weight: .semibold))
-                .foregroundStyle(actionForegroundColor)
+                .foregroundStyle(bleedLeadingColor)
                 .multilineTextAlignment(.leading)
                 .lineLimit(2)
                 .minimumScaleFactor(0.62)
@@ -597,6 +627,13 @@ struct PulseWidgetHomeRenderer: View {
             : actionForegroundColor.opacity(0.86)
     }
 
+    private var bleedLeadingColor: Color {
+        guard usesFullColorPalette else { return .white }
+        return snapshot.isCheckedToday
+            ? PulseWidgetDesign.grassForeground
+            : PulseWidgetDesign.actionForeground
+    }
+
     private var actionForegroundColor: Color {
         usesFullColorPalette ? PulseWidgetDesign.actionForeground : .white
     }
@@ -653,7 +690,17 @@ struct PulseWidgetHomeRenderer: View {
 
         return ZStack(alignment: .leading) {
             RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                .fill(surfaceColor)
+                .fill(
+                    LinearGradient(
+                        colors: [
+                            paperColor,
+                            paperColor.opacity(0.97),
+                            surfaceColor.opacity(0.94),
+                        ],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
                 .overlay {
                     RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
                         .stroke(fieldColor.opacity(0.18), lineWidth: pt(1, in: size))
@@ -668,6 +715,15 @@ struct PulseWidgetHomeRenderer: View {
             Rectangle()
                 .fill(fieldColor.opacity(usesFullColorPalette ? 0.11 : 0.06))
                 .frame(width: pt(7, in: size), height: paperHeight)
+
+            PulseOrganicInkShape()
+                .fill(fieldColor.opacity(usesFullColorPalette ? 0.028 : 0.018))
+                .frame(width: paperWidth * 0.24, height: paperHeight * 0.34)
+                .rotationEffect(.degrees(-14))
+                .offset(
+                    x: paperWidth * (usesMediumMetrics ? 0.68 : 0.54),
+                    y: paperHeight * 0.20
+                )
         }
         .frame(width: paperWidth, height: paperHeight, alignment: .leading)
         .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
@@ -1017,36 +1073,104 @@ struct PulseWidgetHomeRenderer: View {
     private func orbitAmbientField(size: CGSize) -> some View {
         let color = snapshot.isCheckedToday ? grassColor : fieldColor
 
-        return Ellipse()
-            .fill(color.opacity(usesFullColorPalette ? (snapshot.isCheckedToday ? 0.16 : 0.14) : 0.08))
-            .frame(
-                width: size.width * (usesMediumMetrics ? 0.78 : 1.02),
-                height: size.height * (usesMediumMetrics ? 1.12 : 0.92)
+        return ZStack {
+            Ellipse()
+                .fill(color.opacity(usesFullColorPalette ? (snapshot.isCheckedToday ? 0.11 : 0.085) : 0.06))
+
+            if usesFullColorPalette {
+                RadialGradient(
+                    colors: [
+                        color.opacity(snapshot.isCheckedToday ? 0.13 : 0.09),
+                        color.opacity(0.035),
+                        Color.clear,
+                    ],
+                    center: UnitPoint(x: 0.68, y: 0.46),
+                    startRadius: 0,
+                    endRadius: max(size.width, size.height) * 0.48
+                )
+            }
+        }
+        .frame(
+            width: size.width * (usesMediumMetrics ? 0.72 : 0.94),
+            height: size.height * (usesMediumMetrics ? 1.04 : 0.86)
+        )
+        .animation(motion(.starRing), value: snapshot.isCheckedToday)
+        .position(
+            x: size.width * (usesMediumMetrics ? 0.72 : 0.59)
+                + ambientHorizontalShift(in: size) * 0.35,
+            y: size.height * (usesMediumMetrics ? 0.58 : 0.62)
+        )
+    }
+
+    @ViewBuilder
+    private func orbitCopyVeil(size: CGSize) -> some View {
+        if usesFullColorPalette {
+            RadialGradient(
+                stops: [
+                    .init(color: baseBackground.opacity(0.99), location: 0),
+                    .init(color: baseBackground.opacity(0.92), location: 0.48),
+                    .init(color: baseBackground.opacity(0.28), location: 0.80),
+                    .init(color: baseBackground.opacity(0), location: 1),
+                ],
+                center: UnitPoint(
+                    x: usesMediumMetrics ? 0.12 : 0.13,
+                    y: usesMediumMetrics ? 0.31 : 0.30
+                ),
+                startRadius: 0,
+                endRadius: size.width * (usesMediumMetrics ? 0.62 : 0.78)
             )
-            .animation(motion(.starRing), value: snapshot.isCheckedToday)
-            .position(
-                x: size.width * (usesMediumMetrics ? 0.70 : 0.56)
-                    + ambientHorizontalShift(in: size) * 0.35,
-                y: size.height * (usesMediumMetrics ? 0.58 : 0.60)
-            )
+            .frame(width: size.width, height: size.height)
+            .allowsHitTesting(false)
+        }
     }
 
     private func placeAmbientField(size: CGSize) -> some View {
         let color = snapshot.isCheckedToday ? grassColor : fieldColor
 
-        return Ellipse()
-            .fill(color.opacity(usesFullColorPalette ? 0.085 : 0.055))
-            .frame(
-                width: size.width * (usesMediumMetrics ? 0.58 : 0.92),
-                height: size.height * (usesMediumMetrics ? 1.18 : 0.72)
-            )
-            .rotationEffect(.degrees((usesMediumMetrics ? -8 : -4) + ambientRotation))
-            .scaleEffect(snapshot.isCheckedToday ? 1.03 : 1)
-            .animation(motion(.place), value: snapshot.isCheckedToday)
-            .position(
-                x: size.width * (usesMediumMetrics ? 0.20 : 0.46) + ambientHorizontalShift(in: size),
-                y: size.height * (usesMediumMetrics ? 0.54 : 0.50)
-            )
+        return ZStack {
+            if usesFullColorPalette {
+                LinearGradient(
+                    stops: [
+                        .init(color: paperColor.opacity(0.34), location: 0),
+                        .init(color: Color.clear, location: 0.42),
+                        .init(color: color.opacity(0.055), location: 1),
+                    ],
+                    startPoint: .topTrailing,
+                    endPoint: .bottomLeading
+                )
+
+                RadialGradient(
+                    colors: [
+                        Color.white.opacity(0.18),
+                        paperColor.opacity(0.07),
+                        Color.clear,
+                    ],
+                    center: .center,
+                    startRadius: 0,
+                    endRadius: max(size.width, size.height) * 0.34
+                )
+                .frame(width: size.width * 0.64, height: size.height * 0.72)
+                .rotationEffect(.degrees(-10 + ambientRotation * 0.18))
+                .position(
+                    x: size.width * (usesMediumMetrics ? 0.26 : 0.48),
+                    y: size.height * 0.42
+                )
+            } else {
+                Ellipse()
+                    .fill(color.opacity(0.055))
+                    .frame(
+                        width: size.width * (usesMediumMetrics ? 0.58 : 0.92),
+                        height: size.height * (usesMediumMetrics ? 1.18 : 0.72)
+                    )
+                    .position(
+                        x: size.width * (usesMediumMetrics ? 0.20 : 0.46),
+                        y: size.height * (usesMediumMetrics ? 0.54 : 0.50)
+                    )
+            }
+        }
+        .scaleEffect(snapshot.isCheckedToday ? 1.03 : 1)
+        .offset(x: ambientHorizontalShift(in: size) * 0.42)
+        .animation(motion(.place), value: snapshot.isCheckedToday)
     }
 
     private func stackDeskMat(size: CGSize) -> some View {
@@ -1093,7 +1217,7 @@ struct PulseWidgetHomeRenderer: View {
                 )
 
                 sheet
-                    .fill(surfaceColor)
+                    .fill(paperColor)
                     .overlay {
                         sheet
                             .fill(fieldColor.opacity(Double(depth) * 0.08))
@@ -1137,7 +1261,7 @@ struct PulseWidgetHomeRenderer: View {
                 let foldSide = geometry.foldSize.width
                 let foldOverlap = pt(3.0, in: size)
                 PulseFoldedPaperFlap()
-                    .fill(surfaceColor)
+                    .fill(paperColor)
                     .overlay {
                         PulseFoldedPaperFlap()
                             .fill(fieldColor.opacity(usesFullColorPalette ? 0.10 : 0.05))
@@ -1281,6 +1405,14 @@ struct PulseWidgetHomeRenderer: View {
 
     private var shadowColor: Color {
         usesFullColorPalette ? PulseWidgetDesign.shadow : .clear
+    }
+
+    private var paperColor: Color {
+        usesFullColorPalette ? PulseWidgetDesign.widgetPaper : .clear
+    }
+
+    private var waterColor: Color {
+        usesFullColorPalette ? PulseWidgetDesign.widgetWater : .primary
     }
 
     private var monthAndDay: String {
@@ -1576,7 +1708,7 @@ struct PulseStarRingGeometry {
 
     static let periodAngleSpan: CGFloat = 14
     static let completionAngleSpan: CGFloat = 4
-    static let ringLineRatio: CGFloat = 0.11
+    static let ringLineRatio: CGFloat = 0.09
     static var midlineRatio: CGFloat { (1 - ringLineRatio) / 2 }
     static var worldGapMidpointDegrees: CGFloat {
         336 + PulseWidgetDesign.openRingRotationDegrees
@@ -2666,6 +2798,8 @@ enum PulseWidgetDesign {
     static let secondary = Color("PulseSecondary")
     static let field = Color("PulseField")
     static let shadow = Color("PulseShadow")
+    static let widgetPaper = Color("PulseWidgetPaper")
+    static let widgetWater = Color("PulseWidgetWater")
     static let stackPhysicalSheetCount = 4
 
     static let bleedPendingTopSplitMorning: CGFloat = 0.60
