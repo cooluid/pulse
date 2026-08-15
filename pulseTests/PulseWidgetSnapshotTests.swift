@@ -636,6 +636,64 @@ final class PulseWidgetSnapshotTests: XCTestCase {
         }
     }
 
+    func testWidgetGalleryRitualCaptionsMatchApprovedBilingualCopy() throws {
+        let projectRoot = URL(fileURLWithPath: #filePath)
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+        let catalogURL = projectRoot
+            .appendingPathComponent("pulse", isDirectory: true)
+            .appendingPathComponent("Localizable.xcstrings", isDirectory: false)
+        let catalog = try JSONDecoder().decode(
+            WidgetStringCatalog.self,
+            from: Data(contentsOf: catalogURL)
+        )
+        let approvedCopy: [String: [String: String]] = [
+            "settings.widget.style.place.detail": [
+                "en": "Night still clings to the grass as morning clears the hill. A small clearing at the center waits for today’s mark.",
+                "zh-Hans": "草尖还留着昨夜，晨光已越过远处的坡。中间那一小处空白，正等今天落下一印。",
+            ],
+            "settings.widget.style.orbit.detail": [
+                "en": "Toward dawn, the stars recede one by one. One remains on the ring, waiting for today to fall into place.",
+                "zh-Hans": "天快亮时，群星一颗颗退远。只有这一颗留在环上，等今天归位。",
+            ],
+            "settings.widget.style.stack.detail": [
+                "en": "The pages lie quietly stacked, each edge holding a trace of light. One imprint, and the day takes on weight.",
+                "zh-Hans": "纸页叠得很静，边角各自含着一点光。一枚印落下，今天便有了重量。",
+            ],
+            "settings.widget.style.bleed.detail": [
+                "en": "The sun leans west; shadows count the hours for the silent grass. When green crosses the paper’s edge, the day gains depth.",
+                "zh-Hans": "日头一路西斜，影子替沉默的草数着时辰。等绿意越过纸边，这一天便有了深浅。",
+            ],
+            "settings.widget.style.letter.detail": [
+                "en": "A sheet lies open, a few words scattered across it. Somehow, the afternoon stretches on.",
+                "zh-Hans": "信纸摊开，字疏疏落落，下午却显得很长。",
+            ],
+            "settings.widget.style.field.detail": [
+                "en": "A sound falls away; its echo widens into silence. The empty field holds its center for today.",
+                "zh-Hans": "一声落下，余响一圈圈走远。场子空着，只替今天守住最中心的位置。",
+            ],
+            "settings.widget.style.path.detail": [
+                "en": "A fine path winds in from the hills, carrying days of wind and rain. By the time it reaches today, only your step is missing.",
+                "zh-Hans": "一线从远山蜿蜒而来，沿途收下几日风雨。到了今天，它只差你这一步。",
+            ],
+            "settings.widget.style.tide.detail": [
+                "en": "Once the tide has come and gone, light on the sand can tell morning from evening. The day finds its rhythm there.",
+                "zh-Hans": "潮水走过一遭，沙上的光便有了早晚，一天也跟着有了节奏。",
+            ],
+        ]
+
+        for (key, localizedValues) in approvedCopy {
+            let entry = try XCTUnwrap(catalog.strings[key], "Missing approved Widget caption: \(key)")
+            for (language, approvedValue) in localizedValues {
+                XCTAssertEqual(
+                    entry.localizations[language]?.stringUnit.value,
+                    approvedValue,
+                    "Widget caption drifted for \(key) [\(language)]."
+                )
+            }
+        }
+    }
+
     func testUserFacingCopyDoesNotExposeDesignOrEngineeringJargon() throws {
         let projectRoot = URL(fileURLWithPath: #filePath)
             .deletingLastPathComponent()

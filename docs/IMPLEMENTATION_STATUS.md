@@ -38,7 +38,7 @@
 - Widget 动效为“稀疏时段氛围 + 权威签到事件”：`PulseWidgetTimelineSchedule` 每天最多五条（当前 + 剩余 06/12/18 + 下一逻辑日）；氛围不报时、不承诺准点。单次动画 ≤ 两秒由 `PulseWidgetMotionPresentation.systemMaximumAnimationDuration` 与测试门禁持有。签到 reload 后各式用自有主物件做一次有限变装；画廊与 Extension 共用 Renderer，预览不写 store。Reduce Motion / Always-On 走静态终态。正式枚举只含现行八式；未知旧标识失败关闭。
 - 今日与记录照片详情共用同一系统 Sheet 骨架与独立删除事务；含照片用 `.large`，只签到用语义紧凑 detent 并保留 `.large`；无障碍大字号直接 `.large`。
 - 根页可有低幅环境动效（scene active 且未开 Reduce Motion）；不得伪装进度或驱动按钮闪烁。
-- 首启、今日、记录、设置与购买文案统一为短句；删除运行时“低压力、面向所有用户免费、不是为了打分作证”等解释性废话。
+- 状态、操作、错误与购买文案保持直接短句；Widget 画廊的八式卡片例外采用与主物件唯一对应的双语意境短文，精确正文只由 String Catalog 持有，不把装饰解释成历史事实。运行时不再保留“低压力、面向所有用户免费、不是为了打分作证”等解释性废话或旧功能式样式描述。
 - “我的一件事”名称统一由领域层约束为 4...12 个 Swift `Character`，首启、设置、恢复校验、Widget 与错误提示不再各自维护长度；加密备份密码统一降为至少 4 个字符，不要求字符组合，仍保留导出二次确认、1024-byte 上限与无法找回提示。
 - 删除旧 `CheckInRepositoryProtocol` / `SwiftDataCheckInRepository` 名称，统一为 `PulseRepositoryProtocol` / `SwiftDataPulseRepository`。
 - 删除旧 `PulseBackupDocument` 路径，系统导出统一使用 `PulseBackupExport: Transferable`；单张原图导出使用独立 JPEG Transferable。
@@ -50,7 +50,7 @@
 
 验证环境：macOS 26.6、Xcode 26.6（17F113）、iPhone 17 Pro / iOS 26.5 Simulator（arm64）。
 
-- 八式共享渲染器已落地；Debug Simulator 下 App 与 Widget Extension 编译通过，133 项单元/集成测试通过（名称/密码边界、画廊预览不写快照、时段解析、最多五条 entry、两秒上限、八式时段姿态、枚举只含现行八式、手札只消费过去六日、混合历史状态枚举、免费/收费画廊边界等）。Release Simulator build、Analyze 与 19 项品牌资产检查通过。定向 UI 截图与详情 Sheet 证据仍在；destructive 菜单用系统红语义 tint。完整 scheme UI runner 本轮未记作通过。无真实 Home Screen host / 真机时段证据；画廊截图不冒充系统表面。保持 **ENGINEERING CANDIDATE / INTERFACE CANDIDATE**。
+- 八式共享渲染器已落地；Debug Simulator 下 App 与 Widget Extension 编译通过，136 项单元/集成测试通过（含八式双语意境文案精确锁定、旧内部术语拒绝、名称/密码边界、画廊预览不写快照、时段解析、最多五条 entry、两秒上限、八式时段姿态、枚举只含现行八式、手札只消费过去六日、混合历史状态枚举、免费/收费画廊边界等）。Release Simulator build、Analyze 与 19 项品牌资产检查通过。八式画廊定向 UI 流程通过并生成待办/完成 16 张截图；当前简中默认字号抽查无截断或卡片重叠。完整 scheme UI runner 本轮未记作通过；English、最大 Dynamic Type、真实 Home Screen host 与真机时段仍无本轮证据。画廊截图不冒充系统表面。保持 **ENGINEERING CANDIDATE / INTERFACE CANDIDATE**。
 - 媒体自动化覆盖独立删除/重新关联、同日替换、文件安装/读取/审计、缩略图损坏、无相册回退、v2 归档往返、随机性、错误口令、篡改、v1 拒绝、缺条目与缩略图身份不匹配。
 - 本轮有八式画廊待办/完成共 16 张原始截图及部分 ImageRenderer 附件；单卡变化预览约 5 秒（早/日/晚/完成串联），各段 ≤ 两秒。这只证明 App 内共享 Renderer 预览，仍为 **INTERFACE CANDIDATE**；不能代替真实 Widget host、系统 reload、Lock Screen kind、Clear/vibrant、Reduce Motion 或真机体验 GO。
 - 本轮未签名 Release `generic/platform=iOS Simulator` 构建通过；Debug 静态分析通过；Swift 警告按错误处理。

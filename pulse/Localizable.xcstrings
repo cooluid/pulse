@@ -2397,13 +2397,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "A soft field holds today’s open place and check-in state."
+            "value" : "Night still clings to the grass as morning clears the hill. A small clearing at the center waits for today’s mark."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "用柔和场域托住今天的留位与签到状态。"
+            "value" : "草尖还留着昨夜，晨光已越过远处的坡。中间那一小处空白，正等今天落下一印。"
           }
         }
       }
@@ -2431,13 +2431,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Today is the only star on the ring. After you check in, the opening closes and the star lights."
+            "value" : "Toward dawn, the stars recede one by one. One remains on the ring, waiting for today to fall into place."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "今天是环上唯一的一颗星。签到后开口合上，这颗星亮起来。"
+            "value" : "天快亮时，群星一颗颗退远。只有这一颗留在环上，等今天归位。"
           }
         }
       }
@@ -2465,13 +2465,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sets today’s imprint on a tactile stack of paper."
+            "value" : "The pages lie quietly stacked, each edge holding a trace of light. One imprint, and the day takes on weight."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "把今天的印压在一叠有厚度的纸面上。"
+            "value" : "纸页叠得很静，边角各自含着一点光。一枚印落下，今天便有了重量。"
           }
         }
       }
@@ -2499,13 +2499,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "A diagonal grass-and-paper split for today; the grass side expands after check-in."
+            "value" : "The sun leans west; shadows count the hours for the silent grass. When green crosses the paper’s edge, the day gains depth."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "斜向草绿与纸面对切开今天；完成时草绿一侧扩张。"
+            "value" : "日头一路西斜，影子替沉默的草数着时辰。等绿意越过纸边，这一天便有了深浅。"
           }
         }
       }
@@ -2533,13 +2533,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Writes the month, your one thing, today’s date, and the past six marks on one sheet of stationery."
+            "value" : "A sheet lies open, a few words scattered across it. Somehow, the afternoon stretches on."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "在一张有笺纹的手札上写下月份、我的一件事、今天日期与过去六日的留印。"
+            "value" : "信纸摊开，字疏疏落落，下午却显得很长。"
           }
         }
       }
@@ -2567,13 +2567,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Lets your one thing rest inside a quiet echo, with only today in view."
+            "value" : "A sound falls away; its echo widens into silence. The empty field holds its center for today."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "让我的一件事停在安静回响里，只留下今天。"
+            "value" : "一声落下，余响一圈圈走远。场子空着，只替今天守住最中心的位置。"
           }
         }
       }
@@ -2601,13 +2601,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "An ink line pierces the board; six real day marks ride the trail toward today."
+            "value" : "A fine path winds in from the hills, carrying days of wind and rain. By the time it reaches today, only your step is missing."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "一条墨线穿过板面，六日真迹落在线上，走向今天。"
+            "value" : "一线从远山蜿蜒而来，沿途收下几日风雨。到了今天，它只差你这一步。"
           }
         }
       }
@@ -2635,13 +2635,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Places the date, your one thing, and today’s status in a horizontal scene."
+            "value" : "Once the tide has come and gone, light on the sand can tell morning from evening. The day finds its rhythm there."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "在横向画面中显示日期、我的一件事和今天的状态。"
+            "value" : "潮水走过一遭，沙上的光便有了早晚，一天也跟着有了节奏。"
           }
         }
       }
