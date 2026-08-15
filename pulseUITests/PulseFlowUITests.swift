@@ -584,6 +584,74 @@ final class PulseFlowUITests: XCTestCase {
         add(darkTodayAttachment)
     }
 
+    func testVisualThemeAppliesImmediatelyAndPersistsAcrossRelaunch() throws {
+        configureApp()
+        launchAndConfirmDefaultCommitment()
+
+        let quietTheme = app.descendants(matching: .any)["today.theme.quiet-field"]
+        XCTAssertTrue(quietTheme.waitForExistence(timeout: 3))
+
+        let quietAttachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
+        quietAttachment.name = "Quiet Field before check-in"
+        quietAttachment.lifetime = .keepAlways
+        add(quietAttachment)
+
+        let settingsButton = app.buttons["settings.navigation.open.today"]
+        XCTAssertTrue(settingsButton.waitForExistence(timeout: 3))
+        settingsButton.tap()
+
+        let visualThemePicker = app.descendants(matching: .any)[
+            "settings.visual-theme.picker"
+        ]
+        XCTAssertTrue(visualThemePicker.waitForExistence(timeout: 3))
+        XCTAssertTrue(visualThemePicker.label.contains("静野"))
+        visualThemePicker.tap()
+
+        let faultOption = app.descendants(matching: .any)
+            .matching(NSPredicate(format: "label == %@", "断层日历"))
+            .firstMatch
+        XCTAssertTrue(faultOption.waitForExistence(timeout: 3))
+        faultOption.tap()
+
+        let faultThemeApplied = NSPredicate(format: "label CONTAINS %@", "断层日历")
+        expectation(for: faultThemeApplied, evaluatedWith: visualThemePicker)
+        waitForExpectations(timeout: 3)
+
+        app.buttons["navigation.back"].tap()
+        let faultTheme = app.descendants(matching: .any)["today.theme.fault-almanac"]
+        XCTAssertTrue(faultTheme.waitForExistence(timeout: 3))
+
+        let pendingAttachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
+        pendingAttachment.name = "Fault Almanac before check-in"
+        pendingAttachment.lifetime = .keepAlways
+        add(pendingAttachment)
+
+        let checkInButton = app.buttons["today.checkin.button"]
+        XCTAssertTrue(checkInButton.waitForExistence(timeout: 3))
+        checkInButton.tap()
+        XCTAssertFalse(checkInButton.isEnabled)
+        XCTAssertTrue(checkInButton.label.contains("已签到"))
+        XCTAssertTrue(
+            app.descendants(matching: .any)["today.checkin.presentation.imprinted"]
+                .waitForExistence(timeout: 3)
+        )
+
+        let completedAttachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
+        completedAttachment.name = "Fault Almanac after check-in"
+        completedAttachment.lifetime = .keepAlways
+        add(completedAttachment)
+
+        app.terminate()
+        app.launchEnvironment.removeValue(forKey: "PULSE_UI_TEST_RESET")
+        app.launch()
+
+        XCTAssertTrue(
+            app.descendants(matching: .any)["today.theme.fault-almanac"]
+                .waitForExistence(timeout: 5)
+        )
+        XCTAssertFalse(app.buttons["today.checkin.button"].isEnabled)
+    }
+
     func testChineseHistoryUsesLocalizedArchiveHeading() throws {
         configureApp()
         launchAndConfirmDefaultCommitment()

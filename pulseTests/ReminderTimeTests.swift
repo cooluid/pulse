@@ -45,7 +45,7 @@ final class AppSettingsTests: XCTestCase {
         )
     }
 
-    func testThemeAndLanguageDefaultToSystemAndPersistExplicitChoices() throws {
+    func testAppearanceVisualThemeAndLanguagePersistExplicitChoices() throws {
         let appSuiteName = "AppSettingsTests.App.\(UUID().uuidString)"
         let sharedSuiteName = "AppSettingsTests.Shared.\(UUID().uuidString)"
         let defaults = try XCTUnwrap(UserDefaults(suiteName: appSuiteName))
@@ -61,9 +61,11 @@ final class AppSettingsTests: XCTestCase {
             defaults: defaults
         )
         XCTAssertEqual(settings.theme, .system)
+        XCTAssertEqual(settings.visualTheme, .quietField)
         XCTAssertEqual(settings.language, .system)
 
         settings.theme = .dark
+        settings.visualTheme = .faultAlmanac
         settings.language = .english
 
         XCTAssertNil(
@@ -81,6 +83,7 @@ final class AppSettingsTests: XCTestCase {
             defaults: defaults
         )
         XCTAssertEqual(reloaded.theme, .dark)
+        XCTAssertEqual(reloaded.visualTheme, .faultAlmanac)
         XCTAssertEqual(reloaded.language, .english)
         XCTAssertEqual(reloaded.locale.identifier, "en")
     }
@@ -92,6 +95,17 @@ final class AppSettingsTests: XCTestCase {
         XCTAssertThrowsError(try makeSettings(defaults: invalidThemeDefaults))
         invalidThemeDefaults.removePersistentDomain(forName: invalidThemeSuite)
 
+        let invalidVisualThemeSuite = "AppSettingsTests.VisualTheme.\(UUID().uuidString)"
+        let invalidVisualThemeDefaults = try XCTUnwrap(
+            UserDefaults(suiteName: invalidVisualThemeSuite)
+        )
+        invalidVisualThemeDefaults.set(
+            "paperCut",
+            forKey: AppSettings.StorageKey.visualTheme
+        )
+        XCTAssertThrowsError(try makeSettings(defaults: invalidVisualThemeDefaults))
+        invalidVisualThemeDefaults.removePersistentDomain(forName: invalidVisualThemeSuite)
+
         let invalidLanguageSuite = "AppSettingsTests.Language.\(UUID().uuidString)"
         let invalidLanguageDefaults = try XCTUnwrap(UserDefaults(suiteName: invalidLanguageSuite))
         invalidLanguageDefaults.set(
@@ -102,20 +116,23 @@ final class AppSettingsTests: XCTestCase {
         invalidLanguageDefaults.removePersistentDomain(forName: invalidLanguageSuite)
     }
 
-    func testResetRestoresSystemThemeAndLanguage() throws {
+    func testResetRestoresDefaultAppearanceVisualThemeAndLanguage() throws {
         let suiteName = "AppSettingsTests.\(UUID().uuidString)"
         let defaults = try XCTUnwrap(UserDefaults(suiteName: suiteName))
         defer { defaults.removePersistentDomain(forName: suiteName) }
         let settings = try makeSettings(defaults: defaults)
         settings.theme = .light
+        settings.visualTheme = .faultAlmanac
         settings.language = .simplifiedChinese
 
         settings.reset()
 
         XCTAssertEqual(settings.theme, .system)
+        XCTAssertEqual(settings.visualTheme, .quietField)
         XCTAssertEqual(settings.language, .system)
         let reloaded = try makeSettings(defaults: defaults)
         XCTAssertEqual(reloaded.theme, .system)
+        XCTAssertEqual(reloaded.visualTheme, .quietField)
         XCTAssertEqual(reloaded.language, .system)
     }
 

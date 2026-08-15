@@ -228,6 +228,7 @@ private struct ConfiguredRootView: View {
     var body: some View {
         RootView(model: model)
             .environment(\.locale, settings.locale)
+            .environment(\.pulseVisualTheme, settings.visualTheme)
             .preferredColorScheme(settings.theme.preferredColorScheme)
     }
 }

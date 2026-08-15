@@ -6,6 +6,7 @@ struct SettingsView: View {
     @Bindable var model: PulseAppModel
     @Environment(\.openURL) private var openURL
     @Environment(\.locale) private var locale
+    @Environment(\.pulseVisualTheme) private var visualTheme
     @State private var showsResetConfirmation = false
     @State private var passphraseRequest: BackupPassphraseMode?
     @State private var showsExporter = false
@@ -27,9 +28,9 @@ struct SettingsView: View {
 #endif
         }
         .scrollContentBackground(.hidden)
-        .background(PulseDesign.background)
+        .background(PulseScreenBackground())
         .foregroundStyle(PulseDesign.ink)
-        .tint(PulseDesign.tint)
+        .tint(visualTheme == .faultAlmanac ? PulseDesign.faultAccent : PulseDesign.tint)
         .navigationTitle(
             PulseLocalization.string("settings.navigation_title", locale: locale)
         )
@@ -88,6 +89,20 @@ struct SettingsView: View {
 
     private var appearanceSection: some View {
         Section("settings.personalization.section") {
+            Picker(
+                "settings.visual_theme",
+                selection: Binding(
+                    get: { model.settings.visualTheme },
+                    set: { model.settings.visualTheme = $0 }
+                )
+            ) {
+                ForEach(PulseVisualTheme.allCases) { theme in
+                    Text(theme.localizedName(locale: locale)).tag(theme)
+                }
+            }
+            .accessibilityIdentifier("settings.visual-theme.picker")
+            .id("settings.visual-theme.\(locale.identifier)")
+
             Picker(
                 "settings.theme",
                 selection: Binding(

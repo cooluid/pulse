@@ -37,6 +37,22 @@ enum AppTheme: String, CaseIterable, Identifiable, Sendable {
     }
 }
 
+enum PulseVisualTheme: String, CaseIterable, Identifiable, Sendable {
+    case quietField
+    case faultAlmanac
+
+    var id: String { rawValue }
+
+    func localizedName(locale: Locale) -> String {
+        switch self {
+        case .quietField:
+            PulseLocalization.string("settings.visual_theme.quiet_field", locale: locale)
+        case .faultAlmanac:
+            PulseLocalization.string("settings.visual_theme.fault_almanac", locale: locale)
+        }
+    }
+}
+
 extension PulseInterfaceLanguage {
     func localizedName(locale: Locale) -> String {
         switch self {
@@ -125,6 +141,7 @@ final class AppSettings {
         static let hapticsEnabled = "settings.hapticsEnabled"
         static let weekStart = "settings.weekStart"
         static let theme = "settings.theme"
+        static let visualTheme = "settings.visualTheme"
         static let resetPending = "maintenance.resetPending"
         static let mediaInvitationEnabled = "settings.mediaInvitationEnabled"
     }
@@ -159,6 +176,10 @@ final class AppSettings {
         didSet { persist(StorageKey.theme, value: theme.rawValue) }
     }
 
+    var visualTheme: PulseVisualTheme {
+        didSet { persist(StorageKey.visualTheme, value: visualTheme.rawValue) }
+    }
+
     var mediaInvitationEnabled: Bool {
         didSet { persist(StorageKey.mediaInvitationEnabled, value: mediaInvitationEnabled) }
     }
@@ -182,6 +203,7 @@ final class AppSettings {
             StorageKey.hapticsEnabled: true,
             StorageKey.weekStart: WeekStart.monday.rawValue,
             StorageKey.theme: AppTheme.system.rawValue,
+            StorageKey.visualTheme: PulseVisualTheme.quietField.rawValue,
             StorageKey.mediaInvitationEnabled: true
         ])
         let sharedSnapshot: PulseSharedSettings.Snapshot
@@ -191,7 +213,10 @@ final class AppSettings {
             throw PulseAppError.invalidSettings
         }
         guard let loadedWeekStart = WeekStart(rawValue: defaults.integer(forKey: StorageKey.weekStart)),
-        let loadedTheme = AppTheme(rawValue: defaults.string(forKey: StorageKey.theme) ?? "") else {
+              let loadedTheme = AppTheme(rawValue: defaults.string(forKey: StorageKey.theme) ?? ""),
+              let loadedVisualTheme = PulseVisualTheme(
+                  rawValue: defaults.string(forKey: StorageKey.visualTheme) ?? ""
+              ) else {
             throw PulseAppError.invalidSettings
         }
 
@@ -200,6 +225,7 @@ final class AppSettings {
         reminderTime = sharedSnapshot.reminderTime
         weekStart = loadedWeekStart
         theme = loadedTheme
+        visualTheme = loadedVisualTheme
         mediaInvitationEnabled = defaults.bool(forKey: StorageKey.mediaInvitationEnabled)
         language = sharedSnapshot.language
         isLoading = false
@@ -221,6 +247,7 @@ final class AppSettings {
         reminderTime = .standard
         weekStart = .monday
         theme = .system
+        visualTheme = .quietField
         mediaInvitationEnabled = true
         language = .system
         isLoading = false
@@ -246,6 +273,7 @@ final class AppSettings {
             StorageKey.hapticsEnabled,
             StorageKey.weekStart,
             StorageKey.theme,
+            StorageKey.visualTheme,
             StorageKey.mediaInvitationEnabled
         ].forEach(defaults.removeObject(forKey:))
         sharedSettings.reset()
