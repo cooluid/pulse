@@ -33,18 +33,18 @@ struct PulseReminderLiveActivity: Widget {
                 DynamicIslandExpandedRegion(.leading) {
                     PulseReminderActivityMark(
                         phase: context.state.phase,
-                        size: 34,
+                        size: PulseWidgetDesign.activityExpandedMarkSize,
                         surface: .island
                     )
                     .accessibilityHidden(true)
                 }
 
                 DynamicIslandExpandedRegion(.trailing) {
-                    PulseReminderActivityCompactTrailing(
-                        phase: context.state.phase,
+                    PulseReminderActivityTimeText(
                         reminderDate: context.attributes.reminderDate,
                         timeZoneIdentifier: context.attributes.timeZoneIdentifier,
-                        locale: locale
+                        locale: locale,
+                        surface: .island
                     )
                 }
 
@@ -57,19 +57,17 @@ struct PulseReminderLiveActivity: Widget {
             } compactLeading: {
                 PulseReminderActivityMark(
                     phase: context.state.phase,
-                    size: 18,
+                    size: PulseWidgetDesign.activityCompactMarkSize,
                     surface: .island
                 )
                 .accessibilityElement(children: .ignore)
-                .accessibilityLabel(
-                    LocalizedStringResource(
-                        context.state.phase == .completed
-                            ? "activity.reminder.completed.title"
-                            : "activity.reminder.title",
-                        table: PulseLocalization.systemUITable,
-                        locale: locale
-                    )
-                )
+                .accessibilityLabel(Text(verbatim: PulseLocalization.string(
+                    context.state.phase == .completed
+                        ? "activity.reminder.completed.title"
+                        : "activity.reminder.title",
+                    table: PulseLocalization.systemUITable,
+                    locale: locale
+                )))
             } compactTrailing: {
                 PulseReminderActivityCompactTrailing(
                     phase: context.state.phase,
@@ -80,19 +78,17 @@ struct PulseReminderLiveActivity: Widget {
             } minimal: {
                 PulseReminderActivityMark(
                     phase: context.state.phase,
-                    size: 18,
+                    size: PulseWidgetDesign.activityCompactMarkSize,
                     surface: .island
                 )
                 .accessibilityElement(children: .ignore)
-                .accessibilityLabel(
-                    LocalizedStringResource(
-                        context.state.phase == .completed
-                            ? "activity.reminder.completed.title"
-                            : "activity.reminder.title",
-                        table: PulseLocalization.systemUITable,
-                        locale: locale
-                    )
-                )
+                .accessibilityLabel(Text(verbatim: PulseLocalization.string(
+                    context.state.phase == .completed
+                        ? "activity.reminder.completed.title"
+                        : "activity.reminder.title",
+                    table: PulseLocalization.systemUITable,
+                    locale: locale
+                )))
             }
             .keylineTint(PulseWidgetDesign.grass)
             .widgetURL(PulseRuntimeIdentity.todayDeepLink)

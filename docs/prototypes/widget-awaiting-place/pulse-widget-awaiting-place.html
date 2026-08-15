@@ -254,8 +254,8 @@
 
     .meta { color: var(--secondary); font-size: 11px; font-weight: 600; letter-spacing: .01em; }
     .habit { font-weight: 650; letter-spacing: -.03em; line-height: 1.05; }
-    .state::after { content: "今天还空着"; }
-    body.checked .state::after { content: "今天已留下"; }
+    .state::after { content: "今日待签到"; }
+    body.checked .state::after { content: "今日已签到"; }
 
     .only-checked { display: none; }
     body.checked .only-pending { display: none; }
@@ -539,7 +539,7 @@
       <div>
         <p class="eyebrow">Pulse Widget · Formal Free Default</p>
         <h1>免费不是另一枚印。<br>是一处还等着落下的地方。</h1>
-        <p class="lede">星环属于高阶权益，主屏的免费默认仍是一处等待承印的位置：一眼看出今天空着，一点即可留下。「待落之处」不借用收费星环的开口环与单星语法。</p>
+        <p class="lede">星环属于高阶权益，主屏的免费默认仍是一处等待完成签到的位置：一眼看出今日待签到，轻点即可签到。「待落之处」不借用收费星环的开口环与单星语法。</p>
       </div>
       <div class="controls" aria-label="原型状态">
         <button class="control state-control" type="button" data-state="pending" aria-pressed="true">待签到</button>
@@ -628,8 +628,8 @@
         <div>
           <span class="idx">00 · PLACE · 免费默认</span>
           <h3>待落之处</h3>
-          <p>小号走中轴：日期在上，圆角印垫居中，承诺在下。待签到坑心写「空着」；已留下则草叶色实心占满并打勾。不做左下垫、右上字的对角拆分。中号才把印垫放到左侧，右侧排日期、承诺和状态句。</p>
-          <span class="job">任务：今天这里还空着吗 · 现有今日快照</span>
+          <p>小号走中轴：日期在上，圆角印垫居中，承诺在下。待签到时落点留空；已签到后由草叶色实心占满并打勾。不做左下垫、右上字的对角拆分。中号才把印垫放到左侧，右侧排日期、承诺和状态句。</p>
+          <span class="job">任务：今天签到了吗 · 现有今日快照</span>
         </div>
         <div class="frames">
           <div class="widget place">
@@ -673,8 +673,8 @@
 
     <section class="contrast">
       <article>
-        <h2>待落之处（免费）</h2>
-        <p>承印的位置。剪影是垫 + 空坑。完成 = 坑被占满。回答「今天还空着吗」。</p>
+        <h2>待签到之处（免费）</h2>
+        <p>签到的位置。剪影表达一个等待完成的落点；未签到时留空，已签到后填满。回答「今天签到了吗」。</p>
       </article>
       <article>
         <h2>星环（高阶权益）</h2>

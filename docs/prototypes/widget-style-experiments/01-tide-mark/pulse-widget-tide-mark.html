@@ -203,7 +203,7 @@
         <p>淡日轮从卡牌边缘进入，倒影落进潮面；签到事实仍只由潮位、岸线与今日刻度表达。</p>
       </div>
       <div class="controls">
-        <button type="button" id="state">切换为已留下</button>
+        <button type="button" id="state">切换为已签到</button>
         <button type="button" id="appearance">切换深色</button>
       </div>
     </header>
@@ -214,7 +214,7 @@
         <div class="widget small">
           <div class="sky-glow" aria-hidden="true"></div>
           <div class="copy"><div class="date">08 / 14</div><div class="habit">每天走路</div></div>
-          <div class="status">今天待留下</div>
+          <div class="status">今日待签到</div>
           <div class="shore"><svg viewBox="0 0 340 100" preserveAspectRatio="none"><path class="water" d="M-8 38 C48 22 96 50 160 38 C220 26 278 52 348 34 L348 108 L-8 108 Z"/><path class="lip" d="M-8 38 C48 22 96 50 160 38 C220 26 278 52 348 34"/><path class="trace" d="M-8 50 C52 36 108 58 170 46 C230 34 286 60 348 44"/></svg><div class="sun-reflection" aria-hidden="true"><i></i><i></i><i></i><i></i></div></div>
           <div class="mark"><svg viewBox="0 0 100 100"><circle class="ring" cx="50" cy="50" r="43"/></svg></div>
         </div>
@@ -225,7 +225,7 @@
         <div class="widget medium">
           <div class="sky-glow" aria-hidden="true"></div>
           <div class="copy"><div class="date">08 / 14</div><div class="habit">每天走路</div></div>
-          <div class="status">今天待留下</div>
+          <div class="status">今日待签到</div>
           <div class="shore"><svg viewBox="0 0 340 100" preserveAspectRatio="none"><path class="water" d="M-8 38 C48 22 96 50 160 38 C220 26 278 52 348 34 L348 108 L-8 108 Z"/><path class="lip" d="M-8 38 C48 22 96 50 160 38 C220 26 278 52 348 34"/><path class="trace" d="M-8 50 C52 36 108 58 170 46 C230 34 286 60 348 44"/></svg><div class="sun-reflection" aria-hidden="true"><i></i><i></i><i></i><i></i></div></div>
           <div class="mark"><svg viewBox="0 0 100 100"><circle class="ring" cx="50" cy="50" r="43"/></svg></div>
         </div>
@@ -246,8 +246,8 @@
     stateButton.addEventListener('click', () => {
       document.body.classList.toggle('checked');
       const checked = document.body.classList.contains('checked');
-      stateButton.textContent = checked ? '切换为待签到' : '切换为已留下';
-      statuses.forEach((status) => { status.textContent = checked ? '今天已留下' : '今天待留下'; });
+      stateButton.textContent = checked ? '切换为待签到' : '切换为已签到';
+      statuses.forEach((status) => { status.textContent = checked ? '今日已签到' : '今日待签到'; });
     });
 
     appearanceButton.addEventListener('click', () => {

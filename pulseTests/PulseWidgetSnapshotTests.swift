@@ -52,6 +52,93 @@ final class PulseWidgetSnapshotTests: XCTestCase {
         XCTAssertEqual(Set(renderedImages).count, 2)
     }
 
+    func testEnhancementActivityStoreCardShowsEverySystemMorphology() throws {
+        let projectRoot = URL(fileURLWithPath: #filePath)
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+        let previewDirectory = projectRoot
+            .appendingPathComponent(".tmp", isDirectory: true)
+            .appendingPathComponent("activity-preview", isDirectory: true)
+        try FileManager.default.createDirectory(
+            at: previewDirectory,
+            withIntermediateDirectories: true
+        )
+
+        let content = PulseReminderActivityStoreCard(
+            reminderDate: Date(timeIntervalSince1970: 67_320),
+            timeZoneIdentifier: TimeZone.gmt.identifier,
+            locale: Locale(identifier: "zh-Hans")
+        )
+        .environment(\.locale, Locale(identifier: "zh-Hans"))
+        .frame(width: 344, height: 460)
+        .background(PulseDesign.background)
+
+        let renderer = ImageRenderer(content: content)
+        renderer.scale = 3
+        let image = try XCTUnwrap(renderer.uiImage)
+        let png = try XCTUnwrap(image.pngData())
+
+        XCTAssertEqual(image.size.width, 344, accuracy: 0.5)
+        XCTAssertEqual(image.size.height, 460, accuracy: 0.5)
+
+        let previewURL = previewDirectory.appendingPathComponent(
+            "activity-store-morphologies@3x.png"
+        )
+        try png.write(to: previewURL)
+
+        let attachment = XCTAttachment(image: image)
+        attachment.name = "Advanced features activity morphologies"
+        attachment.lifetime = .keepAlways
+        add(attachment)
+    }
+
+    func testEnhancementStoreHeroUsesProductInventoryInsteadOfExplanatoryCopy() throws {
+        let projectRoot = URL(fileURLWithPath: #filePath)
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+        let catalogURL = projectRoot
+            .appendingPathComponent("pulse", isDirectory: true)
+            .appendingPathComponent("Localizable.xcstrings", isDirectory: false)
+        let viewURL = projectRoot
+            .appendingPathComponent("pulse", isDirectory: true)
+            .appendingPathComponent("Features", isDirectory: true)
+            .appendingPathComponent("Settings", isDirectory: true)
+            .appendingPathComponent("EnhancementStoreView.swift", isDirectory: false)
+        let catalog = try JSONDecoder().decode(
+            WidgetStringCatalog.self,
+            from: Data(contentsOf: catalogURL)
+        )
+        let source = try String(contentsOf: viewURL, encoding: .utf8)
+        let approvedCopy: [String: [String: String]] = [
+            "store.hero.tagline": [
+                "en": "Seven compositions. One Firefly Halo.",
+                "zh-Hans": "七种构图。一个萤火日晕。",
+            ],
+            "store.hero.scope": [
+                "en": "Widgets · Lock Screen · Dynamic Island",
+                "zh-Hans": "小组件 · 锁屏 · 灵动岛",
+            ],
+            "store.hero.promise": [
+                "en": "Seven widget styles and Firefly Halo for Lock Screen and Dynamic Island.",
+                "zh-Hans": "七种小组件样式，以及用于锁屏与灵动岛的萤火日晕。",
+            ],
+        ]
+
+        for (key, localizedValues) in approvedCopy {
+            let entry = try XCTUnwrap(catalog.strings[key])
+            for (language, approvedValue) in localizedValues {
+                XCTAssertEqual(
+                    entry.localizations[language]?.stringUnit.value,
+                    approvedValue,
+                    "Enhancement store copy drifted for \(key) [\(language)]."
+                )
+            }
+        }
+
+        XCTAssertFalse(source.contains("Text(\"store.title\")"))
+        XCTAssertFalse(source.contains("Text(\"store.hero.promise\")"))
+    }
+
     func testReminderActivityLockScreenRendersTheSignatureHierarchy() throws {
         let projectRoot = URL(fileURLWithPath: #filePath)
             .deletingLastPathComponent()
@@ -158,6 +245,38 @@ final class PulseWidgetSnapshotTests: XCTestCase {
         XCTAssertEqual(hypot(offset.width, offset.height), ringDiameter / 2, accuracy: 0.0001)
         XCTAssertGreaterThan(offset.width, 0)
         XCTAssertLessThan(offset.height, 0)
+    }
+
+    func testReminderActivityFireflyFitsInsideEveryRenderedMarkCanvas() {
+        let configurations: [(size: CGFloat, surface: PulseReminderActivitySurface)] = [
+            (PulseWidgetDesign.activityCompactMarkSize, .island),
+            (PulseWidgetDesign.activityExpandedMarkSize, .island),
+            (PulseWidgetDesign.activityLockScreenMarkSize, .lockScreen),
+        ]
+
+        for configuration in configurations {
+            let metrics = PulseReminderActivityMarkGeometry.metrics(
+                size: configuration.size,
+                surface: configuration.surface
+            )
+            let offset = PulseReminderActivityMarkGeometry.fireflyOffset(
+                ringDiameter: metrics.ringDiameter
+            )
+            let fireflyOuterRadius = (
+                metrics.fireflyDiameter + metrics.fireflyOutlineWidth
+            ) / 2
+            let canvasRadius = metrics.glyphSize / 2
+
+            XCTAssertLessThanOrEqual(
+                abs(offset.width) + fireflyOuterRadius,
+                canvasRadius + 0.0001
+            )
+            XCTAssertLessThanOrEqual(
+                abs(offset.height) + fireflyOuterRadius,
+                canvasRadius + 0.0001
+            )
+            XCTAssertLessThan(metrics.fireflyDiameter, metrics.ringDiameter)
+        }
     }
 
     func testReminderActivityTimeUsesTheAttributeTimeZone() {
@@ -300,8 +419,8 @@ final class PulseWidgetSnapshotTests: XCTestCase {
                 usesFullColorPalette: true,
                 allowsMotion: false,
                 statusText: "今天还未签到",
-                pathSummaryFormat: "六日 · %d 印",
-                emptyPlaceText: "空着",
+                pathSummaryFormat: "六日 · 签到 %d 天",
+                emptyPlaceText: "待签到",
                 placeStatusText: "今天还未签到"
             )
             .environment(\.locale, Locale(identifier: "zh-Hans"))
@@ -367,8 +486,8 @@ final class PulseWidgetSnapshotTests: XCTestCase {
                         usesFullColorPalette: true,
                         allowsMotion: false,
                         statusText: state.snapshot.isCheckedToday ? "今天已签到" : "今天还未签到",
-                        pathSummaryFormat: "六日 · %d 印",
-                        emptyPlaceText: "空着",
+                        pathSummaryFormat: "六日 · 签到 %d 天",
+                        emptyPlaceText: "待签到",
                         placeStatusText: state.snapshot.isCheckedToday ? "今天已签到" : "今天还未签到"
                     )
                     .environment(\.locale, Locale(identifier: "zh-Hans"))
@@ -438,8 +557,8 @@ final class PulseWidgetSnapshotTests: XCTestCase {
                         usesFullColorPalette: true,
                         allowsMotion: false,
                         statusText: state.snapshot.isCheckedToday ? "今天已签到" : "今天还未签到",
-                        pathSummaryFormat: "六日 · %d 印",
-                        emptyPlaceText: "空着",
+                        pathSummaryFormat: "六日 · 签到 %d 天",
+                        emptyPlaceText: "待签到",
                         placeStatusText: state.snapshot.isCheckedToday ? "今天已签到" : "今天还未签到"
                     )
                     .environment(\.locale, Locale(identifier: "zh-Hans"))
@@ -546,8 +665,8 @@ final class PulseWidgetSnapshotTests: XCTestCase {
                     usesFullColorPalette: true,
                     allowsMotion: false,
                     statusText: "今天还未签到",
-                    pathSummaryFormat: "六日 · %d 印",
-                    emptyPlaceText: "空着",
+                    pathSummaryFormat: "六日 · 签到 %d 天",
+                    emptyPlaceText: "待签到",
                     placeStatusText: "今天还未签到"
                 )
                 .environment(\.locale, Locale(identifier: "zh-Hans"))
@@ -679,8 +798,8 @@ final class PulseWidgetSnapshotTests: XCTestCase {
                     usesFullColorPalette: true,
                     allowsMotion: false,
                     statusText: state.snapshot.isCheckedToday ? "今天已签到" : "今天还未签到",
-                    pathSummaryFormat: "六日 · %d 印",
-                    emptyPlaceText: "空着",
+                    pathSummaryFormat: "六日 · 签到 %d 天",
+                    emptyPlaceText: "待签到",
                     placeStatusText: state.snapshot.isCheckedToday ? "今天已签到" : "今天还未签到"
                 )
                 .environment(\.locale, Locale(identifier: "zh-Hans"))
@@ -992,8 +1111,8 @@ final class PulseWidgetSnapshotTests: XCTestCase {
                     usesFullColorPalette: true,
                     allowsMotion: false,
                     statusText: state.snapshot.isCheckedToday ? "今天已签到" : "今天还未签到",
-                    pathSummaryFormat: "六日 · %d 印",
-                    emptyPlaceText: "空着",
+                    pathSummaryFormat: "六日 · 签到 %d 天",
+                    emptyPlaceText: "待签到",
                     placeStatusText: state.snapshot.isCheckedToday ? "今天已签到" : "今天还未签到"
                 )
                 .environment(\.locale, Locale(identifier: "zh-Hans"))
@@ -1102,7 +1221,7 @@ final class PulseWidgetSnapshotTests: XCTestCase {
         )
         let approvedCopy: [String: [String: String]] = [
             "settings.widget.style.place.detail": [
-                "en": "Night still clings to the grass as morning clears the hill. A small clearing at the center waits for today’s mark.",
+                "en": "Night still clings to the grass as morning clears the hill. A small clearing at the center waits for today’s check-in.",
                 "zh-Hans": "草尖还留着昨夜，晨光已越过远处的坡。中间那一小处空白，正等今天签到。",
             ],
             "settings.widget.style.orbit.detail": [
@@ -1171,6 +1290,76 @@ final class PulseWidgetSnapshotTests: XCTestCase {
         }
     }
 
+    func testLiveActivityCopyIsConciseAndUsesCheckInForEveryActionAndState() throws {
+        let projectRoot = URL(fileURLWithPath: #filePath)
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+        let catalogURL = projectRoot
+            .appendingPathComponent("PulseWidgetUI", isDirectory: true)
+            .appendingPathComponent("PulseSystemUI.xcstrings", isDirectory: false)
+        let catalog = try JSONDecoder().decode(
+            WidgetStringCatalog.self,
+            from: Data(contentsOf: catalogURL)
+        )
+        let approvedCopy: [String: [String: String]] = [
+            "activity.reminder.title": [
+                "en": "Not checked in today",
+                "zh-Hans": "今日未签到",
+            ],
+            "activity.reminder.check_in": [
+                "en": "Check in",
+                "zh-Hans": "签到",
+            ],
+            "activity.reminder.completed.title": [
+                "en": "Checked in today",
+                "zh-Hans": "今日已签到",
+            ],
+            "activity.reminder.completed.compact": [
+                "en": "Checked in",
+                "zh-Hans": "已签到",
+            ],
+            "store.activity.preview.section": [
+                "en": "Lock Screen & Dynamic Island",
+                "zh-Hans": "锁屏与灵动岛",
+            ],
+            "store.activity.preview.expanded": [
+                "en": "Expanded",
+                "zh-Hans": "展开",
+            ],
+            "store.activity.preview.compact": [
+                "en": "Compact",
+                "zh-Hans": "紧凑",
+            ],
+            "store.activity.preview.minimal": [
+                "en": "Minimal",
+                "zh-Hans": "最小",
+            ],
+            "store.activity.preview.completed": [
+                "en": "Checked in",
+                "zh-Hans": "已签到",
+            ],
+            "store.activity.preview.lock_screen": [
+                "en": "Lock Screen",
+                "zh-Hans": "锁屏",
+            ],
+        ]
+
+        for (key, localizedValues) in approvedCopy {
+            let entry = try XCTUnwrap(catalog.strings[key])
+            for (language, approvedValue) in localizedValues {
+                XCTAssertEqual(
+                    entry.localizations[language]?.stringUnit.value,
+                    approvedValue,
+                    "Live Activity copy drifted for \(key) [\(language)]."
+                )
+            }
+        }
+
+        XCTAssertNil(catalog.strings["activity.reminder.body"])
+        XCTAssertNil(catalog.strings["activity.reminder.completed.body"])
+        XCTAssertNil(catalog.strings["store.activity.preview.detail"])
+    }
+
     func testUserFacingCopyDoesNotExposeDesignOrEngineeringJargon() throws {
         let projectRoot = URL(fileURLWithPath: #filePath)
             .deletingLastPathComponent()
@@ -1188,8 +1377,11 @@ final class PulseWidgetSnapshotTests: XCTestCase {
         ]
         let forbiddenTerms = [
             "大开口日环", "开放日环", "承印坑", "潮唇", "巨大剪影", "蜡封", "邮戳", "七枚日印", "落印",
+            "留一印", "已留印", "直接留印", "今天还空着",
             "主承诺", "高阶权益", "小组件构图", "小组件事实", "共享存储", "数据校验",
             "虚构价格", "open seal", "imprint well", "postmarks", "widget facts",
+            "leave mark", "leave one mark", "today is marked", "today awaits its mark",
+            "today is still open", "today’s mark", "today's mark", "imprinted today",
             "shared store", "advanced benefits", "main commitment", "widget composition", "seven marks",
         ]
 

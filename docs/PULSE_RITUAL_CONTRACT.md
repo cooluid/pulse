@@ -1,7 +1,7 @@
 # 一日一印（Pulse）系统仪式产品与交互合同
 
 文档版本：1.0<br>
-状态：Canonical Ritual Semantics；1.1 包含 App 内基础落印、今日入镜与既有买断提醒窗口，其余能力受路线图门禁约束<br>
+状态：Canonical Ritual Semantics；1.1 包含 App 内基础签到、今日入镜与既有买断提醒窗口，其余能力受路线图门禁约束<br>
 评审日期：2026-08-12
 
 本文是 Pulse 在 Widget、Live Activity、灵动岛、锁屏、StandBy、Apple Watch、Control、Action Button 和提醒通道上的产品语义权威。它定义“什么时候出现、表达什么、如何结束、什么可以收费”；签到日期、影像独立性、唯一性、删除和时区仍只以 [DOMAIN_CONTRACT.md](./DOMAIN_CONTRACT.md) 为准，版本顺序只以 [PRODUCT_ROADMAP.md](./PRODUCT_ROADMAP.md) 为准。
@@ -27,7 +27,7 @@ Pulse 不把系统表面当作更多通知位，而把它们组织成一套有�
 | Apple Watch 高级节律与长期档案 | GO，Plus 候选 | 28/90/365 日节律、印期与年轮会随数据持续产生新价值 |
 | 签到成功的系统落印动效 | GO，免费 | 形成 Pulse 的品牌签名，但不替代 App 内反馈 |
 | 签到后的今日入镜 | GO，1.1 免费正式能力 | 把“完成今天”自然延伸为“留下今天”，失败不撤销签到 |
-| iOS 26 提醒时间自动出现的本地留印窗口 | GO，一次买断增强 | 必须用户购买并主动开启；使用 iOS 26 本地 scheduled Live Activity，不需要把 APNs/后端伪装成前置条件 |
+| iOS 26 提醒时间自动出现的本地签到窗口 | GO，一次买断增强 | 必须用户购买并主动开启；使用 iOS 26 本地 scheduled Live Activity，不需要把 APNs/后端伪装成前置条件 |
 | 本地通知提醒 | GO，永久免费 | 所有用户都应获得可靠基础提醒；同一逻辑日只允许一个正式通道，不复制提醒 |
 | 回归与里程碑变体 | GO，免费 | 只在用户本来就签到的时刻出现，不额外打扰 |
 | 岁月流影生成进度 | GO，随 Plus 渲染能力提供 | 属于真实、持续变化、可取消的任务 |
@@ -46,9 +46,9 @@ Pulse 不把系统表面当作更多通知位，而把它们组织成一套有�
 ```mermaid
 stateDiagram-v2
     state "未运行" as Inactive
-    state "留印提醒窗口" as ReminderWindow
+    state "签到提醒窗口" as ReminderWindow
     state "正在保存" as Saving
-    state "今天已落印" as Imprinted
+    state "今天已签到" as CheckedIn
     state "今日影像窗口" as MemoryWindow
     state "保存失败" as Failed
     state "已结束" as Ended
@@ -56,7 +56,7 @@ stateDiagram-v2
     [*] --> Inactive
     Inactive --> ReminderWindow: "iOS 26 增强权益用户的本地定时 Activity 到达"
     Inactive --> Saving: "从 App 或系统入口发起签到"
-    ReminderWindow --> Saving: "用户选择留下今天"
+    ReminderWindow --> Saving: "用户选择签到"
     Saving --> Imprinted: "Repository 保存成功"
     Saving --> Failed: "校验或持久化失败"
     Failed --> Ended: "显示诚实错误后结束"
@@ -97,9 +97,9 @@ Plus Widget 只展示真正属于 Plus 的信息，如 28/90/365 日节律、回
 
 ### 3.2 灵动岛与 Live Activity：短期事件和任务
 
-Compact、Minimal、Expanded 和 Lock Screen 必须都能独立理解；有灵动岛的 iPhone 不是唯一验收设备。Compact / Minimal 不放长文案，只显示印记、剩余时间、照片邀请或真实进度。Expanded / Lock Screen 才显示解释和唯一主要操作。
+Compact、Minimal、Expanded 和 Lock Screen 必须都能独立理解；有灵动岛的 iPhone 不是唯一验收设备。Compact / Minimal 只显示印记、提醒时间或完成状态。Expanded / Lock Screen 只显示状态标题、提醒时间与唯一主要操作，不加入陪伴式解释或动机文案。
 
-灵动岛不是任意动画画布：单次 Widget / Live Activity 动画最长两秒，Always-On 降低亮度时系统不播放动画。App 内不能用箭头或文案强迫用户看向灵动岛；主签到反馈仍由 App 页面完成，系统落印是附加的品牌回声。
+灵动岛不是任意动画画布：单次 Widget / Live Activity 动画最长两秒，Always-On 降低亮度时系统不播放动画。App 内不能用箭头或文案强迫用户看向灵动岛；主签到反馈仍由 App 页面完成，系统表面只是附加的品牌回声。
 
 ### 3.3 通知：一次到达
 
@@ -124,23 +124,23 @@ deliveryMode = disabled | localNotification | scheduledLiveActivity
 ```
 
 - App 内先显示中性的写入反馈，不提前显示成功；
-- 保存成功后，App 主控件和 Live Activity 都切换到“已落印”；
+- 保存成功后，App 主控件和 Live Activity 都切换到“已签到”；
 - 保存失败时不播放实心印记；系统报告 Intent 失败，Activity 保持待签到以允许重试；
 - Reduce Motion 使用淡入和形状替换，不使用位移、缩放或连续呼吸；
 - Always-On 直接显示最终静态状态；
 - 单击只签到；长按 0.45 秒表示“签到并拍照”，在权威提交成功后才请求相机；相机失败不回滚签到。
 
-首个公开版本当前只实现 App 内基础落印，不创建 ActivityKit 实例：
+首个公开版本当前只实现 App 内基础签到反馈，不创建 ActivityKit 实例：
 
 - 待签到：深草绿色行动印内保留空心内核；页面进入时外部低强调光环最多完成一次有限呼吸，不持续循环；
 - `saving`：只显示中性写入反馈，不能出现实心印记、成功触觉或完成时间；
-- 已留印：仅由 Repository 的正式提交回执触发，切换为鲜草绿并形成实心内核，随后停在静态状态；
+- 已签到：仅由 Repository 的正式提交回执触发，切换为鲜草绿并形成实心内核，随后停在静态状态；
 - 保存失败：恢复深草行动印与空心内核，保留可重试入口并显示真实错误，不播放成功动效或触觉；
 - 已签到状态在启动、回前台或重建 View 时直接显示静态完成印，不得重播一次用户并未刚刚完成的仪式。
 
 App 内页面只保存短暂的呈现阶段和动画进度，不持久化 `activityState`，也不把呈现阶段作为签到事实。一次正常落印总时长不得超过两秒；Reduce Motion 只做短淡入与形状替换，不做缩放、回弹或扩散。
 
-### 4.2 留印提醒窗口
+### 4.2 签到提醒窗口
 
 只有 StoreKit 已验证高阶权益且用户主动开启提醒后，才允许在提醒时间自动启动 Live Activity；未购买用户在同一提醒时间使用免费本地通知。首版使用 standard Live Activity，每个逻辑日最多自动启动一次，保留到用户直接签到、从 App/Widget 签到或由系统结束；Pulse 不用 `staleDate` 伪造定时结束。设置页不能把 Live Activity 写成“仅灵动岛”，因为无灵动岛设备仍使用 Lock Screen 表面。
 
@@ -153,11 +153,11 @@ Compact 示例：
 Expanded 示例：
 
 ```text
-今天还没有留下这一印
-[ 留下今天 ]
+今日未签到
+[ 签到 ]
 ```
 
-正式语言可以是“今天还空着”“此刻，要不要留给未来？”“你随时可以回来”；禁止“即将断签”“赶快完成”“连续记录要失败了”、红色警告、抖动和惩罚性倒计时。
+正式系统表面只使用“今日未签到”“签到”“今日已签到”等事实与动作词；禁止“准备好时”“你随时可以回来”等陪伴式引导，也禁止“即将断签”“赶快完成”“连续记录要失败了”、红色警告、抖动和惩罚性倒计时。
 
 用户关闭提醒或完成签到后结束。关闭后当天不再次自动出现；不能为提高点击率反复启动或同时补发同义通知。
 
@@ -265,13 +265,14 @@ render       = 实际进度环，用于岁月流影生成
 
 一次买断高阶权益：
 
-- iOS 26 本地定时 standard Live Activity，统一使用“萤火日晕”标志性构图与系统表面直接留印；支持设备由系统同时提供 Dynamic Island，其他设备显示 Lock Screen 表面。提醒时间、时区和逻辑日随 Activity attributes 传入，构图不作为用户偏好持久化；
+- iOS 26 本地定时 standard Live Activity，统一使用“萤火日晕”标志性构图并支持从系统表面直接签到；支持设备由系统同时提供 Dynamic Island，其他设备显示 Lock Screen 表面。提醒时间、时区和逻辑日随 Activity attributes 传入，构图不作为用户偏好持久化；
+- 高级功能页使用不可交互的同源预览同时展示 Expanded、Compact、Minimal、完成态与 Lock Screen；预览不得调用签到 Intent，也不得用说明性长文案替代实际形态；
 - Home Screen「星环 / 叠印 / 数影 / 手札 / 静场 / 来路 / 潮痕」七种额外构图；
 - 一个商品、一个永久 entitlement；商品价格从 StoreKit 返回值读取，不持久化购买布尔副本；`PulseEnhancementContract.currentCapabilities` 是购买页当前已交付能力的唯一目录。
 
 Pulse Plus 候选：
 
-- 由服务端进行更长周期、跨设备或个性策略的远程 push-to-start 留印窗口；
+- 由服务端进行更长周期、跨设备或个性策略的远程 push-to-start 签到窗口；
 - 提醒窗口长度、表达与经验证的个人节律策略；
 - 正式多通道提醒和一致回退；
 - 高级节律、印期、年轮和往年今日 Widget；
@@ -279,7 +280,7 @@ Pulse Plus 候选：
 - Apple Watch 上的 28/90/365 日节律、回归力、印期、年轮和往年今日抽象回看；
 - 将来经用户需求验证的专注印刻 Live Activity。
 
-高阶权益当前收费对象是“增强系统呈现 + 七种额外构图”，不是基础提醒可靠性。未来能力只有真正交付后才能加入统一能力目录和权益页，不能预售路线图。无灵动岛设备仍可获得 Lock Screen Live Activity 表面，所有用户都保留本地通知、App 内基础落印与免费的待落之处构图。权益不可用或被撤销时，提醒继续按基础本地通知策略协调，收费 Home Screen 构图明确显示未解锁并提供恢复购买或改用待落之处的路径；不得删除签到、照片、影片、报告、备份或 Widget。
+高阶权益当前收费对象是“增强系统呈现 + 七种额外构图”，不是基础提醒可靠性。未来能力只有真正交付后才能加入统一能力目录和权益页，不能预售路线图。无灵动岛设备仍可获得 Lock Screen Live Activity 表面，所有用户都保留本地通知、App 内基础签到与免费的待落之处构图。权益不可用或被撤销时，提醒继续按基础本地通知策略协调，收费 Home Screen 构图明确显示未解锁并提供恢复购买或改用待落之处的路径；不得删除签到、照片、影片、报告、备份或 Widget。
 
 ## 9. Apple Watch 子系统
 
@@ -295,7 +296,7 @@ R5 首发采用 **iPhone 伴侣型 Watch App**，候选最低版本为 watchOS 1
 - 表盘复杂功能（complication）：圆形空心/实心印记、矩形今日状态或七日脉冲；
 - Smart Stack：今日状态和一个可执行的签到动作；
 - watchOS 11 及以后：iPhone `DailyImprintActivity` 在 Watch Smart Stack 的系统呈现，以及必要的 Watch 专用紧凑布局；
-- 提交中、待同步、已落印、失败的诚实状态与触觉区分。
+- 提交中、待同步、已签到、失败的诚实状态与触觉区分。
 
 Plus 只增加 28/90/365 日节律、回归力、印期、年轮、往年今日抽象回看和更多用户主动选择的信息密度。基础 Watch App、基础 complication、Smart Stack 和可靠签到不收费；也不按表盘样式或尺寸重复收费。
 
@@ -305,10 +306,10 @@ Watch 使用与 iPhone 相同的“呼吸、落印、年轮”，但更短、更
 
 | Watch 状态 | 视觉 | 触觉 | 允许的文案 |
 | --- | --- | --- | --- |
-| `ready` | 空心印记 | 无 | 今天还空着 |
+| `ready` | 空心印记 | 无 | 今天还未签到 |
 | `submitting` | 单次收缩或系统进度 | 无成功触觉 | 正在确认 |
 | `pendingSync` | 带缺口的印记 | 中性单次触觉 | 已记录，等待同步 |
-| `committed` | 空心落为实心 | 一次轻量成功触觉 | 今天已落印 |
+| `committed` | 空心落为实心 | 一次轻量成功触觉 | 今天已签到 |
 | `failed` | 恢复空心并显示最短错误 | 一次不同于成功的告警触觉 | 未保存，请重试 / 在 iPhone 确认 |
 
 `pendingSync` 不能使用实心印记、成功绿色、勾号或与 `committed` 相同的触觉。只有 iPhone 权威 Repository 确认新建或幂等命中当天 `CheckInRecord` 后，Watch 才能落下实心印记。
@@ -408,7 +409,7 @@ Watch 默认隐私等级高于 App 前台：
 ### 10.2 产品与视觉门禁
 
 - TestFlight 实验在开始前登记要判断的风险、支持设备分层、观察窗口、最小有意义效应、样本停止规则；不存在通用的“30 人才准继续开发”门槛，但无真实用户和真机证据时也不得宣布产品或系统表面 GO；
-- 用户能区分基础提醒、留印窗口和拍照邀请，不认为三者会同时轰炸；
+- 用户能区分基础提醒、签到窗口和拍照邀请，不认为三者会同时轰炸；
 - 自动灵动岛提醒必须有主动开启率、窗口内完成率、关闭率和系统 Live Activity 总撤权率证据；
 - 出现频率增加不能降低 D7 / D28 留存或提升通知撤权；
 - Compact、Minimal、Expanded、Lock Screen、StandBy、多个并发 Activity、来电和媒体占用均通过真机视觉检查；
@@ -425,7 +426,7 @@ Watch 默认隐私等级高于 App 前台：
 | R1 | App Group 正式 store、基础 Widget、Widget AppIntent、免费待落之处与后续系统仪式原型 |
 | W0 | R1 稳定后提前验证配对真机、WatchConnectivity、`pendingSync` 与跨午夜命令；不写生产历史 |
 | 1.1 | 签到成功后的今日入镜，不单独追拍照提醒，照片不进入系统表面 |
-| R3 | ActivityKit push-to-start 原型、远程留印窗口与多通道仲裁；不得向买断用户重复销售现有本地提醒能力 |
+| R3 | ActivityKit push-to-start 原型、远程签到窗口与多通道仲裁；不得向买断用户重复销售现有本地提醒能力 |
 | R4 | 岁月流影实际生成进度、取消、失败与完成摘要 |
 | WX0 / WX1 | 复用 ReminderPolicy 和服务端调度基础设施，但微信资格与发送适配器独立门禁 |
 | R5 | 伴侣型 Watch App、基础 complication / Smart Stack / 可靠签到免费；高级 Watch 节律、Widget、Control、Action Button 与 Shortcuts 分层验证 |

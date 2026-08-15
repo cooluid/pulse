@@ -35,63 +35,6 @@
         }
       }
     },
-    "activity.reminder.check_in" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Check in"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "签到"
-          }
-        }
-      }
-    },
-    "activity.reminder.completed.compact" : {
-
-    },
-    "activity.reminder.completed.title" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Today is imprinted"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "今日已签到"
-          }
-        }
-      }
-    },
-    "activity.reminder.time.unavailable" : {
-
-    },
-    "activity.reminder.title" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Today awaits its mark"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "今日未签到"
-          }
-        }
-      }
-    },
     "widget.accessibility.accessory.checked.summary" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -500,13 +443,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "6 days · %d"
+            "value" : "6 days · %d check-ins"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "六日 · %d 印"
+            "value" : "六日 · 签到 %d 天"
           }
         }
       }
@@ -517,7 +460,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Imprinted today"
+            "value" : "Checked in today"
           }
         },
         "zh-Hans" : {
@@ -533,13 +476,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Open"
+            "value" : "Check in"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "空着"
+            "value" : "待签到"
           }
         }
       }
@@ -550,13 +493,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Today is still open"
+            "value" : "Not checked in today"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "今天还空着"
+            "value" : "今日待签到"
           }
         }
       }

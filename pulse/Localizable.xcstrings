@@ -116,63 +116,6 @@
         }
       }
     },
-    "activity.reminder.check_in" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Check in"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "签到"
-          }
-        }
-      }
-    },
-    "activity.reminder.completed.compact" : {
-
-    },
-    "activity.reminder.completed.title" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Today is imprinted"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "今日已签到"
-          }
-        }
-      }
-    },
-    "activity.reminder.time.unavailable" : {
-
-    },
-    "activity.reminder.title" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Today awaits its mark"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "今日未签到"
-          }
-        }
-      }
-    },
     "app.loading" : {
       "localizations" : {
         "en" : {
@@ -2641,7 +2584,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Night still clings to the grass as morning clears the hill. A small clearing at the center waits for today’s mark."
+            "value" : "Night still clings to the grass as morning clears the hill. A small clearing at the center waits for today’s check-in."
           }
         },
         "zh-Hans" : {
@@ -2840,13 +2783,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Meet the Firefly Halo on the Lock Screen or Dynamic Island, then leave today’s mark directly on supported devices."
+            "value" : "Check in directly with the Firefly Halo on the Lock Screen or Dynamic Island on supported devices."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "在支持的设备上，通过锁屏或灵动岛的萤火日晕直接为今天留下一印。"
+            "value" : "在支持的设备上，通过锁屏或灵动岛的萤火日晕直接签到。"
           }
         }
       }
@@ -2908,13 +2851,30 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "One purchase permanently unlocks every feature listed here. New features will appear only after they are released."
+            "value" : "Seven widget styles and Firefly Halo for Lock Screen and Dynamic Island."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "一次购买，永久使用当前列出的功能。新功能发布后才会在这里列出。"
+            "value" : "七种小组件样式，以及用于锁屏与灵动岛的萤火日晕。"
+          }
+        }
+      }
+    },
+    "store.hero.scope" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Widgets · Lock Screen · Dynamic Island"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "小组件 · 锁屏 · 灵动岛"
           }
         }
       }
@@ -2925,13 +2885,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Seven new widget styles and one signature way to meet today on system surfaces."
+            "value" : "Seven compositions. One Firefly Halo."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "解锁七种小组件风格，以及一套在系统表面迎接今天的标志性体验。"
+            "value" : "七种构图。一个萤火日晕。"
           }
         }
       }
@@ -3950,13 +3910,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "6 days · %d"
+            "value" : "6 days · %d check-ins"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "六日 · %d 印"
+            "value" : "六日 · 签到 %d 天"
           }
         }
       }
@@ -3967,7 +3927,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Imprinted today"
+            "value" : "Checked in today"
           }
         },
         "zh-Hans" : {
@@ -3984,13 +3944,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Open"
+            "value" : "Check in"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "空着"
+            "value" : "待签到"
           }
         }
       }
@@ -4001,13 +3961,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Today is still open"
+            "value" : "Not checked in today"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "今天还空着"
+            "value" : "今日待签到"
           }
         }
       }

@@ -36,97 +36,36 @@ struct EnhancementStoreView: View {
     }
 
     private var activityPreviews: some View {
-        VStack(alignment: .leading, spacing: PulseDesign.spacing12) {
-            VStack(alignment: .leading, spacing: PulseDesign.spacing4) {
-                Text(verbatim: activityString("store.activity.preview.section"))
-                    .font(.headline.weight(.bold))
-                    .foregroundStyle(PulseDesign.ink)
-                Text(verbatim: activityString("store.activity.preview.detail"))
-                    .font(.footnote)
-                    .foregroundStyle(PulseDesign.secondary)
-            }
-
-            VStack(alignment: .leading, spacing: PulseDesign.spacing8) {
-                PulseReminderActivityPreview(
-                    phase: .pending,
-                    reminderDate: model.settings.reminderTime.pickerDate,
-                    timeZoneIdentifier: TimeZone.gmt.identifier,
-                    locale: locale
-                )
-                .frame(
-                    maxWidth: PulseDesign.activityStorePreviewWidth,
-                    minHeight: PulseDesign.activityStorePreviewHeight
-                )
-
-                Text(verbatim: activityString("store.activity.preview.signature"))
-                    .font(.caption.weight(.bold))
-                    .foregroundStyle(PulseDesign.ink)
-            }
-            .padding(PulseDesign.spacing8)
-            .background(
-                PulseDesign.surface.opacity(0.84),
-                in: RoundedRectangle(
-                    cornerRadius: PulseDesign.widgetPreviewCornerRadius,
-                    style: .continuous
-                )
-            )
-            .accessibilityElement(children: .contain)
-            .accessibilityIdentifier("store.activity.preview.signature")
-        }
-        .accessibilityElement(children: .contain)
-        .accessibilityIdentifier("store.activity.preview.section")
-    }
-
-    private func activityString(_ key: String) -> String {
-        PulseLocalization.string(
-            key,
-            table: PulseLocalization.systemUITable,
+        PulseReminderActivityStoreCard(
+            reminderDate: model.settings.reminderTime.pickerDate,
+            timeZoneIdentifier: TimeZone.gmt.identifier,
             locale: locale
         )
     }
 
     private var hero: some View {
-        ZStack(alignment: .bottomTrailing) {
-            VStack(alignment: .leading, spacing: PulseDesign.spacing16) {
-                HStack {
-                    Label("store.lifetime_badge", systemImage: "leaf.fill")
-                        .font(.caption.weight(.semibold))
-                        .foregroundStyle(PulseDesign.grassForeground)
-                        .padding(.horizontal, PulseDesign.spacing12)
-                        .padding(.vertical, PulseDesign.spacing8)
-                        .background(PulseDesign.grass, in: Capsule())
-                    Spacer()
-                    PulseBrandMark(size: PulseDesign.brandMarkSize)
-                }
-
-                Text("store.title")
-                    .font(.largeTitle.bold())
-                    .foregroundStyle(PulseDesign.ink)
+        HStack(alignment: .center, spacing: PulseDesign.spacing16) {
+            VStack(alignment: .leading, spacing: PulseDesign.spacing12) {
+                Label("store.lifetime_badge", systemImage: "leaf.fill")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(PulseDesign.grassForeground)
+                    .padding(.horizontal, PulseDesign.spacing12)
+                    .padding(.vertical, PulseDesign.spacing8)
+                    .background(PulseDesign.grass, in: Capsule())
 
                 Text("store.hero.tagline")
-                    .font(.title2.weight(.semibold))
+                    .font(.title2.weight(.black))
                     .foregroundStyle(PulseDesign.ink)
                     .fixedSize(horizontal: false, vertical: true)
 
-                Text("store.hero.promise")
-                    .font(.body)
+                Text("store.hero.scope")
+                    .font(.caption.weight(.semibold))
                     .foregroundStyle(PulseDesign.secondary)
-                    .fixedSize(horizontal: false, vertical: true)
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
 
-            ForEach(0..<3, id: \.self) { index in
-                Ellipse()
-                    .stroke(
-                        PulseDesign.field.opacity(0.24 - Double(index) * 0.05),
-                        lineWidth: PulseDesign.thinLineWidth
-                    )
-                    .frame(
-                        width: 170 - CGFloat(index) * 30,
-                        height: 105 - CGFloat(index) * 18
-                    )
-                    .offset(x: 58, y: 44)
-                    .accessibilityHidden(true)
-            }
+            PulseBrandMark(size: PulseDesign.brandMarkSize)
+                .accessibilityHidden(true)
         }
         .padding(PulseDesign.spacing20)
         .background(PulseDesign.surface.opacity(0.90), in: RoundedRectangle(
@@ -329,6 +268,196 @@ struct EnhancementStoreView: View {
                 .background(PulseDesign.surface, in: Capsule())
             }
         }
+    }
+}
+
+struct PulseReminderActivityStoreCard: View {
+    let reminderDate: Date
+    let timeZoneIdentifier: String
+    let locale: Locale
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: PulseDesign.spacing16) {
+            VStack(alignment: .leading, spacing: PulseDesign.spacing4) {
+                Text(verbatim: activityString("store.activity.preview.signature"))
+                    .font(.title2.weight(.black))
+                    .foregroundStyle(PulseDesign.ink)
+
+                Text(verbatim: activityString("store.activity.preview.section"))
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(PulseDesign.secondary)
+            }
+            .accessibilityElement(children: .combine)
+            .accessibilityIdentifier("store.activity.preview.signature")
+
+            PulseReminderActivityStoreShowcase(
+                reminderDate: reminderDate,
+                timeZoneIdentifier: timeZoneIdentifier,
+                locale: locale
+            )
+        }
+        .padding(PulseDesign.spacing16)
+        .background(
+            PulseDesign.surface.opacity(0.90),
+            in: RoundedRectangle(
+                cornerRadius: PulseDesign.activityStoreCardCornerRadius,
+                style: .continuous
+            )
+        )
+        .overlay {
+            RoundedRectangle(
+                cornerRadius: PulseDesign.activityStoreCardCornerRadius,
+                style: .continuous
+            )
+            .stroke(PulseDesign.separator.opacity(0.72), lineWidth: PulseDesign.thinLineWidth)
+        }
+        .accessibilityElement(children: .contain)
+        .accessibilityIdentifier("store.activity.preview.section")
+    }
+
+    private func activityString(_ key: String) -> String {
+        PulseLocalization.string(
+            key,
+            table: PulseLocalization.systemUITable,
+            locale: locale
+        )
+    }
+}
+
+struct PulseReminderActivityStoreShowcase: View {
+    let reminderDate: Date
+    let timeZoneIdentifier: String
+    let locale: Locale
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: PulseDesign.spacing12) {
+            specimenLabel("store.activity.preview.expanded")
+
+            PulseReminderActivityPreview(
+                phase: .pending,
+                reminderDate: reminderDate,
+                timeZoneIdentifier: timeZoneIdentifier,
+                locale: locale
+            )
+            .frame(
+                maxWidth: .infinity,
+                minHeight: PulseDesign.activityStoreExpandedMinimumHeight
+            )
+
+            HStack(alignment: .top, spacing: PulseDesign.spacing8) {
+                specimen("store.activity.preview.compact") {
+                    compactPreview(phase: .pending)
+                }
+                .frame(maxWidth: .infinity)
+
+                specimen("store.activity.preview.completed") {
+                    compactPreview(phase: .completed)
+                }
+                .frame(maxWidth: .infinity)
+
+                specimen("store.activity.preview.minimal") {
+                    minimalPreview
+                }
+                .frame(width: PulseDesign.activityStoreMinimalDiameter + PulseDesign.spacing16)
+            }
+
+            specimenLabel("store.activity.preview.lock_screen")
+
+            PulseReminderLockScreenView(
+                phase: .pending,
+                reminderDate: reminderDate,
+                timeZoneIdentifier: timeZoneIdentifier,
+                locale: locale
+            )
+            .frame(
+                maxWidth: .infinity,
+                minHeight: PulseDesign.activityStoreLockScreenMinimumHeight
+            )
+            .background(
+                PulseWidgetDesign.background,
+                in: RoundedRectangle(
+                    cornerRadius: PulseDesign.activityStoreSurfaceCornerRadius,
+                    style: .continuous
+                )
+            )
+            .overlay {
+                RoundedRectangle(
+                    cornerRadius: PulseDesign.activityStoreSurfaceCornerRadius,
+                    style: .continuous
+                )
+                .stroke(
+                    PulseDesign.separator.opacity(0.54),
+                    lineWidth: PulseDesign.thinLineWidth
+                )
+            }
+            .allowsHitTesting(false)
+            .accessibilityHidden(true)
+        }
+    }
+
+    private func specimen<Content: View>(
+        _ key: String,
+        @ViewBuilder content: () -> Content
+    ) -> some View {
+        VStack(alignment: .leading, spacing: PulseDesign.spacing4) {
+            specimenLabel(key)
+            content()
+        }
+    }
+
+    private func specimenLabel(_ key: String) -> some View {
+        Text(verbatim: activityString(key))
+            .font(.caption2.weight(.bold))
+            .foregroundStyle(PulseDesign.secondary)
+            .lineLimit(1)
+    }
+
+    private func compactPreview(phase: PulseReminderActivityPhase) -> some View {
+        HStack(spacing: PulseDesign.spacing8) {
+            PulseReminderActivityMark(
+                phase: phase,
+                size: PulseWidgetDesign.activityCompactMarkSize,
+                surface: .island
+            )
+
+            Spacer(minLength: PulseDesign.activityStoreCompactMinimumSpacing)
+
+            PulseReminderActivityCompactTrailing(
+                phase: phase,
+                reminderDate: reminderDate,
+                timeZoneIdentifier: timeZoneIdentifier,
+                locale: locale
+            )
+        }
+        .padding(.horizontal, PulseDesign.activityStoreCompactHorizontalInset)
+        .frame(maxWidth: .infinity)
+        .frame(height: PulseDesign.activityStoreCompactHeight)
+        .background(PulseWidgetDesign.activityIslandBackground, in: Capsule())
+        .environment(\.colorScheme, .dark)
+        .accessibilityHidden(true)
+    }
+
+    private var minimalPreview: some View {
+        PulseReminderActivityMark(
+            phase: .pending,
+            size: PulseWidgetDesign.activityCompactMarkSize,
+            surface: .island
+        )
+        .frame(
+            width: PulseDesign.activityStoreMinimalDiameter,
+            height: PulseDesign.activityStoreMinimalDiameter
+        )
+        .background(PulseWidgetDesign.activityIslandBackground, in: Circle())
+        .environment(\.colorScheme, .dark)
+        .accessibilityHidden(true)
+    }
+
+    private func activityString(_ key: String) -> String {
+        PulseLocalization.string(
+            key,
+            table: PulseLocalization.systemUITable,
+            locale: locale
+        )
     }
 }
 

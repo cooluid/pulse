@@ -2986,6 +2986,9 @@ enum PulseWidgetDesign {
     static let activityActionSurface = Color("PulseNavigationGlyphSurface")
     static let activityActionForeground = Color("PulseGrassForeground")
     static let activityCompletionAnimationDuration: TimeInterval = 1.25
+    static let activityExpandedMarkSize: CGFloat = 34
+    static let activityCompactMarkSize: CGFloat = 18
+    static let activityLockScreenMarkSize: CGFloat = 54
     static let activityExpandedBottomHeight: CGFloat = 52
     static let activityHorizontalInset: CGFloat = 12
     static let activityLockScreenInset: CGFloat = 14

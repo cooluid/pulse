@@ -34,8 +34,8 @@
 - 今日主动作支持单击签到与 0.45 秒长按“签到并拍照”；长按先权威签到再请求相机，VoiceOver 提供独立动作。待签到进入时最多一次有限呼吸；权威提交后才播放成功反馈；Reduce Motion 使用静态等价。
 - 高阶权益在独立权益页；价格只读 StoreKit，已交付能力只读 `PulseEnhancementContract.currentCapabilities`。Widget 画廊收费卡以标题行“锁 + 高级功能”徽标作为唯一购买页入口，不再保留卡片底部的重复查看按钮。末项权益与恢复购买须能完整滚到购买条上方。
 - Home Screen 八式产品枚举与共享渲染源 `PulseWidgetHomeRenderer` 已落地（待落之处免费，其余收费）。事实边界：纸层不映射历史、画廊预览不写权威 store、未解锁明确拒绝。
-- scheduled Live Activity 已 clean-break 为 standard 生命周期与唯一“萤火日晕”共享构图；Activity attributes 明确携带逻辑日、提醒日期、时区与语言，不再包含或持久化样式。Lock Screen / Dynamic Island 直接调用同一个幂等留印 Intent。App、Home Screen Widget 或 Live Activity 留印后都会结束当天 Activity 并重建提醒计划。ActivityKit 只接受部分计划时保留已接受日期，以免费本地通知补齐其余 60 日窗口且同日不双发。
-- Debug 构建保留真实 ActivityKit 工程测试台，支持唯一正式构图的立即请求、30 秒 scheduled 请求、视觉状态切换、权威留印和结束全部活动；它使用独立 App、Widget、App Group 与 URL Scheme 身份，不读写正式数据，且整页与设置入口均由编译条件排除于 Release。
+- scheduled Live Activity 已 clean-break 为 standard 生命周期与唯一“萤火日晕”共享构图；Activity attributes 明确携带逻辑日、提醒日期、时区与语言，不再包含或持久化样式。Lock Screen / Dynamic Island 直接调用同一个幂等签到 Intent。App、Home Screen Widget 或 Live Activity 签到后都会结束当天 Activity 并重建提醒计划。ActivityKit 只接受部分计划时保留已接受日期，以免费本地通知补齐其余 60 日窗口且同日不双发。
+- Debug 构建保留真实 ActivityKit 工程测试台，支持唯一正式构图的立即请求、30 秒 scheduled 请求、视觉状态切换、权威签到和结束全部活动；它使用独立 App、Widget、App Group 与 URL Scheme 身份，不读写正式数据，且整页与设置入口均由编译条件排除于 Release。
 - Home Screen 为 `AppIntentConfiguration`，构图由系统逐实例持有；Lock Screen“节律汇印”为无构图参数的独立 kind。未签到整块是唯一签到按钮；Extension 在 timeline 边界独立验证权益。
 - Widget 动效为“稀疏时段氛围 + 权威签到事件”：`PulseWidgetTimelineSchedule` 每天最多五条（当前 + 剩余 06/12/18 + 下一逻辑日）；氛围不报时、不承诺准点。单次动画 ≤ 两秒由 `PulseWidgetMotionPresentation.systemMaximumAnimationDuration` 与测试门禁持有。签到 reload 后各式用自有主物件做一次有限变装；画廊与 Extension 共用 Renderer，预览不写 store。Reduce Motion / Always-On 走静态终态。正式枚举只含现行八式；未知旧标识失败关闭。
 - 今日与记录照片详情共用同一系统 Sheet 骨架与独立删除事务；含照片用 `.large`，只签到用语义紧凑 detent 并保留 `.large`；无障碍大字号直接 `.large`。
