@@ -46,38 +46,34 @@ struct EnhancementStoreView: View {
                     .foregroundStyle(PulseDesign.secondary)
             }
 
-            ScrollView(.horizontal) {
-                HStack(spacing: PulseDesign.spacing12) {
-                    ForEach(PulseReminderActivityStyle.allCases) { style in
-                        VStack(alignment: .leading, spacing: PulseDesign.spacing8) {
-                            PulseReminderActivityPreview(
-                                style: style,
-                                phase: .pending,
-                                locale: locale
-                            )
-                            .frame(
-                                width: PulseDesign.activityStorePreviewWidth,
-                                height: PulseDesign.activityStorePreviewHeight
-                            )
+            VStack(alignment: .leading, spacing: PulseDesign.spacing8) {
+                PulseReminderActivityPreview(
+                    phase: .pending,
+                    reminderDate: model.settings.reminderTime.pickerDate,
+                    timeZoneIdentifier: TimeZone.gmt.identifier,
+                    locale: locale
+                )
+                .frame(
+                    maxWidth: PulseDesign.activityStorePreviewWidth,
+                    minHeight: PulseDesign.activityStorePreviewHeight
+                )
 
-                            Text(style.localizedName(locale: locale))
-                                .font(.caption.weight(.bold))
-                                .foregroundStyle(PulseDesign.ink)
-                        }
-                        .padding(PulseDesign.spacing8)
-                        .background(
-                            PulseDesign.surface.opacity(0.84),
-                            in: RoundedRectangle(
-                                cornerRadius: PulseDesign.widgetPreviewCornerRadius,
-                                style: .continuous
-                            )
-                        )
-                        .accessibilityIdentifier("store.activity.preview.\(style.rawValue)")
-                    }
-                }
+                Text(verbatim: activityString("store.activity.preview.signature"))
+                    .font(.caption.weight(.bold))
+                    .foregroundStyle(PulseDesign.ink)
             }
-            .scrollIndicators(.hidden)
+            .padding(PulseDesign.spacing8)
+            .background(
+                PulseDesign.surface.opacity(0.84),
+                in: RoundedRectangle(
+                    cornerRadius: PulseDesign.widgetPreviewCornerRadius,
+                    style: .continuous
+                )
+            )
+            .accessibilityElement(children: .contain)
+            .accessibilityIdentifier("store.activity.preview.signature")
         }
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier("store.activity.preview.section")
     }
 

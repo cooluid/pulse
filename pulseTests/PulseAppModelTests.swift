@@ -75,29 +75,6 @@ final class PulseAppModelTests: XCTestCase {
         XCTAssertEqual(context.scheduler.completedLiveActivityDays, [context.model.today!])
     }
 
-    func testPurchasedUserCanSelectActivityStyleAndReschedule() async throws {
-        let context = try makeContext(hasEnhancement: true)
-        await context.model.start()
-
-        context.model.requestReminderActivityStyle(.splitField)
-        await waitUntil {
-            context.scheduler.snapshots.last?.activityStyle == .splitField
-        }
-
-        XCTAssertEqual(context.model.settings.reminderActivityStyle, .splitField)
-        XCTAssertNil(context.model.errorMessage)
-    }
-
-    func testUnpurchasedUserCannotWritePaidActivityStyle() async throws {
-        let context = try makeContext(hasEnhancement: false)
-        await context.model.start()
-
-        context.model.requestReminderActivityStyle(.imprintPress)
-
-        XCTAssertEqual(context.model.settings.reminderActivityStyle, .dayRing)
-        XCTAssertNotNil(context.model.errorMessage)
-    }
-
     func testRejectedCheckInReturnsNoReceiptOrSuccessFeedback() async throws {
         let context = try makeContext()
         await context.model.start()

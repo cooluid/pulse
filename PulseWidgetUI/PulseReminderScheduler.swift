@@ -19,7 +19,6 @@ struct ReminderScheduleSnapshot: Sendable {
     let enabled: Bool
     let deliveryMode: PulseReminderDeliveryMode
     let time: PulseReminderTime
-    let activityStyle: PulseReminderActivityStyle
     let timeZoneIdentifier: String
     let localeIdentifier: String
     let checkedDays: Set<LogicalDay>
@@ -36,7 +35,7 @@ struct PlannedReminder: Equatable, Sendable {
     let day: LogicalDay
     let deliveryDate: Date
     let triggerComponents: DateComponents
-    let activityStyle: PulseReminderActivityStyle
+    let timeZoneIdentifier: String
 }
 
 enum ReminderSchedulePlanner {
@@ -84,7 +83,7 @@ enum ReminderSchedulePlanner {
                     day: day,
                     deliveryDate: deliveryDate,
                     triggerComponents: triggerComponents,
-                    activityStyle: snapshot.activityStyle
+                    timeZoneIdentifier: snapshot.timeZoneIdentifier
                 )
             )
         }
@@ -214,8 +213,9 @@ final class ActivityKitReminderLiveActivityScheduler: ReminderLiveActivitySchedu
 
         let attributes = PulseReminderActivityAttributes(
             logicalDay: reminder.day.storageValue,
-            localeIdentifier: locale.identifier,
-            style: reminder.activityStyle
+            reminderDate: reminder.deliveryDate,
+            timeZoneIdentifier: reminder.timeZoneIdentifier,
+            localeIdentifier: locale.identifier
         )
         let content = ActivityContent(
             state: PulseReminderActivityAttributes.ContentState(phase: .pending),

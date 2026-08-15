@@ -105,7 +105,7 @@ iPad 需覆盖无后置能力差异、横竖屏、分屏和文件导入/导出�
 ## 7. 既有系统能力回归
 
 - 免费本地通知：授权、拒绝、外部撤权、实际到达、改时、签到后取消、跨日。
-- iOS 26 scheduled Live Activity：日环 / 压印 / 裂野三样式在 Lock Screen、Dynamic Island 的 expanded / compact / minimal 形态；系统表面直接签到、锁定认证、App / Widget 签到后的完成态与结束；完整接受、部分接受、首个拒绝、容量竞争、撤权，以及剩余日期由免费通知接续且同日不重复。
+- iOS 26 scheduled Live Activity：唯一“萤火日晕”在 Lock Screen、Dynamic Island 的 expanded / compact / minimal 形态；圆弧与萤火点共享极坐标路径，compact / expanded 显示 Activity attributes 中的真实提醒时间；系统表面直接留印、锁定认证、App / Widget 留印后的完成态与结束；完整接受、部分接受、首个拒绝、容量竞争、撤权，以及剩余日期由免费通知接续且同日不重复。
 - Widget：App 未运行、设备锁定、跨午夜、快速双击、App/Widget 并发、杀进程和卸载重装。
 - StoreKit：Configuration 仅作开发 fixture；Sandbox、TestFlight、生产商品、购买/恢复/取消/待处理/退款/撤销各自取证。
 
@@ -115,14 +115,14 @@ iPad 需覆盖无后置能力差异、横竖屏、分屏和文件导入/导出�
 
 1. 先核对首页名称为“一日一印 Dev”，测试台中的 App、App Group 与 URL Scheme 全部为 Dev 身份；任何生产标识出现时测试台必须标红并禁用操作。Debug Widget 的 `co.fanr.pulse.dev.widgets` 身份由构建产物门禁核对，不由 App 界面猜测。
 2. 打开系统“设置 > 一日一印 Dev”，确认实时活动已允许；返回测试台确认能力状态。
-3. 依次选择日环、压印、裂野，点击“立即启动真实活动”；分别检查 Lock Screen，以及 Dynamic Island 的 compact、minimal、expanded。系统决定当前出现哪种形态，不能把 App 内预览当成系统证据。
+3. 点击“立即启动真实活动”；分别检查“萤火日晕”在 Lock Screen，以及 Dynamic Island 的 compact、minimal、expanded。确认锁屏小圆点落在圆弧路径端点、提醒时间与测试台 attributes 一致。系统决定当前出现哪种形态，不能把 App 内预览当成系统证据。
 4. 使用“仅切换为完成态”检查完成构图，再恢复待签到；这一步只验证 Activity content state，不得记录成业务签到通过。
 5. 在未签到的 Dev 数据上重新启动活动，分别从 App 测试台和真实灵动岛操作“落印”；确认只生成一条签到事实、Widget 更新、活动先短暂完成后结束。锁屏操作必须单独验证认证行为。
 6. iOS 26 选择“30 秒后由系统启动”，立刻退出 App 并锁屏；记录系统是否在目标时间后交付。请求成功不等于系统准点展示。
 7. 使用“结束全部 Dev 活动”清场。若需重测真实签到，到 Settings 清除 Dev 数据；它不会影响生产 App 数据。
 8. 最后用 Release 构建复查无 Developer section、无测试台符号/文案，生产深链仍为 `pulse://today`。
 
-真机记录至少包含：设备型号、iOS build、App build、样式、Activity ID、操作入口、锁定状态、预期/实际状态、截图或录屏文件名。没有这些证据时，状态只能是工程候选，不能标记灵动岛 GO。
+真机记录至少包含：设备型号、iOS build、App build、Activity ID、提醒时间与时区、操作入口、锁定状态、预期/实际状态、截图或录屏文件名。没有这些证据时，状态只能是工程候选，不能标记灵动岛 GO。
 
 ## 8. 发布门禁
 

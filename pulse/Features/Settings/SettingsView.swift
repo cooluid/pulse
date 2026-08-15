@@ -151,27 +151,6 @@ struct SettingsView: View {
                 )
                 .environment(\.timeZone, TimeZone.gmt)
 
-                if model.featureAccess.hasEnhancement,
-                   model.supportsScheduledLiveActivities {
-                    NavigationLink {
-                        ReminderActivityStyleGalleryView(model: model)
-                    } label: {
-                        LabeledContent {
-                            Text(
-                                model.settings.reminderActivityStyle.localizedName(locale: locale)
-                            )
-                            .foregroundStyle(PulseDesign.secondary)
-                        } label: {
-                            Text(verbatim: PulseLocalization.string(
-                                "settings.activity.style",
-                                table: PulseLocalization.systemUITable,
-                                locale: locale
-                            ))
-                        }
-                    }
-                    .accessibilityIdentifier("settings.activity.style.link")
-                }
-
                 if model.reminderSyncState == .syncing {
                     ProgressView("settings.reminder.syncing")
                         .accessibilityIdentifier("settings.reminder.syncing")

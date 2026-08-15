@@ -265,7 +265,7 @@ render       = 实际进度环，用于岁月流影生成
 
 一次买断高阶权益：
 
-- iOS 26 本地定时 standard Live Activity，含日环、印台、分野三种不同层级构图与系统表面直接签到；支持设备由系统同时提供 Dynamic Island，其他设备显示 Lock Screen 表面；
+- iOS 26 本地定时 standard Live Activity，统一使用“萤火日晕”标志性构图与系统表面直接留印；支持设备由系统同时提供 Dynamic Island，其他设备显示 Lock Screen 表面。提醒时间、时区和逻辑日随 Activity attributes 传入，构图不作为用户偏好持久化；
 - Home Screen「星环 / 叠印 / 数影 / 手札 / 静场 / 来路 / 潮痕」七种额外构图；
 - 一个商品、一个永久 entitlement；商品价格从 StoreKit 返回值读取，不持久化购买布尔副本；`PulseEnhancementContract.currentCapabilities` 是购买页当前已交付能力的唯一目录。
 

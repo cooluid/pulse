@@ -118,8 +118,6 @@ enum PulseDesign {
     static let storePreviewHeight: CGFloat = 148
     static let activityStorePreviewWidth: CGFloat = 310
     static let activityStorePreviewHeight: CGFloat = 132
-    static let activityGalleryPreviewHeight: CGFloat = 136
-    static let activityGalleryCardCornerRadius: CGFloat = 28
     static let storeCapabilityIconSize: CGFloat = 36
     static let storeCapabilityMinimumHeight: CGFloat = 88
     static let storePurchaseButtonMinimumHeight: CGFloat = 56

@@ -13,7 +13,7 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "完成今天的签到。"
+            "value" : "此刻，给今天留下一印。"
           }
         }
       }
@@ -24,30 +24,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Check in"
+            "value" : "Leave mark"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "签到"
-          }
-        }
-      }
-    },
-    "activity.reminder.compact" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Pending"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "未签到"
+            "value" : "留一印"
           }
         }
       }
@@ -58,13 +41,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Today is sealed."
+            "value" : "Today’s mark is in place."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "今天已经签到。"
+            "value" : "这一印已经留下。"
           }
         }
       }
@@ -75,13 +58,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Done"
+            "value" : "Marked"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "已签到"
+            "value" : "已留印"
           }
         }
       }
@@ -92,13 +75,30 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Today is imprinted"
+            "value" : "Today is marked"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "今日已签到"
+            "value" : "今日已留印"
+          }
+        }
+      }
+    },
+    "activity.reminder.time.unavailable" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Time unavailable"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "时间不可用"
           }
         }
       }
@@ -109,35 +109,52 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Today awaits its mark"
+            "value" : "Today is still open"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "今日未签到"
+            "value" : "今天还空着"
           }
         }
       }
     },
-    "settings.activity.style" : {
+    "store.activity.preview.detail" : {
       "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Dynamic Island style"
+            "value" : "One signature ritual. One direct check-in."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "灵动岛样式"
+            "value" : "一套标志性构图，一个直接留印动作。"
           }
         }
       }
     },
-    "settings.activity.style.day_ring" : {
+    "store.activity.preview.section" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Signature Live Activity"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "标志性实时活动"
+          }
+        }
+      }
+    },
+    "store.activity.preview.signature" : {
       "extractionState" : "stale",
       "localizations" : {
         "en" : {
@@ -150,244 +167,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "萤火日晕"
-          }
-        }
-      }
-    },
-    "settings.activity.style.day_ring.detail" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "One warm light circles the island and closes today’s halo."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "一粒暖光绕着岛体游走，签到后闭合今天的日晕。"
-          }
-        }
-      }
-    },
-    "settings.activity.style.detail" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Halo, gravity, or pulse. Three expressions, one daily imprint."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "日晕、重力或脉冲。三种表情，仍是同一次今日签到。"
-          }
-        }
-      }
-    },
-    "settings.activity.style.imprint_press" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Gravity Seal"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "重力印"
-          }
-        }
-      }
-    },
-    "settings.activity.style.imprint_press.detail" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "A matte seal gathers its weight and leaves one deliberate mark."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "一枚哑光印台积蓄重量，落下干净而明确的一印。"
-          }
-        }
-      }
-    },
-    "settings.activity.style.navigation_title" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Dynamic Island"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "灵动岛"
-          }
-        }
-      }
-    },
-    "settings.activity.style.preview_state" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Preview state"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "预览状态"
-          }
-        }
-      }
-    },
-    "settings.activity.style.preview.completed" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Completed"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "完成"
-          }
-        }
-      }
-    },
-    "settings.activity.style.preview.pending" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Pending"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "未签到"
-          }
-        }
-      }
-    },
-    "settings.activity.style.selected" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Selected"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "已选择"
-          }
-        }
-      }
-    },
-    "settings.activity.style.split_field" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Living Pulse"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "生命脉冲"
-          }
-        }
-      }
-    },
-    "settings.activity.style.split_field.detail" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "A single signal rises from the island, then settles after the imprint."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "一道生命信号从岛体升起，签到后慢慢安定下来。"
-          }
-        }
-      }
-    },
-    "settings.activity.style.title" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Give the island a pulse"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "让岛体有生命"
-          }
-        }
-      }
-    },
-    "store.activity.preview.detail" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Three styles. One direct check-in."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "三种样式，一个直接签到动作。"
-          }
-        }
-      }
-    },
-    "store.activity.preview.section" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Dynamic Island rituals"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "灵动岛签到时刻"
           }
         }
       }

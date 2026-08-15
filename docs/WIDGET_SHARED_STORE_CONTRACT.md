@@ -43,7 +43,7 @@ FileManager.containerURL(forSecurityApplicationGroupIdentifier:)
 - 不存在 App 私有 store、旧库迁移、journal、staging、fallback 或双写。
 - 旧开发安装不属于公开数据合同，进入此首发基线时必须清洁安装。
 
-App Group UserDefaults 只允许 `PulseSharedSettings` 管理 `interface.language`、`reminder.enabled`、`reminder.timeMinutes` 与 `reminder.activityStyle`。这些是跨 App/Widget Intent 重建提醒计划所需的用户设置，不是签到事实或权益副本；未知枚举和非法时间必须失败关闭。不得保存构图、业务事实或可反向覆盖 store 的投影。Home Screen 构图由 `WidgetConfigurationIntent` 逐实例持有：正式枚举只含 `place` / `orbit` / `stack` / `bleed` / `letter` / `field` / `path` / `tide`，其中待落之处是唯一免费构图，其余七式需要统一高阶权益 entitlement。未知 raw value 失败关闭，不静默迁移。Widget extension 在生成 snapshot/timeline 时验证 StoreKit 权益，未验证或撤销时明确返回未解锁状态，不得用免费构图伪装成功。Lock Screen“节律汇印”使用独立 StaticConfiguration kind，不接收 Home Screen 构图参数。
+App Group UserDefaults 只允许 `PulseSharedSettings` 管理 `interface.language`、`reminder.enabled` 与 `reminder.timeMinutes`。这些是跨 App/Widget Intent 重建提醒计划所需的用户设置，不是签到事实或权益副本；未知语言和非法时间必须失败关闭。不得保存构图、业务事实或可反向覆盖 store 的投影。Home Screen 构图由 `WidgetConfigurationIntent` 逐实例持有：正式枚举只含 `place` / `orbit` / `stack` / `bleed` / `letter` / `field` / `path` / `tide`，其中待落之处是唯一免费构图，其余七式需要统一高阶权益 entitlement。未知 raw value 失败关闭，不静默迁移。Widget extension 在生成 snapshot/timeline 时验证 StoreKit 权益，未验证或撤销时明确返回未解锁状态，不得用免费构图伪装成功。scheduled Live Activity 使用唯一“萤火日晕”构图，不存在样式偏好。Lock Screen“节律汇印”使用独立 StaticConfiguration kind，不接收 Home Screen 构图参数。
 
 ## 4. 共享代码边界
 

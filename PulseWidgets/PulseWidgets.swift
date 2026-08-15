@@ -19,8 +19,9 @@ struct PulseReminderLiveActivity: Widget {
         ActivityConfiguration(for: PulseReminderActivityAttributes.self) { context in
             let locale = Locale(identifier: context.attributes.localeIdentifier)
             PulseReminderLockScreenView(
-                style: context.attributes.style,
                 phase: context.state.phase,
+                reminderDate: context.attributes.reminderDate,
+                timeZoneIdentifier: context.attributes.timeZoneIdentifier,
                 locale: locale
             )
                 .activityBackgroundTint(PulseWidgetDesign.background)
@@ -29,40 +30,55 @@ struct PulseReminderLiveActivity: Widget {
         } dynamicIsland: { context in
             let locale = Locale(identifier: context.attributes.localeIdentifier)
             return DynamicIsland {
+                DynamicIslandExpandedRegion(.leading) {
+                    PulseReminderActivityMark(
+                        phase: context.state.phase,
+                        size: 34,
+                        surface: .island
+                    )
+                    .accessibilityHidden(true)
+                }
+
+                DynamicIslandExpandedRegion(.trailing) {
+                    PulseReminderActivityCompactTrailing(
+                        phase: context.state.phase,
+                        reminderDate: context.attributes.reminderDate,
+                        timeZoneIdentifier: context.attributes.timeZoneIdentifier,
+                        locale: locale
+                    )
+                }
+
                 DynamicIslandExpandedRegion(.bottom) {
-                    PulseReminderDynamicIslandExpandedView(
-                        style: context.attributes.style,
+                    PulseReminderDynamicIslandBottomView(
                         phase: context.state.phase,
                         locale: locale
                     )
                 }
             } compactLeading: {
                 PulseReminderActivityMark(
-                    style: context.attributes.style,
                     phase: context.state.phase,
                     size: 18,
                     surface: .island
                 )
-            } compactTrailing: {
-                Text(
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel(
                     LocalizedStringResource(
                         context.state.phase == .completed
-                            ? "activity.reminder.completed.compact"
-                            : "activity.reminder.compact",
+                            ? "activity.reminder.completed.title"
+                            : "activity.reminder.title",
                         table: PulseLocalization.systemUITable,
                         locale: locale
                     )
                 )
-                    .font(.caption2.weight(.heavy))
-                    .foregroundStyle(
-                        context.state.phase == .completed
-                            ? PulseWidgetDesign.activityPrimary
-                            : PulseWidgetDesign.grass
-                    )
-                    .contentTransition(.opacity)
+            } compactTrailing: {
+                PulseReminderActivityCompactTrailing(
+                    phase: context.state.phase,
+                    reminderDate: context.attributes.reminderDate,
+                    timeZoneIdentifier: context.attributes.timeZoneIdentifier,
+                    locale: locale
+                )
             } minimal: {
                 PulseReminderActivityMark(
-                    style: context.attributes.style,
                     phase: context.state.phase,
                     size: 18,
                     surface: .island

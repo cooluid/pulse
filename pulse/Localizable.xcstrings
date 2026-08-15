@@ -133,6 +133,9 @@
         }
       }
     },
+    "activity.reminder.completed.compact" : {
+
+    },
     "activity.reminder.completed.title" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -149,6 +152,9 @@
           }
         }
       }
+    },
+    "activity.reminder.time.unavailable" : {
+
     },
     "activity.reminder.title" : {
       "extractionState" : "manual",
@@ -2834,13 +2840,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Choose one of three Live Activity compositions and check in directly from the Lock Screen or Dynamic Island on supported devices."
+            "value" : "Meet the Firefly Halo on the Lock Screen or Dynamic Island, then leave today’s mark directly on supported devices."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "在支持的设备上选择三种实时活动构图，并从锁屏或灵动岛直接签到。"
+            "value" : "在支持的设备上，通过锁屏或灵动岛的萤火日晕直接为今天留下一印。"
           }
         }
       }
@@ -2919,13 +2925,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Seven new widget styles and three ways to meet today on system surfaces."
+            "value" : "Seven new widget styles and one signature way to meet today on system surfaces."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "解锁七种小组件风格，以及三种在系统表面迎接今天的方式。"
+            "value" : "解锁七种小组件风格，以及一套在系统表面迎接今天的标志性体验。"
           }
         }
       }

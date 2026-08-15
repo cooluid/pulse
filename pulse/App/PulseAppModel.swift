@@ -420,15 +420,6 @@ final class PulseAppModel {
         _ = enqueueReminderReconciliation()
     }
 
-    func requestReminderActivityStyle(_ style: PulseReminderActivityStyle) {
-        guard featureAccess.hasEnhancement else {
-            present(PulseAppError.enhancementRequired)
-            return
-        }
-        settings.reminderActivityStyle = style
-        _ = enqueueReminderReconciliation()
-    }
-
     func purchaseEnhancement() async {
         do {
             _ = try await featureAccess.purchase()
@@ -683,7 +674,6 @@ final class PulseAppModel {
                 capabilities: reminderScheduler.deliveryCapabilities
             ),
             time: settings.reminderTime,
-            activityStyle: settings.reminderActivityStyle,
             timeZoneIdentifier: habit.timeZoneIdentifier,
             localeIdentifier: settings.locale.identifier,
             checkedDays: checkedDays,

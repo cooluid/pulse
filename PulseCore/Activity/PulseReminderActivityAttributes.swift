@@ -1,14 +1,6 @@
 import ActivityKit
 import Foundation
 
-public enum PulseReminderActivityStyle: String, CaseIterable, Codable, Identifiable, Sendable {
-    case dayRing
-    case imprintPress
-    case splitField
-
-    public var id: String { rawValue }
-}
-
 public enum PulseReminderActivityPhase: String, Codable, Hashable, Sendable {
     case pending
     case completed
@@ -24,17 +16,20 @@ public struct PulseReminderActivityAttributes: ActivityAttributes, Sendable {
     }
 
     public let logicalDay: String
+    public let reminderDate: Date
+    public let timeZoneIdentifier: String
     public let localeIdentifier: String
-    public let style: PulseReminderActivityStyle
 
     public init(
         logicalDay: String,
-        localeIdentifier: String,
-        style: PulseReminderActivityStyle
+        reminderDate: Date,
+        timeZoneIdentifier: String,
+        localeIdentifier: String
     ) {
         self.logicalDay = logicalDay
+        self.reminderDate = reminderDate
+        self.timeZoneIdentifier = timeZoneIdentifier
         self.localeIdentifier = localeIdentifier
-        self.style = style
     }
 }
 

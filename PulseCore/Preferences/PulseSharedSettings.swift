@@ -22,7 +22,6 @@ public enum PulseSharedSettingsError: Error, Equatable, Sendable {
     case unavailableSuite
     case invalidStoredLanguage(String)
     case invalidStoredReminderTime(Int)
-    case invalidStoredReminderActivityStyle(String)
 }
 
 public struct PulseSharedSettings {
@@ -30,18 +29,15 @@ public struct PulseSharedSettings {
         public let language: PulseInterfaceLanguage
         public let reminderEnabled: Bool
         public let reminderTime: PulseReminderTime
-        public let reminderActivityStyle: PulseReminderActivityStyle
 
         public init(
             language: PulseInterfaceLanguage,
             reminderEnabled: Bool,
-            reminderTime: PulseReminderTime,
-            reminderActivityStyle: PulseReminderActivityStyle
+            reminderTime: PulseReminderTime
         ) {
             self.language = language
             self.reminderEnabled = reminderEnabled
             self.reminderTime = reminderTime
-            self.reminderActivityStyle = reminderActivityStyle
         }
     }
 
@@ -49,13 +45,11 @@ public struct PulseSharedSettings {
         public static let language = "interface.language"
         public static let reminderEnabled = "reminder.enabled"
         public static let reminderTimeMinutes = "reminder.timeMinutes"
-        public static let reminderActivityStyle = "reminder.activityStyle"
     }
 
     public static let defaultLanguage = PulseInterfaceLanguage.system
     public static let defaultReminderEnabled = false
     public static let defaultReminderTime = PulseReminderTime.standard
-    public static let defaultReminderActivityStyle = PulseReminderActivityStyle.dayRing
 
     private let defaults: UserDefaults
 
@@ -78,8 +72,7 @@ public struct PulseSharedSettings {
         Snapshot(
             language: try loadLanguage(),
             reminderEnabled: loadReminderEnabled(),
-            reminderTime: try loadReminderTime(),
-            reminderActivityStyle: try loadReminderActivityStyle()
+            reminderTime: try loadReminderTime()
         )
     }
 
@@ -95,16 +88,11 @@ public struct PulseSharedSettings {
         defaults.set(time.minutesFromMidnight, forKey: StorageKey.reminderTimeMinutes)
     }
 
-    public func saveReminderActivityStyle(_ style: PulseReminderActivityStyle) {
-        defaults.set(style.rawValue, forKey: StorageKey.reminderActivityStyle)
-    }
-
     public func reset() {
         [
             StorageKey.language,
             StorageKey.reminderEnabled,
             StorageKey.reminderTimeMinutes,
-            StorageKey.reminderActivityStyle,
         ].forEach(defaults.removeObject(forKey:))
     }
 
@@ -137,16 +125,4 @@ public struct PulseSharedSettings {
         return time
     }
 
-    private func loadReminderActivityStyle() throws -> PulseReminderActivityStyle {
-        guard let storedValue = defaults.object(forKey: StorageKey.reminderActivityStyle) else {
-            return Self.defaultReminderActivityStyle
-        }
-        guard let rawValue = storedValue as? String,
-              let style = PulseReminderActivityStyle(rawValue: rawValue) else {
-            throw PulseSharedSettingsError.invalidStoredReminderActivityStyle(
-                String(describing: storedValue)
-            )
-        }
-        return style
-    }
 }

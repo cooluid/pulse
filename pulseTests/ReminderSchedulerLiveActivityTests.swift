@@ -126,7 +126,6 @@ final class ReminderSchedulerLiveActivityTests: XCTestCase {
             enabled: true,
             deliveryMode: deliveryMode,
             time: PulseReminderTime(hour: 13, minute: 0)!,
-            activityStyle: .dayRing,
             timeZoneIdentifier: "UTC",
             localeIdentifier: "en_US",
             checkedDays: [],

@@ -27,6 +27,8 @@ COLOR_ASSETS = {
     "AccentColor": "tint",
     "PulseAction": "action",
     "PulseActionForeground": "actionForeground",
+    "PulseActivityFirefly": "activityFirefly",
+    "PulseActivityMark": "activityMark",
     "PulseBackground": "background",
     "PulseField": "field",
     "PulseGrass": "grass",

@@ -118,54 +118,6 @@ extension PulseWidgetStyle {
     }
 }
 
-extension PulseReminderActivityStyle {
-    func localizedName(locale: Locale) -> String {
-        switch self {
-        case .dayRing:
-            PulseLocalization.string(
-                "settings.activity.style.day_ring",
-                table: PulseLocalization.systemUITable,
-                locale: locale
-            )
-        case .imprintPress:
-            PulseLocalization.string(
-                "settings.activity.style.imprint_press",
-                table: PulseLocalization.systemUITable,
-                locale: locale
-            )
-        case .splitField:
-            PulseLocalization.string(
-                "settings.activity.style.split_field",
-                table: PulseLocalization.systemUITable,
-                locale: locale
-            )
-        }
-    }
-
-    func localizedDescription(locale: Locale) -> String {
-        switch self {
-        case .dayRing:
-            PulseLocalization.string(
-                "settings.activity.style.day_ring.detail",
-                table: PulseLocalization.systemUITable,
-                locale: locale
-            )
-        case .imprintPress:
-            PulseLocalization.string(
-                "settings.activity.style.imprint_press.detail",
-                table: PulseLocalization.systemUITable,
-                locale: locale
-            )
-        case .splitField:
-            PulseLocalization.string(
-                "settings.activity.style.split_field.detail",
-                table: PulseLocalization.systemUITable,
-                locale: locale
-            )
-        }
-    }
-}
-
 @MainActor
 @Observable
 final class AppSettings {
@@ -196,13 +148,6 @@ final class AppSettings {
         didSet {
             guard !isLoading else { return }
             sharedSettings.saveReminderTime(reminderTime)
-        }
-    }
-
-    var reminderActivityStyle: PulseReminderActivityStyle {
-        didSet {
-            guard !isLoading else { return }
-            sharedSettings.saveReminderActivityStyle(reminderActivityStyle)
         }
     }
 
@@ -253,7 +198,6 @@ final class AppSettings {
         hapticsEnabled = defaults.bool(forKey: StorageKey.hapticsEnabled)
         reminderEnabled = sharedSnapshot.reminderEnabled
         reminderTime = sharedSnapshot.reminderTime
-        reminderActivityStyle = sharedSnapshot.reminderActivityStyle
         weekStart = loadedWeekStart
         theme = loadedTheme
         mediaInvitationEnabled = defaults.bool(forKey: StorageKey.mediaInvitationEnabled)
@@ -275,7 +219,6 @@ final class AppSettings {
         hapticsEnabled = true
         reminderEnabled = false
         reminderTime = .standard
-        reminderActivityStyle = .dayRing
         weekStart = .monday
         theme = .system
         mediaInvitationEnabled = true

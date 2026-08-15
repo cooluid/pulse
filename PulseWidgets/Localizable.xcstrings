@@ -52,6 +52,9 @@
         }
       }
     },
+    "activity.reminder.completed.compact" : {
+
+    },
     "activity.reminder.completed.title" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -68,6 +71,9 @@
           }
         }
       }
+    },
+    "activity.reminder.time.unavailable" : {
+
     },
     "activity.reminder.title" : {
       "extractionState" : "manual",

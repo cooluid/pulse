@@ -136,12 +136,10 @@ final class AppSettingsTests: XCTestCase {
 
         settings.setReminderEnabled(true)
         settings.reminderTime = try XCTUnwrap(PulseReminderTime(hour: 7, minute: 45))
-        settings.reminderActivityStyle = .splitField
 
         let sharedSnapshot = try PulseSharedSettings(defaults: defaults).load()
         XCTAssertTrue(sharedSnapshot.reminderEnabled)
         XCTAssertEqual(sharedSnapshot.reminderTime.minutesFromMidnight, 465)
-        XCTAssertEqual(sharedSnapshot.reminderActivityStyle, .splitField)
     }
 
     private func makeSettings(defaults: UserDefaults) throws -> AppSettings {

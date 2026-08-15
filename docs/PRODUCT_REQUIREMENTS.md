@@ -189,13 +189,13 @@ MVP 的目标不是搭建任务平台，而是让以下闭环稳定成立：
 
 ### 5.2 P1：1.1 增强范围
 
-- 免费基础提醒：所有用户均可使用本地通知；一次买断高阶权益在受支持的 iOS 26 系统上增加三种可选择、可直接签到的定时 standard Live Activity / Dynamic Island 构图。
+- 免费基础提醒：所有用户均可使用本地通知；一次买断高阶权益在受支持的 iOS 26 系统上增加唯一“萤火日晕”定时 standard Live Activity，可从 Lock Screen / Dynamic Island 直接留印。该系统表面没有用户样式选择，也不保存构图偏好。
 - 版本化 Pulse 加密备份 v2 导出与全量恢复，包含签到、媒体清单、原图与缩略图；备份/恢复永久属于免费数据主权能力。
 - 签到时区设置。
 - 一周起始日设置。
 - 更完整的错误恢复和空状态说明。
 - App 图标、启动体验和正式发布素材。
-- 基础 Widget：Home Screen 小号/中号的待落之处面向所有用户；高阶权益解锁星环 / 叠印 / 数影 / 手札 / 静场 / 来路 / 潮痕。八式各自投影真实快照；禁止仪表盘指标和 4/7 分数进 Widget；未签到时整个 Home Screen Widget 是唯一单向签到 AppIntent。Lock Screen 圆形/矩形只显示抽象状态且面向所有用户。App/Widget 只使用同一个 App Group store；App Group UserDefaults 仅保存 `interface.language`，构图由系统逐实例配置，不保存签到状态或购买副本。
+- 基础 Widget：Home Screen 小号/中号的待落之处面向所有用户；高阶权益解锁星环 / 叠印 / 数影 / 手札 / 静场 / 来路 / 潮痕。八式各自投影真实快照；禁止仪表盘指标和 4/7 分数进 Widget；未签到时整个 Home Screen Widget 是唯一单向签到 AppIntent。Lock Screen 圆形/矩形只显示抽象状态且面向所有用户。App/Widget 只使用同一个 App Group store；App Group UserDefaults 仅保存界面语言、提醒开关与提醒时间，Home Screen 构图由系统逐实例配置，不保存签到状态、购买副本或 Live Activity 构图。
 
 ### 5.3 P2：后续候选，不属于 MVP 承诺
 

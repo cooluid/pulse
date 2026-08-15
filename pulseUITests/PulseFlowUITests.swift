@@ -193,10 +193,13 @@ final class PulseFlowUITests: XCTestCase {
         XCTAssertTrue(activityLabLink.isHittable)
         activityLabLink.tap()
 
-        XCTAssertTrue(app.navigationBars["灵动岛测试台"].waitForExistence(timeout: 3))
         let appIdentity = app.descendants(matching: .any)["debug.identity.app"]
         let appGroupIdentity = app.descendants(matching: .any)["debug.identity.app-group"]
         let urlSchemeIdentity = app.descendants(matching: .any)["debug.identity.url-scheme"]
+        XCTAssertTrue(
+            appIdentity.waitForExistence(timeout: 5),
+            "The Debug activity lab did not expose its runtime identity."
+        )
         XCTAssertTrue(appIdentity.label.contains("co.fanr.pulse.dev"))
         XCTAssertTrue(appGroupIdentity.label.contains("group.co.fanr.pulse.dev"))
         XCTAssertTrue(urlSchemeIdentity.label.contains("pulse-dev"))
@@ -230,12 +233,10 @@ final class PulseFlowUITests: XCTestCase {
             app.descendants(matching: .any)["store.activity.preview.section"]
                 .waitForExistence(timeout: 3)
         )
-        for style in ["dayRing", "imprintPress", "splitField"] {
-            XCTAssertTrue(
-                app.descendants(matching: .any)["store.activity.preview.\(style)"].exists,
-                "Missing paid Live Activity preview for \(style)."
-            )
-        }
+        XCTAssertTrue(
+            app.descendants(matching: .any)["store.activity.preview.signature"].exists,
+            "Missing the signature Live Activity preview."
+        )
 
         let storeAttachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
         storeAttachment.name = "Advanced benefits before purchase"

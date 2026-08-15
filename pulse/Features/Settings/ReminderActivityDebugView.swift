@@ -10,7 +10,8 @@ private final class ReminderActivityDebugController {
     struct ActivitySnapshot: Identifiable {
         let id: String
         let logicalDay: String
-        let style: PulseReminderActivityStyle
+        let reminderDate: Date
+        let timeZoneIdentifier: String
         let phase: PulseReminderActivityPhase
         let lifecycle: Lifecycle
 
@@ -38,7 +39,8 @@ private final class ReminderActivityDebugController {
             ActivitySnapshot(
                 id: activity.id,
                 logicalDay: activity.attributes.logicalDay,
-                style: activity.attributes.style,
+                reminderDate: activity.attributes.reminderDate,
+                timeZoneIdentifier: activity.attributes.timeZoneIdentifier,
                 phase: activity.content.state.phase,
                 lifecycle: lifecycle(for: activity.activityState)
             )
@@ -49,13 +51,14 @@ private final class ReminderActivityDebugController {
     func startImmediately(
         logicalDay: LogicalDay,
         locale: Locale,
-        style: PulseReminderActivityStyle
+        timeZoneIdentifier: String
     ) async {
         await perform {
             let attributes = PulseReminderActivityAttributes(
                 logicalDay: logicalDay.storageValue,
-                localeIdentifier: locale.identifier,
-                style: style
+                reminderDate: .now,
+                timeZoneIdentifier: timeZoneIdentifier,
+                localeIdentifier: locale.identifier
             )
             let content = ActivityContent(
                 state: PulseReminderActivityAttributes.ContentState(phase: .pending),
@@ -74,14 +77,15 @@ private final class ReminderActivityDebugController {
     func schedule(
         logicalDay: LogicalDay,
         locale: Locale,
-        style: PulseReminderActivityStyle,
+        timeZoneIdentifier: String,
         startDate: Date
     ) async {
         await perform {
             let attributes = PulseReminderActivityAttributes(
                 logicalDay: logicalDay.storageValue,
-                localeIdentifier: locale.identifier,
-                style: style
+                reminderDate: startDate,
+                timeZoneIdentifier: timeZoneIdentifier,
+                localeIdentifier: locale.identifier
             )
             let content = ActivityContent(
                 state: PulseReminderActivityAttributes.ContentState(phase: .pending),
@@ -169,7 +173,6 @@ struct ReminderActivityDebugView: View {
     @Bindable var model: PulseAppModel
     @Environment(\.locale) private var locale
     @State private var controller = ReminderActivityDebugController()
-    @State private var selectedStyle: PulseReminderActivityStyle = .dayRing
 
     var body: some View {
         Form {
@@ -222,12 +225,8 @@ struct ReminderActivityDebugView: View {
 
     private var configurationSection: some View {
         Section {
-            Picker(copy(.style), selection: $selectedStyle) {
-                ForEach(PulseReminderActivityStyle.allCases) { style in
-                    Text(style.localizedName(locale: locale)).tag(style)
-                }
-            }
             LabeledContent(copy(.logicalDay), value: model.today?.storageValue ?? copy(.unavailable))
+            LabeledContent(copy(.timeZone), value: model.habit?.timeZoneIdentifier ?? copy(.unavailable))
         } header: {
             Text(copy(.configurationHeader))
         }
@@ -246,12 +245,13 @@ struct ReminderActivityDebugView: View {
             )
 
             Button {
-                guard let today = model.today else { return }
+                guard let today = model.today,
+                      let timeZoneIdentifier = model.habit?.timeZoneIdentifier else { return }
                 Task {
                     await controller.startImmediately(
                         logicalDay: today,
                         locale: locale,
-                        style: selectedStyle
+                        timeZoneIdentifier: timeZoneIdentifier
                     )
                 }
             } label: {
@@ -262,12 +262,13 @@ struct ReminderActivityDebugView: View {
 
             if #available(iOS 26.0, *) {
                 Button {
-                    guard let today = model.today else { return }
+                    guard let today = model.today,
+                          let timeZoneIdentifier = model.habit?.timeZoneIdentifier else { return }
                     Task {
                         await controller.schedule(
                             logicalDay: today,
                             locale: locale,
-                            style: selectedStyle,
+                            timeZoneIdentifier: timeZoneIdentifier,
                             startDate: .now.addingTimeInterval(30)
                         )
                     }
@@ -349,7 +350,7 @@ struct ReminderActivityDebugView: View {
                 ForEach(controller.activities) { activity in
                     VStack(alignment: .leading, spacing: PulseDesign.spacing4) {
                         HStack {
-                            Text(activity.style.localizedName(locale: locale))
+                            Text(formattedReminderTime(activity))
                                 .font(.headline)
                             Spacer()
                             Text(lifecycleName(activity.lifecycle))
@@ -389,13 +390,30 @@ struct ReminderActivityDebugView: View {
     }
 
     private var canStart: Bool {
-        isIsolatedRuntimeIdentity && model.today != nil && controller.activitiesEnabled
+        isIsolatedRuntimeIdentity
+            && model.today != nil
+            && model.habit != nil
+            && controller.activitiesEnabled
     }
 
     private var isIsolatedRuntimeIdentity: Bool {
         PulseRuntimeIdentity.bundleIdentifier == "co.fanr.pulse.dev"
             && PulseRuntimeIdentity.appGroupIdentifier == "group.co.fanr.pulse.dev"
             && PulseRuntimeIdentity.urlScheme == "pulse-dev"
+    }
+
+    private func formattedReminderTime(
+        _ activity: ReminderActivityDebugController.ActivitySnapshot
+    ) -> String {
+        guard let timeZone = TimeZone(identifier: activity.timeZoneIdentifier) else {
+            return copy(.invalidTimeZone)
+        }
+        return activity.reminderDate.formatted(Date.FormatStyle(
+            date: .omitted,
+            time: .standard,
+            locale: locale,
+            timeZone: timeZone
+        ))
     }
 
     private func phaseName(_ phase: PulseReminderActivityPhase) -> String {
@@ -426,7 +444,8 @@ struct ReminderActivityDebugView: View {
 private enum ReminderActivityDebugCopy {
     enum Key {
         case title, isolationConfirmed, isolationFailed, appIdentifier, appGroup, urlScheme
-        case identityHeader, identityFooter, configurationHeader, style, logicalDay, unavailable
+        case identityHeader, identityFooter, configurationHeader, logicalDay, timeZone
+        case unavailable, invalidTimeZone
         case activityEnabled, activityDisabled, startNow, startAfterThirtySeconds
         case scheduledStart, requiresIOS26, realActivityHeader, realActivityFooter
         case previewCompleted, restorePending, realCheckIn, endAll, stateHeader, stateFooter
@@ -450,9 +469,10 @@ private enum ReminderActivityDebugCopy {
         case .identityHeader: value = ("运行身份", "Runtime identity")
         case .identityFooter: value = ("如果这里出现正式版标识，请停止测试；这表示构建配置发生回归。", "Stop testing if a production identifier appears here; the build configuration has regressed.")
         case .configurationHeader: value = ("测试参数", "Test configuration")
-        case .style: value = ("样式", "Style")
         case .logicalDay: value = ("逻辑日期", "Logical day")
+        case .timeZone: value = ("时区", "Time zone")
         case .unavailable: value = ("尚未加载", "Not loaded")
+        case .invalidTimeZone: value = ("无效时区", "Invalid time zone")
         case .activityEnabled: value = ("系统已允许实时活动", "Live Activities are enabled")
         case .activityDisabled: value = ("系统未允许实时活动", "Live Activities are disabled")
         case .startNow: value = ("立即启动真实活动", "Start real activity now")

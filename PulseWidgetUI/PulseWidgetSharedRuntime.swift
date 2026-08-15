@@ -129,7 +129,6 @@ enum PulseWidgetSharedRuntime {
                     capabilities: reminderScheduler.deliveryCapabilities
                 ),
                 time: settings.reminderTime,
-                activityStyle: settings.reminderActivityStyle,
                 timeZoneIdentifier: habit.timeZoneIdentifier,
                 localeIdentifier: settings.language.locale.identifier,
                 checkedDays: Set(records.map(\.logicalDay)),

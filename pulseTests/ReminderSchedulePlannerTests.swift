@@ -109,7 +109,6 @@ final class ReminderSchedulePlannerTests: XCTestCase {
             enabled: enabled,
             deliveryMode: enabled ? .localNotification : .disabled,
             time: time,
-            activityStyle: .dayRing,
             timeZoneIdentifier: timeZoneIdentifier,
             localeIdentifier: "en",
             checkedDays: checkedDays,

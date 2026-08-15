@@ -34,8 +34,8 @@
 - 今日主动作支持单击签到与 0.45 秒长按“签到并拍照”；长按先权威签到再请求相机，VoiceOver 提供独立动作。待签到进入时最多一次有限呼吸；权威提交后才播放成功反馈；Reduce Motion 使用静态等价。
 - 高阶权益在独立权益页；价格只读 StoreKit，已交付能力只读 `PulseEnhancementContract.currentCapabilities`。Widget 画廊收费卡以标题行“锁 + 高级功能”徽标作为唯一购买页入口，不再保留卡片底部的重复查看按钮。末项权益与恢复购买须能完整滚到购买条上方。
 - Home Screen 八式产品枚举与共享渲染源 `PulseWidgetHomeRenderer` 已落地（待落之处免费，其余收费）。事实边界：纸层不映射历史、画廊预览不写权威 store、未解锁明确拒绝。
-- scheduled Live Activity 已 clean-break 为 standard 生命周期，并提供日环、压印、裂野三种不同阅读层级的共享构图；Lock Screen / Dynamic Island 直接调用同一个幂等签到 Intent。App、Home Screen Widget 或 Live Activity 签到后都会结束当天 Activity 并重建提醒计划。ActivityKit 只接受部分计划时保留已接受日期，以免费本地通知补齐其余 60 日窗口且同日不双发。
-- Debug 构建增加真实 ActivityKit 测试台，支持三种样式的立即请求、30 秒 scheduled 请求、视觉状态切换、权威签到和结束全部活动；它使用独立 App、Widget、App Group 与 URL Scheme 身份，不读写正式数据，且整页与设置入口均由编译条件排除于 Release。
+- scheduled Live Activity 已 clean-break 为 standard 生命周期与唯一“萤火日晕”共享构图；Activity attributes 明确携带逻辑日、提醒日期、时区与语言，不再包含或持久化样式。Lock Screen / Dynamic Island 直接调用同一个幂等留印 Intent。App、Home Screen Widget 或 Live Activity 留印后都会结束当天 Activity 并重建提醒计划。ActivityKit 只接受部分计划时保留已接受日期，以免费本地通知补齐其余 60 日窗口且同日不双发。
+- Debug 构建保留真实 ActivityKit 工程测试台，支持唯一正式构图的立即请求、30 秒 scheduled 请求、视觉状态切换、权威留印和结束全部活动；它使用独立 App、Widget、App Group 与 URL Scheme 身份，不读写正式数据，且整页与设置入口均由编译条件排除于 Release。
 - Home Screen 为 `AppIntentConfiguration`，构图由系统逐实例持有；Lock Screen“节律汇印”为无构图参数的独立 kind。未签到整块是唯一签到按钮；Extension 在 timeline 边界独立验证权益。
 - Widget 动效为“稀疏时段氛围 + 权威签到事件”：`PulseWidgetTimelineSchedule` 每天最多五条（当前 + 剩余 06/12/18 + 下一逻辑日）；氛围不报时、不承诺准点。单次动画 ≤ 两秒由 `PulseWidgetMotionPresentation.systemMaximumAnimationDuration` 与测试门禁持有。签到 reload 后各式用自有主物件做一次有限变装；画廊与 Extension 共用 Renderer，预览不写 store。Reduce Motion / Always-On 走静态终态。正式枚举只含现行八式；未知旧标识失败关闭。
 - 今日与记录照片详情共用同一系统 Sheet 骨架与独立删除事务；含照片用 `.large`，只签到用语义紧凑 detent 并保留 `.large`；无障碍大字号直接 `.large`。
@@ -52,11 +52,11 @@
 
 验证环境：macOS 26.6、Xcode 26.6（17F113）、iPhone 17 Pro / iOS 26.5 Simulator（arm64）。
 
-- 八式共享渲染器与三种 Live Activity 共享渲染器已落地；Debug Simulator 下 App 与 Widget Extension 编译通过，既有 145 项单元/集成测试与 21 项 UI 测试全量通过，新增 3 项构建隔离测试与 1 项测试台 UI 测试定向通过。Release Simulator build 与 Analyze 通过，产物检查确认正式 App / Widget 仍使用生产身份，且不包含测试台符号、文案或 `.dev` 身份。高阶权益定向 UI 流程通过并确认三种 Live Activity 预览全部存在；iPhone 17 Pro / iOS 26.5 Simulator 简中默认字号截图经人工检查，主操作与测试台层级均无截断。这只证明 App 内共享 Renderer 与 Debug 测试台；English、最大 Dynamic Type、真实 Lock Screen / Dynamic Island、通知到达、设备锁定 Intent 认证和 StoreKit Sandbox 仍无本轮证据。保持 **ENGINEERING CANDIDATE / INTERFACE CANDIDATE**。
+- 八式 Home Screen Widget 共享渲染器与唯一“萤火日晕”Live Activity 共享渲染器已落地；锁屏圆弧端点与萤火点由同一极坐标几何计算，compact / expanded 显示 attributes 中的真实提醒时间。本轮 153 项单元/集成测试与 22 项 UI 测试全部通过；锁屏明暗态、完成态、compact、expanded 与无障碍大字号均有确定性快照。真实 Lock Screen / Dynamic Island、最大 Dynamic Type、通知到达、设备锁定 Intent 认证和 StoreKit Sandbox 仍需真机取证。在这些证据完成前保持 **ENGINEERING CANDIDATE / INTERFACE CANDIDATE**。
 - 媒体自动化覆盖独立删除/重新关联、同日替换、文件安装/读取/审计、缩略图损坏、无相册回退、v2 归档往返、随机性、错误口令、篡改、v1 拒绝、缺条目与缩略图身份不匹配。
 - 本轮有八式画廊待办/完成共 16 张原始截图及部分 ImageRenderer 附件；单卡变化预览约 5 秒（早/日/晚/完成串联），各段 ≤ 两秒。这只证明 App 内共享 Renderer 预览，仍为 **INTERFACE CANDIDATE**；不能代替真实 Widget host、系统 reload、Lock Screen kind、Clear/vibrant、Reduce Motion 或真机体验 GO。
 - 本轮未签名 Release `generic/platform=iOS Simulator` 构建通过；Debug 静态分析通过；Swift 警告按错误处理。
-- 19 项品牌生成资产检查通过（含 AppIcon 三外观与小尺寸评审图）。App、InfoPlist 与 Widget String Catalog / plist 可解析。
+- 24 项品牌生成资产检查通过（含 AppIcon 三外观、小尺寸评审图与 Live Activity 语义色）。App、InfoPlist 与 Widget String Catalog / plist 可解析。
 - `git diff --check` 通过；生产 Swift 源码没有 TODO/FIXME/HACK、相册回退、样例照片或演示数据路径。
 
 ## 仍为 NO-GO 的证据

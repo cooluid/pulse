@@ -19,15 +19,64 @@ final class PulseWidgetSnapshotTests: XCTestCase {
         )
 
         var renderedImages: [Data] = []
-        for style in PulseReminderActivityStyle.allCases {
+        for phase in [PulseReminderActivityPhase.pending, .completed] {
+            let content = PulseReminderActivityPreview(
+                phase: phase,
+                reminderDate: Date(timeIntervalSince1970: 67_320),
+                timeZoneIdentifier: TimeZone.gmt.identifier,
+                locale: Locale(identifier: "zh-Hans")
+            )
+            .environment(\.locale, Locale(identifier: "zh-Hans"))
+            .frame(width: 344, height: 126)
+
+            let renderer = ImageRenderer(content: content)
+            renderer.scale = 3
+            let image = try XCTUnwrap(renderer.uiImage)
+            let png = try XCTUnwrap(image.pngData())
+            renderedImages.append(png)
+
+            XCTAssertEqual(image.size.width, 344, accuracy: 0.5)
+            XCTAssertEqual(image.size.height, 126, accuracy: 0.5)
+
+            let previewURL = previewDirectory.appendingPathComponent(
+                "activity-signature-\(phase.rawValue)@3x.png"
+            )
+            try png.write(to: previewURL)
+
+            let attachment = XCTAttachment(image: image)
+            attachment.name = "Signature activity \(phase.rawValue)"
+            attachment.lifetime = .keepAlways
+            add(attachment)
+        }
+
+        XCTAssertEqual(Set(renderedImages).count, 2)
+    }
+
+    func testReminderActivityLockScreenRendersTheSignatureHierarchy() throws {
+        let projectRoot = URL(fileURLWithPath: #filePath)
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+        let previewDirectory = projectRoot
+            .appendingPathComponent(".tmp", isDirectory: true)
+            .appendingPathComponent("activity-preview", isDirectory: true)
+        try FileManager.default.createDirectory(
+            at: previewDirectory,
+            withIntermediateDirectories: true
+        )
+
+        var renderedImages: [Data] = []
+        for colorScheme in [ColorScheme.light, .dark] {
             for phase in [PulseReminderActivityPhase.pending, .completed] {
-                let content = PulseReminderActivityPreview(
-                    style: style,
+                let content = PulseReminderLockScreenView(
                     phase: phase,
+                    reminderDate: Date(timeIntervalSince1970: 67_320),
+                    timeZoneIdentifier: TimeZone.gmt.identifier,
                     locale: Locale(identifier: "zh-Hans")
                 )
                 .environment(\.locale, Locale(identifier: "zh-Hans"))
-                .frame(width: 344, height: 126)
+                .frame(width: 382, height: 126)
+                .background(PulseWidgetDesign.background)
+                .environment(\.colorScheme, colorScheme)
 
                 let renderer = ImageRenderer(content: content)
                 renderer.scale = 3
@@ -35,22 +84,23 @@ final class PulseWidgetSnapshotTests: XCTestCase {
                 let png = try XCTUnwrap(image.pngData())
                 renderedImages.append(png)
 
-                XCTAssertEqual(image.size.width, 344, accuracy: 0.5)
+                XCTAssertEqual(image.size.width, 382, accuracy: 0.5)
                 XCTAssertEqual(image.size.height, 126, accuracy: 0.5)
 
+                let appearance = colorScheme == .dark ? "dark" : "light"
                 let previewURL = previewDirectory.appendingPathComponent(
-                    "activity-\(style.rawValue)-\(phase.rawValue)@3x.png"
+                    "activity-lock-screen-signature-\(appearance)-\(phase.rawValue)@3x.png"
                 )
                 try png.write(to: previewURL)
 
                 let attachment = XCTAttachment(image: image)
-                attachment.name = "Activity \(style.rawValue) \(phase.rawValue)"
+                attachment.name = "Lock Screen signature activity \(appearance) \(phase.rawValue)"
                 attachment.lifetime = .keepAlways
                 add(attachment)
             }
         }
 
-        XCTAssertEqual(Set(renderedImages).count, 6)
+        XCTAssertEqual(Set(renderedImages).count, 4)
     }
 
     func testReminderActivityCompactMarksRenderInsideSystemSizedCanvas() throws {
@@ -66,40 +116,102 @@ final class PulseWidgetSnapshotTests: XCTestCase {
         )
 
         var renderedImages: [Data] = []
-        for style in PulseReminderActivityStyle.allCases {
-            for phase in [PulseReminderActivityPhase.pending, .completed] {
-                let content = PulseReminderActivityMark(
-                    style: style,
-                    phase: phase,
-                    size: 18,
-                    surface: .island
-                )
-                .frame(width: 18, height: 18)
-                .padding(5)
-                .background(Color.black)
+        for phase in [PulseReminderActivityPhase.pending, .completed] {
+            let content = PulseReminderActivityMark(
+                phase: phase,
+                size: 18,
+                surface: .island
+            )
+            .frame(width: 18, height: 18)
+            .padding(5)
+            .background(Color.black)
 
-                let renderer = ImageRenderer(content: content)
-                renderer.scale = 3
-                let image = try XCTUnwrap(renderer.uiImage)
-                let png = try XCTUnwrap(image.pngData())
-                renderedImages.append(png)
+            let renderer = ImageRenderer(content: content)
+            renderer.scale = 3
+            let image = try XCTUnwrap(renderer.uiImage)
+            let png = try XCTUnwrap(image.pngData())
+            renderedImages.append(png)
 
-                XCTAssertEqual(image.size.width, 28, accuracy: 0.5)
-                XCTAssertEqual(image.size.height, 28, accuracy: 0.5)
+            XCTAssertEqual(image.size.width, 28, accuracy: 0.5)
+            XCTAssertEqual(image.size.height, 28, accuracy: 0.5)
 
-                let previewURL = previewDirectory.appendingPathComponent(
-                    "activity-compact-\(style.rawValue)-\(phase.rawValue)@3x.png"
-                )
-                try png.write(to: previewURL)
+            let previewURL = previewDirectory.appendingPathComponent(
+                "activity-compact-signature-\(phase.rawValue)@3x.png"
+            )
+            try png.write(to: previewURL)
 
-                let attachment = XCTAttachment(image: image)
-                attachment.name = "Compact activity \(style.rawValue) \(phase.rawValue)"
-                attachment.lifetime = .keepAlways
-                add(attachment)
-            }
+            let attachment = XCTAttachment(image: image)
+            attachment.name = "Compact signature activity \(phase.rawValue)"
+            attachment.lifetime = .keepAlways
+            add(attachment)
         }
 
-        XCTAssertEqual(Set(renderedImages).count, 6)
+        XCTAssertEqual(Set(renderedImages).count, 2)
+    }
+
+    func testReminderActivityFireflySharesTheArcPathRadius() {
+        let ringDiameter: CGFloat = 42
+        let offset = PulseReminderActivityMarkGeometry.fireflyOffset(
+            ringDiameter: ringDiameter
+        )
+
+        XCTAssertEqual(hypot(offset.width, offset.height), ringDiameter / 2, accuracy: 0.0001)
+        XCTAssertGreaterThan(offset.width, 0)
+        XCTAssertLessThan(offset.height, 0)
+    }
+
+    func testReminderActivityTimeUsesTheAttributeTimeZone() {
+        let reminderDate = Date(timeIntervalSince1970: 67_320)
+
+        XCTAssertEqual(
+            PulseReminderActivityTimeFormatter.string(
+                reminderDate: reminderDate,
+                timeZoneIdentifier: TimeZone.gmt.identifier,
+                locale: Locale(identifier: "zh-Hans")
+            ),
+            "18:42"
+        )
+        XCTAssertNil(
+            PulseReminderActivityTimeFormatter.string(
+                reminderDate: reminderDate,
+                timeZoneIdentifier: "Not/A-Time-Zone",
+                locale: Locale(identifier: "zh-Hans")
+            )
+        )
+    }
+
+    func testReminderActivityLockScreenRendersAtMaximumDynamicType() throws {
+        let projectRoot = URL(fileURLWithPath: #filePath)
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+        let previewURL = projectRoot
+            .appendingPathComponent(".tmp", isDirectory: true)
+            .appendingPathComponent("activity-preview", isDirectory: true)
+            .appendingPathComponent("activity-lock-screen-accessibility5@3x.png")
+        try FileManager.default.createDirectory(
+            at: previewURL.deletingLastPathComponent(),
+            withIntermediateDirectories: true
+        )
+
+        let content = PulseReminderLockScreenView(
+            phase: .pending,
+            reminderDate: Date(timeIntervalSince1970: 67_320),
+            timeZoneIdentifier: TimeZone.gmt.identifier,
+            locale: Locale(identifier: "en")
+        )
+        .environment(\.locale, Locale(identifier: "en"))
+        .environment(\.dynamicTypeSize, .accessibility5)
+        .frame(width: 382, height: 260, alignment: .top)
+        .background(PulseWidgetDesign.background)
+
+        let renderer = ImageRenderer(content: content)
+        renderer.scale = 3
+        let image = try XCTUnwrap(renderer.uiImage)
+        let png = try XCTUnwrap(image.pngData())
+        try png.write(to: previewURL)
+
+        XCTAssertEqual(image.size.width, 382, accuracy: 0.5)
+        XCTAssertEqual(image.size.height, 260, accuracy: 0.5)
     }
 
     func testLetterCompositionOwnsTodayInOneDateSealAndOnlySixPastMarks() throws {
@@ -1136,11 +1248,9 @@ final class PulseWidgetSnapshotTests: XCTestCase {
 
         preferences.saveReminderEnabled(true)
         preferences.saveReminderTime(try XCTUnwrap(PulseReminderTime(hour: 8, minute: 15)))
-        preferences.saveReminderActivityStyle(.imprintPress)
         let configured = try preferences.load()
         XCTAssertTrue(configured.reminderEnabled)
         XCTAssertEqual(configured.reminderTime.minutesFromMidnight, 495)
-        XCTAssertEqual(configured.reminderActivityStyle, .imprintPress)
 
         preferences.reset()
         XCTAssertEqual(
@@ -1148,8 +1258,7 @@ final class PulseWidgetSnapshotTests: XCTestCase {
             PulseSharedSettings.Snapshot(
                 language: .system,
                 reminderEnabled: false,
-                reminderTime: .standard,
-                reminderActivityStyle: .dayRing
+                reminderTime: .standard
             )
         )
     }
