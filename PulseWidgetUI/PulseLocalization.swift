@@ -1,7 +1,13 @@
 import Foundation
 
 enum PulseLocalization {
-    static func string(_ key: String, locale: Locale) -> String {
+    static let systemUITable = "PulseSystemUI"
+
+    static func string(
+        _ key: String,
+        table: String? = nil,
+        locale: Locale
+    ) -> String {
         let languageIdentifier = localizationIdentifier(for: locale)
         guard let path = Bundle.main.path(
             forResource: languageIdentifier,
@@ -9,7 +15,7 @@ enum PulseLocalization {
         ), let localizedBundle = Bundle(path: path) else {
             preconditionFailure("Missing localization bundle for \(languageIdentifier).")
         }
-        return localizedBundle.localizedString(forKey: key, value: nil, table: nil)
+        return localizedBundle.localizedString(forKey: key, value: nil, table: table)
     }
 
     private static func localizationIdentifier(for locale: Locale) -> String {

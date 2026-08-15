@@ -2783,13 +2783,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Shows today’s check-in status at your chosen time on supported devices."
+            "value" : "Choose one of three Live Activity compositions and check in directly from the Lock Screen or Dynamic Island on supported devices."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "在支持的设备上，按设定时间显示今天的签到状态。"
+            "value" : "在支持的设备上选择三种实时活动构图，并从锁屏或灵动岛直接签到。"
           }
         }
       }
@@ -2868,13 +2868,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "More widget styles and scheduled Live Activities."
+            "value" : "Seven new widget styles and three ways to meet today on system surfaces."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "解锁更多小组件样式和定时实时活动。"
+            "value" : "解锁七种小组件风格，以及三种在系统表面迎接今天的方式。"
           }
         }
       }

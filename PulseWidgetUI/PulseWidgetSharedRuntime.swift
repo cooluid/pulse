@@ -1,11 +1,12 @@
 import Foundation
 import PulseCore
+import OSLog
 
 @MainActor
 enum PulseWidgetSharedRuntime {
     struct Context {
         let location: PulseStoreLocation
-        let interfacePreferences: PulseSharedInterfacePreferences
+        let sharedSettings: PulseSharedSettings
     }
 
     enum RuntimeError: Error {
@@ -13,6 +14,11 @@ enum PulseWidgetSharedRuntime {
         case sharedStoreMissing
         case missingPrimaryHabit
     }
+
+    private static let logger = Logger(
+        subsystem: PulseRuntimeIdentity.bundleIdentifier,
+        category: "shared-check-in"
+    )
 
     static func makeContext(
         bundle: Bundle = .main,
@@ -29,7 +35,7 @@ enum PulseWidgetSharedRuntime {
         return Context(
             location: try PulseStoreLocator(fileManager: fileManager)
                 .appGroupLocation(identifier: identifier),
-            interfacePreferences: try PulseSharedInterfacePreferences(
+            sharedSettings: try PulseSharedSettings(
                 appGroupIdentifier: identifier
             )
         )
@@ -85,5 +91,56 @@ enum PulseWidgetSharedRuntime {
             throw RuntimeError.missingPrimaryHabit
         }
         return try repository.checkIn(habitID: habit.id)
+    }
+
+    @discardableResult
+    static func checkInAndReconcileReminders(
+        bundle: Bundle = .main,
+        fileManager: FileManager = .default,
+        clock: any PulseClock = SystemPulseClock(),
+        reminderScheduler: any ReminderScheduling = ReminderScheduler()
+    ) async throws -> CheckInCommitReceipt {
+        let context = try makeContext(bundle: bundle, fileManager: fileManager)
+        try requireExistingStore(at: context.location, fileManager: fileManager)
+        let repository = try makeRepository(at: context.location, clock: clock)
+        guard let habit = try repository.existingPrimaryHabit(),
+              habit.isIdentityConfirmed else {
+            throw RuntimeError.missingPrimaryHabit
+        }
+
+        let receipt = try repository.checkIn(habitID: habit.id)
+        let today = LogicalDay.resolve(
+            at: clock.now,
+            timeZone: habit.timeZone
+        )
+        await reminderScheduler.completeLiveActivity(for: today)
+
+        do {
+            let settings = try context.sharedSettings.load()
+            let hasEnhancement = await PulseStoreKitEntitlementReader.hasCurrentEntitlement(
+                for: PulseEnhancementContract.productIdentifier
+            )
+            let records = try repository.allRecords(habitID: habit.id)
+            let snapshot = ReminderScheduleSnapshot(
+                enabled: settings.reminderEnabled,
+                deliveryMode: PulseReminderDeliveryPolicy.deliveryMode(
+                    reminderEnabled: settings.reminderEnabled,
+                    hasEnhancementEntitlement: hasEnhancement,
+                    capabilities: reminderScheduler.deliveryCapabilities
+                ),
+                time: settings.reminderTime,
+                activityStyle: settings.reminderActivityStyle,
+                timeZoneIdentifier: habit.timeZoneIdentifier,
+                localeIdentifier: settings.language.locale.identifier,
+                checkedDays: Set(records.map(\.logicalDay)),
+                now: clock.now
+            )
+            _ = try await reminderScheduler.reconcile(snapshot)
+        } catch {
+            logger.error(
+                "Check-in committed, but reminder reconciliation failed: \(String(describing: error), privacy: .private)"
+            )
+        }
+        return receipt
     }
 }

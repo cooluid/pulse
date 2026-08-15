@@ -4,7 +4,7 @@ import XCTest
 
 final class ReminderTimeTests: XCTestCase {
     func testValidTimeUsesOneMinutesFromMidnightValue() throws {
-        let time = try XCTUnwrap(ReminderTime(hour: 20, minute: 45))
+        let time = try XCTUnwrap(PulseReminderTime(hour: 20, minute: 45))
 
         XCTAssertEqual(time.minutesFromMidnight, 1_245)
         XCTAssertEqual(time.hour, 20)
@@ -12,15 +12,15 @@ final class ReminderTimeTests: XCTestCase {
     }
 
     func testInvalidTimeIsRejected() {
-        XCTAssertNil(ReminderTime(hour: -1, minute: 0))
-        XCTAssertNil(ReminderTime(hour: 24, minute: 0))
-        XCTAssertNil(ReminderTime(hour: 20, minute: 60))
-        XCTAssertNil(ReminderTime(minutesFromMidnight: 1_440))
+        XCTAssertNil(PulseReminderTime(hour: -1, minute: 0))
+        XCTAssertNil(PulseReminderTime(hour: 24, minute: 0))
+        XCTAssertNil(PulseReminderTime(hour: 20, minute: 60))
+        XCTAssertNil(PulseReminderTime(minutesFromMidnight: 1_440))
     }
 
     func testPickerRoundTripDoesNotUseDeviceTimeZone() throws {
-        let original = try XCTUnwrap(ReminderTime(hour: 8, minute: 30))
-        let decoded = try XCTUnwrap(ReminderTime(pickerDate: original.pickerDate))
+        let original = try XCTUnwrap(PulseReminderTime(hour: 8, minute: 30))
+        let decoded = try XCTUnwrap(PulseReminderTime(pickerDate: original.pickerDate))
 
         XCTAssertEqual(decoded, original)
     }
@@ -54,10 +54,10 @@ final class AppSettingsTests: XCTestCase {
             defaults.removePersistentDomain(forName: appSuiteName)
             sharedDefaults.removePersistentDomain(forName: sharedSuiteName)
         }
-        let sharedPreferences = PulseSharedInterfacePreferences(defaults: sharedDefaults)
+        let sharedPreferences = PulseSharedSettings(defaults: sharedDefaults)
 
         let settings = try AppSettings(
-            sharedInterfacePreferences: sharedPreferences,
+            sharedSettings: sharedPreferences,
             defaults: defaults
         )
         XCTAssertEqual(settings.theme, .system)
@@ -67,17 +67,17 @@ final class AppSettingsTests: XCTestCase {
         settings.language = .english
 
         XCTAssertNil(
-            defaults.object(forKey: PulseSharedInterfacePreferences.languageStorageKey)
+            defaults.object(forKey: PulseSharedSettings.StorageKey.language)
         )
         XCTAssertEqual(
             sharedDefaults.string(
-                forKey: PulseSharedInterfacePreferences.languageStorageKey
+                forKey: PulseSharedSettings.StorageKey.language
             ),
             PulseInterfaceLanguage.english.rawValue
         )
 
         let reloaded = try AppSettings(
-            sharedInterfacePreferences: sharedPreferences,
+            sharedSettings: sharedPreferences,
             defaults: defaults
         )
         XCTAssertEqual(reloaded.theme, .dark)
@@ -96,7 +96,7 @@ final class AppSettingsTests: XCTestCase {
         let invalidLanguageDefaults = try XCTUnwrap(UserDefaults(suiteName: invalidLanguageSuite))
         invalidLanguageDefaults.set(
             "fr",
-            forKey: PulseSharedInterfacePreferences.languageStorageKey
+            forKey: PulseSharedSettings.StorageKey.language
         )
         XCTAssertThrowsError(try makeSettings(defaults: invalidLanguageDefaults))
         invalidLanguageDefaults.removePersistentDomain(forName: invalidLanguageSuite)
@@ -122,15 +122,31 @@ final class AppSettingsTests: XCTestCase {
     func testInvalidPersistedReminderTimeFailsInitialization() throws {
         let suiteName = "AppSettingsTests.\(UUID().uuidString)"
         let defaults = try XCTUnwrap(UserDefaults(suiteName: suiteName))
-        defaults.set(1_440, forKey: AppSettings.StorageKey.reminderTimeMinutes)
+        defaults.set(1_440, forKey: PulseSharedSettings.StorageKey.reminderTimeMinutes)
 
         XCTAssertThrowsError(try makeSettings(defaults: defaults))
         defaults.removePersistentDomain(forName: suiteName)
     }
 
+    func testReminderConfigurationUsesTheSharedTypedAuthority() throws {
+        let suiteName = "AppSettingsTests.Reminder.\(UUID().uuidString)"
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: suiteName))
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+        let settings = try makeSettings(defaults: defaults)
+
+        settings.setReminderEnabled(true)
+        settings.reminderTime = try XCTUnwrap(PulseReminderTime(hour: 7, minute: 45))
+        settings.reminderActivityStyle = .splitField
+
+        let sharedSnapshot = try PulseSharedSettings(defaults: defaults).load()
+        XCTAssertTrue(sharedSnapshot.reminderEnabled)
+        XCTAssertEqual(sharedSnapshot.reminderTime.minutesFromMidnight, 465)
+        XCTAssertEqual(sharedSnapshot.reminderActivityStyle, .splitField)
+    }
+
     private func makeSettings(defaults: UserDefaults) throws -> AppSettings {
         try AppSettings(
-            sharedInterfacePreferences: PulseSharedInterfacePreferences(defaults: defaults),
+            sharedSettings: PulseSharedSettings(defaults: defaults),
             defaults: defaults
         )
     }

@@ -195,6 +195,16 @@ final class PulseFlowUITests: XCTestCase {
 
         let purchaseButton = app.buttons["store.buy"]
         XCTAssertTrue(purchaseButton.waitForExistence(timeout: 3))
+        XCTAssertTrue(
+            app.descendants(matching: .any)["store.activity.preview.section"]
+                .waitForExistence(timeout: 3)
+        )
+        for style in ["dayRing", "imprintPress", "splitField"] {
+            XCTAssertTrue(
+                app.descendants(matching: .any)["store.activity.preview.\(style)"].exists,
+                "Missing paid Live Activity preview for \(style)."
+            )
+        }
 
         let storeAttachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
         storeAttachment.name = "Advanced benefits before purchase"

@@ -72,7 +72,7 @@ private enum PulseBootstrap {
             )
             try prepareArchiveWorkingDirectory(archiveWorkingDirectoryURL)
             let settings = try AppSettings(
-                sharedInterfacePreferences: try PulseSharedInterfacePreferences(
+                sharedSettings: try PulseSharedSettings(
                     appGroupIdentifier: PulseRuntimeIdentity.appGroupIdentifier
                 )
             )
@@ -94,7 +94,7 @@ private enum PulseBootstrap {
         } catch PulseAppError.invalidSettings {
             logger.error("Failed to load application settings.")
             return .failed(.settings)
-        } catch let error as PulseSharedInterfacePreferenceError {
+        } catch let error as PulseSharedSettingsError {
             logger.error("Failed to access shared interface settings: \(String(describing: error), privacy: .public)")
             return .failed(.sharedSettings)
         } catch {
@@ -137,11 +137,11 @@ private enum PulseBootstrap {
 
     @MainActor
     static func resetSettings() throws {
-        let sharedInterfacePreferences = try PulseSharedInterfacePreferences(
+        let sharedSettings = try PulseSharedSettings(
             appGroupIdentifier: PulseRuntimeIdentity.appGroupIdentifier
         )
         AppSettings.clearStoredValues(
-            sharedInterfacePreferences: sharedInterfacePreferences
+            sharedSettings: sharedSettings
         )
     }
 

@@ -14,7 +14,7 @@ Widget 是同一签到事实的系统入口，不是第二个应用：
 - Lock Screen 圆形显示带当日日号的开放环或实心完成印；
 - Lock Screen 矩形把过去六日节点以连接线汇入右侧今日印记，今天不重复成第七个小节点；
 - 未签到只提供单向签到；已签到无撤销入口；删除仍只在 App 内二次确认；
-- 不创建 Live Activity、Watch、Control、远程服务或第二套提醒。
+- Widget 不创建第二套 Live Activity、Watch、Control、远程服务或提醒计划；系统入口签到后由共享协调器结束当天 Live Activity 并重建唯一提醒计划。
 
 Widget 不保存 `isCheckedToday`、连续天数、名称副本或记录副本。所有状态必须从正式 Repository 投影。
 
@@ -43,7 +43,7 @@ FileManager.containerURL(forSecurityApplicationGroupIdentifier:)
 - 不存在 App 私有 store、旧库迁移、journal、staging、fallback 或双写。
 - 旧开发安装不属于公开数据合同，进入此首发基线时必须清洁安装。
 
-App Group UserDefaults 只允许 `PulseSharedInterfacePreferences` 管理 `interface.language`。缺失键表示 `system`，未知值必须失败关闭；不得保存构图、业务事实或可反向覆盖 store 的投影。Home Screen 构图由 `WidgetConfigurationIntent` 逐实例持有：正式枚举只含 `place` / `orbit` / `stack` / `bleed` / `letter` / `field` / `path` / `tide`，其中待落之处是唯一免费构图，其余七式需要统一高阶权益 entitlement。未知 raw value 失败关闭，不静默迁移。Widget extension 在生成 snapshot/timeline 时验证 StoreKit 权益，未验证或撤销时明确返回未解锁状态，不得用免费构图伪装成功。Lock Screen“节律汇印”使用独立 StaticConfiguration kind，不接收 Home Screen 构图参数。
+App Group UserDefaults 只允许 `PulseSharedSettings` 管理 `interface.language`、`reminder.enabled`、`reminder.timeMinutes` 与 `reminder.activityStyle`。这些是跨 App/Widget Intent 重建提醒计划所需的用户设置，不是签到事实或权益副本；未知枚举和非法时间必须失败关闭。不得保存构图、业务事实或可反向覆盖 store 的投影。Home Screen 构图由 `WidgetConfigurationIntent` 逐实例持有：正式枚举只含 `place` / `orbit` / `stack` / `bleed` / `letter` / `field` / `path` / `tide`，其中待落之处是唯一免费构图，其余七式需要统一高阶权益 entitlement。未知 raw value 失败关闭，不静默迁移。Widget extension 在生成 snapshot/timeline 时验证 StoreKit 权益，未验证或撤销时明确返回未解锁状态，不得用免费构图伪装成功。Lock Screen“节律汇印”使用独立 StaticConfiguration kind，不接收 Home Screen 构图参数。
 
 ## 4. 共享代码边界
 
@@ -53,7 +53,7 @@ App Group UserDefaults 只允许 `PulseSharedInterfacePreferences` 管理 `inter
 - Repository、命令、验证与提交回执；
 - 加密备份恢复合同；
 - 不可变 Widget 快照与 timeline 计划；
-- 不含业务事实的 `PulseSharedInterfacePreferences` 与纯 Foundation 日期本地化器；
+- 不含业务事实的 `PulseSharedSettings` 与纯 Foundation 日期本地化器；
 - `PulseWidgetUI/PulseWidgetRenderer.swift` 是 App 画廊与 Widget Extension 共同编译的唯一 Home Screen 渲染源，包含正式构图枚举、访问策略、物件渲染和原生日印，不保存状态也不写 Repository。只实现现行八式枚举。
 
 Core 不含 SwiftUI 页面、WidgetKit 布局、通知调度、触觉或宿主本地化资源。共享渲染源只接收不可变快照和宿主提供的本地化短文案。禁止复制 model、Repository、构图枚举、渲染器、偏好键或建立近似预览/写入路径。
@@ -67,7 +67,7 @@ App 与 Widget 的签到都通过 `SwiftDataPulseRepository.checkIn`：
 3. 不存在时插入并保存；
 4. 保存因并发写入失败时 rollback，再按同一键回读；
 5. 只有正式回读到记录才返回 `alreadyPresent`，否则报告原始持久化失败；
-6. 事实保存后才请求 Widget timeline reload。
+6. 事实保存后结束当天 Live Activity、按共享设置与已验证权益重建未来提醒，再请求 Widget timeline reload；提醒协调失败必须记录，但不能回滚已经成立的签到事实。
 
 不能依赖 App 与 Widget 共享内存锁。进程间由 SQLite 事务、唯一约束、rollback 和回读共同裁决。
 

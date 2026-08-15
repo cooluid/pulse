@@ -14,6 +14,7 @@ struct EnhancementStoreView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: PulseDesign.spacing32) {
                     hero
+                    activityPreviews
                     stylePreviews
                     capabilityList
                     restoreSection
@@ -32,6 +33,60 @@ struct EnhancementStoreView: View {
         .safeAreaInset(edge: .bottom, spacing: PulseDesign.spacing8) {
             purchaseAction
         }
+    }
+
+    private var activityPreviews: some View {
+        VStack(alignment: .leading, spacing: PulseDesign.spacing12) {
+            VStack(alignment: .leading, spacing: PulseDesign.spacing4) {
+                Text(verbatim: activityString("store.activity.preview.section"))
+                    .font(.headline.weight(.bold))
+                    .foregroundStyle(PulseDesign.ink)
+                Text(verbatim: activityString("store.activity.preview.detail"))
+                    .font(.footnote)
+                    .foregroundStyle(PulseDesign.secondary)
+            }
+
+            ScrollView(.horizontal) {
+                HStack(spacing: PulseDesign.spacing12) {
+                    ForEach(PulseReminderActivityStyle.allCases) { style in
+                        VStack(alignment: .leading, spacing: PulseDesign.spacing8) {
+                            PulseReminderActivityPreview(
+                                style: style,
+                                phase: .pending,
+                                locale: locale
+                            )
+                            .frame(
+                                width: PulseDesign.activityStorePreviewWidth,
+                                height: PulseDesign.activityStorePreviewHeight
+                            )
+
+                            Text(style.localizedName(locale: locale))
+                                .font(.caption.weight(.bold))
+                                .foregroundStyle(PulseDesign.ink)
+                        }
+                        .padding(PulseDesign.spacing8)
+                        .background(
+                            PulseDesign.surface.opacity(0.84),
+                            in: RoundedRectangle(
+                                cornerRadius: PulseDesign.widgetPreviewCornerRadius,
+                                style: .continuous
+                            )
+                        )
+                        .accessibilityIdentifier("store.activity.preview.\(style.rawValue)")
+                    }
+                }
+            }
+            .scrollIndicators(.hidden)
+        }
+        .accessibilityIdentifier("store.activity.preview.section")
+    }
+
+    private func activityString(_ key: String) -> String {
+        PulseLocalization.string(
+            key,
+            table: PulseLocalization.systemUITable,
+            locale: locale
+        )
     }
 
     private var hero: some View {

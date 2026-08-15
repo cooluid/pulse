@@ -104,7 +104,7 @@ iPad 需覆盖无后置能力差异、横竖屏、分屏和文件导入/导出�
 ## 7. 既有系统能力回归
 
 - 免费本地通知：授权、拒绝、外部撤权、实际到达、改时、签到后取消、跨日。
-- iOS 26 scheduled Live Activity：Lock Screen、Dynamic Island 各形态、容量竞争、撤权与免费通知切换。
+- iOS 26 scheduled Live Activity：日环 / 压印 / 裂野三样式在 Lock Screen、Dynamic Island 的 expanded / compact / minimal 形态；系统表面直接签到、锁定认证、App / Widget 签到后的完成态与结束；完整接受、部分接受、首个拒绝、容量竞争、撤权，以及剩余日期由免费通知接续且同日不重复。
 - Widget：App 未运行、设备锁定、跨午夜、快速双击、App/Widget 并发、杀进程和卸载重装。
 - StoreKit：Configuration 仅作开发 fixture；Sandbox、TestFlight、生产商品、购买/恢复/取消/待处理/退款/撤销各自取证。
 

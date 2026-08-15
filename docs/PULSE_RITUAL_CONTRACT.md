@@ -89,7 +89,7 @@ preparing → aligning → blending → encoding → completed / failed / cancel
 - Lock Screen 矩形：使用唯一“节律汇印”语法；左上显示今日短状态，过去六日节点上方显示不带日期后缀的本地化纯数字并以真实连接线汇入右侧唯一今日印记，今天数字显示在大印内部，不显示主承诺文本、星期或第七个今日小节点；
 - Home Screen 小号/中号：待落之处是唯一面向所有用户的免费构图；高阶权益解锁星环 / 叠印 / 数影 / 手札 / 静场 / 来路 / 潮痕。八式是产品构图名；外观以渲染器与人工截图为准。各式按任务选择快照事实。正式枚举只含现行八式，未知标识失败关闭。
 
-构图只是逐实例呈现选择：App Group 只保存 `PulseSharedInterfacePreferences` 的 `interface.language`，不得复制构图、签到记录、连续天数、日期、主承诺或购买状态。`WidgetConfigurationIntent` 是每个 Home Screen 实例的唯一构图来源；Widget extension 在生成每个 snapshot/timeline 时独立验证 entitlement，收费构图在权益未验证或撤销时明确显示未解锁，不得静默换成待落之处。Lock Screen / StandBy / Always-On 使用独立、无构图参数的 Accessory Widget kind，永久免费，不消费 Home Screen 构图，也不显示主承诺正文。App 与 Widget 内容消费同一语言；未知语言失败关闭，不能用系统语言伪装成功。
+构图只是逐实例呈现选择：App Group 只保存 `PulseSharedSettings` 的 `interface.language`，不得复制构图、签到记录、连续天数、日期、主承诺或购买状态。`WidgetConfigurationIntent` 是每个 Home Screen 实例的唯一构图来源；Widget extension 在生成每个 snapshot/timeline 时独立验证 entitlement，收费构图在权益未验证或撤销时明确显示未解锁，不得静默换成待落之处。Lock Screen / StandBy / Always-On 使用独立、无构图参数的 Accessory Widget kind，永久免费，不消费 Home Screen 构图，也不显示主承诺正文。App 与 Widget 内容消费同一语言；未知语言失败关闭，不能用系统语言伪装成功。
 
 Widget 的未签到操作使用 `Button`，不使用可以反向切换的 `Toggle`。Accessory 待签到时整块系统分配区域都是同一按钮，不能只让图形局部可点；完成态静态。签到可从系统入口创建，但删除仍只在 App 内二次确认。设备锁定时交互遵循系统认证，不绕过锁屏。
 
@@ -105,13 +105,13 @@ Compact、Minimal、Expanded 和 Lock Screen 必须都能独立理解；有灵�
 
 基础本地通知提醒永久免费。已购买增强的用户在支持且允许 Live Activities 的 iOS 26 系统上使用本地定时 Live Activity；未购买、iOS 18–25 或 iOS 26 关闭 Live Activities 时使用免费本地通知。未来远程 Live Activity 和微信提醒仍是后续候选，不能与当前主通道同时表达同一逻辑日的同一提醒。
 
-唯一 `ReminderDeliveryPolicy` 决定正式通道：
+唯一 `PulseReminderDeliveryPolicy` 决定正式通道：
 
 ```text
 deliveryMode = disabled | localNotification | scheduledLiveActivity
 ```
 
-只有用户关闭提醒时才为 `disabled`。未购买时主通道是 `localNotification`；已购买 iOS 26 设备在 Live Activities 被关闭时也选择本地通知。仅在用户主动开启提醒时请求通知权限，为免费基础触达和增强通道失效时的连续性服务；拒绝通知不能阻止仍可用的 scheduled Live Activity。iOS 26 不因设备没有灵动岛而改变通道，Lock Screen Live Activity 仍是正式表面。通道协调使用单调 revision；旧任务、旧权限结果和迟到回调不能恢复已经关闭的提醒。
+只有用户关闭提醒时才为 `disabled`。未购买时主通道是 `localNotification`；已购买 iOS 26 设备在 Live Activities 被关闭时也选择本地通知。仅在用户主动开启提醒时请求通知权限；它既服务免费基础触达，也覆盖 ActivityKit 有限计划容量之外的长期日期。拒绝通知时不能承诺连续提醒，因此不启用提醒。iOS 26 不因设备没有灵动岛而改变通道，Lock Screen Live Activity 仍是正式表面。通道协调使用单调 revision；旧任务、旧权限结果和迟到回调不能恢复已经关闭的提醒。
 
 ## 4. 日印仪式场景
 
@@ -125,7 +125,7 @@ deliveryMode = disabled | localNotification | scheduledLiveActivity
 
 - App 内先显示中性的写入反馈，不提前显示成功；
 - 保存成功后，App 主控件和 Live Activity 都切换到“已落印”；
-- 保存失败时不播放实心印记，Activity 显示最短诚实错误后结束；
+- 保存失败时不播放实心印记；系统报告 Intent 失败，Activity 保持待签到以允许重试；
 - Reduce Motion 使用淡入和形状替换，不使用位移、缩放或连续呼吸；
 - Always-On 直接显示最终静态状态；
 - 单击只签到；长按 0.45 秒表示“签到并拍照”，在权威提交成功后才请求相机；相机失败不回滚签到。
@@ -142,7 +142,7 @@ App 内页面只保存短暂的呈现阶段和动画进度，不持久化 `activ
 
 ### 4.2 留印提醒窗口
 
-只有 StoreKit 已验证高阶权益且用户主动开启提醒后，才允许在提醒时间自动启动 Live Activity；未购买用户在同一提醒时间使用免费本地通知。首版使用 transient Live Activity，每个逻辑日最多自动启动一次；它会在用户锁屏、收起扩展灵动岛或点按外部等系统定义的交互后结束，Pulse 不用 `staleDate` 伪造定时结束。设置页不能把 Live Activity 写成“仅灵动岛”，因为无灵动岛设备仍使用 Lock Screen 表面。
+只有 StoreKit 已验证高阶权益且用户主动开启提醒后，才允许在提醒时间自动启动 Live Activity；未购买用户在同一提醒时间使用免费本地通知。首版使用 standard Live Activity，每个逻辑日最多自动启动一次，保留到用户直接签到、从 App/Widget 签到或由系统结束；Pulse 不用 `staleDate` 伪造定时结束。设置页不能把 Live Activity 写成“仅灵动岛”，因为无灵动岛设备仍使用 Lock Screen 表面。
 
 Compact 示例：
 
@@ -159,7 +159,7 @@ Expanded 示例：
 
 正式语言可以是“今天还空着”“此刻，要不要留给未来？”“你随时可以回来”；禁止“即将断签”“赶快完成”“连续记录要失败了”、红色警告、抖动和惩罚性倒计时。
 
-用户关闭、窗口超时或完成签到后立即结束。关闭后当天不再次自动出现；不能为提高点击率反复启动或同时补发同义通知。
+用户关闭提醒或完成签到后结束。关闭后当天不再次自动出现；不能为提高点击率反复启动或同时补发同义通知。
 
 ### 4.3 今日影像窗口
 
@@ -194,12 +194,12 @@ Compact 显示实际进度，如 `◐ 63%`；Expanded 显示当前阶段、照�
 - 本地通知、灵动岛和微信对同一提醒只允许一个主通道实际发送；
 - 签到成功会取消当天本地通知、远程提醒任务和当前 `ReminderWindow`；
 - 照片邀请只能由签到成功转入，不能在签到前单独占用灵动岛；
-- transient 提醒由系统按短暂交互收口，不利用 ActivityKit 的八小时上限做全天常驻；
+- standard 提醒在权威签到后先显示短暂完成态再结束；不得跨逻辑日常驻；
 - 渲染 Activity 只在用户主动创建导出任务后启动，结束、失败和取消都必须收口文件与状态；
 - 系统可能压缩、隐藏或调整灵动岛呈现，任何业务完成都不能依赖用户看见动画。
 - iPhone 与 Apple Watch 对同一提醒只触达一次；不在 Watch 再建立一套独立每日通知计划来争夺注意力；
 
-iOS 26 的正式方案使用 ActivityKit 本地 `start:` 调度，不借本地通知触发、不要求 App 在后台执行，也不需要 APNs。调度器滚动提交最多 7 个 transient Activity；这个数字是 Pulse 的保守上限，不是对系统容量的承诺。系统可因设备预算、用户设置或并发 Activity 拒绝、延迟、压缩或隐藏呈现，产品不能承诺“到点必现”。
+iOS 26 的正式方案使用 ActivityKit 本地 `start:` 调度，不借本地通知触发、不要求 App 在后台执行，也不需要 APNs。调度器先提交最多 7 个 standard Activity，再从第一个未获接受的逻辑日起用本地通知补齐滚动 60 日窗口；若 ActivityKit 只接受前缀，已接受日期保留，剩余日期转本地通知，同一天不双发。7 是 Pulse 的产品上限，不是对系统容量的承诺。系统可因设备预算、用户设置或并发 Activity 拒绝、延迟、压缩或隐藏呈现，产品不能承诺“到点必现”。
 
 Pulse 最低版本为 iOS / iPadOS 18.0，因此只保留两条正式版本分支：iOS 26 的 scheduled Live Activity 与 iOS 18–25 的本地通知。未来若实现跨更长时间、服务端个性策略或远程启动，仍必须另行具备 push-to-start token、APNs 和最小后端证据链；不能把远程通道混进本轮本地买断功能。
 
@@ -265,7 +265,7 @@ render       = 实际进度环，用于岁月流影生成
 
 一次买断高阶权益：
 
-- iOS 26 本地定时 transient Live Activity；支持设备由系统同时提供 Dynamic Island，其他设备显示 Lock Screen 表面；
+- iOS 26 本地定时 standard Live Activity，含日环、印台、分野三种不同层级构图与系统表面直接签到；支持设备由系统同时提供 Dynamic Island，其他设备显示 Lock Screen 表面；
 - Home Screen「星环 / 叠印 / 数影 / 手札 / 静场 / 来路 / 潮痕」七种额外构图；
 - 一个商品、一个永久 entitlement；商品价格从 StoreKit 返回值读取，不持久化购买布尔副本；`PulseEnhancementContract.currentCapabilities` 是购买页当前已交付能力的唯一目录。
 
@@ -433,7 +433,7 @@ Watch 默认隐私等级高于 App 前台：
 ## 12. 平台依据
 
 - Live Activity 适合有明确开始和结束、持续不超过数小时的任务，并要求克制更新与敏感内容：[Live Activities HIG](https://developer.apple.com/design/human-interface-guidelines/live-activities)
-- iOS 26 可用 `start:` 在本地安排 Live Activity；scheduled Activity 计入设备相关并发上限，transient Activity 由系统按锁屏、收起或外部点按等交互结束，`staleDate` 只表示内容过期：[Displaying live data with Live Activities](https://developer.apple.com/documentation/activitykit/displaying-live-data-with-live-activities)
+- iOS 26 可用 `start:` 在本地安排 Live Activity；scheduled Activity 计入设备相关并发上限，standard Activity 必须由 App 的权威状态转换结束，`staleDate` 只表示内容过期：[Displaying live data with Live Activities](https://developer.apple.com/documentation/activitykit/displaying-live-data-with-live-activities)
 - Widget / Live Activity 单次动画最长两秒，Always-On 低亮度不播放动画：[Animating data updates in widgets and Live Activities](https://developer.apple.com/documentation/widgetkit/animating-data-updates-in-widgets-and-live-activities)
 - Widget App Intent、锁定设备认证与操作完成后的 timeline reload：[Adding interactivity to widgets and Live Activities](https://developer.apple.com/documentation/widgetkit/adding-interactivity-to-widgets-and-live-activities)
 - Live Activity 最长活跃八小时，之后最多在锁屏保留四小时：[Displaying live data with Live Activities](https://developer.apple.com/documentation/activitykit/displaying-live-data-with-live-activities)

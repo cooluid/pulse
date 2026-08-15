@@ -17,8 +17,12 @@ struct PulseWidgetsBundle: WidgetBundle {
 struct PulseReminderLiveActivity: Widget {
     var body: some WidgetConfiguration {
         ActivityConfiguration(for: PulseReminderActivityAttributes.self) { context in
-            PulseReminderLockScreenView(context: context)
-                .environment(\.locale, Locale(identifier: context.attributes.localeIdentifier))
+            let locale = Locale(identifier: context.attributes.localeIdentifier)
+            PulseReminderLockScreenView(
+                style: context.attributes.style,
+                phase: context.state.phase,
+                locale: locale
+            )
                 .activityBackgroundTint(PulseWidgetDesign.background)
                 .activitySystemActionForegroundColor(PulseWidgetDesign.action)
                 .widgetURL(PulseReminderActivityContract.deepLink)
@@ -26,102 +30,57 @@ struct PulseReminderLiveActivity: Widget {
             let locale = Locale(identifier: context.attributes.localeIdentifier)
             return DynamicIsland {
                 DynamicIslandExpandedRegion(.leading) {
-                    PulseReminderMark(size: 28)
+                    PulseReminderActivityMark(
+                        style: context.attributes.style,
+                        phase: context.state.phase,
+                        size: 28,
+                        surface: .island
+                    )
                 }
                 DynamicIslandExpandedRegion(.center) {
-                    Text(
-                        LocalizedStringResource(
-                            "activity.reminder.title",
-                            locale: locale
-                        )
+                    PulseReminderActivityHeadline(
+                        phase: context.state.phase,
+                        locale: locale,
+                        surface: .island
                     )
-                        .font(.headline)
-                        .lineLimit(1)
                 }
                 DynamicIslandExpandedRegion(.bottom) {
-                    HStack(spacing: PulseWidgetDesign.spacing8) {
-                        Text(
-                            LocalizedStringResource(
-                                "activity.reminder.body",
-                                locale: locale
-                            )
-                        )
-                            .font(.subheadline)
-                            .foregroundStyle(PulseWidgetDesign.secondary)
-                            .lineLimit(2)
-                        Spacer(minLength: PulseWidgetDesign.spacing8)
-                        Link(destination: PulseReminderActivityContract.deepLink) {
-                            Text(
-                                LocalizedStringResource(
-                                    "activity.reminder.action",
-                                    locale: locale
-                                )
-                            )
-                                .font(.subheadline.weight(.semibold))
-                        }
-                    }
+                    PulseReminderActivityActionRow(
+                        style: context.attributes.style,
+                        phase: context.state.phase,
+                        locale: locale,
+                        surface: .island
+                    )
                 }
             } compactLeading: {
-                PulseReminderMark(size: 18)
+                PulseReminderActivityMark(
+                    style: context.attributes.style,
+                    phase: context.state.phase,
+                    size: 18,
+                    surface: .island
+                )
             } compactTrailing: {
                 Text(
                     LocalizedStringResource(
-                        "activity.reminder.compact",
+                        context.state.phase == .completed
+                            ? "activity.reminder.completed.compact"
+                            : "activity.reminder.compact",
+                        table: PulseLocalization.systemUITable,
                         locale: locale
                     )
                 )
                     .font(.caption2.weight(.semibold))
             } minimal: {
-                PulseReminderMark(size: 18)
+                PulseReminderActivityMark(
+                    style: context.attributes.style,
+                    phase: context.state.phase,
+                    size: 18,
+                    surface: .island
+                )
             }
             .keylineTint(PulseWidgetDesign.grass)
             .widgetURL(PulseReminderActivityContract.deepLink)
         }
-    }
-}
-
-private struct PulseReminderLockScreenView: View {
-    let context: ActivityViewContext<PulseReminderActivityAttributes>
-
-    var body: some View {
-        HStack(spacing: PulseWidgetDesign.spacing8) {
-            PulseReminderMark(size: 40)
-
-            VStack(alignment: .leading, spacing: 2) {
-                Text("activity.reminder.title")
-                    .font(.headline)
-                Text("activity.reminder.body")
-                    .font(.subheadline)
-                    .foregroundStyle(PulseWidgetDesign.secondary)
-                    .lineLimit(2)
-            }
-
-            Spacer(minLength: PulseWidgetDesign.spacing8)
-
-            Link(destination: PulseReminderActivityContract.deepLink) {
-                Image(systemName: "arrow.up.right")
-                    .font(.headline.weight(.semibold))
-                    .frame(width: 44, height: 44)
-            }
-            .accessibilityLabel("activity.reminder.action")
-        }
-        .padding(PulseWidgetDesign.homeSafeInset)
-    }
-}
-
-private struct PulseReminderMark: View {
-    let size: CGFloat
-
-    var body: some View {
-        ZStack {
-            Circle()
-                .stroke(PulseWidgetDesign.grass, lineWidth: max(2, size * 0.1))
-            Circle()
-                .fill(PulseWidgetDesign.grass)
-                .frame(width: size * 0.2, height: size * 0.2)
-        }
-        .frame(width: size, height: size)
-        .accessibilityHidden(true)
     }
 }
 
@@ -280,7 +239,7 @@ private enum PulseWidgetRuntime {
         let language: PulseInterfaceLanguage
         do {
             context = try PulseWidgetSharedRuntime.makeContext()
-            language = try context.interfacePreferences.loadLanguage()
+            language = try context.sharedSettings.load().language
         } catch {
             return failureTimeline(
                 at: date,

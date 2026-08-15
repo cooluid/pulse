@@ -72,6 +72,30 @@ final class PulseAppModelTests: XCTestCase {
         XCTAssertEqual(context.widgetReloader.reloadCount, initialWidgetReloadCount + 1)
         await waitUntil { context.scheduler.snapshots.last?.checkedDays == context.model.checkedDays }
         XCTAssertEqual(context.scheduler.snapshots.last?.checkedDays, context.model.checkedDays)
+        XCTAssertEqual(context.scheduler.completedLiveActivityDays, [context.model.today!])
+    }
+
+    func testPurchasedUserCanSelectActivityStyleAndReschedule() async throws {
+        let context = try makeContext(hasEnhancement: true)
+        await context.model.start()
+
+        context.model.requestReminderActivityStyle(.splitField)
+        await waitUntil {
+            context.scheduler.snapshots.last?.activityStyle == .splitField
+        }
+
+        XCTAssertEqual(context.model.settings.reminderActivityStyle, .splitField)
+        XCTAssertNil(context.model.errorMessage)
+    }
+
+    func testUnpurchasedUserCannotWritePaidActivityStyle() async throws {
+        let context = try makeContext(hasEnhancement: false)
+        await context.model.start()
+
+        context.model.requestReminderActivityStyle(.imprintPress)
+
+        XCTAssertEqual(context.model.settings.reminderActivityStyle, .dayRing)
+        XCTAssertNotNil(context.model.errorMessage)
     }
 
     func testRejectedCheckInReturnsNoReceiptOrSuccessFeedback() async throws {
@@ -159,7 +183,7 @@ final class PulseAppModelTests: XCTestCase {
     func testPurchasedIOS26PathRequestsBasicNotificationPermissionButUsesLiveActivity() async throws {
         let context = try makeContext(
             notificationPermission: .notDetermined,
-            deliveryCapabilities: ReminderDeliveryCapabilities(
+            deliveryCapabilities: PulseReminderDeliveryCapabilities(
                 supportsScheduledLiveActivities: true,
                 liveActivitiesEnabled: true
             )
@@ -178,7 +202,7 @@ final class PulseAppModelTests: XCTestCase {
             .scheduledLiveActivity
         )
         XCTAssertEqual(context.scheduler.permissionRequestCount, 1)
-        XCTAssertEqual(context.model.notificationPermission, .notDetermined)
+        XCTAssertEqual(context.model.notificationPermission, .authorized)
     }
 
     func testStalePermissionResultCannotOverrideNewerDisabledIntent() async throws {
@@ -261,7 +285,7 @@ final class PulseAppModelTests: XCTestCase {
     private func makeContext(
         notificationPermission: NotificationPermissionState = .authorized,
         hasEnhancement: Bool = true,
-        deliveryCapabilities: ReminderDeliveryCapabilities = .init(
+        deliveryCapabilities: PulseReminderDeliveryCapabilities = .init(
             supportsScheduledLiveActivities: false,
             liveActivitiesEnabled: false
         )
@@ -292,7 +316,7 @@ final class PulseAppModelTests: XCTestCase {
         let defaults = UserDefaults(suiteName: suiteName)!
         defaults.removePersistentDomain(forName: suiteName)
         let settings = try AppSettings(
-            sharedInterfacePreferences: PulseSharedInterfacePreferences(defaults: defaults),
+            sharedSettings: PulseSharedSettings(defaults: defaults),
             defaults: defaults
         )
         let scheduler = TestReminderScheduler(
@@ -392,16 +416,17 @@ private final class TestWidgetTimelineReloader: WidgetTimelineReloading {
 @MainActor
 private final class TestReminderScheduler: ReminderScheduling {
     var permission: NotificationPermissionState
-    let deliveryCapabilities: ReminderDeliveryCapabilities
+    let deliveryCapabilities: PulseReminderDeliveryCapabilities
     var suspendPermissionRequest = false
     private(set) var snapshots: [ReminderScheduleSnapshot] = []
+    private(set) var completedLiveActivityDays: [LogicalDay] = []
     private(set) var removeAllCount = 0
     private(set) var permissionRequestCount = 0
     private var permissionContinuation: CheckedContinuation<Bool, Never>?
 
     init(
         permission: NotificationPermissionState,
-        deliveryCapabilities: ReminderDeliveryCapabilities
+        deliveryCapabilities: PulseReminderDeliveryCapabilities
     ) {
         self.permission = permission
         self.deliveryCapabilities = deliveryCapabilities
@@ -417,12 +442,16 @@ private final class TestReminderScheduler: ReminderScheduling {
 
     func requestPermission() async throws -> Bool {
         permissionRequestCount += 1
-        guard suspendPermissionRequest else {
-            return permission == .authorized
+        guard !suspendPermissionRequest else {
+            return await withCheckedContinuation { continuation in
+                permissionContinuation = continuation
+            }
         }
-        return await withCheckedContinuation { continuation in
-            permissionContinuation = continuation
+        if permission == .notDetermined {
+            permission = .authorized
+            return true
         }
+        return permission == .authorized
     }
 
     func completePermissionRequest(granted: Bool) {
@@ -431,7 +460,7 @@ private final class TestReminderScheduler: ReminderScheduling {
         permissionContinuation = nil
     }
 
-    func reconcile(_ snapshot: ReminderScheduleSnapshot) async throws -> ReminderDeliveryMode {
+    func reconcile(_ snapshot: ReminderScheduleSnapshot) async throws -> PulseReminderDeliveryMode {
         snapshots.append(snapshot)
         if snapshot.enabled,
            snapshot.deliveryMode == .localNotification,
@@ -439,6 +468,10 @@ private final class TestReminderScheduler: ReminderScheduling {
             throw PulseAppError.notificationPermissionDenied
         }
         return snapshot.deliveryMode
+    }
+
+    func completeLiveActivity(for logicalDay: LogicalDay) async {
+        completedLiveActivityDays.append(logicalDay)
     }
 
     func removeAllPulseNotifications() async {

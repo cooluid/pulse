@@ -87,6 +87,18 @@ enum PulseErrorPresentation {
             return PulseLocalization.string(key, locale: locale)
         }
 
+        if let reminderError = error as? PulseReminderSchedulingError {
+            let key = switch reminderError {
+            case .notificationPermissionDenied:
+                "error.notification_denied"
+            case .liveActivitiesUnavailable:
+                "error.live_activities_unavailable"
+            case .liveActivitySchedulingFailed:
+                "error.live_activity_scheduling"
+            }
+            return PulseLocalization.string(key, locale: locale)
+        }
+
         if let storeError = error as? StoreAccessError {
             let key = switch storeError {
             case .productUnavailable:

@@ -4,7 +4,7 @@ import XCTest
 
 final class ReminderDeliveryPolicyTests: XCTestCase {
     func testDisabledReminderNeverProducesADeliveryChannel() {
-        let mode = ReminderDeliveryPolicy.deliveryMode(
+        let mode = PulseReminderDeliveryPolicy.deliveryMode(
             reminderEnabled: false,
             hasEnhancementEntitlement: true,
             capabilities: .init(
@@ -17,7 +17,7 @@ final class ReminderDeliveryPolicyTests: XCTestCase {
     }
 
     func testUnpurchasedUserReceivesFreeLocalNotification() {
-        let mode = ReminderDeliveryPolicy.deliveryMode(
+        let mode = PulseReminderDeliveryPolicy.deliveryMode(
             reminderEnabled: true,
             hasEnhancementEntitlement: false,
             capabilities: .init(
@@ -30,7 +30,7 @@ final class ReminderDeliveryPolicyTests: XCTestCase {
     }
 
     func testPurchasedUserOnOlderSystemUsesLocalNotification() {
-        let mode = ReminderDeliveryPolicy.deliveryMode(
+        let mode = PulseReminderDeliveryPolicy.deliveryMode(
             reminderEnabled: true,
             hasEnhancementEntitlement: true,
             capabilities: .init(
@@ -43,7 +43,7 @@ final class ReminderDeliveryPolicyTests: XCTestCase {
     }
 
     func testPurchasedUserOnIOS26UsesScheduledLiveActivity() {
-        let mode = ReminderDeliveryPolicy.deliveryMode(
+        let mode = PulseReminderDeliveryPolicy.deliveryMode(
             reminderEnabled: true,
             hasEnhancementEntitlement: true,
             capabilities: .init(
@@ -56,7 +56,7 @@ final class ReminderDeliveryPolicyTests: XCTestCase {
     }
 
     func testPurchasedUserUsesLocalNotificationWhenLiveActivitiesAreDisabled() {
-        let mode = ReminderDeliveryPolicy.deliveryMode(
+        let mode = PulseReminderDeliveryPolicy.deliveryMode(
             reminderEnabled: true,
             hasEnhancementEntitlement: true,
             capabilities: .init(

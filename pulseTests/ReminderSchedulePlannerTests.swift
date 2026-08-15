@@ -32,7 +32,7 @@ final class ReminderSchedulePlannerTests: XCTestCase {
             timeZone: shanghai
         )
         let snapshot = makeSnapshot(
-            time: ReminderTime(hour: 20, minute: 0)!,
+            time: PulseReminderTime(hour: 20, minute: 0)!,
             now: now
         )
 
@@ -57,7 +57,7 @@ final class ReminderSchedulePlannerTests: XCTestCase {
         )
         let checkedDay = LogicalDay(year: 2026, month: 8, day: 12)
         let snapshot = makeSnapshot(
-            time: ReminderTime(hour: 8, minute: 0)!,
+            time: PulseReminderTime(hour: 8, minute: 0)!,
             checkedDays: [checkedDay],
             now: now
         )
@@ -80,7 +80,7 @@ final class ReminderSchedulePlannerTests: XCTestCase {
             timeZone: newYork
         )
         let snapshot = makeSnapshot(
-            time: ReminderTime(hour: 2, minute: 30)!,
+            time: PulseReminderTime(hour: 2, minute: 30)!,
             timeZoneIdentifier: newYork.identifier,
             now: now
         )
@@ -100,7 +100,7 @@ final class ReminderSchedulePlannerTests: XCTestCase {
 
     private func makeSnapshot(
         enabled: Bool = true,
-        time: ReminderTime = .standard,
+        time: PulseReminderTime = .standard,
         timeZoneIdentifier: String = "Asia/Shanghai",
         checkedDays: Set<LogicalDay> = [],
         now: Date? = nil
@@ -109,6 +109,7 @@ final class ReminderSchedulePlannerTests: XCTestCase {
             enabled: enabled,
             deliveryMode: enabled ? .localNotification : .disabled,
             time: time,
+            activityStyle: .dayRing,
             timeZoneIdentifier: timeZoneIdentifier,
             localeIdentifier: "en",
             checkedDays: checkedDays,

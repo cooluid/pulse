@@ -939,6 +939,30 @@ final class PulseWidgetSnapshotTests: XCTestCase {
         }
     }
 
+    func testPulseSystemUIStringCatalogHasBothSupportedLanguages() throws {
+        let projectRoot = URL(fileURLWithPath: #filePath)
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+        let catalogURL = projectRoot
+            .appendingPathComponent("PulseWidgetUI", isDirectory: true)
+            .appendingPathComponent("PulseSystemUI.xcstrings", isDirectory: false)
+        let catalog = try JSONDecoder().decode(
+            WidgetStringCatalog.self,
+            from: Data(contentsOf: catalogURL)
+        )
+
+        XCTAssertEqual(catalog.sourceLanguage, "en")
+        XCTAssertFalse(catalog.strings.isEmpty)
+        for (key, entry) in catalog.strings {
+            for language in ["en", "zh-Hans"] {
+                XCTAssertFalse(
+                    entry.localizations[language]?.stringUnit.value.isEmpty ?? true,
+                    "Missing \(language) translation for \(key)."
+                )
+            }
+        }
+    }
+
     func testUserFacingCopyDoesNotExposeDesignOrEngineeringJargon() throws {
         let projectRoot = URL(fileURLWithPath: #filePath)
             .deletingLastPathComponent()
@@ -950,6 +974,9 @@ final class PulseWidgetSnapshotTests: XCTestCase {
             projectRoot
                 .appendingPathComponent("PulseWidgets", isDirectory: true)
                 .appendingPathComponent("Localizable.xcstrings", isDirectory: false),
+            projectRoot
+                .appendingPathComponent("PulseWidgetUI", isDirectory: true)
+                .appendingPathComponent("PulseSystemUI.xcstrings", isDirectory: false),
         ]
         let forbiddenTerms = [
             "大开口日环", "开放日环", "承印坑", "潮唇", "巨大剪影", "蜡封", "邮戳", "七枚日印",
@@ -998,36 +1025,52 @@ final class PulseWidgetSnapshotTests: XCTestCase {
         }
     }
 
-    func testSharedInterfacePreferencesPersistLanguageAndReset() throws {
-        let suiteName = "PulseSharedInterfacePreferences.\(UUID().uuidString)"
+    func testSharedSettingsPersistTypedSystemSurfaceChoicesAndReset() throws {
+        let suiteName = "PulseSharedSettings.\(UUID().uuidString)"
         let defaults = try XCTUnwrap(UserDefaults(suiteName: suiteName))
         defer { defaults.removePersistentDomain(forName: suiteName) }
-        let preferences = PulseSharedInterfacePreferences(defaults: defaults)
+        let preferences = PulseSharedSettings(defaults: defaults)
 
-        XCTAssertEqual(try preferences.loadLanguage(), .system)
+        XCTAssertEqual(try preferences.load().language, .system)
 
         for language in PulseInterfaceLanguage.allCases {
             preferences.saveLanguage(language)
-            XCTAssertEqual(try preferences.loadLanguage(), language)
+            XCTAssertEqual(try preferences.load().language, language)
         }
 
+        preferences.saveReminderEnabled(true)
+        preferences.saveReminderTime(try XCTUnwrap(PulseReminderTime(hour: 8, minute: 15)))
+        preferences.saveReminderActivityStyle(.imprintPress)
+        let configured = try preferences.load()
+        XCTAssertTrue(configured.reminderEnabled)
+        XCTAssertEqual(configured.reminderTime.minutesFromMidnight, 495)
+        XCTAssertEqual(configured.reminderActivityStyle, .imprintPress)
+
         preferences.reset()
-        XCTAssertEqual(try preferences.loadLanguage(), .system)
+        XCTAssertEqual(
+            try preferences.load(),
+            PulseSharedSettings.Snapshot(
+                language: .system,
+                reminderEnabled: false,
+                reminderTime: .standard,
+                reminderActivityStyle: .dayRing
+            )
+        )
     }
 
     func testSharedInterfacePreferencesRejectUnknownStoredValues() throws {
-        let suiteName = "PulseSharedInterfacePreferences.Invalid.\(UUID().uuidString)"
+        let suiteName = "PulseSharedSettings.Invalid.\(UUID().uuidString)"
         let defaults = try XCTUnwrap(UserDefaults(suiteName: suiteName))
         defer { defaults.removePersistentDomain(forName: suiteName) }
-        let preferences = PulseSharedInterfacePreferences(defaults: defaults)
+        let preferences = PulseSharedSettings(defaults: defaults)
 
         defaults.set(
             "unknown-language",
-            forKey: PulseSharedInterfacePreferences.languageStorageKey
+            forKey: PulseSharedSettings.StorageKey.language
         )
-        XCTAssertThrowsError(try preferences.loadLanguage()) { error in
+        XCTAssertThrowsError(try preferences.load()) { error in
             XCTAssertEqual(
-                error as? PulseSharedInterfacePreferenceError,
+                error as? PulseSharedSettingsError,
                 .invalidStoredLanguage("unknown-language")
             )
         }

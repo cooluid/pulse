@@ -361,7 +361,7 @@ Widget 扩展需要跨进程读取或写入数据，不能把 `isCheckedToday` �
 ### 10.4 StoreKit 权益
 
 - `FeatureAccessController` 只从 StoreKit 验证交易派生当前权益，不把 `isPro=true` 作为可手工篡改的业务真相持久化。
-- `PulseEnhancementContract` 集中商品 ID，`ReminderDeliveryPolicy` 与 `PulseWidgetStyleAccessPolicy` 分别统一决定提醒和样式能力；页面、写入入口和 Widget extension 渲染边界都检查，不能只隐藏按钮。
+- `PulseEnhancementContract` 集中商品 ID，`PulseReminderDeliveryPolicy` 与 `PulseWidgetStyleAccessPolicy` 分别统一决定提醒和样式能力；页面、写入入口和 Widget extension 渲染边界都检查，不能只隐藏按钮。
 - 商品 ID、权益和展示文案集中定义；价格永远来自 StoreKit 本地化商品。
 - 使用 StoreKit Configuration、Sandbox、TestFlight 和生产四层验证购买、取消、退款、续费、过期、家庭共享决策与恢复购买。
 - 初期不需要引入第三方付费墙 SDK；原生 StoreKit 已能满足单一权益，避免增加账号、分析和第二套商品真源。

@@ -118,13 +118,59 @@ extension PulseWidgetStyle {
     }
 }
 
+extension PulseReminderActivityStyle {
+    func localizedName(locale: Locale) -> String {
+        switch self {
+        case .dayRing:
+            PulseLocalization.string(
+                "settings.activity.style.day_ring",
+                table: PulseLocalization.systemUITable,
+                locale: locale
+            )
+        case .imprintPress:
+            PulseLocalization.string(
+                "settings.activity.style.imprint_press",
+                table: PulseLocalization.systemUITable,
+                locale: locale
+            )
+        case .splitField:
+            PulseLocalization.string(
+                "settings.activity.style.split_field",
+                table: PulseLocalization.systemUITable,
+                locale: locale
+            )
+        }
+    }
+
+    func localizedDescription(locale: Locale) -> String {
+        switch self {
+        case .dayRing:
+            PulseLocalization.string(
+                "settings.activity.style.day_ring.detail",
+                table: PulseLocalization.systemUITable,
+                locale: locale
+            )
+        case .imprintPress:
+            PulseLocalization.string(
+                "settings.activity.style.imprint_press.detail",
+                table: PulseLocalization.systemUITable,
+                locale: locale
+            )
+        case .splitField:
+            PulseLocalization.string(
+                "settings.activity.style.split_field.detail",
+                table: PulseLocalization.systemUITable,
+                locale: locale
+            )
+        }
+    }
+}
+
 @MainActor
 @Observable
 final class AppSettings {
     enum StorageKey {
         static let hapticsEnabled = "settings.hapticsEnabled"
-        static let reminderEnabled = "settings.reminderEnabled"
-        static let reminderTimeMinutes = "settings.reminderTimeMinutes"
         static let weekStart = "settings.weekStart"
         static let theme = "settings.theme"
         static let resetPending = "maintenance.resetPending"
@@ -132,7 +178,7 @@ final class AppSettings {
     }
 
     @ObservationIgnored private let defaults: UserDefaults
-    @ObservationIgnored private let sharedInterfacePreferences: PulseSharedInterfacePreferences
+    @ObservationIgnored private let sharedSettings: PulseSharedSettings
     @ObservationIgnored private var isLoading = true
 
     var hapticsEnabled: Bool {
@@ -140,11 +186,24 @@ final class AppSettings {
     }
 
     private(set) var reminderEnabled: Bool {
-        didSet { persist(StorageKey.reminderEnabled, value: reminderEnabled) }
+        didSet {
+            guard !isLoading else { return }
+            sharedSettings.saveReminderEnabled(reminderEnabled)
+        }
     }
 
-    var reminderTime: ReminderTime {
-        didSet { persist(StorageKey.reminderTimeMinutes, value: reminderTime.minutesFromMidnight) }
+    var reminderTime: PulseReminderTime {
+        didSet {
+            guard !isLoading else { return }
+            sharedSettings.saveReminderTime(reminderTime)
+        }
+    }
+
+    var reminderActivityStyle: PulseReminderActivityStyle {
+        didSet {
+            guard !isLoading else { return }
+            sharedSettings.saveReminderActivityStyle(reminderActivityStyle)
+        }
     }
 
     var weekStart: WeekStart {
@@ -162,46 +221,43 @@ final class AppSettings {
     var language: PulseInterfaceLanguage {
         didSet {
             guard !isLoading else { return }
-            sharedInterfacePreferences.saveLanguage(language)
+            sharedSettings.saveLanguage(language)
         }
     }
 
     var locale: Locale { language.locale }
 
     init(
-        sharedInterfacePreferences: PulseSharedInterfacePreferences,
+        sharedSettings: PulseSharedSettings,
         defaults: UserDefaults = .standard
     ) throws {
         self.defaults = defaults
-        self.sharedInterfacePreferences = sharedInterfacePreferences
+        self.sharedSettings = sharedSettings
         defaults.register(defaults: [
             StorageKey.hapticsEnabled: true,
-            StorageKey.reminderEnabled: false,
-            StorageKey.reminderTimeMinutes: ReminderTime.standard.minutesFromMidnight,
             StorageKey.weekStart: WeekStart.monday.rawValue,
             StorageKey.theme: AppTheme.system.rawValue,
             StorageKey.mediaInvitationEnabled: true
         ])
-        let loadedLanguage: PulseInterfaceLanguage
+        let sharedSnapshot: PulseSharedSettings.Snapshot
         do {
-            loadedLanguage = try sharedInterfacePreferences.loadLanguage()
+            sharedSnapshot = try sharedSettings.load()
         } catch {
             throw PulseAppError.invalidSettings
         }
-        guard let loadedReminderTime = ReminderTime(
-            minutesFromMidnight: defaults.integer(forKey: StorageKey.reminderTimeMinutes)
-        ), let loadedWeekStart = WeekStart(rawValue: defaults.integer(forKey: StorageKey.weekStart)),
+        guard let loadedWeekStart = WeekStart(rawValue: defaults.integer(forKey: StorageKey.weekStart)),
         let loadedTheme = AppTheme(rawValue: defaults.string(forKey: StorageKey.theme) ?? "") else {
             throw PulseAppError.invalidSettings
         }
 
         hapticsEnabled = defaults.bool(forKey: StorageKey.hapticsEnabled)
-        reminderEnabled = defaults.bool(forKey: StorageKey.reminderEnabled)
-        reminderTime = loadedReminderTime
+        reminderEnabled = sharedSnapshot.reminderEnabled
+        reminderTime = sharedSnapshot.reminderTime
+        reminderActivityStyle = sharedSnapshot.reminderActivityStyle
         weekStart = loadedWeekStart
         theme = loadedTheme
         mediaInvitationEnabled = defaults.bool(forKey: StorageKey.mediaInvitationEnabled)
-        language = loadedLanguage
+        language = sharedSnapshot.language
         isLoading = false
     }
 
@@ -212,13 +268,14 @@ final class AppSettings {
     func reset() {
         isLoading = true
         Self.clearStoredValues(
-            sharedInterfacePreferences: sharedInterfacePreferences,
+            sharedSettings: sharedSettings,
             defaults: defaults
         )
 
         hapticsEnabled = true
         reminderEnabled = false
         reminderTime = .standard
+        reminderActivityStyle = .dayRing
         weekStart = .monday
         theme = .system
         mediaInvitationEnabled = true
@@ -239,18 +296,16 @@ final class AppSettings {
     }
 
     static func clearStoredValues(
-        sharedInterfacePreferences: PulseSharedInterfacePreferences,
+        sharedSettings: PulseSharedSettings,
         defaults: UserDefaults = .standard
     ) {
         [
             StorageKey.hapticsEnabled,
-            StorageKey.reminderEnabled,
-            StorageKey.reminderTimeMinutes,
             StorageKey.weekStart,
             StorageKey.theme,
             StorageKey.mediaInvitationEnabled
         ].forEach(defaults.removeObject(forKey:))
-        sharedInterfacePreferences.reset()
+        sharedSettings.reset()
     }
 
     private func persist(_ key: String, value: Any) {

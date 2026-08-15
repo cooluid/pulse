@@ -160,9 +160,9 @@ MVP 的目标不是搭建任务平台，而是让以下闭环稳定成立：
 
 高阶权益只由 StoreKit 2 已验证交易派生，不持久化购买布尔值，也不进入 `CheckInRecord`、Repository、备份格式或 Widget 事实。商品展示名称与价格消费 App Store 返回值；`PulseEnhancementContract.currentCapabilities` 是已交付买断能力的唯一目录。新能力只有真正发布后才能加入目录和高阶权益页；加载失败、待处理、取消、无可恢复购买和验证失败均不得伪装为成功。
 
-唯一 `ReminderDeliveryPolicy` 按“用户提醒意图 + 已验证权益 + 系统能力”选择一个提醒通道：只有用户关闭提醒时才为关闭；未购买、iOS / iPadOS 18–25，或 iOS 26 关闭 Live Activities 时，使用滚动 60 个日历日的一次性免费本地通知；已购买且 iOS / iPadOS 26 允许 Live Activities 时，滚动安排最多 7 个 transient Live Activity，支持灵动岛的 iPhone 由系统同时显示 Dynamic Island 表面。不得同时安排同义通知和 Live Activity。
+唯一 `PulseReminderDeliveryPolicy` 按“用户提醒意图 + 已验证权益 + 系统能力”选择主通道：只有用户关闭提醒时才为关闭；未购买、iOS / iPadOS 18–25，或 iOS 26 关闭 Live Activities 时，使用滚动 60 个日历日的一次性免费本地通知；已购买且 iOS / iPadOS 26 允许 Live Activities 时，先滚动安排系统接受的最多 7 个 standard Live Activity，再以本地通知覆盖同一 60 日窗口中未被 ActivityKit 接受的日期。任何逻辑日只能有一种触达，不能同日重复。
 
-通知权限只在用户主动开启提醒时请求，用于免费基础提醒与增强通道不可用时的同一提醒连续性；首次启动不得直接弹出。用户拒绝通知时，仍可用的 scheduled Live Activity 不应被阻止；两个正式通道都不可用时必须显示同步失败并保留开关意图，不得静默关闭。今天已过提醒时间时从明天开始，已签到日期不生成请求；启动、回到前台、签到、权益或提醒设置变化时刷新并先取消旧通道。系统调度容量和呈现由 iOS 裁决，产品文案不能承诺“到点一定出现”。
+通知权限只在用户主动开启提醒时请求，用于免费基础提醒，以及付费 Live Activity 系统容量之外的长期连续性；首次启动不得直接弹出。用户拒绝通知时不能假装获得完整连续提醒，提醒开关保持关闭并明确说明授权要求。今天已过提醒时间时从明天开始，已签到日期不生成请求；启动、回到前台、任一系统入口签到、权益或提醒设置变化时刷新并先取消旧计划。系统调度容量和呈现由 iOS 裁决，产品文案不能承诺“到点一定出现”。
 
 `PulseWidgetStyleAccessPolicy` 规定待落之处是唯一免费 Home Screen Widget 构图；星环、叠印、数影、手札、静场、来路、潮痕属于同一个高阶权益 entitlement。八式产品清单见 [widget-ritual-objects](./prototypes/widget-ritual-objects/)（探索草稿）。构图由 Home Screen WidgetKit 逐实例配置持有；Widget extension 在渲染边界验证权益，未验证或撤销时明确显示未解锁状态，不得静默替换构图，也不能读取 App 侧购买副本。正式枚举与共享渲染器只含现行八式，未知标识失败关闭。Lock Screen“节律汇印”使用独立、无构图参数的 Widget kind。Widget 动效边界以 [WIDGET_MOTION_CONTRACT.md](./WIDGET_MOTION_CONTRACT.md) 为准：事实只来自 store 投影；Timeline 以集中边界提交早间 / 日间 / 晚间三种低幅氛围状态并在下一逻辑日重投影，系统不承诺准点展示；签到 reload 后每式由自己的主物件完成一次有限变装，Reduce Motion 直接呈现相同终态。
 
@@ -189,7 +189,7 @@ MVP 的目标不是搭建任务平台，而是让以下闭环稳定成立：
 
 ### 5.2 P1：1.1 增强范围
 
-- 免费基础提醒：所有用户均可使用本地通知；一次买断高阶权益在受支持的 iOS 26 系统上增加定时 transient Live Activity / Dynamic Island 表面。
+- 免费基础提醒：所有用户均可使用本地通知；一次买断高阶权益在受支持的 iOS 26 系统上增加三种可选择、可直接签到的定时 standard Live Activity / Dynamic Island 构图。
 - 版本化 Pulse 加密备份 v2 导出与全量恢复，包含签到、媒体清单、原图与缩略图；备份/恢复永久属于免费数据主权能力。
 - 签到时区设置。
 - 一周起始日设置。

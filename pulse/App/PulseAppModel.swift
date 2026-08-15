@@ -64,7 +64,7 @@ final class PulseAppModel {
     private(set) var operation: AppOperation?
     private(set) var notificationPermission: NotificationPermissionState = .notDetermined
     private(set) var reminderSyncState: ReminderSyncState = .idle
-    private(set) var reminderDeliveryMode: ReminderDeliveryMode = .disabled
+    private(set) var reminderDeliveryMode: PulseReminderDeliveryMode = .disabled
     private(set) var navigationResetToken = UUID()
     var selectedMonth: LogicalDay?
     var errorMessage: String?
@@ -104,8 +104,12 @@ final class PulseAppModel {
         reminderEnabledIntent ?? settings.reminderEnabled
     }
 
-    private var preferredReminderDeliveryMode: ReminderDeliveryMode {
-        ReminderDeliveryPolicy.deliveryMode(
+    var supportsScheduledLiveActivities: Bool {
+        reminderScheduler.deliveryCapabilities.supportsScheduledLiveActivities
+    }
+
+    private var preferredReminderDeliveryMode: PulseReminderDeliveryMode {
+        PulseReminderDeliveryPolicy.deliveryMode(
             reminderEnabled: displayedReminderEnabled,
             hasEnhancementEntitlement: featureAccess.hasEnhancement,
             capabilities: reminderScheduler.deliveryCapabilities
@@ -213,7 +217,8 @@ final class PulseAppModel {
                 hapticFeedback.notifySuccess()
             }
             widgetTimelineReloader.reloadDailyImprint()
-            enqueueReminderReconciliation()
+            await reminderScheduler.completeLiveActivity(for: today)
+            await enqueueReminderReconciliation().value
             scheduleDateBoundaryRefresh()
             return receipt
         } catch {
@@ -373,20 +378,13 @@ final class PulseAppModel {
                 }
 
                 let allowed: Bool
-                if deliveryMode == .scheduledLiveActivity {
-                    if await reminderScheduler.permissionState() == .notDetermined {
-                        _ = try? await reminderScheduler.requestPermission()
-                    }
+                switch await reminderScheduler.permissionState() {
+                case .authorized:
                     allowed = true
-                } else {
-                    switch await reminderScheduler.permissionState() {
-                    case .authorized:
-                        allowed = true
-                    case .notDetermined:
-                        allowed = try await reminderScheduler.requestPermission()
-                    case .denied:
-                        allowed = false
-                    }
+                case .notDetermined:
+                    allowed = try await reminderScheduler.requestPermission()
+                case .denied:
+                    allowed = false
                 }
 
                 guard revision == reminderIntentRevision else { return }
@@ -417,8 +415,17 @@ final class PulseAppModel {
         }
     }
 
-    func requestReminderTime(_ reminderTime: ReminderTime) {
+    func requestReminderTime(_ reminderTime: PulseReminderTime) {
         settings.reminderTime = reminderTime
+        _ = enqueueReminderReconciliation()
+    }
+
+    func requestReminderActivityStyle(_ style: PulseReminderActivityStyle) {
+        guard featureAccess.hasEnhancement else {
+            present(PulseAppError.enhancementRequired)
+            return
+        }
+        settings.reminderActivityStyle = style
         _ = enqueueReminderReconciliation()
     }
 
@@ -670,12 +677,13 @@ final class PulseAppModel {
 
         let snapshot = ReminderScheduleSnapshot(
             enabled: settings.reminderEnabled,
-            deliveryMode: ReminderDeliveryPolicy.deliveryMode(
+            deliveryMode: PulseReminderDeliveryPolicy.deliveryMode(
                 reminderEnabled: settings.reminderEnabled,
                 hasEnhancementEntitlement: featureAccess.hasEnhancement,
                 capabilities: reminderScheduler.deliveryCapabilities
             ),
             time: settings.reminderTime,
+            activityStyle: settings.reminderActivityStyle,
             timeZoneIdentifier: habit.timeZoneIdentifier,
             localeIdentifier: settings.locale.identifier,
             checkedDays: checkedDays,

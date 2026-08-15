@@ -2,7 +2,7 @@ import AppIntents
 import PulseCore
 import WidgetKit
 
-struct PulseCheckInIntent: AppIntent {
+struct PulseCheckInIntent: LiveActivityIntent {
     static let title: LocalizedStringResource = "widget.intent.check_in.title"
     static let description = IntentDescription("widget.intent.check_in.description")
 
@@ -14,7 +14,7 @@ struct PulseCheckInIntent: AppIntent {
 
     @MainActor
     func perform() async throws -> some IntentResult {
-        try PulseWidgetSharedRuntime.checkIn()
+        try await PulseWidgetSharedRuntime.checkInAndReconcileReminders()
         for kind in PulseWidgetContract.allKinds {
             WidgetCenter.shared.reloadTimelines(ofKind: kind)
         }

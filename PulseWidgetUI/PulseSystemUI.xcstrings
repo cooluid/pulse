@@ -1,0 +1,144 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "activity.reminder.body" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Leave today’s imprint when you’re ready." } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "准备好时，落下今天这一印。" } }
+      }
+    },
+    "activity.reminder.check_in" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Check in" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "落印" } }
+      }
+    },
+    "activity.reminder.compact" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Today" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "今天" } }
+      }
+    },
+    "activity.reminder.completed.body" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "It is safely recorded." } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "已经稳稳记下。" } }
+      }
+    },
+    "activity.reminder.completed.compact" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Done" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "已落印" } }
+      }
+    },
+    "activity.reminder.completed.title" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Today’s imprint is set" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "今日一印已落" } }
+      }
+    },
+    "activity.reminder.title" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Today is still open" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "今天这一印还未落下" } }
+      }
+    },
+    "settings.activity.style" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Dynamic Island style" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "灵动岛样式" } }
+      }
+    },
+    "settings.activity.style.day_ring" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Day Ring" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "日环" } }
+      }
+    },
+    "settings.activity.style.day_ring.detail" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "An open ring closes around today." } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "一道未闭合的圆环围住今天，落印后完整闭合。" } }
+      }
+    },
+    "settings.activity.style.detail" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Choose how the reminder appears. Every style completes the same daily check-in." } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "选择提醒出现的方式。无论哪种样式，完成的都是今天这次签到。" } }
+      }
+    },
+    "settings.activity.style.imprint_press" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Imprint Press" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "压印" } }
+      }
+    },
+    "settings.activity.style.imprint_press.detail" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "The island becomes a press and leaves a solid mark." } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "岛体化作印台，完成时压下一枚实印。" } }
+      }
+    },
+    "settings.activity.style.navigation_title" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Dynamic Island" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "灵动岛" } }
+      }
+    },
+    "settings.activity.style.preview.completed" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Completed" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "完成" } }
+      }
+    },
+    "settings.activity.style.preview.pending" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Pending" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "待落印" } }
+      }
+    },
+    "settings.activity.style.preview_state" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Preview state" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "预览状态" } }
+      }
+    },
+    "settings.activity.style.selected" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Selected" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "已选择" } }
+      }
+    },
+    "settings.activity.style.split_field" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Split Field" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "裂野" } }
+      }
+    },
+    "settings.activity.style.split_field.detail" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Two living traces rise from the black field and meet." } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "两道生命痕迹从黑场生长，完成时彼此汇合。" } }
+      }
+    },
+    "settings.activity.style.title" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Choose your imprint moment" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "选择你的印记时刻" } }
+      }
+    },
+    "store.activity.preview.detail" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Three styles. One direct check-in." } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "三种样式，一个直接落印动作。" } }
+      }
+    },
+    "store.activity.preview.section" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Dynamic Island rituals" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "灵动岛印记时刻" } }
+      }
+    }
+  },
+  "version" : "1.0"
+}

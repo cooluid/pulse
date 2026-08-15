@@ -19,10 +19,14 @@ final class ReminderSchedulerLiveActivityTests: XCTestCase {
             client.scheduledReminders.count,
             PulseReminderActivityContract.maximumScheduledActivities
         )
+        XCTAssertEqual(notifications.addedIdentifiers.count, 53)
         XCTAssertEqual(client.removeAllCount, 1)
+        XCTAssertEqual(client.preservedLogicalDays, [
+            LogicalDay(year: 2026, month: 8, day: 10),
+        ])
     }
 
-    func testCapacityFailureKeepsAnAlreadyAcceptedPrefix() async throws {
+    func testCapacityFailureSchedulesNotificationsForEveryUnacceptedDay() async throws {
         let client = TestReminderLiveActivityScheduler(failingCall: 3)
         let notifications = TestReminderNotificationScheduler(permission: .authorized)
         let scheduler = ReminderScheduler(
@@ -34,6 +38,7 @@ final class ReminderSchedulerLiveActivityTests: XCTestCase {
 
         XCTAssertEqual(mode, .scheduledLiveActivity)
         XCTAssertEqual(client.scheduledReminders.count, 3)
+        XCTAssertEqual(notifications.addedIdentifiers.count, 58)
         XCTAssertEqual(client.removeAllCount, 1)
     }
 
@@ -65,18 +70,52 @@ final class ReminderSchedulerLiveActivityTests: XCTestCase {
             _ = try await scheduler.reconcile(makeSnapshot())
             XCTFail("Expected all unavailable delivery channels to fail reconciliation.")
         } catch {
-            XCTAssertEqual(error as? PulseAppError, .liveActivitySchedulingFailed)
+            XCTAssertEqual(
+                error as? PulseReminderSchedulingError,
+                .liveActivitySchedulingFailed
+            )
         }
 
         XCTAssertEqual(client.removeAllCount, 3)
         XCTAssertTrue(notifications.addedIdentifiers.isEmpty)
     }
 
-    private func makeSnapshot() -> ReminderScheduleSnapshot {
+    func testCompletionIsForwardedToTheLiveActivityAuthority() async {
+        let client = TestReminderLiveActivityScheduler()
+        let scheduler = ReminderScheduler(
+            notificationScheduler: TestReminderNotificationScheduler(permission: .authorized),
+            liveActivityScheduler: client
+        )
+        let day = LogicalDay(year: 2026, month: 8, day: 10)
+
+        await scheduler.completeLiveActivity(for: day)
+
+        XCTAssertEqual(client.completedDays, [day])
+    }
+
+    func testBasicNotificationPlanDoesNotPreserveAnyLiveActivity() async throws {
+        let client = TestReminderLiveActivityScheduler()
+        let scheduler = ReminderScheduler(
+            notificationScheduler: TestReminderNotificationScheduler(permission: .authorized),
+            liveActivityScheduler: client
+        )
+
+        let mode = try await scheduler.reconcile(
+            makeSnapshot(deliveryMode: .localNotification)
+        )
+
+        XCTAssertEqual(mode, .localNotification)
+        XCTAssertEqual(client.preservedLogicalDays, [nil])
+    }
+
+    private func makeSnapshot(
+        deliveryMode: PulseReminderDeliveryMode = .scheduledLiveActivity
+    ) -> ReminderScheduleSnapshot {
         ReminderScheduleSnapshot(
             enabled: true,
-            deliveryMode: .scheduledLiveActivity,
-            time: ReminderTime(hour: 13, minute: 0)!,
+            deliveryMode: deliveryMode,
+            time: PulseReminderTime(hour: 13, minute: 0)!,
+            activityStyle: .dayRing,
             timeZoneIdentifier: "UTC",
             localeIdentifier: "en_US",
             checkedDays: [],
@@ -145,13 +184,15 @@ private final class TestReminderLiveActivityScheduler: ReminderLiveActivitySched
         case rejected
     }
 
-    let capabilities = ReminderDeliveryCapabilities(
+    let capabilities = PulseReminderDeliveryCapabilities(
         supportsScheduledLiveActivities: true,
         liveActivitiesEnabled: true
     )
     private let failingCall: Int?
     private(set) var scheduledReminders: [PlannedReminder] = []
+    private(set) var completedDays: [LogicalDay] = []
     private(set) var removeAllCount = 0
+    private(set) var preservedLogicalDays: [LogicalDay?] = []
 
     init(failingCall: Int? = nil) {
         self.failingCall = failingCall
@@ -164,7 +205,12 @@ private final class TestReminderLiveActivityScheduler: ReminderLiveActivitySched
         }
     }
 
-    func removeAll() async {
+    func complete(logicalDay: LogicalDay) async {
+        completedDays.append(logicalDay)
+    }
+
+    func removeAll(preservingActiveLogicalDay: LogicalDay?) async {
         removeAllCount += 1
+        preservedLogicalDays.append(preservingActiveLogicalDay)
     }
 }
