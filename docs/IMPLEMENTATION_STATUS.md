@@ -32,7 +32,7 @@
 
 - 品牌颜色由 `design/brand-tokens.json` 生成；主导航为状态式悬浮底栏等现行结构。全 App 外观可持续改画，以代码与人工截图为准。
 - 今日主动作支持单击签到与 0.45 秒长按“签到并拍照”；长按先权威签到再请求相机，VoiceOver 提供独立动作。待签到进入时最多一次有限呼吸；权威提交后才播放成功反馈；Reduce Motion 使用静态等价。
-- 高阶权益在独立权益页；价格只读 StoreKit，已交付能力只读 `PulseEnhancementContract.currentCapabilities`。末项权益与恢复购买须能完整滚到购买条上方。
+- 高阶权益在独立权益页；价格只读 StoreKit，已交付能力只读 `PulseEnhancementContract.currentCapabilities`。Widget 画廊收费卡以标题行“锁 + 高级功能”徽标作为唯一购买页入口，不再保留卡片底部的重复查看按钮。末项权益与恢复购买须能完整滚到购买条上方。
 - Home Screen 八式产品枚举与共享渲染源 `PulseWidgetHomeRenderer` 已落地（待落之处免费，其余收费）。事实边界：纸层不映射历史、画廊预览不写权威 store、未解锁明确拒绝。
 - Home Screen 为 `AppIntentConfiguration`，构图由系统逐实例持有；Lock Screen“节律汇印”为无构图参数的独立 kind。未签到整块是唯一签到按钮；Extension 在 timeline 边界独立验证权益。
 - Widget 动效为“稀疏时段氛围 + 权威签到事件”：`PulseWidgetTimelineSchedule` 每天最多五条（当前 + 剩余 06/12/18 + 下一逻辑日）；氛围不报时、不承诺准点。单次动画 ≤ 两秒由 `PulseWidgetMotionPresentation.systemMaximumAnimationDuration` 与测试门禁持有。签到 reload 后各式用自有主物件做一次有限变装；画廊与 Extension 共用 Renderer，预览不写 store。Reduce Motion / Always-On 走静态终态。正式枚举只含现行八式；未知旧标识失败关闭。

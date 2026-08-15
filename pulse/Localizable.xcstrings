@@ -3462,19 +3462,19 @@
         }
       }
     },
-    "widget.gallery.enhancement.open" : {
+    "widget.gallery.enhancement.hint" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "View Advanced Features"
+            "value" : "Opens the Advanced Features page."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "查看高级功能"
+            "value" : "打开高级功能页面。"
           }
         }
       }

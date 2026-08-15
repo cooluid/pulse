@@ -132,20 +132,6 @@ private struct PulseWidgetStyleCard: View {
                 .font(.footnote)
                 .foregroundStyle(PulseDesign.secondary)
                 .fixedSize(horizontal: false, vertical: true)
-
-            if isLocked {
-                HStack {
-                    Spacer(minLength: 0)
-                    Button(action: onOpenStore) {
-                        Text("widget.gallery.enhancement.open")
-                            .font(.footnote.weight(.semibold))
-                            .frame(minHeight: PulseDesign.minimumHitTarget)
-                    }
-                    .buttonStyle(.borderless)
-                    .foregroundStyle(PulseDesign.action)
-                    .accessibilityIdentifier("widget.gallery.enhancement.\(style.rawValue)")
-                }
-            }
         }
         .padding(PulseDesign.spacing12)
         .background {
@@ -318,12 +304,19 @@ private struct PulseWidgetStyleCard: View {
     }
 
     private var lockedBadge: some View {
-        Label("widget.gallery.locked", systemImage: "lock.fill")
-            .font(.caption2.weight(.medium))
-            .foregroundStyle(PulseDesign.action)
-            .padding(.horizontal, PulseDesign.spacing8)
-            .padding(.vertical, PulseDesign.spacing4)
-            .background(PulseDesign.field.opacity(0.12), in: Capsule())
+        Button(action: onOpenStore) {
+            Label("widget.gallery.locked", systemImage: "lock.fill")
+                .font(.caption2.weight(.medium))
+                .foregroundStyle(PulseDesign.action)
+                .padding(.horizontal, PulseDesign.spacing8)
+                .padding(.vertical, PulseDesign.spacing4)
+                .background(PulseDesign.field.opacity(0.12), in: Capsule())
+                .frame(minHeight: PulseDesign.minimumHitTarget)
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityHint("widget.gallery.enhancement.hint")
+        .accessibilityIdentifier("widget.gallery.enhancement.\(style.rawValue)")
     }
 
     private enum PreviewState {

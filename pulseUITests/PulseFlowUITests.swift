@@ -253,7 +253,12 @@ final class PulseFlowUITests: XCTestCase {
         XCTAssertTrue(premiumOption.waitForExistence(timeout: 3))
         XCTAssertFalse(includedOption.label.contains("已包含"))
         XCTAssertFalse(includedOption.label.contains("已解锁"))
+        XCTAssertEqual(
+            app.buttons.matching(identifier: "widget.gallery.enhancement.orbit").count,
+            1
+        )
         XCTAssertTrue(premiumStoreButton.label.contains("高级功能"))
+        XCTAssertTrue(premiumStoreButton.isHittable)
 
         let previewButton = app.buttons["widget.gallery.preview.place"]
         XCTAssertTrue(previewButton.waitForExistence(timeout: 3))
