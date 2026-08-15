@@ -262,9 +262,10 @@ final class PulseWidgetSnapshotTests: XCTestCase {
             let offset = PulseReminderActivityMarkGeometry.fireflyOffset(
                 ringDiameter: metrics.ringDiameter
             )
-            let fireflyOuterRadius = (
-                metrics.fireflyDiameter + metrics.fireflyOutlineWidth
-            ) / 2
+            let fireflyOuterRadius = max(
+                metrics.fireflyGlowDiameter / 2,
+                (metrics.fireflyDiameter + metrics.fireflyOutlineWidth) / 2
+            )
             let canvasRadius = metrics.glyphSize / 2
 
             XCTAssertLessThanOrEqual(
@@ -276,7 +277,73 @@ final class PulseWidgetSnapshotTests: XCTestCase {
                 canvasRadius + 0.0001
             )
             XCTAssertLessThan(metrics.fireflyDiameter, metrics.ringDiameter)
+            switch configuration.surface {
+            case .island:
+                XCTAssertGreaterThan(
+                    metrics.fireflyGlowDiameter,
+                    metrics.fireflyDiameter
+                )
+            case .lockScreen:
+                XCTAssertEqual(
+                    metrics.fireflyGlowDiameter,
+                    metrics.fireflyDiameter,
+                    accuracy: 0.0001
+                )
+            }
         }
+    }
+
+    func testActivityColorsSeparateIslandLightFromTimeAndLockScreenContrast() throws {
+        let projectRoot = URL(fileURLWithPath: #filePath)
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+        let tokenURL = projectRoot
+            .appendingPathComponent("design", isDirectory: true)
+            .appendingPathComponent("brand-tokens.json", isDirectory: false)
+        let assetRoot = projectRoot
+            .appendingPathComponent("pulse", isDirectory: true)
+            .appendingPathComponent("Assets.xcassets", isDirectory: true)
+        let root = try XCTUnwrap(
+            JSONSerialization.jsonObject(with: Data(contentsOf: tokenURL))
+                as? [String: Any]
+        )
+
+        for appearance in ["light", "dark"] {
+            let colors = try XCTUnwrap(root[appearance] as? [String: String])
+            XCTAssertEqual(colors["activityIslandFirefly"], "#FFFFFF")
+            XCTAssertNotEqual(
+                colors["activityIslandFirefly"],
+                colors["activityIslandTime"]
+            )
+            XCTAssertNotEqual(
+                colors["activityIslandFirefly"],
+                colors["activityLockScreenFirefly"]
+            )
+            XCTAssertNil(colors["activityFirefly"])
+        }
+
+        for assetName in [
+            "PulseActivityIslandFirefly",
+            "PulseActivityIslandTime",
+            "PulseActivityLockScreenFirefly",
+        ] {
+            XCTAssertTrue(
+                FileManager.default.fileExists(
+                    atPath: assetRoot
+                        .appendingPathComponent("\(assetName).colorset", isDirectory: true)
+                        .appendingPathComponent("Contents.json", isDirectory: false)
+                        .path
+                )
+            )
+        }
+        XCTAssertFalse(
+            FileManager.default.fileExists(
+                atPath: assetRoot
+                    .appendingPathComponent("PulseActivityFirefly.colorset", isDirectory: true)
+                    .appendingPathComponent("Contents.json", isDirectory: false)
+                    .path
+            )
+        )
     }
 
     func testReminderActivityTimeUsesTheAttributeTimeZone() {

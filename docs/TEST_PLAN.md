@@ -105,7 +105,7 @@ iPad 需覆盖无后置能力差异、横竖屏、分屏和文件导入/导出�
 ## 7. 既有系统能力回归
 
 - 免费本地通知：授权、拒绝、外部撤权、实际到达、改时、签到后取消、跨日。
-- iOS 26 scheduled Live Activity：唯一“萤火日晕”在 Lock Screen、Dynamic Island 的 expanded / compact / minimal 形态；圆弧与萤火点共享极坐标路径，萤火点的描边与光晕不得越出系统分配的紧凑画布，compact / expanded 显示 Activity attributes 中的真实提醒时间；系统表面只出现事实标题、时间和“签到”动作，不出现陪伴式说教文案；系统表面直接签到、锁定认证、App / Widget 签到后的完成态与结束；完整接受、部分接受、首个拒绝、容量竞争、撤权，以及剩余日期由免费通知接续且同日不重复。
+- iOS 26 scheduled Live Activity：唯一“萤火日晕”在 Lock Screen、Dynamic Island 的 expanded / compact / minimal 形态；圆弧与萤火点共享极坐标路径，灵动岛使用白色热芯与有边界的光晕，锁屏保留琥珀色萤火点，萤火点与光晕均不得越出系统分配的紧凑画布；降低亮度时移除光晕但保留等价白色终态；compact / expanded 显示 Activity attributes 中的真实提醒时间；系统表面只出现事实标题、时间和“签到”动作，不出现陪伴式说教文案；系统表面直接签到、锁定认证、App / Widget 签到后的完成态与结束；完整接受、部分接受、首个拒绝、容量竞争、撤权，以及剩余日期由免费通知接续且同日不重复。
 - 高级功能页的“萤火日晕”卡必须同时显示 expanded、compact、minimal、完成态和 Lock Screen，并与正式渲染器共用印记、时间及状态组件。全部预览禁用命中与无障碍交互，点击或 VoiceOver 激活不得写入签到事实；中英文、默认与 Accessibility Dynamic Type 下分别截图验收。
 - Widget：App 未运行、设备锁定、跨午夜、快速双击、App/Widget 并发、杀进程和卸载重装。
 - StoreKit：Configuration 仅作开发 fixture；Sandbox、TestFlight、生产商品、购买/恢复/取消/待处理/退款/撤销各自取证。

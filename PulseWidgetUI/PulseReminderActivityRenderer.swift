@@ -19,6 +19,7 @@ struct PulseReminderActivityMarkGeometry {
         let ringDiameter: CGFloat
         let fireflyDiameter: CGFloat
         let fireflyOutlineWidth: CGFloat
+        let fireflyGlowDiameter: CGFloat
         let completedCoreDiameter: CGFloat
     }
 
@@ -26,7 +27,7 @@ struct PulseReminderActivityMarkGeometry {
         size: CGFloat,
         surface: PulseReminderActivitySurface
     ) -> Metrics {
-        let glyphSize = surface == .island ? size * 0.90 : size
+        let glyphSize = size
         let lineWidth = max(
             surface == .island ? 1.6 : 2.4,
             glyphSize * 0.10
@@ -39,9 +40,18 @@ struct PulseReminderActivityMarkGeometry {
             surface == .island ? 0.65 : 0.9,
             lineWidth * 0.18
         )
+        let fireflyGlowDiameter = surface == .island
+            ? max(
+                PulseWidgetDesign.activityIslandFireflyGlowMinimumDiameter,
+                glyphSize * PulseWidgetDesign.activityIslandFireflyGlowDiameterRatio
+            )
+            : fireflyDiameter
         let ringDiameter = glyphSize - max(
             lineWidth,
-            fireflyDiameter + fireflyOutlineWidth
+            max(
+                fireflyDiameter + fireflyOutlineWidth,
+                fireflyGlowDiameter
+            )
         )
 
         return Metrics(
@@ -50,6 +60,7 @@ struct PulseReminderActivityMarkGeometry {
             ringDiameter: ringDiameter,
             fireflyDiameter: fireflyDiameter,
             fireflyOutlineWidth: fireflyOutlineWidth,
+            fireflyGlowDiameter: fireflyGlowDiameter,
             completedCoreDiameter: ringDiameter * 0.22
         )
     }
@@ -119,23 +130,47 @@ struct PulseReminderActivityMark: View {
     }
 
     private var firefly: some View {
-        Circle()
-            .fill(PulseWidgetDesign.activityFirefly)
-            .overlay {
+        ZStack {
+            if shouldGlow {
                 Circle()
-                    .stroke(
-                        fireflyOutlineColor,
-                        lineWidth: metrics.fireflyOutlineWidth
+                    .fill(
+                        RadialGradient(
+                            colors: [
+                                fireflyColor.opacity(
+                                    PulseWidgetDesign.activityIslandFireflyGlowCoreOpacity
+                                ),
+                                fireflyColor.opacity(
+                                    PulseWidgetDesign.activityIslandFireflyGlowMiddleOpacity
+                                ),
+                                .clear,
+                            ],
+                            center: .center,
+                            startRadius: 0,
+                            endRadius: metrics.fireflyGlowDiameter / 2
+                        )
+                    )
+                    .frame(
+                        width: metrics.fireflyGlowDiameter,
+                        height: metrics.fireflyGlowDiameter
                     )
             }
-            .frame(width: metrics.fireflyDiameter, height: metrics.fireflyDiameter)
-            .offset(x: fireflyOffset.width, y: fireflyOffset.height)
-            .shadow(
-                color: shouldGlow
-                    ? PulseWidgetDesign.activityFirefly.opacity(0.72)
-                    : .clear,
-                radius: shouldGlow ? max(1.5, metrics.glyphSize * 0.09) : 0
-            )
+
+            Circle()
+                .fill(fireflyColor)
+                .overlay {
+                    Circle()
+                        .stroke(
+                            fireflyOutlineColor,
+                            lineWidth: metrics.fireflyOutlineWidth
+                        )
+                }
+                .frame(width: metrics.fireflyDiameter, height: metrics.fireflyDiameter)
+        }
+        .frame(
+            width: metrics.fireflyGlowDiameter,
+            height: metrics.fireflyGlowDiameter
+        )
+        .offset(x: fireflyOffset.width, y: fireflyOffset.height)
     }
 
     private var fireflyOffset: CGSize {
@@ -156,8 +191,14 @@ struct PulseReminderActivityMark: View {
 
     private var fireflyOutlineColor: Color {
         surface == .island
-            ? PulseWidgetDesign.activityIslandBackground
+            ? PulseWidgetDesign.activityIslandFirefly
             : PulseWidgetDesign.background
+    }
+
+    private var fireflyColor: Color {
+        surface == .island
+            ? PulseWidgetDesign.activityIslandFirefly
+            : PulseWidgetDesign.activityLockScreenFirefly
     }
 
     private var shouldGlow: Bool {
@@ -250,7 +291,7 @@ struct PulseReminderActivityTimeText: View {
 
     private var foregroundColor: Color {
         surface == .island
-            ? PulseWidgetDesign.activityFirefly
+            ? PulseWidgetDesign.activityIslandTime
             : PulseWidgetDesign.activityMark
     }
 }

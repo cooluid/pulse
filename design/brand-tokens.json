@@ -2,7 +2,9 @@
   "light" : {
     "action" : "#1F5E34",
     "actionForeground" : "#FFFFFF",
-    "activityFirefly" : "#B86A00",
+    "activityIslandFirefly" : "#FFFFFF",
+    "activityIslandTime" : "#B86A00",
+    "activityLockScreenFirefly" : "#B86A00",
     "activityMark" : "#1F5E34",
     "background" : "#EDF5E7",
     "field" : "#8AA57D",
@@ -22,7 +24,9 @@
   "dark" : {
     "action" : "#276D3D",
     "actionForeground" : "#F7FBF2",
-    "activityFirefly" : "#F5C84B",
+    "activityIslandFirefly" : "#FFFFFF",
+    "activityIslandTime" : "#F5C84B",
+    "activityLockScreenFirefly" : "#F5C84B",
     "activityMark" : "#91D55B",
     "background" : "#07120A",
     "field" : "#73966D",
