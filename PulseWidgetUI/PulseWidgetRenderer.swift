@@ -775,9 +775,11 @@ struct PulseWidgetHomeRenderer: View {
     private func path(size: CGSize) -> some View {
         let inset = pt(usesMediumMetrics ? 16 : 12, in: size)
         let todaySide = pt(usesMediumMetrics ? 60 : 46, in: size)
+        let geometry = pathTrailGeometry(in: size)
 
         return ZStack(alignment: .topLeading) {
             baseBackground
+            pathAtmosphere(size: size, geometry: geometry)
 
             pathInkStroke(size: size)
             pathDayNodes(size: size)
@@ -793,7 +795,11 @@ struct PulseWidgetHomeRenderer: View {
                 Spacer(minLength: pt(8, in: size))
                 Text(verbatim: pathSummaryText)
                     .font(.system(size: pt(11, in: size), weight: .semibold))
-                    .foregroundStyle(actionColor)
+                    .foregroundStyle(
+                        colorScheme == .dark && usesFullColorPalette
+                            ? grassColor.opacity(0.82)
+                            : actionColor
+                    )
                     .lineLimit(1)
             }
             .font(.system(size: pt(11, in: size), weight: .semibold))
@@ -812,41 +818,137 @@ struct PulseWidgetHomeRenderer: View {
             PulsePathTodaySeal(
                 isChecked: snapshot.isCheckedToday,
                 dayNumber: dayNumber,
-                usesFullColorPalette: usesFullColorPalette,
-                colorScheme: colorScheme
+                usesFullColorPalette: usesFullColorPalette
             )
             .frame(width: todaySide, height: todaySide)
             .scaleEffect(snapshot.isCheckedToday ? 1 : 0.94)
             .animation(motion(.footprint), value: snapshot.isCheckedToday)
-            .padding(.trailing, pt(usesMediumMetrics ? 14 : 10, in: size))
-            .padding(.bottom, pt(usesMediumMetrics ? 14 : 12, in: size))
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
+            .position(geometry.todayCenter)
         }
         .clipped()
     }
 
+    @ViewBuilder
+    private func pathAtmosphere(
+        size: CGSize,
+        geometry: PulsePathTrailGeometry
+    ) -> some View {
+        if usesFullColorPalette {
+            LinearGradient(
+                stops: [
+                    .init(color: surfaceColor.opacity(0.72), location: 0),
+                    .init(color: baseBackground.opacity(0.96), location: 0.48),
+                    .init(
+                        color: fieldColor.opacity(snapshot.isCheckedToday ? 0.13 : 0.08),
+                        location: 1
+                    ),
+                ],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+
+            RadialGradient(
+                colors: [
+                    surfaceColor.opacity(0.58),
+                    surfaceColor.opacity(0.14),
+                    Color.clear,
+                ],
+                center: .center,
+                startRadius: 0,
+                endRadius: max(size.width, size.height) * 0.48
+            )
+            .frame(width: size.width * 0.78, height: size.height * 0.82)
+            .position(
+                x: size.width * 0.18 + ambientHorizontalShift(in: size) * 0.72,
+                y: size.height * 0.59 + ambientVerticalShift(in: size) * 0.46
+            )
+
+            PulsePathHillContours()
+                .stroke(
+                    fieldColor.opacity(pathContourOpacity),
+                    style: StrokeStyle(
+                        lineWidth: pt(0.85, in: size),
+                        lineCap: .round,
+                        lineJoin: .round
+                    )
+                )
+                .frame(width: size.width, height: size.height)
+                .offset(
+                    x: ambientHorizontalShift(in: size) * 0.34,
+                    y: ambientVerticalShift(in: size) * 0.24
+                )
+
+            RadialGradient(
+                colors: [
+                    grassColor.opacity(snapshot.isCheckedToday ? 0.16 : 0.09),
+                    grassColor.opacity(snapshot.isCheckedToday ? 0.055 : 0.03),
+                    Color.clear,
+                ],
+                center: .center,
+                startRadius: 0,
+                endRadius: max(size.width, size.height) * 0.40
+            )
+            .frame(width: size.width * 0.66, height: size.height * 1.02)
+            .position(
+                x: geometry.todayCenter.x + ambientHorizontalShift(in: size) * 0.92,
+                y: geometry.todayCenter.y + ambientVerticalShift(in: size) * 0.62
+            )
+        } else {
+            PulsePathHillContours()
+                .stroke(
+                    secondaryColor.opacity(0.10),
+                    style: StrokeStyle(
+                        lineWidth: pt(0.8, in: size),
+                        lineCap: .round,
+                        lineJoin: .round
+                    )
+                )
+                .frame(width: size.width, height: size.height)
+        }
+    }
+
     private func pathInkStroke(size: CGSize) -> some View {
         let geometry = pathTrailGeometry(in: size)
-        let color = snapshot.isCheckedToday ? grassColor : actionColor
-        let lineWidth = pt(usesMediumMetrics ? 11 : 8.5, in: size)
-        let softWidth = pt(usesMediumMetrics ? 28 : 22, in: size)
+        let lineWidth = pt(usesMediumMetrics ? 2.2 : 1.6, in: size)
+        let softWidth = pt(usesMediumMetrics ? 24 : 18, in: size)
         let shape = PulsePathInkSpineShape(points: geometry.spinePoints)
+        let arrivalStart: CGFloat = usesMediumMetrics ? 0.72 : 0.68
+        let arrivalEnd = snapshot.isCheckedToday ? 1.0 : arrivalStart
 
         return ZStack {
             shape
                 .stroke(
-                    color.opacity(usesFullColorPalette ? 0.16 : 0.10),
+                    actionColor.opacity(usesFullColorPalette ? 0.055 : 0.08),
                     style: StrokeStyle(lineWidth: softWidth, lineCap: .round, lineJoin: .round)
                 )
             shape
                 .stroke(
-                    color.opacity(usesFullColorPalette ? 0.92 : 0.78),
+                    actionColor.opacity(usesFullColorPalette ? 0.72 : 0.76),
                     style: StrokeStyle(lineWidth: lineWidth, lineCap: .round, lineJoin: .round)
+                )
+            shape
+                .trim(from: arrivalStart, to: arrivalEnd)
+                .stroke(
+                    usesFullColorPalette ? grassColor : primaryColor,
+                    style: StrokeStyle(
+                        lineWidth: lineWidth * 1.24,
+                        lineCap: .round,
+                        lineJoin: .round
+                    )
+                )
+            shape
+                .trim(from: arrivalStart, to: arrivalEnd)
+                .stroke(
+                    (usesFullColorPalette ? grassColor : primaryColor).opacity(0.13),
+                    style: StrokeStyle(
+                        lineWidth: softWidth * 0.72,
+                        lineCap: .round,
+                        lineJoin: .round
+                    )
                 )
         }
         .frame(width: size.width, height: size.height)
         .animation(motion(.footprint), value: snapshot.isCheckedToday)
-        .animation(ambientMotion(.footprint), value: ambientPeriod)
         .allowsHitTesting(false)
     }
 
@@ -863,7 +965,6 @@ struct PulseWidgetHomeRenderer: View {
         }
         .frame(width: size.width, height: size.height)
         .animation(motion(.footprint), value: snapshot.isCheckedToday)
-        .animation(ambientMotion(.footprint), value: ambientPeriod)
         .allowsHitTesting(false)
     }
 
@@ -871,7 +972,7 @@ struct PulseWidgetHomeRenderer: View {
         _ item: PulseWidgetDaySnapshot,
         diameter: CGFloat
     ) -> some View {
-        let lineWidth = max(1.2, diameter * 0.16)
+        let lineWidth = max(0.9, diameter * 0.15)
 
         return Circle()
             .fill(pathNodeFill(item))
@@ -887,7 +988,7 @@ struct PulseWidgetHomeRenderer: View {
     private func pathNodeFill(_ item: PulseWidgetDaySnapshot) -> Color {
         switch item.state {
         case .checked:
-            return snapshot.isCheckedToday ? grassColor : actionColor
+            return actionColor
         case .missed, .beforeHabit, .todayPending:
             return baseBackground.opacity(usesFullColorPalette ? 0.88 : 0.35)
         }
@@ -899,7 +1000,7 @@ struct PulseWidgetHomeRenderer: View {
         }
         switch item.state {
         case .checked:
-            return snapshot.isCheckedToday ? grassColor : actionColor
+            return actionColor
         case .missed, .beforeHabit, .todayPending:
             // Pale grass — never gray secondary — for hollow missed marks.
             return grassColor.opacity(0.42)
@@ -909,9 +1010,7 @@ struct PulseWidgetHomeRenderer: View {
     private func pathTrailGeometry(in size: CGSize) -> PulsePathTrailGeometry {
         PulsePathTrailGeometry(
             size: size,
-            usesMediumMetrics: usesMediumMetrics,
-            ambientShift: ambientHorizontalShift(in: size) * 0.85,
-            period: ambientPeriod
+            usesMediumMetrics: usesMediumMetrics
         )
     }
 
@@ -1213,6 +1312,14 @@ struct PulseWidgetHomeRenderer: View {
             locale: locale,
             Int32(snapshot.previousSixCheckedCount)
         )
+    }
+
+    private var pathContourOpacity: Double {
+        switch ambientPeriod {
+        case .morning: 0.055
+        case .daylight: 0.075
+        case .evening: 0.10
+        }
     }
 
     private var ambientPeriod: PulseWidgetAmbientPeriod {
@@ -2198,43 +2305,41 @@ private struct PulsePathTrailGeometry {
 
     let size: CGSize
     let usesMediumMetrics: Bool
-    let ambientShift: CGFloat
-    let period: PulseWidgetAmbientPeriod
 
-    /// Deliberate S-curve fractions — not colinear — so the spine reads as ink, not a ruler.
+    /// A quiet two-bend route: history approaches today instead of reading as a chart.
     private var nodeFractions: [(x: CGFloat, y: CGFloat, side: CGFloat)] {
-        let wave: CGFloat
-        switch period {
-        case .morning: wave = -0.03
-        case .daylight: wave = 0
-        case .evening: wave = 0.03
-        }
-
         if usesMediumMetrics {
             return [
-                (0.05, 0.78 + wave, 11),
-                (0.17, 0.52 - wave, 12),
-                (0.30, 0.70 + wave, 13),
-                (0.44, 0.40 - wave, 15),
-                (0.58, 0.56 + wave, 16),
-                (0.72, 0.26 - wave, 17),
+                (0.06, 0.70, 5.0),
+                (0.20, 0.66, 5.8),
+                (0.34, 0.69, 6.7),
+                (0.49, 0.63, 7.7),
+                (0.63, 0.65, 8.8),
+                (0.75, 0.59, 10.0),
             ]
         }
         return [
-            (0.07, 0.82 + wave, 9),
-            (0.20, 0.54 - wave, 10),
-            (0.34, 0.72 + wave, 11),
-            (0.48, 0.42 - wave, 12),
-            (0.63, 0.58 + wave, 13),
-            (0.78, 0.24 - wave, 14),
+            (0.04, 0.74, 4.4),
+            (0.17, 0.70, 5.0),
+            (0.30, 0.72, 5.7),
+            (0.43, 0.66, 6.5),
+            (0.56, 0.68, 7.4),
+            (0.68, 0.62, 8.4),
         ]
+    }
+
+    var todayCenter: CGPoint {
+        CGPoint(
+            x: size.width * (usesMediumMetrics ? 0.87 : 0.80),
+            y: size.height * (usesMediumMetrics ? 0.72 : 0.77)
+        )
     }
 
     var nodePoints: [NodePoint] {
         nodeFractions.map { fraction in
             NodePoint(
                 center: CGPoint(
-                    x: size.width * fraction.x + ambientShift,
+                    x: size.width * fraction.x,
                     y: size.height * fraction.y
                 ),
                 diameter: fraction.side * size.height / 158
@@ -2242,25 +2347,53 @@ private struct PulsePathTrailGeometry {
         }
     }
 
-    /// Through-board spine: extends past the first/last nodes so the card clips the ends.
+    /// The far end enters from beyond the card; the near end terminates at today's seal.
     var spinePoints: [CGPoint] {
         let nodes = nodePoints.map(\.center)
         guard nodes.count >= 2 else { return nodes }
 
         let first = nodes[0]
         let second = nodes[1]
-        let last = nodes[nodes.count - 1]
-        let previous = nodes[nodes.count - 2]
 
         let start = CGPoint(
-            x: first.x - (second.x - first.x) * 1.9,
-            y: first.y - (second.y - first.y) * 1.9
+            x: first.x - (second.x - first.x) * 0.78,
+            y: first.y + size.height * 0.025
         )
-        let end = CGPoint(
-            x: last.x + (last.x - previous.x) * 2.1,
-            y: last.y + (last.y - previous.y) * 2.1
+        return [start] + nodes + [todayCenter]
+    }
+}
+
+private struct PulsePathHillContours: Shape {
+    func path(in rect: CGRect) -> Path {
+        func point(_ x: CGFloat, _ y: CGFloat) -> CGPoint {
+            CGPoint(x: rect.minX + rect.width * x, y: rect.minY + rect.height * y)
+        }
+
+        var path = Path()
+        path.move(to: point(-0.08, 0.67))
+        path.addCurve(
+            to: point(0.68, 0.63),
+            control1: point(0.13, 0.54),
+            control2: point(0.33, 0.50)
         )
-        return [start] + nodes + [end]
+        path.addCurve(
+            to: point(1.07, 0.70),
+            control1: point(0.83, 0.68),
+            control2: point(0.94, 0.73)
+        )
+
+        path.move(to: point(-0.08, 0.78))
+        path.addCurve(
+            to: point(0.55, 0.72),
+            control1: point(0.10, 0.65),
+            control2: point(0.31, 0.63)
+        )
+        path.addCurve(
+            to: point(1.07, 0.77),
+            control1: point(0.72, 0.76),
+            control2: point(0.91, 0.81)
+        )
+        return path
     }
 }
 
@@ -2304,22 +2437,35 @@ private struct PulsePathTodaySeal: View {
     let isChecked: Bool
     let dayNumber: String
     let usesFullColorPalette: Bool
-    let colorScheme: ColorScheme
 
     var body: some View {
         GeometryReader { proxy in
             let side = min(proxy.size.width, proxy.size.height)
             ZStack {
                 Circle()
-                    .fill(fillColor)
+                    .fill(
+                        usesFullColorPalette
+                            ? PulseWidgetDesign.grass.opacity(isChecked ? 0.10 : 0)
+                            : Color.primary.opacity(isChecked ? 0.06 : 0)
+                    )
+                    .scaleEffect(isChecked ? 1.18 : 0.82)
+
                 Circle()
-                    .stroke(strokeColor, lineWidth: max(2, side * 0.055))
+                    .fill(fillColor)
+
+                PulseStateRing(
+                    isChecked: isChecked,
+                    color: strokeColor,
+                    lineWidth: max(2, side * 0.055)
+                )
+
                 Text(verbatim: dayNumber)
                     .font(.system(size: side * 0.40, weight: .bold))
                     .foregroundStyle(dayColor)
                     .monospacedDigit()
                     .minimumScaleFactor(0.74)
                     .lineLimit(1)
+                    .scaleEffect(isChecked ? 1 : 0.94)
             }
         }
         .accessibilityHidden(true)
@@ -2331,21 +2477,13 @@ private struct PulsePathTodaySeal: View {
     }
 
     private var fillColor: Color {
-        guard usesFullColorPalette else {
-            return isChecked ? Color.primary.opacity(0.18) : Color.clear
-        }
-        if isChecked {
-            return PulseWidgetDesign.grass
-        }
-        return PulseWidgetDesign.background.opacity(0.90)
+        usesFullColorPalette
+            ? PulseWidgetDesign.surface.opacity(isChecked ? 0.94 : 0.88)
+            : Color.clear
     }
 
     private var dayColor: Color {
-        guard usesFullColorPalette else { return .primary }
-        if isChecked {
-            return PulseWidgetDesign.grassForeground
-        }
-        return colorScheme == .dark ? PulseWidgetDesign.grass : PulseWidgetDesign.action
+        usesFullColorPalette ? PulseWidgetDesign.ink : .primary
     }
 }
 

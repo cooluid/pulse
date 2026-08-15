@@ -466,22 +466,22 @@ private struct PulseLocalizedWidgetView: View {
             )
         )
 
-        if snapshot.isCheckedToday {
+        ZStack {
             content
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .accessibilityElement(children: .ignore)
-                .accessibilityLabel("widget.accessibility.checked")
-        } else {
-            ZStack {
-                content
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .invalidatableContent()
-                    .allowsHitTesting(false)
+                .invalidatableContent()
+                .allowsHitTesting(false)
+                .accessibilityHidden(true)
 
+            if snapshot.isCheckedToday {
+                Color.clear
+                    .accessibilityElement()
+                    .accessibilityLabel("widget.accessibility.checked")
+            } else {
                 PulseWidgetCheckInHitTarget()
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
     @ViewBuilder

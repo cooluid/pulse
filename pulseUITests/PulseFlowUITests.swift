@@ -1,4 +1,5 @@
 import XCTest
+import UIKit
 
 @MainActor
 final class PulseFlowUITests: XCTestCase {
@@ -288,6 +289,102 @@ final class PulseFlowUITests: XCTestCase {
 
         premiumStoreButton.tap()
         XCTAssertTrue(app.buttons["store.buy"].waitForExistence(timeout: 3))
+    }
+
+    func testPathWidgetPreviewShowsDistinctArrivalMidpoint() throws {
+        configureApp()
+        app.launchEnvironment["PULSE_UI_TEST_ENHANCEMENT_PURCHASED"] = "1"
+        launchAndConfirmDefaultCommitment()
+
+        app.buttons["settings.navigation.open.today"].tap()
+        let galleryLink = app.descendants(matching: .any)["settings.widget.gallery.link"]
+        for _ in 0..<4 where !galleryLink.isHittable {
+            app.swipeUp()
+        }
+        XCTAssertTrue(galleryLink.waitForExistence(timeout: 3))
+        galleryLink.tap()
+
+        let card = app.descendants(matching: .any)["widget.gallery.style.path"]
+        let previewButton = app.buttons["widget.gallery.preview.path"]
+        let window = app.windows.firstMatch
+        for _ in 0..<8 where !card.exists
+            || card.frame.maxY > window.frame.maxY - 20 {
+            app.swipeUp()
+        }
+        XCTAssertTrue(card.waitForExistence(timeout: 3))
+        XCTAssertTrue(previewButton.waitForExistence(timeout: 3))
+        XCTAssertTrue(previewButton.isHittable)
+
+        let previewRect = CGRect(
+            x: card.frame.minX,
+            y: card.frame.minY,
+            width: card.frame.width,
+            height: min(card.frame.height * 0.54, card.frame.width * 0.48)
+        )
+        let pendingScreenshot = XCUIScreen.main.screenshot()
+        let pendingPixels = try XCTUnwrap(croppedPNG(
+            from: pendingScreenshot,
+            screenRect: previewRect
+        ))
+
+        previewButton.tap()
+        Thread.sleep(forTimeInterval: 3.45)
+
+        let midpointScreenshot = XCUIScreen.main.screenshot()
+        let midpointPixels = try XCTUnwrap(croppedPNG(
+            from: midpointScreenshot,
+            screenRect: previewRect
+        ))
+        XCTAssertNotEqual(
+            pendingPixels,
+            midpointPixels,
+            "The path preview must render a visible in-flight arrival frame."
+        )
+
+        let replayLabel = NSPredicate(format: "label == %@", "再次预览")
+        expectation(for: replayLabel, evaluatedWith: previewButton)
+        waitForExpectations(timeout: 4)
+
+        let completedScreenshot = XCUIScreen.main.screenshot()
+        let completedPixels = try XCTUnwrap(croppedPNG(
+            from: completedScreenshot,
+            screenRect: previewRect
+        ))
+        XCTAssertNotEqual(
+            midpointPixels,
+            completedPixels,
+            "The path arrival must continue from its midpoint into a distinct final state."
+        )
+
+        for (name, screenshot) in [
+            ("Path arrival pending", pendingScreenshot),
+            ("Path arrival midpoint", midpointScreenshot),
+            ("Path arrival completed", completedScreenshot),
+        ] {
+            let attachment = XCTAttachment(screenshot: screenshot)
+            attachment.name = name
+            attachment.lifetime = .keepAlways
+            add(attachment)
+        }
+    }
+
+    private func croppedPNG(
+        from screenshot: XCUIScreenshot,
+        screenRect: CGRect
+    ) -> Data? {
+        let image = screenshot.image
+        let pixelRect = CGRect(
+            x: screenRect.minX * image.scale,
+            y: screenRect.minY * image.scale,
+            width: screenRect.width * image.scale,
+            height: screenRect.height * image.scale
+        ).integral
+        guard let cropped = image.cgImage?.cropping(to: pixelRect) else { return nil }
+        return UIImage(
+            cgImage: cropped,
+            scale: image.scale,
+            orientation: image.imageOrientation
+        ).pngData()
     }
 
     func testSettingsExposesPrivacyAndSupportLinks() throws {

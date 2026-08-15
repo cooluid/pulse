@@ -112,6 +112,77 @@ final class PulseWidgetSnapshotTests: XCTestCase {
         }
     }
 
+    func testPathCompositionRendersAtmosphericRouteAtBothHomeSizesAndStates() throws {
+        let timeZone = try XCTUnwrap(TimeZone(identifier: "Asia/Shanghai"))
+        let today = LogicalDay(year: 2026, month: 8, day: 10)
+        let generatedAt = makeDate(2026, 8, 10, 12, timeZone: timeZone)
+        let pending = PulseWidgetSnapshot(
+            habitID: try XCTUnwrap(
+                UUID(uuidString: "DB447BE9-C776-4F35-BDBA-D9EDB3EC18BC")
+            ),
+            habitName: "我的一件事",
+            today: today,
+            checkedAt: nil,
+            recentDays: [
+                PulseWidgetDaySnapshot(day: LogicalDay(year: 2026, month: 8, day: 4), state: .beforeHabit),
+                PulseWidgetDaySnapshot(day: LogicalDay(year: 2026, month: 8, day: 5), state: .checked),
+                PulseWidgetDaySnapshot(day: LogicalDay(year: 2026, month: 8, day: 6), state: .missed),
+                PulseWidgetDaySnapshot(day: LogicalDay(year: 2026, month: 8, day: 7), state: .checked),
+                PulseWidgetDaySnapshot(day: LogicalDay(year: 2026, month: 8, day: 8), state: .checked),
+                PulseWidgetDaySnapshot(day: LogicalDay(year: 2026, month: 8, day: 9), state: .missed),
+                PulseWidgetDaySnapshot(day: today, state: .todayPending),
+            ],
+            generatedAt: generatedAt,
+            nextDayBoundary: makeDate(2026, 8, 11, 0, timeZone: timeZone),
+            projectTimeZoneIdentifier: timeZone.identifier
+        )
+        let states: [(name: String, snapshot: PulseWidgetSnapshot)] = [
+            ("pending", pending),
+            ("completed", pending.projectingTodayCheckInForGallery(true)),
+        ]
+        let configurations: [(name: String, size: CGSize, usesMediumMetrics: Bool)] = [
+            ("small", CGSize(width: 158, height: 158), false),
+            ("medium", CGSize(width: 338, height: 158), true),
+        ]
+        let schemes: [(name: String, value: ColorScheme)] = [
+            ("light", .light),
+            ("dark", .dark),
+        ]
+
+        for state in states {
+            for configuration in configurations {
+                for scheme in schemes {
+                    let content = PulseWidgetHomeRenderer(
+                        snapshot: state.snapshot,
+                        style: .path,
+                        usesMediumMetrics: configuration.usesMediumMetrics,
+                        usesFullColorPalette: true,
+                        allowsMotion: false,
+                        statusText: state.snapshot.isCheckedToday ? "今天已签到" : "今天还未签到",
+                        pathSummaryFormat: "六日 · %d 印",
+                        emptyPlaceText: "空着",
+                        placeStatusText: state.snapshot.isCheckedToday ? "今天已签到" : "今天还未签到"
+                    )
+                    .environment(\.locale, Locale(identifier: "zh-Hans"))
+                    .environment(\.colorScheme, scheme.value)
+                    .frame(width: configuration.size.width, height: configuration.size.height)
+
+                    let renderer = ImageRenderer(content: content)
+                    renderer.scale = 3
+                    let image = try XCTUnwrap(renderer.uiImage)
+                    XCTAssertEqual(image.size.width, configuration.size.width, accuracy: 0.5)
+                    XCTAssertEqual(image.size.height, configuration.size.height, accuracy: 0.5)
+
+                    let attachment = XCTAttachment(image: image)
+                    attachment.name = "Path " + state.name + " "
+                        + configuration.name + " " + scheme.name
+                    attachment.lifetime = .keepAlways
+                    add(attachment)
+                }
+            }
+        }
+    }
+
     func testOrbitCleanBreakRendersPendingAndCompletedAcrossSupportedHomeSizes() throws {
         let projectRoot = URL(fileURLWithPath: #filePath)
             .deletingLastPathComponent()
