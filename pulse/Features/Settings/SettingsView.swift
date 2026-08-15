@@ -22,6 +22,9 @@ struct SettingsView: View {
             appearanceSection
             dataSection
             aboutSection
+#if DEBUG
+            developerSection
+#endif
         }
         .scrollContentBackground(.hidden)
         .background(PulseDesign.background)
@@ -411,6 +414,19 @@ struct SettingsView: View {
             .accessibilityIdentifier("settings.support.link")
         }
     }
+
+#if DEBUG
+    private var developerSection: some View {
+        Section("Developer") {
+            NavigationLink {
+                ReminderActivityDebugView(model: model)
+            } label: {
+                Label("灵动岛测试台", systemImage: "waveform.path.ecg.rectangle")
+            }
+            .accessibilityIdentifier("settings.debug.activity-lab.link")
+        }
+    }
+#endif
 
     private var reminderTimeBinding: Binding<Date> {
         Binding(

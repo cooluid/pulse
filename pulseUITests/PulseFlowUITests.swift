@@ -178,6 +178,37 @@ final class PulseFlowUITests: XCTestCase {
         XCTAssertTrue(app.buttons["primary.navigation.history"].exists)
     }
 
+    func testDebugActivityLabShowsOnlyIsolatedRuntimeIdentity() throws {
+        configureApp()
+        launchAndConfirmDefaultCommitment()
+
+        app.buttons["settings.navigation.open.today"].tap()
+        let activityLabLink = app.descendants(matching: .any)[
+            "settings.debug.activity-lab.link"
+        ]
+        for _ in 0..<6 where !activityLabLink.isHittable {
+            app.swipeUp()
+        }
+        XCTAssertTrue(activityLabLink.waitForExistence(timeout: 3))
+        XCTAssertTrue(activityLabLink.isHittable)
+        activityLabLink.tap()
+
+        XCTAssertTrue(app.navigationBars["灵动岛测试台"].waitForExistence(timeout: 3))
+        let appIdentity = app.descendants(matching: .any)["debug.identity.app"]
+        let appGroupIdentity = app.descendants(matching: .any)["debug.identity.app-group"]
+        let urlSchemeIdentity = app.descendants(matching: .any)["debug.identity.url-scheme"]
+        XCTAssertTrue(appIdentity.label.contains("co.fanr.pulse.dev"))
+        XCTAssertTrue(appGroupIdentity.label.contains("group.co.fanr.pulse.dev"))
+        XCTAssertTrue(urlSchemeIdentity.label.contains("pulse-dev"))
+        XCTAssertFalse(appIdentity.label.contains("co.fanr.pulse,"))
+        XCTAssertFalse(appGroupIdentity.label.contains("group.co.fanr.pulse,"))
+
+        let attachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
+        attachment.name = "Debug Dynamic Island lab with isolated identity"
+        attachment.lifetime = .keepAlways
+        add(attachment)
+    }
+
     func testEnhancementPurchaseLeavesFreeReminderAvailableAndUnlocksEnhancement() throws {
         configureApp()
         launchAndConfirmDefaultCommitment()

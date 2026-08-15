@@ -58,7 +58,8 @@ struct RootView: View {
             Task { await model.handleSceneActivation() }
         }
         .onOpenURL { url in
-            guard url.scheme == "pulse", url.host == "today" else { return }
+            guard url.scheme == PulseRuntimeIdentity.urlScheme,
+                  url.host == "today" else { return }
             selectedSection = .today
             todayPath.removeAll()
         }

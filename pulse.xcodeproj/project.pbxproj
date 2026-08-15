@@ -527,7 +527,9 @@
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
-				PULSE_APP_GROUP_IDENTIFIER = group.co.fanr.pulse;
+				PULSE_APP_GROUP_IDENTIFIER = group.co.fanr.pulse.dev;
+				PULSE_DISPLAY_NAME = "一日一印 Dev";
+				PULSE_URL_SCHEME = "pulse-dev";
 				SDKROOT = iphoneos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
@@ -586,6 +588,8 @@
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				PULSE_APP_GROUP_IDENTIFIER = group.co.fanr.pulse;
+				PULSE_DISPLAY_NAME = Pulse;
+				PULSE_URL_SCHEME = pulse;
 				SDKROOT = iphoneos;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				VALIDATE_PRODUCT = YES;
@@ -602,6 +606,7 @@
 				CURRENT_PROJECT_VERSION = 4;
 				DEVELOPMENT_TEAM = 6N3D8YA2FY;
 				ENABLE_PREVIEWS = YES;
+				EXCLUDED_SOURCE_FILE_NAMES = InfoPlist.xcstrings;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = "Config/Pulse-Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -609,7 +614,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.1;
-				PRODUCT_BUNDLE_IDENTIFIER = co.fanr.pulse;
+				PRODUCT_BUNDLE_IDENTIFIER = co.fanr.pulse.dev;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -789,7 +794,7 @@
 					"@executable_path/../../Frameworks",
 				);
 				MARKETING_VERSION = 1.1;
-				PRODUCT_BUNDLE_IDENTIFIER = co.fanr.pulse.widgets;
+				PRODUCT_BUNDLE_IDENTIFIER = co.fanr.pulse.dev.widgets;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;

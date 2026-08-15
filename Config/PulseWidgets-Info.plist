@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>CFBundleDisplayName</key>
-	<string>Pulse</string>
+	<string>$(PULSE_DISPLAY_NAME)</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -27,5 +27,7 @@
 	</dict>
 	<key>PulseAppGroupIdentifier</key>
 	<string>$(PULSE_APP_GROUP_IDENTIFIER)</string>
+	<key>PulseURLScheme</key>
+	<string>$(PULSE_URL_SCHEME)</string>
 </dict>
 </plist>

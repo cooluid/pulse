@@ -1,6 +1,30 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "activity.reminder.alert.body" : {
+
+    },
+    "activity.reminder.alert.title" : {
+
+    },
+    "activity.reminder.body" : {
+
+    },
+    "activity.reminder.check_in" : {
+
+    },
+    "activity.reminder.completed.body" : {
+
+    },
+    "activity.reminder.completed.compact" : {
+
+    },
+    "activity.reminder.completed.title" : {
+
+    },
+    "activity.reminder.title" : {
+
+    },
     "widget.accessibility.accessory.checked.summary" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -259,6 +283,22 @@
         }
       }
     },
+    "widget.configuration.style.orbit" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Star Ring"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "星环"
+          }
+        }
+      }
+    },
     "widget.configuration.style.parameter" : {
       "localizations" : {
         "en" : {
@@ -319,22 +359,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "叠印"
-          }
-        }
-      }
-    },
-    "widget.configuration.style.orbit" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Star Ring"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "星环"
           }
         }
       }

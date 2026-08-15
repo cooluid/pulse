@@ -1,8 +1,8 @@
 # Pulse 1.1 测试与验收计划
 
-文档版本：2.0
+文档版本：2.1
 状态：Canonical Acceptance Plan
-更新时间：2026-08-12
+更新时间：2026-08-15
 
 ## 1. 证据边界
 
@@ -67,6 +67,7 @@ git diff --check
 同时确认：
 
 - App / Widget 版本、deployment target、App Group、Data Protection 和 Privacy manifest 一致；
+- Debug App 必须显示“一日一印 Dev”并使用 `co.fanr.pulse.dev`、Debug Widget 使用 `co.fanr.pulse.dev.widgets`、Debug App Group 使用 `group.co.fanr.pulse.dev`、URL Scheme 使用 `pulse-dev`；Debug 不加载生产 `InfoPlist.xcstrings`，防止本地化名称重新覆盖 Dev 标识。Release 继续且只使用对应生产身份。Debug 灵动岛测试台源码与 Settings 入口必须由 `#if DEBUG` 关闭，Release 产物不得包含 `ReminderActivityDebugView` 或“灵动岛测试台”；
 - `NSCameraUsageDescription` 简中/英文均存在；
 - 生产源码没有 schema v1、archive v1 decoder、旧 Repository、旧 FileDocument、绝对媒体路径或第二个媒体目录；
 - `ArchiveWork` 启动即清理崩溃遗留并使用 Data Protection；
@@ -107,6 +108,21 @@ iPad 需覆盖无后置能力差异、横竖屏、分屏和文件导入/导出�
 - iOS 26 scheduled Live Activity：日环 / 压印 / 裂野三样式在 Lock Screen、Dynamic Island 的 expanded / compact / minimal 形态；系统表面直接签到、锁定认证、App / Widget 签到后的完成态与结束；完整接受、部分接受、首个拒绝、容量竞争、撤权，以及剩余日期由免费通知接续且同日不重复。
 - Widget：App 未运行、设备锁定、跨午夜、快速双击、App/Widget 并发、杀进程和卸载重装。
 - StoreKit：Configuration 仅作开发 fixture；Sandbox、TestFlight、生产商品、购买/恢复/取消/待处理/退款/撤销各自取证。
+
+### 7.1 Debug 灵动岛测试台操作顺序
+
+测试台只存在于 Debug App 的 Settings 最下方，且直接请求 ActivityKit，不是 App 内仿真。每次真机回归按以下顺序执行：
+
+1. 先核对首页名称为“一日一印 Dev”，测试台中的 App、App Group 与 URL Scheme 全部为 Dev 身份；任何生产标识出现时测试台必须标红并禁用操作。Debug Widget 的 `co.fanr.pulse.dev.widgets` 身份由构建产物门禁核对，不由 App 界面猜测。
+2. 打开系统“设置 > 一日一印 Dev”，确认实时活动已允许；返回测试台确认能力状态。
+3. 依次选择日环、压印、裂野，点击“立即启动真实活动”；分别检查 Lock Screen，以及 Dynamic Island 的 compact、minimal、expanded。系统决定当前出现哪种形态，不能把 App 内预览当成系统证据。
+4. 使用“仅切换为完成态”检查完成构图，再恢复待签到；这一步只验证 Activity content state，不得记录成业务签到通过。
+5. 在未签到的 Dev 数据上重新启动活动，分别从 App 测试台和真实灵动岛操作“落印”；确认只生成一条签到事实、Widget 更新、活动先短暂完成后结束。锁屏操作必须单独验证认证行为。
+6. iOS 26 选择“30 秒后由系统启动”，立刻退出 App 并锁屏；记录系统是否在目标时间后交付。请求成功不等于系统准点展示。
+7. 使用“结束全部 Dev 活动”清场。若需重测真实签到，到 Settings 清除 Dev 数据；它不会影响生产 App 数据。
+8. 最后用 Release 构建复查无 Developer section、无测试台符号/文案，生产深链仍为 `pulse://today`。
+
+真机记录至少包含：设备型号、iOS build、App build、样式、Activity ID、操作入口、锁定状态、预期/实际状态、截图或录屏文件名。没有这些证据时，状态只能是工程候选，不能标记灵动岛 GO。
 
 ## 8. 发布门禁
 

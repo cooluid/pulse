@@ -40,5 +40,4 @@ public struct PulseReminderActivityAttributes: ActivityAttributes, Sendable {
 
 public enum PulseReminderActivityContract {
     public static let maximumScheduledActivities = 7
-    public static let deepLink = URL(string: "pulse://today")!
 }

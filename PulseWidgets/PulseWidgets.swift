@@ -25,7 +25,7 @@ struct PulseReminderLiveActivity: Widget {
             )
                 .activityBackgroundTint(PulseWidgetDesign.background)
                 .activitySystemActionForegroundColor(PulseWidgetDesign.action)
-                .widgetURL(PulseReminderActivityContract.deepLink)
+                .widgetURL(PulseRuntimeIdentity.todayDeepLink)
         } dynamicIsland: { context in
             let locale = Locale(identifier: context.attributes.localeIdentifier)
             return DynamicIsland {
@@ -79,7 +79,7 @@ struct PulseReminderLiveActivity: Widget {
                 )
             }
             .keylineTint(PulseWidgetDesign.grass)
-            .widgetURL(PulseReminderActivityContract.deepLink)
+            .widgetURL(PulseRuntimeIdentity.todayDeepLink)
         }
     }
 }

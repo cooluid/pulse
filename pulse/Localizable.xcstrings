@@ -116,6 +116,24 @@
         }
       }
     },
+    "activity.reminder.body" : {
+
+    },
+    "activity.reminder.check_in" : {
+
+    },
+    "activity.reminder.completed.body" : {
+
+    },
+    "activity.reminder.completed.compact" : {
+
+    },
+    "activity.reminder.completed.title" : {
+
+    },
+    "activity.reminder.title" : {
+
+    },
     "app.loading" : {
       "localizations" : {
         "en" : {
@@ -2374,108 +2392,6 @@
         }
       }
     },
-    "settings.widget.style.place" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Awaiting Place"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "待落之处"
-          }
-        }
-      }
-    },
-    "settings.widget.style.place.detail" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Night still clings to the grass as morning clears the hill. A small clearing at the center waits for today’s mark."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "草尖还留着昨夜，晨光已越过远处的坡。中间那一小处空白，正等今天落下一印。"
-          }
-        }
-      }
-    },
-    "settings.widget.style.orbit" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Star Ring"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "星环"
-          }
-        }
-      }
-    },
-    "settings.widget.style.orbit.detail" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Toward dawn, the stars recede one by one. One remains on the ring, waiting for today to fall into place."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "天快亮时，群星一颗颗退远。只有这一颗留在环上，等今天归位。"
-          }
-        }
-      }
-    },
-    "settings.widget.style.stack" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Stacked Imprints"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "叠印"
-          }
-        }
-      }
-    },
-    "settings.widget.style.stack.detail" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "The pages lie quietly stacked, each edge holding a trace of light. One imprint, and the day takes on weight."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "纸页叠得很静，边角各自含着一点光。一枚印落下，今天便有了重量。"
-          }
-        }
-      }
-    },
     "settings.widget.style.bleed" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -2506,40 +2422,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "日头一路西斜，影子替沉默的草数着时辰。等绿意越过纸边，这一天便有了深浅。"
-          }
-        }
-      }
-    },
-    "settings.widget.style.letter" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Letter"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "手札"
-          }
-        }
-      }
-    },
-    "settings.widget.style.letter.detail" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "A sheet lies open, a few words scattered across it. Somehow, the afternoon stretches on."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "信纸摊开，字疏疏落落，下午却显得很长。"
           }
         }
       }
@@ -2578,6 +2460,74 @@
         }
       }
     },
+    "settings.widget.style.letter" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Letter"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "手札"
+          }
+        }
+      }
+    },
+    "settings.widget.style.letter.detail" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A sheet lies open, a few words scattered across it. Somehow, the afternoon stretches on."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "信纸摊开，字疏疏落落，下午却显得很长。"
+          }
+        }
+      }
+    },
+    "settings.widget.style.orbit" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Star Ring"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "星环"
+          }
+        }
+      }
+    },
+    "settings.widget.style.orbit.detail" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toward dawn, the stars recede one by one. One remains on the ring, waiting for today to fall into place."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "天快亮时，群星一颗颗退远。只有这一颗留在环上，等今天归位。"
+          }
+        }
+      }
+    },
     "settings.widget.style.path" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -2612,6 +2562,91 @@
         }
       }
     },
+    "settings.widget.style.per_instance" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Set for each widget"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "每个小组件独立设置"
+          }
+        }
+      }
+    },
+    "settings.widget.style.place" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Awaiting Place"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "待落之处"
+          }
+        }
+      }
+    },
+    "settings.widget.style.place.detail" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Night still clings to the grass as morning clears the hill. A small clearing at the center waits for today’s mark."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "草尖还留着昨夜，晨光已越过远处的坡。中间那一小处空白，正等今天落下一印。"
+          }
+        }
+      }
+    },
+    "settings.widget.style.stack" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stacked Imprints"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "叠印"
+          }
+        }
+      }
+    },
+    "settings.widget.style.stack.detail" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The pages lie quietly stacked, each edge holding a trace of light. One imprint, and the day takes on weight."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "纸页叠得很静，边角各自含着一点光。一枚印落下，今天便有了重量。"
+          }
+        }
+      }
+    },
     "settings.widget.style.tide" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -2642,23 +2677,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "潮水走过一遭，沙上的光便有了早晚，一天也跟着有了节奏。"
-          }
-        }
-      }
-    },
-    "settings.widget.style.per_instance" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Set for each widget"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "每个小组件独立设置"
           }
         }
       }
@@ -3445,19 +3463,206 @@
         }
       }
     },
-    "widget.gallery.locked" : {
+    "widget.configuration.intent.description" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Advanced Features"
+            "value" : "Choose the style used by this widget."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "高级功能"
+            "value" : "选择这个小组件使用的样式。"
+          }
+        }
+      }
+    },
+    "widget.configuration.intent.title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose Widget Style"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "选择小组件样式"
+          }
+        }
+      }
+    },
+    "widget.configuration.style.bleed" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Day Silhouette"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "数影"
+          }
+        }
+      }
+    },
+    "widget.configuration.style.field" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quiet Field"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "静场"
+          }
+        }
+      }
+    },
+    "widget.configuration.style.letter" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Letter"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "手札"
+          }
+        }
+      }
+    },
+    "widget.configuration.style.orbit" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Star Ring"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "星环"
+          }
+        }
+      }
+    },
+    "widget.configuration.style.parameter" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Style"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "样式"
+          }
+        }
+      }
+    },
+    "widget.configuration.style.path" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Path"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "来路"
+          }
+        }
+      }
+    },
+    "widget.configuration.style.place" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Awaiting Place"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "待落之处"
+          }
+        }
+      }
+    },
+    "widget.configuration.style.stack" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stacked Imprints"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "叠印"
+          }
+        }
+      }
+    },
+    "widget.configuration.style.tide" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tide Mark"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "潮痕"
+          }
+        }
+      }
+    },
+    "widget.configuration.style.title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Widget Style"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "小组件样式"
           }
         }
       }
@@ -3475,6 +3680,74 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "打开高级功能页面。"
+          }
+        }
+      }
+    },
+    "widget.gallery.introduction.message" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Each widget can use a different style. On the Home Screen, touch and hold a widget, then choose Edit Widget."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "每个小组件都可以单独选择样式。请在主屏幕长按小组件，然后选择“编辑小组件”。"
+          }
+        }
+      }
+    },
+    "widget.gallery.introduction.title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose a Widget Style"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "选择小组件样式"
+          }
+        }
+      }
+    },
+    "widget.gallery.locked" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Advanced Features"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "高级功能"
+          }
+        }
+      }
+    },
+    "widget.gallery.navigation_title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Widget Styles"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "小组件样式"
           }
         }
       }
@@ -3564,57 +3837,6 @@
         }
       }
     },
-    "widget.gallery.introduction.message" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Each widget can use a different style. On the Home Screen, touch and hold a widget, then choose Edit Widget."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "每个小组件都可以单独选择样式。请在主屏幕长按小组件，然后选择“编辑小组件”。"
-          }
-        }
-      }
-    },
-    "widget.gallery.introduction.title" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Choose a Widget Style"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "选择小组件样式"
-          }
-        }
-      }
-    },
-    "widget.gallery.navigation_title" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Widget Styles"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "小组件样式"
-          }
-        }
-      }
-    },
     "widget.gallery.unavailable.message" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -3649,223 +3871,36 @@
         }
       }
     },
-    "widget.configuration.intent.description" : {
+    "widget.intent.check_in.description" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Choose the style used by this widget."
+            "value" : "Complete today’s check-in."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "选择这个小组件使用的样式。"
+            "value" : "完成今天的签到。"
           }
         }
       }
     },
-    "widget.configuration.intent.title" : {
+    "widget.intent.check_in.title" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Choose Widget Style"
+            "value" : "Check In Today"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "选择小组件样式"
-          }
-        }
-      }
-    },
-    "widget.configuration.style.bleed" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Day Silhouette"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "数影"
-          }
-        }
-      }
-    },
-    "widget.configuration.style.field" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Quiet Field"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "静场"
-          }
-        }
-      }
-    },
-    "widget.configuration.style.letter" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Letter"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "手札"
-          }
-        }
-      }
-    },
-    "widget.configuration.style.parameter" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Style"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "样式"
-          }
-        }
-      }
-    },
-    "widget.configuration.style.place" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Awaiting Place"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "待落之处"
-          }
-        }
-      }
-    },
-    "widget.configuration.style.path" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Path"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "来路"
-          }
-        }
-      }
-    },
-    "widget.configuration.style.orbit" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Star Ring"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "星环"
-          }
-        }
-      }
-    },
-    "widget.configuration.style.stack" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Stacked Imprints"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "叠印"
-          }
-        }
-      }
-    },
-    "widget.configuration.style.tide" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tide Mark"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "潮痕"
-          }
-        }
-      }
-    },
-    "widget.configuration.style.title" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Widget Style"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "小组件样式"
-          }
-        }
-      }
-    },
-    "widget.place.checked" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Imprinted today"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "今天已落印"
+            "value" : "今日签到"
           }
         }
       }
@@ -3883,6 +3918,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "六日 · %d 印"
+          }
+        }
+      }
+    },
+    "widget.place.checked" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Imprinted today"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "今天已落印"
           }
         }
       }
@@ -3917,40 +3969,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "今天还空着"
-          }
-        }
-      }
-    },
-    "widget.intent.check_in.description" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Complete today’s check-in."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "完成今天的签到。"
-          }
-        }
-      }
-    },
-    "widget.intent.check_in.title" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Check In Today"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "今日签到"
           }
         }
       }
