@@ -8,9 +8,48 @@ enum PulseReminderActivitySurface {
     case lockScreen
 }
 
+enum PulseReminderActivityMarkLayout: CaseIterable {
+    case islandExpanded
+    case islandCompact
+    case islandMinimal
+    case lockScreen
+
+    var size: CGFloat {
+        switch self {
+        case .islandExpanded:
+            PulseWidgetDesign.activityExpandedMarkSize
+        case .islandCompact:
+            PulseWidgetDesign.activityCompactMarkSize
+        case .islandMinimal:
+            PulseWidgetDesign.activityMinimalMarkSize
+        case .lockScreen:
+            PulseWidgetDesign.activityLockScreenMarkSize
+        }
+    }
+
+    var surface: PulseReminderActivitySurface {
+        switch self {
+        case .islandExpanded, .islandCompact, .islandMinimal:
+            .island
+        case .lockScreen:
+            .lockScreen
+        }
+    }
+
+    var usesCompactOpticalTreatment: Bool {
+        switch self {
+        case .islandCompact, .islandMinimal:
+            true
+        case .islandExpanded, .lockScreen:
+            false
+        }
+    }
+}
+
 struct PulseReminderActivityMarkGeometry {
     static let arcStartFraction = 0.08
-    static let arcEndFraction = 0.78
+    static let regularArcEndFraction = 0.78
+    static let compactArcEndFraction = 0.90
     static let arcRotationDegrees = -84.0
 
     struct Metrics {
@@ -20,37 +59,52 @@ struct PulseReminderActivityMarkGeometry {
         let fireflyDiameter: CGFloat
         let fireflyOutlineWidth: CGFloat
         let fireflyGlowDiameter: CGFloat
+        let ringGlowRadius: CGFloat
         let completedCoreDiameter: CGFloat
     }
 
-    static func metrics(
-        size: CGFloat,
-        surface: PulseReminderActivitySurface
-    ) -> Metrics {
-        let glyphSize = size
+    static func metrics(layout: PulseReminderActivityMarkLayout) -> Metrics {
+        let glyphSize = layout.size
+        let surface = layout.surface
         let lineWidth = max(
             surface == .island ? 1.6 : 2.4,
             glyphSize * 0.10
         )
+        let fireflyScale = layout.usesCompactOpticalTreatment ? 0.16 : 0.18
         let fireflyDiameter = max(
             surface == .island ? 3.4 : 5.5,
-            glyphSize * 0.18
+            glyphSize * fireflyScale
         )
         let fireflyOutlineWidth = max(
             surface == .island ? 0.65 : 0.9,
             lineWidth * 0.18
         )
-        let fireflyGlowDiameter = surface == .island
-            ? max(
-                PulseWidgetDesign.activityIslandFireflyGlowMinimumDiameter,
-                glyphSize * PulseWidgetDesign.activityIslandFireflyGlowDiameterRatio
-            )
-            : fireflyDiameter
+        let fireflyGlowDiameter: CGFloat
+        if surface == .island {
+            fireflyGlowDiameter = layout.usesCompactOpticalTreatment
+                ? max(
+                    PulseWidgetDesign.activityIslandCompactFireflyGlowMinimumDiameter,
+                    glyphSize
+                        * PulseWidgetDesign.activityIslandCompactFireflyGlowDiameterRatio
+                )
+                : max(
+                    PulseWidgetDesign.activityIslandFireflyGlowMinimumDiameter,
+                    glyphSize * PulseWidgetDesign.activityIslandFireflyGlowDiameterRatio
+                )
+        } else {
+            fireflyGlowDiameter = fireflyDiameter
+        }
+        let fireflyGlowReservationDiameter = layout.usesCompactOpticalTreatment
+            ? PulseWidgetDesign.activityIslandFireflyGlowMinimumDiameter
+            : fireflyGlowDiameter
+        let ringGlowRadius = layout.usesCompactOpticalTreatment
+            ? glyphSize * PulseWidgetDesign.activityIslandRingGlowRadiusRatio
+            : 0
         let ringDiameter = glyphSize - max(
             lineWidth,
             max(
                 fireflyDiameter + fireflyOutlineWidth,
-                fireflyGlowDiameter
+                fireflyGlowReservationDiameter
             )
         )
 
@@ -61,8 +115,15 @@ struct PulseReminderActivityMarkGeometry {
             fireflyDiameter: fireflyDiameter,
             fireflyOutlineWidth: fireflyOutlineWidth,
             fireflyGlowDiameter: fireflyGlowDiameter,
+            ringGlowRadius: ringGlowRadius,
             completedCoreDiameter: ringDiameter * 0.22
         )
+    }
+
+    static func arcEndFraction(for layout: PulseReminderActivityMarkLayout) -> Double {
+        layout.usesCompactOpticalTreatment
+            ? compactArcEndFraction
+            : regularArcEndFraction
     }
 
     static func fireflyOffset(ringDiameter: CGFloat) -> CGSize {
@@ -77,13 +138,12 @@ struct PulseReminderActivityMarkGeometry {
 
 struct PulseReminderActivityMark: View {
     let phase: PulseReminderActivityPhase
-    let size: CGFloat
-    let surface: PulseReminderActivitySurface
+    let layout: PulseReminderActivityMarkLayout
 
     @Environment(\.isLuminanceReduced) private var isLuminanceReduced
 
     private var metrics: PulseReminderActivityMarkGeometry.Metrics {
-        PulseReminderActivityMarkGeometry.metrics(size: size, surface: surface)
+        PulseReminderActivityMarkGeometry.metrics(layout: layout)
     }
 
     var body: some View {
@@ -102,7 +162,7 @@ struct PulseReminderActivityMark: View {
             }
         }
         .frame(width: metrics.glyphSize, height: metrics.glyphSize)
-        .frame(width: size, height: size)
+        .frame(width: layout.size, height: layout.size)
         .contentTransition(.opacity)
     }
 
@@ -110,7 +170,7 @@ struct PulseReminderActivityMark: View {
         Circle()
             .trim(
                 from: PulseReminderActivityMarkGeometry.arcStartFraction,
-                to: PulseReminderActivityMarkGeometry.arcEndFraction
+                to: PulseReminderActivityMarkGeometry.arcEndFraction(for: layout)
             )
             .stroke(
                 ringColor,
@@ -121,12 +181,20 @@ struct PulseReminderActivityMark: View {
             )
             .rotationEffect(.degrees(PulseReminderActivityMarkGeometry.arcRotationDegrees))
             .frame(width: metrics.ringDiameter, height: metrics.ringDiameter)
+            .shadow(
+                color: ringGlowColor,
+                radius: shouldGlowRing ? metrics.ringGlowRadius : 0
+            )
     }
 
     private var completedRing: some View {
         Circle()
             .stroke(ringColor, lineWidth: metrics.lineWidth)
             .frame(width: metrics.ringDiameter, height: metrics.ringDiameter)
+            .shadow(
+                color: ringGlowColor,
+                radius: shouldGlowRing ? metrics.ringGlowRadius : 0
+            )
     }
 
     private var firefly: some View {
@@ -137,10 +205,10 @@ struct PulseReminderActivityMark: View {
                         RadialGradient(
                             colors: [
                                 fireflyColor.opacity(
-                                    PulseWidgetDesign.activityIslandFireflyGlowCoreOpacity
+                                    fireflyGlowCoreOpacity
                                 ),
                                 fireflyColor.opacity(
-                                    PulseWidgetDesign.activityIslandFireflyGlowMiddleOpacity
+                                    fireflyGlowMiddleOpacity
                                 ),
                                 .clear,
                             ],
@@ -184,25 +252,49 @@ struct PulseReminderActivityMark: View {
     }
 
     private var ringColor: Color {
-        surface == .island
+        layout.surface == .island
             ? PulseWidgetDesign.grass
             : PulseWidgetDesign.activityMark
     }
 
+    private var ringGlowColor: Color {
+        ringColor.opacity(
+            shouldGlowRing
+                ? PulseWidgetDesign.activityIslandRingGlowOpacity
+                : 0
+        )
+    }
+
     private var fireflyOutlineColor: Color {
-        surface == .island
+        layout.surface == .island
             ? PulseWidgetDesign.activityIslandFirefly
-            : PulseWidgetDesign.background
+            : PulseWidgetDesign.activityLockScreenBackground
     }
 
     private var fireflyColor: Color {
-        surface == .island
+        layout.surface == .island
             ? PulseWidgetDesign.activityIslandFirefly
             : PulseWidgetDesign.activityLockScreenFirefly
     }
 
+    private var fireflyGlowCoreOpacity: Double {
+        layout.usesCompactOpticalTreatment
+            ? PulseWidgetDesign.activityIslandCompactFireflyGlowCoreOpacity
+            : PulseWidgetDesign.activityIslandFireflyGlowCoreOpacity
+    }
+
+    private var fireflyGlowMiddleOpacity: Double {
+        layout.usesCompactOpticalTreatment
+            ? PulseWidgetDesign.activityIslandCompactFireflyGlowMiddleOpacity
+            : PulseWidgetDesign.activityIslandFireflyGlowMiddleOpacity
+    }
+
     private var shouldGlow: Bool {
-        surface == .island && !isLuminanceReduced
+        layout.surface == .island && !isLuminanceReduced
+    }
+
+    private var shouldGlowRing: Bool {
+        layout.usesCompactOpticalTreatment && !isLuminanceReduced
     }
 }
 
@@ -489,8 +581,7 @@ struct PulseReminderLockScreenView: View {
     private var mark: some View {
         PulseReminderActivityMark(
             phase: phase,
-            size: PulseWidgetDesign.activityLockScreenMarkSize,
-            surface: .lockScreen
+            layout: .lockScreen
         )
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(Text(verbatim: PulseLocalization.string(
@@ -515,8 +606,7 @@ struct PulseReminderActivityPreview: View {
             HStack(spacing: 10) {
                 PulseReminderActivityMark(
                     phase: phase,
-                    size: PulseWidgetDesign.activityExpandedMarkSize,
-                    surface: .island
+                    layout: .islandExpanded
                 )
                 .accessibilityHidden(true)
 

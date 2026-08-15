@@ -162,7 +162,7 @@ final class PulseWidgetSnapshotTests: XCTestCase {
                 )
                 .environment(\.locale, Locale(identifier: "zh-Hans"))
                 .frame(width: 382, height: 126)
-                .background(PulseWidgetDesign.background)
+                .background(PulseWidgetDesign.activityLockScreenBackground)
                 .environment(\.colorScheme, colorScheme)
 
                 let renderer = ImageRenderer(content: content)
@@ -202,38 +202,47 @@ final class PulseWidgetSnapshotTests: XCTestCase {
             withIntermediateDirectories: true
         )
 
+        let layouts: [(layout: PulseReminderActivityMarkLayout, name: String)] = [
+            (.islandCompact, "compact"),
+            (.islandMinimal, "minimal"),
+        ]
         var renderedImages: [Data] = []
-        for phase in [PulseReminderActivityPhase.pending, .completed] {
-            let content = PulseReminderActivityMark(
-                phase: phase,
-                size: 18,
-                surface: .island
-            )
-            .frame(width: 18, height: 18)
-            .padding(5)
-            .background(Color.black)
+        for configuration in layouts {
+            for phase in [PulseReminderActivityPhase.pending, .completed] {
+                let content = PulseReminderActivityMark(
+                    phase: phase,
+                    layout: configuration.layout
+                )
+                .frame(
+                    width: configuration.layout.size,
+                    height: configuration.layout.size
+                )
+                .padding(5)
+                .background(Color.black)
 
-            let renderer = ImageRenderer(content: content)
-            renderer.scale = 3
-            let image = try XCTUnwrap(renderer.uiImage)
-            let png = try XCTUnwrap(image.pngData())
-            renderedImages.append(png)
+                let renderer = ImageRenderer(content: content)
+                renderer.scale = 3
+                let image = try XCTUnwrap(renderer.uiImage)
+                let png = try XCTUnwrap(image.pngData())
+                renderedImages.append(png)
 
-            XCTAssertEqual(image.size.width, 28, accuracy: 0.5)
-            XCTAssertEqual(image.size.height, 28, accuracy: 0.5)
+                let renderedSide = configuration.layout.size + 10
+                XCTAssertEqual(image.size.width, renderedSide, accuracy: 0.5)
+                XCTAssertEqual(image.size.height, renderedSide, accuracy: 0.5)
 
-            let previewURL = previewDirectory.appendingPathComponent(
-                "activity-compact-signature-\(phase.rawValue)@3x.png"
-            )
-            try png.write(to: previewURL)
+                let previewURL = previewDirectory.appendingPathComponent(
+                    "activity-\(configuration.name)-signature-\(phase.rawValue)@3x.png"
+                )
+                try png.write(to: previewURL)
 
-            let attachment = XCTAttachment(image: image)
-            attachment.name = "Compact signature activity \(phase.rawValue)"
-            attachment.lifetime = .keepAlways
-            add(attachment)
+                let attachment = XCTAttachment(image: image)
+                attachment.name = "\(configuration.name) signature activity \(phase.rawValue)"
+                attachment.lifetime = .keepAlways
+                add(attachment)
+            }
         }
 
-        XCTAssertEqual(Set(renderedImages).count, 2)
+        XCTAssertEqual(Set(renderedImages).count, 4)
     }
 
     func testReminderActivityFireflySharesTheArcPathRadius() {
@@ -248,17 +257,8 @@ final class PulseWidgetSnapshotTests: XCTestCase {
     }
 
     func testReminderActivityFireflyFitsInsideEveryRenderedMarkCanvas() {
-        let configurations: [(size: CGFloat, surface: PulseReminderActivitySurface)] = [
-            (PulseWidgetDesign.activityCompactMarkSize, .island),
-            (PulseWidgetDesign.activityExpandedMarkSize, .island),
-            (PulseWidgetDesign.activityLockScreenMarkSize, .lockScreen),
-        ]
-
-        for configuration in configurations {
-            let metrics = PulseReminderActivityMarkGeometry.metrics(
-                size: configuration.size,
-                surface: configuration.surface
-            )
+        for layout in PulseReminderActivityMarkLayout.allCases {
+            let metrics = PulseReminderActivityMarkGeometry.metrics(layout: layout)
             let offset = PulseReminderActivityMarkGeometry.fireflyOffset(
                 ringDiameter: metrics.ringDiameter
             )
@@ -277,7 +277,7 @@ final class PulseWidgetSnapshotTests: XCTestCase {
                 canvasRadius + 0.0001
             )
             XCTAssertLessThan(metrics.fireflyDiameter, metrics.ringDiameter)
-            switch configuration.surface {
+            switch layout.surface {
             case .island:
                 XCTAssertGreaterThan(
                     metrics.fireflyGlowDiameter,
@@ -290,7 +290,45 @@ final class PulseWidgetSnapshotTests: XCTestCase {
                     accuracy: 0.0001
                 )
             }
+
+            let ringOuterRadius = metrics.ringDiameter / 2
+                + metrics.lineWidth / 2
+                + metrics.ringGlowRadius
+            XCTAssertLessThanOrEqual(
+                ringOuterRadius,
+                canvasRadius + 0.0001
+            )
         }
+    }
+
+    func testReminderActivityCompactOpticalTreatmentRestoresHaloMass() {
+        for layout in [
+            PulseReminderActivityMarkLayout.islandCompact,
+            .islandMinimal,
+        ] {
+            let metrics = PulseReminderActivityMarkGeometry.metrics(layout: layout)
+            let arcCoverage = PulseReminderActivityMarkGeometry.arcEndFraction(for: layout)
+                - PulseReminderActivityMarkGeometry.arcStartFraction
+
+            XCTAssertGreaterThanOrEqual(metrics.ringDiameter, 14)
+            XCTAssertGreaterThanOrEqual(arcCoverage, 0.82)
+            XCTAssertGreaterThanOrEqual(metrics.fireflyGlowDiameter, 10)
+            XCTAssertGreaterThan(metrics.ringGlowRadius, 0)
+            XCTAssertLessThanOrEqual(metrics.fireflyDiameter, 3.84)
+        }
+
+        XCTAssertEqual(
+            PulseReminderActivityMarkGeometry.metrics(layout: .islandExpanded)
+                .ringGlowRadius,
+            0,
+            accuracy: 0.0001
+        )
+        XCTAssertEqual(
+            PulseReminderActivityMarkGeometry.metrics(layout: .lockScreen)
+                .ringGlowRadius,
+            0,
+            accuracy: 0.0001
+        )
     }
 
     func testActivityColorsSeparateIslandLightFromTimeAndLockScreenContrast() throws {
@@ -346,6 +384,24 @@ final class PulseWidgetSnapshotTests: XCTestCase {
         )
     }
 
+    func testReminderActivityLetsTheSystemOwnTheLockScreenBackgroundPair() throws {
+        let projectRoot = URL(fileURLWithPath: #filePath)
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+        let source = try String(
+            contentsOf: projectRoot
+                .appendingPathComponent("PulseWidgets", isDirectory: true)
+                .appendingPathComponent("PulseWidgets.swift", isDirectory: false),
+            encoding: .utf8
+        )
+
+        XCTAssertTrue(source.contains(".activityBackgroundTint(nil)"))
+        XCTAssertTrue(source.contains(".activitySystemActionForegroundColor(nil)"))
+        XCTAssertFalse(
+            source.contains(".activityBackgroundTint(PulseWidgetDesign.background)")
+        )
+    }
+
     func testReminderActivityTimeUsesTheAttributeTimeZone() {
         let reminderDate = Date(timeIntervalSince1970: 67_320)
 
@@ -388,7 +444,7 @@ final class PulseWidgetSnapshotTests: XCTestCase {
         .environment(\.locale, Locale(identifier: "en"))
         .environment(\.dynamicTypeSize, .accessibility5)
         .frame(width: 382, height: 260, alignment: .top)
-        .background(PulseWidgetDesign.background)
+        .background(PulseWidgetDesign.activityLockScreenBackground)
 
         let renderer = ImageRenderer(content: content)
         renderer.scale = 3

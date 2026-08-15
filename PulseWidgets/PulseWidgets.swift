@@ -24,8 +24,8 @@ struct PulseReminderLiveActivity: Widget {
                 timeZoneIdentifier: context.attributes.timeZoneIdentifier,
                 locale: locale
             )
-                .activityBackgroundTint(PulseWidgetDesign.background)
-                .activitySystemActionForegroundColor(PulseWidgetDesign.action)
+                .activityBackgroundTint(nil)
+                .activitySystemActionForegroundColor(nil)
                 .widgetURL(PulseRuntimeIdentity.todayDeepLink)
         } dynamicIsland: { context in
             let locale = Locale(identifier: context.attributes.localeIdentifier)
@@ -33,8 +33,7 @@ struct PulseReminderLiveActivity: Widget {
                 DynamicIslandExpandedRegion(.leading) {
                     PulseReminderActivityMark(
                         phase: context.state.phase,
-                        size: PulseWidgetDesign.activityExpandedMarkSize,
-                        surface: .island
+                        layout: .islandExpanded
                     )
                     .accessibilityHidden(true)
                 }
@@ -57,8 +56,7 @@ struct PulseReminderLiveActivity: Widget {
             } compactLeading: {
                 PulseReminderActivityMark(
                     phase: context.state.phase,
-                    size: PulseWidgetDesign.activityCompactMarkSize,
-                    surface: .island
+                    layout: .islandCompact
                 )
                 .accessibilityElement(children: .ignore)
                 .accessibilityLabel(Text(verbatim: PulseLocalization.string(
@@ -78,8 +76,7 @@ struct PulseReminderLiveActivity: Widget {
             } minimal: {
                 PulseReminderActivityMark(
                     phase: context.state.phase,
-                    size: PulseWidgetDesign.activityCompactMarkSize,
-                    surface: .island
+                    layout: .islandMinimal
                 )
                 .accessibilityElement(children: .ignore)
                 .accessibilityLabel(Text(verbatim: PulseLocalization.string(

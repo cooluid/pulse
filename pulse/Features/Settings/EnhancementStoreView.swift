@@ -374,7 +374,7 @@ struct PulseReminderActivityStoreShowcase: View {
                 minHeight: PulseDesign.activityStoreLockScreenMinimumHeight
             )
             .background(
-                PulseWidgetDesign.background,
+                PulseWidgetDesign.activityLockScreenBackground,
                 in: RoundedRectangle(
                     cornerRadius: PulseDesign.activityStoreSurfaceCornerRadius,
                     style: .continuous
@@ -416,8 +416,7 @@ struct PulseReminderActivityStoreShowcase: View {
         HStack(spacing: PulseDesign.spacing8) {
             PulseReminderActivityMark(
                 phase: phase,
-                size: PulseWidgetDesign.activityCompactMarkSize,
-                surface: .island
+                layout: .islandCompact
             )
 
             Spacer(minLength: PulseDesign.activityStoreCompactMinimumSpacing)
@@ -440,8 +439,7 @@ struct PulseReminderActivityStoreShowcase: View {
     private var minimalPreview: some View {
         PulseReminderActivityMark(
             phase: .pending,
-            size: PulseWidgetDesign.activityCompactMarkSize,
-            surface: .island
+            layout: .islandMinimal
         )
         .frame(
             width: PulseDesign.activityStoreMinimalDiameter,

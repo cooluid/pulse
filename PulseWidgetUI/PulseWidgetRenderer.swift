@@ -2985,6 +2985,7 @@ enum PulseWidgetDesign {
     static let activityLockScreenFirefly = Color("PulseActivityLockScreenFirefly")
     static let activityIslandBackground = Color.black
     static let activityIslandForeground = Color.white
+    static let activityLockScreenBackground = Color(uiColor: .systemBackground)
     static let activityActionSurface = Color("PulseNavigationGlyphSurface")
     static let activityActionForeground = Color("PulseGrassForeground")
     static let activityCompletionAnimationDuration: TimeInterval = 1.25
@@ -2992,8 +2993,15 @@ enum PulseWidgetDesign {
     static let activityIslandFireflyGlowMiddleOpacity = 0.34
     static let activityIslandFireflyGlowDiameterRatio: CGFloat = 0.32
     static let activityIslandFireflyGlowMinimumDiameter: CGFloat = 8
+    static let activityIslandCompactFireflyGlowCoreOpacity = 0.94
+    static let activityIslandCompactFireflyGlowMiddleOpacity = 0.50
+    static let activityIslandCompactFireflyGlowDiameterRatio: CGFloat = 0.44
+    static let activityIslandCompactFireflyGlowMinimumDiameter: CGFloat = 10
+    static let activityIslandRingGlowOpacity = 0.38
+    static let activityIslandRingGlowRadiusRatio: CGFloat = 0.07
     static let activityExpandedMarkSize: CGFloat = 34
-    static let activityCompactMarkSize: CGFloat = 18
+    static let activityCompactMarkSize: CGFloat = 22
+    static let activityMinimalMarkSize: CGFloat = 24
     static let activityLockScreenMarkSize: CGFloat = 54
     static let activityExpandedBottomHeight: CGFloat = 52
     static let activityHorizontalInset: CGFloat = 12
