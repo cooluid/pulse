@@ -17,6 +17,8 @@
 
 `Pulse.store` 与 `Media/{originals,thumbnails,staging}` 是唯一持久化位置。图片不进入 UserDefaults、Widget 快照或第二数据库。选择“首次解锁后可用”是为了 Widget 在首次解锁后的后台读取签到；真实照片仍只由 App 打开。
 
+App 与 Widget 不声明 `com.apple.developer.default-data-protection`。iOS 在该 entitlement 缺省时采用 `NSFileProtectionCompleteUntilFirstUserAuthentication`；Pulse 同时在 store 目录、SQLite sidecar、媒体与归档工作文件上显式施加同一级别。不得重新加入一个与 provisioning profile 绑定、可能把默认值升级为 `NSFileProtectionComplete` 的重复 entitlement，否则设备锁定时的 Widget、提醒计划和后台持久化会与产品运行模型冲突。
+
 原图和缩略图分别以 SHA-256 和 byteCount 校验。启动审计删除未被元数据引用的不可变文件，并把被引用文件缺失视为错误；不得生成占位图冒充原图或缩略图。
 
 ## 3. 唯一归档协议

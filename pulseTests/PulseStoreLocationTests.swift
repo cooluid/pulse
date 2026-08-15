@@ -2,6 +2,36 @@ import XCTest
 @testable import PulseCore
 
 final class PulseStoreLocationTests: XCTestCase {
+    func testSigningEntitlementsDoNotOverrideTheRequiredAfterFirstUnlockDefault() throws {
+        let repositoryRoot = URL(fileURLWithPath: #filePath)
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+        let entitlementURLs = [
+            repositoryRoot.appendingPathComponent("pulse/pulse.entitlements"),
+            repositoryRoot.appendingPathComponent("PulseWidgets/PulseWidgets.entitlements")
+        ]
+
+        for entitlementURL in entitlementURLs {
+            let data = try Data(contentsOf: entitlementURL)
+            let propertyList = try XCTUnwrap(
+                PropertyListSerialization.propertyList(from: data, format: nil)
+                    as? [String: Any]
+            )
+
+            XCTAssertNil(
+                propertyList["com.apple.developer.default-data-protection"],
+                "The system default is already After First Unlock; declaring this entitlement "
+                    + "makes the signed profile authoritative and can force Complete protection."
+            )
+            XCTAssertNotNil(propertyList["com.apple.security.application-groups"])
+        }
+
+        XCTAssertEqual(
+            PulseStoreProtection.fileProtectionType,
+            .completeUntilFirstUserAuthentication
+        )
+    }
+
     func testAppGroupLocationUsesTheSystemContainerAndCanonicalSubdirectory() throws {
         let groupRoot = URL(fileURLWithPath: "/private/group-container", isDirectory: true)
         var requestedIdentifier: String?
