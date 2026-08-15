@@ -2,28 +2,89 @@
   "sourceLanguage" : "en",
   "strings" : {
     "activity.reminder.alert.body" : {
-
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You have not checked in today. Come back when you are ready."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "今天还未签到，准备好时再回来。"
+          }
+        }
+      }
     },
     "activity.reminder.alert.title" : {
-
-    },
-    "activity.reminder.body" : {
-
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Today’s check-in"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "今天还未签到"
+          }
+        }
+      }
     },
     "activity.reminder.check_in" : {
-
-    },
-    "activity.reminder.completed.body" : {
-
-    },
-    "activity.reminder.completed.compact" : {
-
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Check in"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "签到"
+          }
+        }
+      }
     },
     "activity.reminder.completed.title" : {
-
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Today is imprinted"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "今日已签到"
+          }
+        }
+      }
     },
     "activity.reminder.title" : {
-
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Today awaits its mark"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "今日未签到"
+          }
+        }
+      }
     },
     "widget.accessibility.accessory.checked.summary" : {
       "extractionState" : "manual",
@@ -456,7 +517,7 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "今天已落印"
+            "value" : "今天已签到"
           }
         }
       }

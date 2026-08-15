@@ -116,23 +116,56 @@
         }
       }
     },
-    "activity.reminder.body" : {
-
-    },
     "activity.reminder.check_in" : {
-
-    },
-    "activity.reminder.completed.body" : {
-
-    },
-    "activity.reminder.completed.compact" : {
-
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Check in"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "签到"
+          }
+        }
+      }
     },
     "activity.reminder.completed.title" : {
-
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Today is imprinted"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "今日已签到"
+          }
+        }
+      }
     },
     "activity.reminder.title" : {
-
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Today awaits its mark"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "今日未签到"
+          }
+        }
+      }
     },
     "app.loading" : {
       "localizations" : {
@@ -2608,7 +2641,7 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "草尖还留着昨夜，晨光已越过远处的坡。中间那一小处空白，正等今天落下一印。"
+            "value" : "草尖还留着昨夜，晨光已越过远处的坡。中间那一小处空白，正等今天签到。"
           }
         }
       }
@@ -3934,7 +3967,7 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "今天已落印"
+            "value" : "今天已签到"
           }
         }
       }

@@ -256,7 +256,7 @@ final class ActivityKitReminderLiveActivityScheduler: ReminderLiveActivitySchedu
             activity.attributes.logicalDay == logicalDay.storageValue {
             await activity.update(completedContent)
         }
-        try? await Task.sleep(for: .milliseconds(900))
+        try? await Task.sleep(for: PulseReminderActivityContract.completionEchoDuration)
         for activity in Activity<PulseReminderActivityAttributes>.activities where
             activity.attributes.logicalDay == logicalDay.storageValue {
             await activity.end(completedContent, dismissalPolicy: .immediate)

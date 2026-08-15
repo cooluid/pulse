@@ -6,6 +6,102 @@ import XCTest
 
 @MainActor
 final class PulseWidgetSnapshotTests: XCTestCase {
+    func testReminderActivityCompositionsRenderDistinctPendingAndCompletedStates() throws {
+        let projectRoot = URL(fileURLWithPath: #filePath)
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+        let previewDirectory = projectRoot
+            .appendingPathComponent(".tmp", isDirectory: true)
+            .appendingPathComponent("activity-preview", isDirectory: true)
+        try FileManager.default.createDirectory(
+            at: previewDirectory,
+            withIntermediateDirectories: true
+        )
+
+        var renderedImages: [Data] = []
+        for style in PulseReminderActivityStyle.allCases {
+            for phase in [PulseReminderActivityPhase.pending, .completed] {
+                let content = PulseReminderActivityPreview(
+                    style: style,
+                    phase: phase,
+                    locale: Locale(identifier: "zh-Hans")
+                )
+                .environment(\.locale, Locale(identifier: "zh-Hans"))
+                .frame(width: 344, height: 126)
+
+                let renderer = ImageRenderer(content: content)
+                renderer.scale = 3
+                let image = try XCTUnwrap(renderer.uiImage)
+                let png = try XCTUnwrap(image.pngData())
+                renderedImages.append(png)
+
+                XCTAssertEqual(image.size.width, 344, accuracy: 0.5)
+                XCTAssertEqual(image.size.height, 126, accuracy: 0.5)
+
+                let previewURL = previewDirectory.appendingPathComponent(
+                    "activity-\(style.rawValue)-\(phase.rawValue)@3x.png"
+                )
+                try png.write(to: previewURL)
+
+                let attachment = XCTAttachment(image: image)
+                attachment.name = "Activity \(style.rawValue) \(phase.rawValue)"
+                attachment.lifetime = .keepAlways
+                add(attachment)
+            }
+        }
+
+        XCTAssertEqual(Set(renderedImages).count, 6)
+    }
+
+    func testReminderActivityCompactMarksRenderInsideSystemSizedCanvas() throws {
+        let projectRoot = URL(fileURLWithPath: #filePath)
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+        let previewDirectory = projectRoot
+            .appendingPathComponent(".tmp", isDirectory: true)
+            .appendingPathComponent("activity-preview", isDirectory: true)
+        try FileManager.default.createDirectory(
+            at: previewDirectory,
+            withIntermediateDirectories: true
+        )
+
+        var renderedImages: [Data] = []
+        for style in PulseReminderActivityStyle.allCases {
+            for phase in [PulseReminderActivityPhase.pending, .completed] {
+                let content = PulseReminderActivityMark(
+                    style: style,
+                    phase: phase,
+                    size: 18,
+                    surface: .island
+                )
+                .frame(width: 18, height: 18)
+                .padding(5)
+                .background(Color.black)
+
+                let renderer = ImageRenderer(content: content)
+                renderer.scale = 3
+                let image = try XCTUnwrap(renderer.uiImage)
+                let png = try XCTUnwrap(image.pngData())
+                renderedImages.append(png)
+
+                XCTAssertEqual(image.size.width, 28, accuracy: 0.5)
+                XCTAssertEqual(image.size.height, 28, accuracy: 0.5)
+
+                let previewURL = previewDirectory.appendingPathComponent(
+                    "activity-compact-\(style.rawValue)-\(phase.rawValue)@3x.png"
+                )
+                try png.write(to: previewURL)
+
+                let attachment = XCTAttachment(image: image)
+                attachment.name = "Compact activity \(style.rawValue) \(phase.rawValue)"
+                attachment.lifetime = .keepAlways
+                add(attachment)
+            }
+        }
+
+        XCTAssertEqual(Set(renderedImages).count, 6)
+    }
+
     func testLetterCompositionOwnsTodayInOneDateSealAndOnlySixPastMarks() throws {
         let projectRoot = URL(fileURLWithPath: #filePath)
             .deletingLastPathComponent()
@@ -895,7 +991,7 @@ final class PulseWidgetSnapshotTests: XCTestCase {
         let approvedCopy: [String: [String: String]] = [
             "settings.widget.style.place.detail": [
                 "en": "Night still clings to the grass as morning clears the hill. A small clearing at the center waits for today’s mark.",
-                "zh-Hans": "草尖还留着昨夜，晨光已越过远处的坡。中间那一小处空白，正等今天落下一印。",
+                "zh-Hans": "草尖还留着昨夜，晨光已越过远处的坡。中间那一小处空白，正等今天签到。",
             ],
             "settings.widget.style.orbit.detail": [
                 "en": "Toward dawn, the stars recede one by one. One remains on the ring, waiting for today to fall into place.",
@@ -979,7 +1075,7 @@ final class PulseWidgetSnapshotTests: XCTestCase {
                 .appendingPathComponent("PulseSystemUI.xcstrings", isDirectory: false),
         ]
         let forbiddenTerms = [
-            "大开口日环", "开放日环", "承印坑", "潮唇", "巨大剪影", "蜡封", "邮戳", "七枚日印",
+            "大开口日环", "开放日环", "承印坑", "潮唇", "巨大剪影", "蜡封", "邮戳", "七枚日印", "落印",
             "主承诺", "高阶权益", "小组件构图", "小组件事实", "共享存储", "数据校验",
             "虚构价格", "open seal", "imprint well", "postmarks", "widget facts",
             "shared store", "advanced benefits", "main commitment", "widget composition", "seven marks",

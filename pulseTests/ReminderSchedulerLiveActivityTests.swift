@@ -4,6 +4,17 @@ import PulseCore
 
 @MainActor
 final class ReminderSchedulerLiveActivityTests: XCTestCase {
+    func testCompletionEchoStaysInsideWidgetKitAnimationBudget() {
+        XCTAssertGreaterThan(
+            PulseReminderActivityContract.completionEchoDuration,
+            .zero
+        )
+        XCTAssertLessThanOrEqual(
+            PulseReminderActivityContract.completionEchoDuration,
+            .seconds(2)
+        )
+    }
+
     func testScheduledLiveActivityUsesTheBoundedRollingBudget() async throws {
         let client = TestReminderLiveActivityScheduler()
         let notifications = TestReminderNotificationScheduler(permission: .authorized)

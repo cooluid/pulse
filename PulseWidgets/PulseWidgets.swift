@@ -29,27 +29,11 @@ struct PulseReminderLiveActivity: Widget {
         } dynamicIsland: { context in
             let locale = Locale(identifier: context.attributes.localeIdentifier)
             return DynamicIsland {
-                DynamicIslandExpandedRegion(.leading) {
-                    PulseReminderActivityMark(
-                        style: context.attributes.style,
-                        phase: context.state.phase,
-                        size: 28,
-                        surface: .island
-                    )
-                }
-                DynamicIslandExpandedRegion(.center) {
-                    PulseReminderActivityHeadline(
-                        phase: context.state.phase,
-                        locale: locale,
-                        surface: .island
-                    )
-                }
                 DynamicIslandExpandedRegion(.bottom) {
-                    PulseReminderActivityActionRow(
+                    PulseReminderDynamicIslandExpandedView(
                         style: context.attributes.style,
                         phase: context.state.phase,
-                        locale: locale,
-                        surface: .island
+                        locale: locale
                     )
                 }
             } compactLeading: {
@@ -69,13 +53,29 @@ struct PulseReminderLiveActivity: Widget {
                         locale: locale
                     )
                 )
-                    .font(.caption2.weight(.semibold))
+                    .font(.caption2.weight(.heavy))
+                    .foregroundStyle(
+                        context.state.phase == .completed
+                            ? PulseWidgetDesign.activityPrimary
+                            : PulseWidgetDesign.grass
+                    )
+                    .contentTransition(.opacity)
             } minimal: {
                 PulseReminderActivityMark(
                     style: context.attributes.style,
                     phase: context.state.phase,
                     size: 18,
                     surface: .island
+                )
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel(
+                    LocalizedStringResource(
+                        context.state.phase == .completed
+                            ? "activity.reminder.completed.title"
+                            : "activity.reminder.title",
+                        table: PulseLocalization.systemUITable,
+                        locale: locale
+                    )
                 )
             }
             .keylineTint(PulseWidgetDesign.grass)
