@@ -10,7 +10,6 @@ enum PulsePrimarySection: String, CaseIterable, Identifiable {
 struct PulsePrimaryNavigation: View {
     @Binding var selection: PulsePrimarySection
     let todayDayNumber: Int?
-    let historyMonthNumber: Int?
     let isTodayChecked: Bool
 
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
@@ -70,15 +69,41 @@ struct PulsePrimaryNavigation: View {
 
     private var tidalNavigation: some View {
         sizedNavigation
-            .overlay(alignment: .top) {
-                Rectangle()
-                    .fill(PulseDesign.tidalForeground.opacity(0.28))
-                    .frame(height: PulseDesign.thinLineWidth)
+            .background {
+                RoundedRectangle(
+                    cornerRadius: PulseDesign.primaryNavigationCornerRadius,
+                    style: .continuous
+                )
+                .fill(
+                    LinearGradient(
+                        colors: [PulseDesign.tidalBlueDeep, PulseDesign.tidalBlueDepth],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+            }
+            .clipShape(
+                RoundedRectangle(
+                    cornerRadius: PulseDesign.primaryNavigationCornerRadius,
+                    style: .continuous
+                )
+            )
+            .overlay {
+                RoundedRectangle(
+                    cornerRadius: PulseDesign.primaryNavigationCornerRadius,
+                    style: .continuous
+                )
+                .stroke(
+                    PulseDesign.tidalForeground.opacity(
+                        PulseDesign.tidalNavigationBorderOpacity
+                    ),
+                    lineWidth: PulseDesign.thinLineWidth
+                )
             }
             .shadow(
-                color: PulseDesign.shadow.opacity(PulseDesign.navigationShadowOpacity * 0.45),
-                radius: PulseDesign.navigationShadowRadius * 0.55,
-                y: PulseDesign.navigationShadowY * 0.6
+                color: PulseDesign.shadow.opacity(PulseDesign.navigationShadowOpacity),
+                radius: PulseDesign.navigationShadowRadius,
+                y: PulseDesign.navigationShadowY
             )
             .padding(.horizontal, PulseDesign.primaryNavigationHorizontalInset)
             .padding(.vertical, PulseDesign.spacing8)
@@ -126,20 +151,18 @@ struct PulsePrimaryNavigation: View {
                         .font(.caption.bold())
                         .lineLimit(1)
 
-                    if isSelected {
-                        Text(subtitleKey(for: section))
-                            .font(.caption2)
-                            .opacity(PulseDesign.navigationSubtitleOpacity)
-                            .lineLimit(1)
-                    }
+                    Text(subtitleKey(for: section))
+                        .font(.caption2)
+                        .opacity(PulseDesign.navigationSubtitleOpacity)
+                        .lineLimit(1)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
             .padding(.horizontal, PulseDesign.spacing12)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .foregroundStyle(navigationForeground(for: section, isSelected: isSelected))
+            .foregroundStyle(navigationForeground(isSelected: isSelected))
             .background {
-                selectionBackground(for: section, isSelected: isSelected)
+                selectionBackground(isSelected: isSelected)
             }
             .clipShape(
                 RoundedRectangle(
@@ -163,11 +186,7 @@ struct PulsePrimaryNavigation: View {
             select(section)
         } label: {
             VStack(spacing: PulseDesign.spacing4) {
-                if let value = glyphValue(for: section) {
-                    Text(value, format: .number)
-                        .font(.body.bold())
-                        .monospacedDigit()
-                }
+                navigationGlyph(for: section, isSelected: isSelected)
 
                 Text(section == .today ? "tab.today" : "tab.history")
                     .font(.caption.bold())
@@ -180,9 +199,9 @@ struct PulsePrimaryNavigation: View {
                 maxWidth: .infinity,
                 minHeight: PulseDesign.accessibilityNavigationMinimumHeight
             )
-            .foregroundStyle(navigationForeground(for: section, isSelected: isSelected))
+            .foregroundStyle(navigationForeground(isSelected: isSelected))
             .background {
-                selectionBackground(for: section, isSelected: isSelected)
+                selectionBackground(isSelected: isSelected)
             }
             .clipShape(
                 RoundedRectangle(
@@ -200,10 +219,7 @@ struct PulsePrimaryNavigation: View {
     }
 
     @ViewBuilder
-    private func selectionBackground(
-        for section: PulsePrimarySection,
-        isSelected: Bool
-    ) -> some View {
+    private func selectionBackground(isSelected: Bool) -> some View {
         if isSelected {
             Group {
                 if visualTheme == .tidalBreath {
@@ -211,7 +227,7 @@ struct PulsePrimaryNavigation: View {
                         cornerRadius: PulseDesign.primaryNavigationItemCornerRadius,
                         style: .continuous
                     )
-                    .fill(PulseDesign.tidalForeground.opacity(0.16))
+                    .fill(PulseDesign.tidalForeground)
                 } else {
                     RoundedRectangle(
                         cornerRadius: PulseDesign.primaryNavigationItemCornerRadius,
@@ -246,13 +262,17 @@ struct PulsePrimaryNavigation: View {
                     Circle()
                         .fill(
                             isSelected
-                                ? PulseDesign.tidalForeground.opacity(0.16)
+                                ? PulseDesign.tidalBlueDeep.opacity(
+                                    PulseDesign.tidalNavigationSelectedGlyphOpacity
+                                )
                                 : Color.clear
                         )
                     Circle()
                         .stroke(
-                            navigationForeground(for: section, isSelected: isSelected),
-                            lineWidth: PulseDesign.thinLineWidth
+                            navigationForeground(isSelected: isSelected),
+                            lineWidth: isSelected
+                                ? PulseDesign.emphasisLineWidth
+                                : PulseDesign.thinLineWidth
                         )
                 } else {
                     Circle()
@@ -265,31 +285,42 @@ struct PulsePrimaryNavigation: View {
                 }
             }
 
-            if let value = glyphValue(for: section) {
-                Text(value, format: .number)
-                    .font(.caption2.bold())
-                    .monospacedDigit()
-            }
+            navigationGlyphContent(for: section)
         }
-        .frame(width: glyphSize, height: glyphSize)
-        .foregroundStyle(navigationForeground(for: section, isSelected: isSelected))
+        .frame(width: resolvedGlyphSize, height: resolvedGlyphSize)
+        .foregroundStyle(navigationForeground(isSelected: isSelected))
         .accessibilityHidden(true)
     }
 
-    private func navigationForeground(
-        for section: PulsePrimarySection,
-        isSelected: Bool
-    ) -> Color {
+    private func navigationForeground(isSelected: Bool) -> Color {
         if visualTheme == .tidalBreath {
-            return PulseDesign.tidalForeground.opacity(isSelected ? 1 : 0.68)
+            return isSelected
+                ? PulseDesign.tidalBlueDepth
+                : PulseDesign.tidalForeground.opacity(
+                    PulseDesign.tidalNavigationUnselectedOpacity
+                )
         }
         return isSelected ? PulseDesign.grassForeground : PulseDesign.secondary
     }
 
-    private func glyphValue(for section: PulsePrimarySection) -> Int? {
+    private var resolvedGlyphSize: CGFloat {
+        dynamicTypeSize.isAccessibilitySize
+            ? min(glyphSize, PulseDesign.accessibilityNavigationGlyphMaximum)
+            : glyphSize
+    }
+
+    @ViewBuilder
+    private func navigationGlyphContent(for section: PulsePrimarySection) -> some View {
         switch section {
-        case .today: todayDayNumber
-        case .history: historyMonthNumber
+        case .today:
+            if let todayDayNumber {
+                Text(todayDayNumber, format: .number)
+                    .font(.caption2.bold())
+                    .monospacedDigit()
+            }
+        case .history:
+            Image(systemName: "calendar")
+                .font(.caption2.bold())
         }
     }
 

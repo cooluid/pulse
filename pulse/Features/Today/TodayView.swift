@@ -6,7 +6,6 @@ import UIKit
 struct TodayView: View {
     @Bindable var model: PulseAppModel
     let isActive: Bool
-    let primaryNavigationClearance: CGFloat
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
@@ -58,7 +57,7 @@ struct TodayView: View {
                                     ? PulseDesign.regularWidthVerticalPadding
                                     : PulseDesign.spacing4
                             )
-                            .padding(.bottom, scrollClearance)
+                            .padding(.bottom, PulseDesign.spacing16)
                             .frame(maxWidth: .infinity)
                     }
                     .scrollIndicators(.hidden)
@@ -209,10 +208,6 @@ struct TodayView: View {
 
     private var usesRegularWidthLayout: Bool {
         horizontalSizeClass == .regular && !dynamicTypeSize.isAccessibilitySize
-    }
-
-    private var scrollClearance: CGFloat {
-        primaryNavigationClearance + PulseDesign.spacing16
     }
 
     private var dayHero: some View {

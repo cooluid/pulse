@@ -26,6 +26,15 @@ final class PulseFlowUITests: XCTestCase {
         XCTAssertTrue(app.buttons["today.checkin.button"].waitForExistence(timeout: 5))
     }
 
+    private func selectOption(named optionLabel: String, in picker: XCUIElement) {
+        picker.tap()
+        let option = app.descendants(matching: .any)
+            .matching(NSPredicate(format: "label == %@", optionLabel))
+            .firstMatch
+        XCTAssertTrue(option.waitForExistence(timeout: 3))
+        option.tap()
+    }
+
     func testCheckInPersistsAcrossRelaunchAndAppearsInHistory() throws {
         configureApp()
         launchAndConfirmDefaultCommitment()
@@ -605,13 +614,7 @@ final class PulseFlowUITests: XCTestCase {
         ]
         XCTAssertTrue(visualThemePicker.waitForExistence(timeout: 3))
         XCTAssertTrue(visualThemePicker.label.contains("静野"))
-        visualThemePicker.tap()
-
-        let tidalOption = app.descendants(matching: .any)
-            .matching(NSPredicate(format: "label == %@", "潮汐呼吸"))
-            .firstMatch
-        XCTAssertTrue(tidalOption.waitForExistence(timeout: 3))
-        tidalOption.tap()
+        selectOption(named: "潮汐呼吸", in: visualThemePicker)
 
         let tidalThemeApplied = NSPredicate(format: "label CONTAINS %@", "潮汐呼吸")
         expectation(for: tidalThemeApplied, evaluatedWith: visualThemePicker)
@@ -649,6 +652,7 @@ final class PulseFlowUITests: XCTestCase {
         let checkedCalendarDay = app.descendants(matching: .any)["calendar.day.2026-08-10"]
         XCTAssertTrue(checkedCalendarDay.waitForExistence(timeout: 3))
         XCTAssertTrue(checkedCalendarDay.label.contains("已签到"))
+        assertHistorySurfaceClearsPrimaryNavigation()
 
         let historyAttachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
         historyAttachment.name = "Tidal Breath redesigned history"
@@ -691,6 +695,57 @@ final class PulseFlowUITests: XCTestCase {
                 .waitForExistence(timeout: 5)
         )
         XCTAssertFalse(app.buttons["today.checkin.button"].isEnabled)
+    }
+
+    func testTidalHistoryRemainsStructuredInDarkAppearance() throws {
+        configureApp()
+        launchAndConfirmDefaultCommitment()
+
+        app.buttons["settings.navigation.open.today"].tap()
+
+        let visualThemePicker = app.descendants(matching: .any)[
+            "settings.visual-theme.picker"
+        ]
+        XCTAssertTrue(visualThemePicker.waitForExistence(timeout: 3))
+        selectOption(named: "潮汐呼吸", in: visualThemePicker)
+
+        let appearancePicker = app.descendants(matching: .any)["settings.theme.picker"]
+        XCTAssertTrue(appearancePicker.waitForExistence(timeout: 3))
+        selectOption(named: "深色", in: appearancePicker)
+
+        let darkAppearanceApplied = NSPredicate(format: "label CONTAINS %@", "深色")
+        expectation(for: darkAppearanceApplied, evaluatedWith: appearancePicker)
+        waitForExpectations(timeout: 3)
+
+        app.buttons["navigation.back"].tap()
+        XCTAssertTrue(
+            app.descendants(matching: .any)["today.theme.tidal-breath"]
+                .waitForExistence(timeout: 3)
+        )
+
+        let checkInButton = app.buttons["today.checkin.button"]
+        XCTAssertTrue(checkInButton.waitForExistence(timeout: 3))
+        checkInButton.tap()
+        XCTAssertFalse(checkInButton.isEnabled)
+
+        let historyNavigation = app.buttons["primary.navigation.history"]
+        XCTAssertTrue(historyNavigation.waitForExistence(timeout: 3))
+        historyNavigation.tap()
+
+        XCTAssertTrue(
+            app.descendants(matching: .any)["history.theme.tidal-breath"]
+                .waitForExistence(timeout: 3)
+        )
+        XCTAssertTrue(
+            app.descendants(matching: .any)["calendar.day.2026-08-10"]
+                .waitForExistence(timeout: 3)
+        )
+        assertHistorySurfaceClearsPrimaryNavigation()
+
+        let attachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
+        attachment.name = "Tidal Breath history in dark appearance"
+        attachment.lifetime = .keepAlways
+        add(attachment)
     }
 
     func testChineseHistoryUsesLocalizedArchiveHeading() throws {
@@ -931,7 +986,15 @@ final class PulseFlowUITests: XCTestCase {
         let rhythmStatus = app.staticTexts["today.rhythm.status"]
         XCTAssertTrue(rhythmStatus.exists)
         checkInButton.swipeUp()
-        app.swipeUp()
+        for _ in 0..<6 where rhythmStatus.frame.maxY > todayNavigation.frame.minY {
+            app.swipeUp()
+        }
+
+        let attachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
+        attachment.name = "Accessibility XXXL primary layout"
+        attachment.lifetime = .keepAlways
+        add(attachment)
+
         XCTAssertTrue(rhythmStatus.isHittable)
         XCTAssertLessThanOrEqual(rhythmStatus.frame.maxY, todayNavigation.frame.minY)
     }
@@ -1216,6 +1279,18 @@ final class PulseFlowUITests: XCTestCase {
         let expectedLabel = NSPredicate(format: "label == %@", expectedStatus)
         expectation(for: expectedLabel, evaluatedWith: rhythmStatus)
         waitForExpectations(timeout: 3)
+    }
+
+    private func assertHistorySurfaceClearsPrimaryNavigation() {
+        let calendarSurface = app.descendants(matching: .any)["history.calendar.surface"]
+        let historyNavigation = app.buttons["primary.navigation.history"]
+        XCTAssertTrue(calendarSurface.waitForExistence(timeout: 3))
+        XCTAssertTrue(historyNavigation.waitForExistence(timeout: 3))
+        XCTAssertLessThanOrEqual(
+            calendarSurface.frame.maxY,
+            historyNavigation.frame.minY,
+            "The history surface must end before the persistent primary navigation begins."
+        )
     }
 
     private func openCommitmentEditorFromToday() {

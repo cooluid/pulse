@@ -70,8 +70,11 @@ enum PulseDesign {
     static let weekRailDotDiameter: CGFloat = 13
     static let checkInDiameter: CGFloat = 152
     static let tidalCheckInDiameter: CGFloat = 172
-    static let tidalHistoryMonthSize: CGFloat = 88
-    static let tidalHistoryPanelCornerRadius: CGFloat = 28
+    static let tidalHistoryMonthSize: CGFloat = 68
+    static let tidalHistoryMonthTracking: CGFloat = -3
+    static let tidalHistoryAccentWidth: CGFloat = 52
+    static let tidalHistoryPanelCornerRadius: CGFloat = 24
+    static let tidalHistoryStatisticDividerHeight: CGFloat = 36
     static let tidalCalendarDayCornerRadius: CGFloat = 12
     static let checkInInnerHalo: CGFloat = 18
     static let checkInOuterHalo: CGFloat = 36
@@ -88,9 +91,11 @@ enum PulseDesign {
     static let primaryNavigationGlyph: CGFloat = 30
     static let primaryNavigationHorizontalInset: CGFloat = spacing16
     static let accessibilityNavigationMinimumHeight: CGFloat = 88
+    static let accessibilityNavigationGlyphMaximum: CGFloat = 48
 
     static let calendarDayVisualSize: CGFloat = 34
     static let calendarDayHitSize: CGFloat = minimumHitTarget
+    static let calendarAccessoryGlyphSize: CGFloat = 8
     static let onboardingBrandMarkSize: CGFloat = 68
     static let mediaCardMaxWidth: CGFloat = 420
     static let mediaPreviewFailureMinimumHeight: CGFloat = 220
@@ -120,6 +125,15 @@ enum PulseDesign {
     static let navigationShadowY: CGFloat = 10
     static let navigationSurfaceOpacity = 0.9
     static let navigationSubtitleOpacity = 0.76
+    static let tidalNavigationBorderOpacity = 0.24
+    static let tidalNavigationUnselectedOpacity = 0.74
+    static let tidalNavigationSelectedGlyphOpacity = 0.12
+    static let tidalHistorySurfaceOpacity = 0.96
+    static let tidalHistorySurfaceBorderOpacity = 0.24
+    static let tidalHistoryTodayFillOpacity = 0.18
+    static let tidalHistoryMissedFillOpacity = 0.08
+    static let calendarBeforeHabitOpacity = 0.62
+    static let disabledControlOpacity = 0.38
     static let actionShadowOpacity = 0.24
     static let actionShadowRadius: CGFloat = 30
     static let actionShadowY: CGFloat = 12
@@ -135,7 +149,6 @@ enum PulseDesign {
     static let completionRippleOpacity = 0.44
     static let fieldOutlineOpacity = 0.28
     static let fieldBandOpacity = 0.12
-    static let deemphasizedCalendarOpacity = 0.62
 
     static let storeBrandMarkSize: CGFloat = 72
     static let storePreviewWidth: CGFloat = 248

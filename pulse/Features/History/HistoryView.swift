@@ -4,7 +4,6 @@ import UniformTypeIdentifiers
 
 struct HistoryView: View {
     @Bindable var model: PulseAppModel
-    let primaryNavigationClearance: CGFloat
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
@@ -46,7 +45,7 @@ struct HistoryView: View {
                                     ? PulseDesign.regularWidthVerticalPadding
                                     : PulseDesign.spacing4
                             )
-                            .padding(.bottom, scrollClearance)
+                            .padding(.bottom, PulseDesign.spacing16)
                             .frame(maxWidth: .infinity)
                     }
                     .scrollIndicators(.hidden)
@@ -110,7 +109,7 @@ struct HistoryView: View {
     private var tidalHistoryContent: some View {
         if usesRegularWidthLayout {
             HStack(alignment: .top, spacing: PulseDesign.regularWidthColumnGap) {
-                VStack(spacing: PulseDesign.spacing20) {
+                VStack(spacing: PulseDesign.spacing16) {
                     tidalMonthHero
                     tidalStatisticsBand
                 }
@@ -120,7 +119,7 @@ struct HistoryView: View {
                     .frame(maxWidth: .infinity)
             }
         } else {
-            VStack(spacing: PulseDesign.spacing20) {
+            VStack(spacing: PulseDesign.spacing16) {
                 tidalMonthHero
                 tidalStatisticsBand
                 tidalCalendarPanel
@@ -131,10 +130,6 @@ struct HistoryView: View {
 
     private var usesRegularWidthLayout: Bool {
         horizontalSizeClass == .regular && !dynamicTypeSize.isAccessibilitySize
-    }
-
-    private var scrollClearance: CGFloat {
-        primaryNavigationClearance + PulseDesign.spacing16
     }
 
     private var historyHeading: some View {
@@ -177,7 +172,7 @@ struct HistoryView: View {
                         )
                     )
                     .font(.caption.weight(.semibold))
-                    .foregroundStyle(PulseDesign.tidalBlueDeep.opacity(0.72))
+                    .foregroundStyle(PulseDesign.secondary)
                     .accessibilityHidden(true)
                 }
 
@@ -191,7 +186,7 @@ struct HistoryView: View {
                     Text(String(format: "%02d", month.month))
                         .font(.system(size: PulseDesign.tidalHistoryMonthSize, weight: .medium))
                         .monospacedDigit()
-                        .tracking(-4)
+                        .tracking(PulseDesign.tidalHistoryMonthTracking)
                         .foregroundStyle(PulseDesign.ink)
 
                     VStack(alignment: .leading, spacing: PulseDesign.spacing4) {
@@ -201,7 +196,10 @@ struct HistoryView: View {
 
                         Rectangle()
                             .fill(PulseDesign.tidalBlueMid)
-                            .frame(width: 52, height: PulseDesign.emphasisLineWidth)
+                            .frame(
+                                width: PulseDesign.tidalHistoryAccentWidth,
+                                height: PulseDesign.emphasisLineWidth
+                            )
                             .accessibilityHidden(true)
                     }
                     .padding(.bottom, PulseDesign.spacing12)
@@ -209,7 +207,7 @@ struct HistoryView: View {
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.top, PulseDesign.spacing12)
+        .padding(.top, PulseDesign.spacing8)
         .contentShape(Rectangle())
         .simultaneousGesture(monthSwipeGesture)
         .accessibilityElement(children: .combine)
@@ -253,23 +251,25 @@ struct HistoryView: View {
         Button(action: action) {
             Image(systemName: systemName)
                 .font(.subheadline.weight(.semibold))
-                .foregroundStyle(PulseDesign.tidalBlueDeep)
+                .foregroundStyle(PulseDesign.ink)
                 .frame(
                     width: PulseDesign.minimumHitTarget,
                     height: PulseDesign.minimumHitTarget
                 )
-                .background(PulseDesign.tidalForeground, in: Circle())
+                .background(PulseDesign.surface, in: Circle())
                 .overlay {
                     Circle()
                         .stroke(
-                            PulseDesign.tidalBlueMid.opacity(0.42),
+                            PulseDesign.tidalBlueMid.opacity(
+                                PulseDesign.tidalHistorySurfaceBorderOpacity
+                            ),
                             lineWidth: PulseDesign.thinLineWidth
                         )
                 }
         }
         .buttonStyle(.plain)
         .disabled(isDisabled)
-        .opacity(isDisabled ? 0.38 : 1)
+        .opacity(isDisabled ? PulseDesign.disabledControlOpacity : 1)
         .accessibilityLabel(accessibilityLabel)
         .accessibilityIdentifier(accessibilityIdentifier)
     }
@@ -298,77 +298,70 @@ struct HistoryView: View {
                 accessibilityIdentifier: "history.stat.total"
             )
         }
-        .padding(.vertical, PulseDesign.spacing20)
-        .background {
-            ZStack {
-                LinearGradient(
-                    colors: [PulseDesign.tidalBlueMid, PulseDesign.tidalBlueDeep],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
-
-                HistoryTidalContourShape(verticalBias: 0.66)
-                    .stroke(
-                        PulseDesign.tidalForeground.opacity(0.16),
-                        lineWidth: PulseDesign.thinLineWidth
-                    )
-            }
+        .padding(.vertical, PulseDesign.spacing16)
+        .overlay(alignment: .top) {
+            Rectangle()
+                .fill(PulseDesign.separator)
+                .frame(height: PulseDesign.thinLineWidth)
         }
-        .clipShape(
-            RoundedRectangle(
-                cornerRadius: PulseDesign.tidalHistoryPanelCornerRadius,
-                style: .continuous
-            )
-        )
+        .overlay(alignment: .bottom) {
+            Rectangle()
+                .fill(PulseDesign.separator)
+                .frame(height: PulseDesign.thinLineWidth)
+        }
     }
 
     private var tidalStatisticDivider: some View {
         Rectangle()
-            .fill(PulseDesign.tidalForeground.opacity(0.20))
-            .frame(width: PulseDesign.thinLineWidth, height: 42)
+            .fill(PulseDesign.separator)
+            .frame(
+                width: PulseDesign.thinLineWidth,
+                height: PulseDesign.tidalHistoryStatisticDividerHeight
+            )
             .accessibilityHidden(true)
     }
 
     private var tidalCalendarPanel: some View {
-        ZStack {
-            LinearGradient(
-                colors: [PulseDesign.tidalBlueDeep, PulseDesign.tidalBlueDepth],
-                startPoint: .top,
-                endPoint: .bottomTrailing
-            )
-
-            VStack(spacing: 0) {
-                HistoryTidalContourShape(verticalBias: 0.12)
-                    .stroke(
-                        PulseDesign.tidalBluePale.opacity(0.24),
-                        lineWidth: PulseDesign.thinLineWidth
+        animatedCalendar
+            .padding(.horizontal, PulseDesign.spacing12)
+            .padding(.bottom, PulseDesign.spacing20)
+            .background {
+                RoundedRectangle(
+                    cornerRadius: PulseDesign.tidalHistoryPanelCornerRadius,
+                    style: .continuous
+                )
+                .fill(.ultraThinMaterial)
+                .overlay {
+                    RoundedRectangle(
+                        cornerRadius: PulseDesign.tidalHistoryPanelCornerRadius,
+                        style: .continuous
                     )
-                    .frame(height: 42)
-                    .accessibilityHidden(true)
-
-                Spacer(minLength: 0)
+                    .fill(
+                        PulseDesign.surface.opacity(
+                            PulseDesign.tidalHistorySurfaceOpacity
+                        )
+                    )
+                }
             }
-
-            animatedCalendar
-                .padding(.horizontal, PulseDesign.spacing12)
-                .padding(.bottom, PulseDesign.spacing20)
-        }
-        .clipShape(
-            RoundedRectangle(
-                cornerRadius: PulseDesign.tidalHistoryPanelCornerRadius,
-                style: .continuous
+            .clipShape(
+                RoundedRectangle(
+                    cornerRadius: PulseDesign.tidalHistoryPanelCornerRadius,
+                    style: .continuous
+                )
             )
-        )
-        .overlay {
-            RoundedRectangle(
-                cornerRadius: PulseDesign.tidalHistoryPanelCornerRadius,
-                style: .continuous
-            )
-            .stroke(
-                PulseDesign.tidalForeground.opacity(0.18),
-                lineWidth: PulseDesign.thinLineWidth
-            )
-        }
+            .overlay {
+                RoundedRectangle(
+                    cornerRadius: PulseDesign.tidalHistoryPanelCornerRadius,
+                    style: .continuous
+                )
+                .stroke(
+                    PulseDesign.tidalBlueMid.opacity(
+                        PulseDesign.tidalHistorySurfaceBorderOpacity
+                    ),
+                    lineWidth: PulseDesign.thinLineWidth
+                )
+            }
+            .accessibilityIdentifier("history.calendar.surface")
     }
 
     private var monthTitle: some View {
@@ -470,11 +463,7 @@ struct HistoryView: View {
             ) { index, weekday in
                 Text(weekday)
                     .font(.system(.caption2, design: .default, weight: .bold))
-                    .foregroundStyle(
-                        visualTheme == .tidalBreath
-                            ? PulseDesign.tidalForeground.opacity(0.68)
-                            : PulseDesign.secondary
-                    )
+                    .foregroundStyle(PulseDesign.secondary)
                     .frame(maxWidth: .infinity, minHeight: PulseDesign.spacing24)
                     .accessibilityIdentifier("calendar.weekday.\(index)")
             }
@@ -608,40 +597,16 @@ private struct TidalStatisticTile: View {
             Text(value, format: .number)
                 .font(.title2.weight(.semibold))
                 .monospacedDigit()
-                .foregroundStyle(PulseDesign.tidalForeground)
+                .foregroundStyle(PulseDesign.ink)
 
             Text(labelKey)
                 .font(.caption2.weight(.medium))
-                .foregroundStyle(PulseDesign.tidalForeground.opacity(0.70))
+                .foregroundStyle(PulseDesign.secondary)
                 .lineLimit(1)
         }
         .frame(maxWidth: .infinity)
         .accessibilityElement(children: .combine)
         .accessibilityIdentifier(accessibilityIdentifier)
-    }
-}
-
-private struct HistoryTidalContourShape: Shape {
-    let verticalBias: CGFloat
-
-    func path(in rect: CGRect) -> Path {
-        var path = Path()
-        let steps = 32
-        for step in 0...steps {
-            let progress = CGFloat(step) / CGFloat(steps)
-            let point = CGPoint(
-                x: rect.width * progress,
-                y: rect.height * (
-                    verticalBias + sin(progress * 2.4 * .pi) * 0.16
-                )
-            )
-            if step == 0 {
-                path.move(to: point)
-            } else {
-                path.addLine(to: point)
-            }
-        }
-        return path
     }
 }
 
@@ -689,12 +654,27 @@ private struct CalendarDayCell: View {
                         .accessibilityHidden(true)
                 }
                 .foregroundStyle(PulseDesign.secondary)
+            } else if item.status == .beforeHabit {
+                VStack(spacing: 0) {
+                    Text(item.day.day, format: .number)
+                        .font(.caption)
+                        .monospacedDigit()
+
+                    Image(systemName: "circle.dotted")
+                        .font(
+                            .system(
+                                size: PulseDesign.calendarAccessoryGlyphSize,
+                                weight: .semibold
+                            )
+                        )
+                        .accessibilityHidden(true)
+                }
+                .foregroundStyle(quietPassiveForeground)
             } else {
                 Text(item.day.day, format: .number)
                     .font(isToday ? .caption.bold() : .caption)
                     .monospacedDigit()
-                    .foregroundStyle(PulseDesign.secondary)
-                    .opacity(isDeemphasized ? PulseDesign.deemphasizedCalendarOpacity : 1)
+                    .foregroundStyle(quietPassiveForeground)
             }
         }
         .frame(maxWidth: .infinity)
@@ -712,7 +692,12 @@ private struct CalendarDayCell: View {
         .overlay(alignment: .bottomTrailing) {
             if hasMedia {
                 Image(systemName: "camera.fill")
-                    .font(.system(size: 8, weight: .bold))
+                    .font(
+                        .system(
+                            size: PulseDesign.calendarAccessoryGlyphSize,
+                            weight: .bold
+                        )
+                    )
                     .foregroundStyle(PulseDesign.action)
                     .padding(PulseDesign.spacing4)
                     .accessibilityHidden(true)
@@ -743,9 +728,14 @@ private struct CalendarDayCell: View {
                         .monospacedDigit()
 
                     Image(systemName: "checkmark")
-                        .font(.system(size: 8, weight: .bold))
+                        .font(
+                            .system(
+                                size: PulseDesign.calendarAccessoryGlyphSize,
+                                weight: .bold
+                            )
+                        )
                 }
-                .foregroundStyle(PulseDesign.tidalBlueDeep)
+                .foregroundStyle(PulseDesign.tidalForeground)
             } else if item.status == .missed {
                 VStack(spacing: 0) {
                     Text(item.day.day, format: .number)
@@ -753,15 +743,36 @@ private struct CalendarDayCell: View {
                         .monospacedDigit()
 
                     Image(systemName: "minus")
-                        .font(.system(size: 8, weight: .bold))
+                        .font(
+                            .system(
+                                size: PulseDesign.calendarAccessoryGlyphSize,
+                                weight: .bold
+                            )
+                        )
                         .accessibilityHidden(true)
                 }
-                .foregroundStyle(PulseDesign.tidalForeground.opacity(0.72))
+                .foregroundStyle(PulseDesign.secondary)
+            } else if item.status == .beforeHabit {
+                VStack(spacing: 0) {
+                    Text(item.day.day, format: .number)
+                        .font(.caption)
+                        .monospacedDigit()
+
+                    Image(systemName: "circle.dotted")
+                        .font(
+                            .system(
+                                size: PulseDesign.calendarAccessoryGlyphSize,
+                                weight: .semibold
+                            )
+                        )
+                        .accessibilityHidden(true)
+                }
+                .foregroundStyle(tidalPassiveForeground)
             } else {
                 Text(item.day.day, format: .number)
                     .font(isToday ? .caption.bold() : .caption)
                     .monospacedDigit()
-                    .foregroundStyle(PulseDesign.tidalForeground.opacity(tidalDayOpacity))
+                    .foregroundStyle(tidalPassiveForeground)
             }
         }
         .frame(maxWidth: .infinity)
@@ -773,7 +784,7 @@ private struct CalendarDayCell: View {
                     style: .continuous
                 )
                 .stroke(
-                    PulseDesign.tidalForeground,
+                    PulseDesign.tidalBlueMid,
                     lineWidth: PulseDesign.emphasisLineWidth
                 )
                 .frame(
@@ -785,8 +796,13 @@ private struct CalendarDayCell: View {
         .overlay(alignment: .bottomTrailing) {
             if hasMedia {
                 Image(systemName: "camera.fill")
-                    .font(.system(size: 8, weight: .bold))
-                    .foregroundStyle(PulseDesign.tidalBluePale)
+                    .font(
+                        .system(
+                            size: PulseDesign.calendarAccessoryGlyphSize,
+                            weight: .bold
+                        )
+                    )
+                    .foregroundStyle(PulseDesign.tidalBlueMid)
                     .padding(PulseDesign.spacing4)
                     .accessibilityHidden(true)
             }
@@ -800,18 +816,38 @@ private struct CalendarDayCell: View {
     private var tidalCellFill: Color {
         switch item.status {
         case .checked:
-            PulseDesign.tidalForeground
+            PulseDesign.tidalBlueDeep
         case .todayPending:
-            PulseDesign.tidalForeground.opacity(0.14)
+            PulseDesign.tidalBluePale.opacity(PulseDesign.tidalHistoryTodayFillOpacity)
         case .missed:
-            PulseDesign.tidalForeground.opacity(0.08)
+            PulseDesign.tidalBlueDeep.opacity(PulseDesign.tidalHistoryMissedFillOpacity)
         case .future, .beforeHabit:
             .clear
         }
     }
 
-    private var tidalDayOpacity: Double {
-        isDeemphasized ? 0.34 : 0.78
+    private var quietPassiveForeground: Color {
+        switch item.status {
+        case .beforeHabit:
+            PulseDesign.secondary.opacity(PulseDesign.calendarBeforeHabitOpacity)
+        case .todayPending, .future:
+            PulseDesign.secondary
+        case .checked, .missed:
+            PulseDesign.ink
+        }
+    }
+
+    private var tidalPassiveForeground: Color {
+        switch item.status {
+        case .todayPending:
+            PulseDesign.ink
+        case .future:
+            PulseDesign.secondary
+        case .beforeHabit:
+            PulseDesign.secondary.opacity(PulseDesign.calendarBeforeHabitOpacity)
+        case .checked, .missed:
+            PulseDesign.ink
+        }
     }
 
     private var accessibilityLabel: String {
@@ -838,10 +874,6 @@ private struct CalendarDayCell: View {
             format: PulseLocalization.string("calendar.status.with_media_format", locale: locale),
             base
         )
-    }
-
-    private var isDeemphasized: Bool {
-        item.status == .future || item.status == .beforeHabit
     }
 }
 

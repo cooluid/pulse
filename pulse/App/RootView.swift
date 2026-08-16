@@ -8,7 +8,6 @@ struct RootView: View {
     @State private var selectedSection: PulsePrimarySection = .today
     @State private var todayPath: [PulseNavigationDestination] = []
     @State private var historyPath: [PulseNavigationDestination] = []
-    @State private var primaryNavigationHeight: CGFloat = 0
 
     var body: some View {
         Group {
@@ -84,66 +83,60 @@ struct RootView: View {
     }
 
     private var primaryInterface: some View {
-        ZStack(alignment: .bottom) {
-            NavigationStack(path: $todayPath) {
-                TodayView(
-                    model: model,
-                    isActive: selectedSection == .today && todayPath.isEmpty,
-                    primaryNavigationClearance: primaryNavigationHeight
+        VStack(spacing: 0) {
+            ZStack {
+                NavigationStack(path: $todayPath) {
+                    TodayView(
+                        model: model,
+                        isActive: selectedSection == .today && todayPath.isEmpty
+                    )
+                        .accessibilityHidden(!todayPath.isEmpty)
+                        .navigationDestination(for: PulseNavigationDestination.self) { destination in
+                            secondaryDestination(destination)
+                        }
+                }
+                .opacity(selectedSection == .today ? 1 : 0)
+                .offset(
+                    x: reduceMotion || selectedSection == .today
+                        ? 0
+                        : -PulseDesign.primaryContentTransitionOffset
                 )
-                    .accessibilityHidden(!todayPath.isEmpty)
-                    .navigationDestination(for: PulseNavigationDestination.self) { destination in
-                        secondaryDestination(destination)
-                    }
-            }
-            .opacity(selectedSection == .today ? 1 : 0)
-            .offset(
-                x: reduceMotion || selectedSection == .today
-                    ? 0
-                    : -PulseDesign.primaryContentTransitionOffset
-            )
-            .allowsHitTesting(selectedSection == .today)
-            .accessibilityHidden(selectedSection != .today)
-            .zIndex(selectedSection == .today ? 1 : 0)
-            .animation(primaryContentAnimation, value: selectedSection)
+                .allowsHitTesting(selectedSection == .today)
+                .accessibilityHidden(selectedSection != .today)
+                .zIndex(selectedSection == .today ? 1 : 0)
+                .animation(primaryContentAnimation, value: selectedSection)
 
-            NavigationStack(path: $historyPath) {
-                HistoryView(
-                    model: model,
-                    primaryNavigationClearance: primaryNavigationHeight
+                NavigationStack(path: $historyPath) {
+                    HistoryView(model: model)
+                        .accessibilityHidden(!historyPath.isEmpty)
+                        .navigationDestination(for: PulseNavigationDestination.self) { destination in
+                            secondaryDestination(destination)
+                        }
+                }
+                .opacity(selectedSection == .history ? 1 : 0)
+                .offset(
+                    x: reduceMotion || selectedSection == .history
+                        ? 0
+                        : PulseDesign.primaryContentTransitionOffset
                 )
-                    .accessibilityHidden(!historyPath.isEmpty)
-                    .navigationDestination(for: PulseNavigationDestination.self) { destination in
-                        secondaryDestination(destination)
-                    }
+                .allowsHitTesting(selectedSection == .history)
+                .accessibilityHidden(selectedSection != .history)
+                .zIndex(selectedSection == .history ? 1 : 0)
+                .animation(primaryContentAnimation, value: selectedSection)
             }
-            .opacity(selectedSection == .history ? 1 : 0)
-            .offset(
-                x: reduceMotion || selectedSection == .history
-                    ? 0
-                    : PulseDesign.primaryContentTransitionOffset
-            )
-            .allowsHitTesting(selectedSection == .history)
-            .accessibilityHidden(selectedSection != .history)
-            .zIndex(selectedSection == .history ? 1 : 0)
-            .animation(primaryContentAnimation, value: selectedSection)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
 
             if isPrimaryNavigationVisible {
                 PulsePrimaryNavigation(
                     selection: $selectedSection,
                     todayDayNumber: model.today?.day,
-                    historyMonthNumber: model.today?.month,
                     isTodayChecked: model.todayRecord != nil
                 )
-                .onGeometryChange(for: CGFloat.self) { proxy in
-                    proxy.size.height
-                } action: { newHeight in
-                    primaryNavigationHeight = newHeight
-                }
-                .zIndex(2)
+                .transition(.move(edge: .bottom).combined(with: .opacity))
             }
         }
         .background(PulseScreenBackground())
+        .animation(primaryContentAnimation, value: isPrimaryNavigationVisible)
     }
 
     private var isPrimaryNavigationVisible: Bool {
