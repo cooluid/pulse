@@ -36,7 +36,7 @@ struct HistoryView: View {
                             )
                             .frame(
                                 minHeight: usesRegularWidthLayout ? proxy.size.height : nil,
-                                alignment: .center
+                                alignment: .top
                             )
                             .padding(.horizontal, PulseDesign.horizontalPadding)
                             .padding(
