@@ -70,6 +70,9 @@ enum PulseDesign {
     static let weekRailDotDiameter: CGFloat = 13
     static let checkInDiameter: CGFloat = 152
     static let tidalCheckInDiameter: CGFloat = 172
+    static let tidalHistoryMonthSize: CGFloat = 88
+    static let tidalHistoryPanelCornerRadius: CGFloat = 28
+    static let tidalCalendarDayCornerRadius: CGFloat = 12
     static let checkInInnerHalo: CGFloat = 18
     static let checkInOuterHalo: CGFloat = 36
     static let checkInRingLineWidth: CGFloat = 24
@@ -201,6 +204,18 @@ enum PulseDesign {
     static let imprintCompletionDuration =
         imprintContractionDuration + imprintFormationDuration + imprintSettleDuration
     static let idleAuraBreathDuration = idleAuraBreathHalfDuration * 2
+
+    static func appAccent(for theme: PulseVisualTheme) -> Color {
+        theme == .tidalBreath ? tidalBlueMid : action
+    }
+
+    static func appSuccess(for theme: PulseVisualTheme) -> Color {
+        theme == .tidalBreath ? tidalBlueMid : grass
+    }
+
+    static func appChromeBackground(for theme: PulseVisualTheme) -> Color {
+        theme == .tidalBreath ? tidalSky : background
+    }
 }
 
 struct PulseScreenBackground: View {

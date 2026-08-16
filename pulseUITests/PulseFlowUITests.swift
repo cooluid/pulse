@@ -641,6 +641,47 @@ final class PulseFlowUITests: XCTestCase {
         completedAttachment.lifetime = .keepAlways
         add(completedAttachment)
 
+        app.buttons["primary.navigation.history"].tap()
+        XCTAssertTrue(
+            app.descendants(matching: .any)["history.theme.tidal-breath"]
+                .waitForExistence(timeout: 3)
+        )
+        let checkedCalendarDay = app.descendants(matching: .any)["calendar.day.2026-08-10"]
+        XCTAssertTrue(checkedCalendarDay.waitForExistence(timeout: 3))
+        XCTAssertTrue(checkedCalendarDay.label.contains("已签到"))
+
+        let historyAttachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
+        historyAttachment.name = "Tidal Breath redesigned history"
+        historyAttachment.lifetime = .keepAlways
+        add(historyAttachment)
+
+        checkedCalendarDay.tap()
+        XCTAssertTrue(
+            app.descendants(matching: .any)["history.record.detail.identity"]
+                .waitForExistence(timeout: 3)
+        )
+        let detailAttachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
+        detailAttachment.name = "Tidal Breath record detail"
+        detailAttachment.lifetime = .keepAlways
+        add(detailAttachment)
+        app.buttons["detail.sheet.close"].tap()
+
+        app.buttons["primary.navigation.today"].tap()
+        app.buttons["settings.navigation.open.today"].tap()
+        let storeLink = app.descendants(matching: .any)["settings.store.link"]
+        XCTAssertTrue(storeLink.waitForExistence(timeout: 3))
+        storeLink.tap()
+        XCTAssertTrue(
+            app.descendants(matching: .any)["store.theme.tidal-breath"]
+                .waitForExistence(timeout: 3)
+        )
+        XCTAssertTrue(app.buttons["store.buy"].waitForExistence(timeout: 3))
+
+        let storeAttachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
+        storeAttachment.name = "Tidal Breath advanced features"
+        storeAttachment.lifetime = .keepAlways
+        add(storeAttachment)
+
         app.terminate()
         app.launchEnvironment.removeValue(forKey: "PULSE_UI_TEST_RESET")
         app.launch()

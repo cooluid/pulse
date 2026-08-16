@@ -254,7 +254,7 @@ struct SettingsView: View {
                         .font(.footnote)
                         .foregroundStyle(
                             model.featureAccess.hasEnhancement
-                                ? PulseDesign.grass
+                                ? PulseDesign.appSuccess(for: visualTheme)
                                 : PulseDesign.secondary
                         )
                     }

@@ -10,6 +10,7 @@ struct HistoryView: View {
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @Environment(\.locale) private var locale
+    @Environment(\.pulseVisualTheme) private var visualTheme
     @State private var selectedDay: LogicalDay?
     @State private var monthTransitionDirection = -1
 
@@ -51,6 +52,8 @@ struct HistoryView: View {
                     .scrollIndicators(.hidden)
                 }
             }
+
+            historyThemeMarker
         }
         .toolbar(.hidden, for: .navigationBar)
         .sheet(item: $selectedDay) { day in
@@ -58,8 +61,30 @@ struct HistoryView: View {
         }
     }
 
+    private var historyThemeMarker: some View {
+        Color.clear
+            .frame(width: 1, height: 1)
+            .allowsHitTesting(false)
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel(visualTheme.localizedName(locale: locale))
+            .accessibilityIdentifier(
+                visualTheme == .tidalBreath
+                    ? "history.theme.tidal-breath"
+                    : "history.theme.quiet-field"
+            )
+    }
+
     @ViewBuilder
     private var historyContent: some View {
+        if visualTheme == .tidalBreath {
+            tidalHistoryContent
+        } else {
+            quietHistoryContent
+        }
+    }
+
+    @ViewBuilder
+    private var quietHistoryContent: some View {
         if usesRegularWidthLayout {
             HStack(alignment: .top, spacing: PulseDesign.regularWidthColumnGap) {
                 VStack(spacing: 0) {
@@ -76,6 +101,29 @@ struct HistoryView: View {
                 historyHeading
                 statisticsRow
                 animatedCalendar
+            }
+            .padding(.bottom, PulseDesign.spacing24)
+        }
+    }
+
+    @ViewBuilder
+    private var tidalHistoryContent: some View {
+        if usesRegularWidthLayout {
+            HStack(alignment: .top, spacing: PulseDesign.regularWidthColumnGap) {
+                VStack(spacing: PulseDesign.spacing20) {
+                    tidalMonthHero
+                    tidalStatisticsBand
+                }
+                .frame(maxWidth: .infinity)
+
+                tidalCalendarPanel
+                    .frame(maxWidth: .infinity)
+            }
+        } else {
+            VStack(spacing: PulseDesign.spacing20) {
+                tidalMonthHero
+                tidalStatisticsBand
+                tidalCalendarPanel
             }
             .padding(.bottom, PulseDesign.spacing24)
         }
@@ -112,6 +160,214 @@ struct HistoryView: View {
         }
         .accessibilityAction(named: Text("history.next_month")) {
             moveMonth(by: 1)
+        }
+    }
+
+    private var tidalMonthHero: some View {
+        VStack(alignment: .leading, spacing: PulseDesign.spacing12) {
+            HStack(alignment: .center, spacing: PulseDesign.spacing16) {
+                if let month = selectedMonth, let timeZone = model.timeZone {
+                    Text(
+                        String(
+                            format: PulseLocalization.string(
+                                "history.archive_format",
+                                locale: locale
+                            ),
+                            PulseFormatting.year(month, timeZone: timeZone)
+                        )
+                    )
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(PulseDesign.tidalBlueDeep.opacity(0.72))
+                    .accessibilityHidden(true)
+                }
+
+                Spacer(minLength: PulseDesign.spacing12)
+
+                tidalMonthNavigationControls
+            }
+
+            if let month = selectedMonth, let timeZone = model.timeZone {
+                HStack(alignment: .lastTextBaseline, spacing: PulseDesign.spacing16) {
+                    Text(String(format: "%02d", month.month))
+                        .font(.system(size: PulseDesign.tidalHistoryMonthSize, weight: .medium))
+                        .monospacedDigit()
+                        .tracking(-4)
+                        .foregroundStyle(PulseDesign.ink)
+
+                    VStack(alignment: .leading, spacing: PulseDesign.spacing4) {
+                        Text(PulseFormatting.monthOnly(month, timeZone: timeZone, locale: locale))
+                            .font(.title3.weight(.semibold))
+                            .foregroundStyle(PulseDesign.ink)
+
+                        Rectangle()
+                            .fill(PulseDesign.tidalBlueMid)
+                            .frame(width: 52, height: PulseDesign.emphasisLineWidth)
+                            .accessibilityHidden(true)
+                    }
+                    .padding(.bottom, PulseDesign.spacing12)
+                }
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.top, PulseDesign.spacing12)
+        .contentShape(Rectangle())
+        .simultaneousGesture(monthSwipeGesture)
+        .accessibilityElement(children: .combine)
+        .accessibilityIdentifier("history.month.heading")
+        .accessibilityAction(named: Text("history.previous_month")) {
+            moveMonth(by: -1)
+        }
+        .accessibilityAction(named: Text("history.next_month")) {
+            moveMonth(by: 1)
+        }
+    }
+
+    private var tidalMonthNavigationControls: some View {
+        HStack(spacing: PulseDesign.spacing8) {
+            tidalMonthNavigationButton(
+                systemName: "chevron.left",
+                accessibilityLabel: "history.previous_month",
+                accessibilityIdentifier: "history.month.previous"
+            ) {
+                moveMonth(by: -1)
+            }
+
+            tidalMonthNavigationButton(
+                systemName: "chevron.right",
+                accessibilityLabel: "history.next_month",
+                accessibilityIdentifier: "history.month.next",
+                isDisabled: isShowingCurrentMonth
+            ) {
+                moveMonth(by: 1)
+            }
+        }
+    }
+
+    private func tidalMonthNavigationButton(
+        systemName: String,
+        accessibilityLabel: LocalizedStringKey,
+        accessibilityIdentifier: String,
+        isDisabled: Bool = false,
+        action: @escaping () -> Void
+    ) -> some View {
+        Button(action: action) {
+            Image(systemName: systemName)
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(PulseDesign.tidalBlueDeep)
+                .frame(
+                    width: PulseDesign.minimumHitTarget,
+                    height: PulseDesign.minimumHitTarget
+                )
+                .background(PulseDesign.tidalForeground, in: Circle())
+                .overlay {
+                    Circle()
+                        .stroke(
+                            PulseDesign.tidalBlueMid.opacity(0.42),
+                            lineWidth: PulseDesign.thinLineWidth
+                        )
+                }
+        }
+        .buttonStyle(.plain)
+        .disabled(isDisabled)
+        .opacity(isDisabled ? 0.38 : 1)
+        .accessibilityLabel(accessibilityLabel)
+        .accessibilityIdentifier(accessibilityIdentifier)
+    }
+
+    private var tidalStatisticsBand: some View {
+        HStack(spacing: 0) {
+            TidalStatisticTile(
+                value: model.statistics.currentStreak,
+                labelKey: "history.current_streak",
+                accessibilityIdentifier: "history.stat.current"
+            )
+
+            tidalStatisticDivider
+
+            TidalStatisticTile(
+                value: model.statistics.longestStreak,
+                labelKey: "history.longest_streak",
+                accessibilityIdentifier: "history.stat.longest"
+            )
+
+            tidalStatisticDivider
+
+            TidalStatisticTile(
+                value: model.statistics.totalCount,
+                labelKey: "history.total",
+                accessibilityIdentifier: "history.stat.total"
+            )
+        }
+        .padding(.vertical, PulseDesign.spacing20)
+        .background {
+            ZStack {
+                LinearGradient(
+                    colors: [PulseDesign.tidalBlueMid, PulseDesign.tidalBlueDeep],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+
+                HistoryTidalContourShape(verticalBias: 0.66)
+                    .stroke(
+                        PulseDesign.tidalForeground.opacity(0.16),
+                        lineWidth: PulseDesign.thinLineWidth
+                    )
+            }
+        }
+        .clipShape(
+            RoundedRectangle(
+                cornerRadius: PulseDesign.tidalHistoryPanelCornerRadius,
+                style: .continuous
+            )
+        )
+    }
+
+    private var tidalStatisticDivider: some View {
+        Rectangle()
+            .fill(PulseDesign.tidalForeground.opacity(0.20))
+            .frame(width: PulseDesign.thinLineWidth, height: 42)
+            .accessibilityHidden(true)
+    }
+
+    private var tidalCalendarPanel: some View {
+        ZStack {
+            LinearGradient(
+                colors: [PulseDesign.tidalBlueDeep, PulseDesign.tidalBlueDepth],
+                startPoint: .top,
+                endPoint: .bottomTrailing
+            )
+
+            VStack(spacing: 0) {
+                HistoryTidalContourShape(verticalBias: 0.12)
+                    .stroke(
+                        PulseDesign.tidalBluePale.opacity(0.24),
+                        lineWidth: PulseDesign.thinLineWidth
+                    )
+                    .frame(height: 42)
+                    .accessibilityHidden(true)
+
+                Spacer(minLength: 0)
+            }
+
+            animatedCalendar
+                .padding(.horizontal, PulseDesign.spacing12)
+                .padding(.bottom, PulseDesign.spacing20)
+        }
+        .clipShape(
+            RoundedRectangle(
+                cornerRadius: PulseDesign.tidalHistoryPanelCornerRadius,
+                style: .continuous
+            )
+        )
+        .overlay {
+            RoundedRectangle(
+                cornerRadius: PulseDesign.tidalHistoryPanelCornerRadius,
+                style: .continuous
+            )
+            .stroke(
+                PulseDesign.tidalForeground.opacity(0.18),
+                lineWidth: PulseDesign.thinLineWidth
+            )
         }
     }
 
@@ -214,7 +470,11 @@ struct HistoryView: View {
             ) { index, weekday in
                 Text(weekday)
                     .font(.system(.caption2, design: .default, weight: .bold))
-                    .foregroundStyle(PulseDesign.secondary)
+                    .foregroundStyle(
+                        visualTheme == .tidalBreath
+                            ? PulseDesign.tidalForeground.opacity(0.68)
+                            : PulseDesign.secondary
+                    )
                     .frame(maxWidth: .infinity, minHeight: PulseDesign.spacing24)
                     .accessibilityIdentifier("calendar.weekday.\(index)")
             }
@@ -247,7 +507,7 @@ struct HistoryView: View {
                 }
             }
         }
-        .padding(.top, PulseDesign.spacing20)
+        .padding(.top, visualTheme == .tidalBreath ? PulseDesign.spacing16 : PulseDesign.spacing20)
     }
 
     private var animatedCalendar: some View {
@@ -338,13 +598,70 @@ private struct StatisticTile: View {
     }
 }
 
+private struct TidalStatisticTile: View {
+    let value: Int
+    let labelKey: LocalizedStringKey
+    let accessibilityIdentifier: String
+
+    var body: some View {
+        VStack(spacing: PulseDesign.spacing4) {
+            Text(value, format: .number)
+                .font(.title2.weight(.semibold))
+                .monospacedDigit()
+                .foregroundStyle(PulseDesign.tidalForeground)
+
+            Text(labelKey)
+                .font(.caption2.weight(.medium))
+                .foregroundStyle(PulseDesign.tidalForeground.opacity(0.70))
+                .lineLimit(1)
+        }
+        .frame(maxWidth: .infinity)
+        .accessibilityElement(children: .combine)
+        .accessibilityIdentifier(accessibilityIdentifier)
+    }
+}
+
+private struct HistoryTidalContourShape: Shape {
+    let verticalBias: CGFloat
+
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        let steps = 32
+        for step in 0...steps {
+            let progress = CGFloat(step) / CGFloat(steps)
+            let point = CGPoint(
+                x: rect.width * progress,
+                y: rect.height * (
+                    verticalBias + sin(progress * 2.4 * .pi) * 0.16
+                )
+            )
+            if step == 0 {
+                path.move(to: point)
+            } else {
+                path.addLine(to: point)
+            }
+        }
+        return path
+    }
+}
+
 private struct CalendarDayCell: View {
     let item: CalendarDayItem
     let isToday: Bool
     let hasMedia: Bool
     @Environment(\.locale) private var locale
+    @Environment(\.pulseVisualTheme) private var visualTheme
 
+    @ViewBuilder
     var body: some View {
+        if visualTheme == .tidalBreath {
+            tidalCell
+        } else {
+            quietCell
+        }
+    }
+
+    private var quietCell: some View {
         ZStack {
             Circle()
                 .fill(item.status == .checked ? PulseDesign.grass : Color.clear)
@@ -407,6 +724,96 @@ private struct CalendarDayCell: View {
         .accessibilityIdentifier("calendar.day.\(item.day.storageValue)")
     }
 
+    private var tidalCell: some View {
+        ZStack {
+            RoundedRectangle(
+                cornerRadius: PulseDesign.tidalCalendarDayCornerRadius,
+                style: .continuous
+            )
+            .fill(tidalCellFill)
+            .frame(
+                width: PulseDesign.calendarDayVisualSize + PulseDesign.spacing4,
+                height: PulseDesign.calendarDayVisualSize + PulseDesign.spacing4
+            )
+
+            if item.status == .checked {
+                VStack(spacing: 0) {
+                    Text(item.day.day, format: .number)
+                        .font(.caption2.bold())
+                        .monospacedDigit()
+
+                    Image(systemName: "checkmark")
+                        .font(.system(size: 8, weight: .bold))
+                }
+                .foregroundStyle(PulseDesign.tidalBlueDeep)
+            } else if item.status == .missed {
+                VStack(spacing: 0) {
+                    Text(item.day.day, format: .number)
+                        .font(.caption)
+                        .monospacedDigit()
+
+                    Image(systemName: "minus")
+                        .font(.system(size: 8, weight: .bold))
+                        .accessibilityHidden(true)
+                }
+                .foregroundStyle(PulseDesign.tidalForeground.opacity(0.72))
+            } else {
+                Text(item.day.day, format: .number)
+                    .font(isToday ? .caption.bold() : .caption)
+                    .monospacedDigit()
+                    .foregroundStyle(PulseDesign.tidalForeground.opacity(tidalDayOpacity))
+            }
+        }
+        .frame(maxWidth: .infinity)
+        .frame(height: PulseDesign.calendarDayHitSize)
+        .overlay {
+            if isToday {
+                RoundedRectangle(
+                    cornerRadius: PulseDesign.tidalCalendarDayCornerRadius,
+                    style: .continuous
+                )
+                .stroke(
+                    PulseDesign.tidalForeground,
+                    lineWidth: PulseDesign.emphasisLineWidth
+                )
+                .frame(
+                    width: PulseDesign.calendarDayVisualSize + PulseDesign.spacing4,
+                    height: PulseDesign.calendarDayVisualSize + PulseDesign.spacing4
+                )
+            }
+        }
+        .overlay(alignment: .bottomTrailing) {
+            if hasMedia {
+                Image(systemName: "camera.fill")
+                    .font(.system(size: 8, weight: .bold))
+                    .foregroundStyle(PulseDesign.tidalBluePale)
+                    .padding(PulseDesign.spacing4)
+                    .accessibilityHidden(true)
+            }
+        }
+        .contentShape(Rectangle())
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(accessibilityLabel)
+        .accessibilityIdentifier("calendar.day.\(item.day.storageValue)")
+    }
+
+    private var tidalCellFill: Color {
+        switch item.status {
+        case .checked:
+            PulseDesign.tidalForeground
+        case .todayPending:
+            PulseDesign.tidalForeground.opacity(0.14)
+        case .missed:
+            PulseDesign.tidalForeground.opacity(0.08)
+        case .future, .beforeHabit:
+            .clear
+        }
+    }
+
+    private var tidalDayOpacity: Double {
+        isDeemphasized ? 0.34 : 0.78
+    }
+
     private var accessibilityLabel: String {
         let state: String
         switch item.status {
@@ -444,6 +851,7 @@ private struct DayArchiveDetailView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @Environment(\.locale) private var locale
+    @Environment(\.pulseVisualTheme) private var visualTheme
     @Environment(\.verticalSizeClass) private var verticalSizeClass
     @State private var pendingDestructiveAction: DestructiveAction?
     @State private var photoDocument: ImprintPhotoDocument?
@@ -490,7 +898,16 @@ private struct DayArchiveDetailView: View {
         return [.fraction(PulseDesign.compactDetailDetentFraction), .large]
     }
 
+    @ViewBuilder
     private var archiveIdentity: some View {
+        if visualTheme == .tidalBreath {
+            tidalArchiveIdentity
+        } else {
+            quietArchiveIdentity
+        }
+    }
+
+    private var quietArchiveIdentity: some View {
         VStack(alignment: .leading, spacing: PulseDesign.spacing4) {
             Text(
                 PulseFormatting.fullDate(
@@ -526,6 +943,70 @@ private struct DayArchiveDetailView: View {
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+        .accessibilityElement(children: .combine)
+        .accessibilityIdentifier("history.record.detail.identity")
+    }
+
+    private var tidalArchiveIdentity: some View {
+        HStack(alignment: .top, spacing: PulseDesign.spacing16) {
+            Image(systemName: record == nil ? "photo.fill" : "checkmark")
+                .font(.headline.weight(.bold))
+                .foregroundStyle(PulseDesign.tidalBlueDeep)
+                .frame(
+                    width: PulseDesign.minimumHitTarget,
+                    height: PulseDesign.minimumHitTarget
+                )
+                .background(PulseDesign.tidalForeground, in: Circle())
+                .accessibilityHidden(true)
+
+            VStack(alignment: .leading, spacing: PulseDesign.spacing8) {
+                Text(
+                    PulseFormatting.fullDate(
+                        day,
+                        timeZone: model.timeZone ?? .autoupdatingCurrent,
+                        locale: locale
+                    )
+                )
+                .font(.title3.bold())
+                .foregroundStyle(PulseDesign.tidalForeground)
+                .fixedSize(horizontal: false, vertical: true)
+
+                if let record {
+                    Text(
+                        String(
+                            format: PulseLocalization.string(
+                                "history.checked_at",
+                                locale: locale
+                            ),
+                            PulseFormatting.time(
+                                record.checkedAt,
+                                timeZone: record.timeZone,
+                                locale: locale
+                            )
+                        )
+                    )
+                    .foregroundStyle(PulseDesign.tidalForeground.opacity(0.72))
+                    .fixedSize(horizontal: false, vertical: true)
+                } else {
+                    Text("history.record_deleted_media_retained")
+                        .foregroundStyle(PulseDesign.tidalForeground.opacity(0.72))
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .padding(PulseDesign.spacing20)
+        .background(
+            LinearGradient(
+                colors: [PulseDesign.tidalBlueMid, PulseDesign.tidalBlueDeep],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            ),
+            in: RoundedRectangle(
+                cornerRadius: PulseDesign.tidalHistoryPanelCornerRadius,
+                style: .continuous
+            )
+        )
         .accessibilityElement(children: .combine)
         .accessibilityIdentifier("history.record.detail.identity")
     }
