@@ -15,8 +15,8 @@ struct TodayView: View {
     @Environment(\.openURL) private var openURL
     @Environment(\.pulseVisualTheme) private var visualTheme
     @ScaledMetric(relativeTo: .largeTitle) private var dayNumberSize = PulseDesign.dayNumberBaseSize
-    @ScaledMetric(relativeTo: .largeTitle) private var faultDayNumberSize =
-        PulseDesign.faultDayNumberBaseSize
+    @ScaledMetric(relativeTo: .largeTitle) private var tidalDayNumberSize =
+        PulseDesign.tidalDayNumberBaseSize
     @State private var showsSavingIndicator = false
     @State private var imprintRitualPhase: ImprintRitualPhase = .ready
     @State private var completionAnimationSequence = 0
@@ -31,7 +31,10 @@ struct TodayView: View {
     var body: some View {
         ZStack {
             PulseScreenBackground()
-            PulseFieldBackground(presentation: .today)
+            PulseFieldBackground(
+                presentation: .today,
+                isCompleted: model.todayRecord != nil
+            )
 
             VStack(spacing: 0) {
                 PulseAppHeader(source: .today)
@@ -61,6 +64,8 @@ struct TodayView: View {
                     .scrollIndicators(.hidden)
                 }
             }
+
+            runtimePresentationMarkers
         }
         .toolbar(.hidden, for: .navigationBar)
         .fullScreenCover(isPresented: $showsCamera) {
@@ -105,30 +110,37 @@ struct TodayView: View {
 
     @ViewBuilder
     private var todayContent: some View {
-        if visualTheme == .faultAlmanac && !dynamicTypeSize.isAccessibilitySize {
-            ZStack {
-                faultAlmanacContent
-                visualThemeMarker
-            }
+        if visualTheme == .tidalBreath && !dynamicTypeSize.isAccessibilitySize {
+            tidalBreathContent
         } else {
-            ZStack {
-                quietFieldContent
-                visualThemeMarker
-            }
+            quietFieldContent
         }
     }
 
-    private var visualThemeMarker: some View {
-        Color.clear
-            .frame(width: 1, height: 1)
-            .allowsHitTesting(false)
-            .accessibilityElement(children: .ignore)
-            .accessibilityLabel(visualTheme.localizedName(locale: locale))
-            .accessibilityIdentifier(
-                visualTheme == .faultAlmanac
-                    ? "today.theme.fault-almanac"
-                    : "today.theme.quiet-field"
-            )
+    private var runtimePresentationMarkers: some View {
+        ZStack(alignment: .topLeading) {
+            Color.clear
+                .frame(width: 1, height: 1)
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel(visualTheme.localizedName(locale: locale))
+                .accessibilityIdentifier(
+                    visualTheme == .tidalBreath
+                        ? "today.theme.tidal-breath"
+                        : "today.theme.quiet-field"
+                )
+
+            if imprintRitualPhase == .imprinted {
+                Color.clear
+                    .frame(width: 1, height: 1)
+                    .accessibilityElement(children: .ignore)
+                    .accessibilityLabel(
+                        PulseLocalization.string("today.accessibility.checked", locale: locale)
+                    )
+                    .accessibilityIdentifier("today.checkin.presentation.imprinted")
+            }
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        .allowsHitTesting(false)
     }
 
     @ViewBuilder
@@ -164,36 +176,32 @@ struct TodayView: View {
     }
 
     @ViewBuilder
-    private var faultAlmanacContent: some View {
+    private var tidalBreathContent: some View {
         if usesRegularWidthLayout {
             HStack(alignment: .center, spacing: PulseDesign.regularWidthColumnGap) {
-                VStack(spacing: PulseDesign.spacing24) {
-                    faultDayHero
-                    weekRail
+                VStack(spacing: 0) {
+                    tidalDayHero
+                    checkInControl
+                        .padding(.top, PulseDesign.checkInHeroSpacing)
                 }
                 .frame(maxWidth: .infinity)
 
-                VStack(spacing: PulseDesign.spacing24) {
-                    checkInControl
-                    faultRhythmStatus
+                VStack(spacing: 0) {
+                    weekRail
+                    tidalRhythmStatus
+                        .padding(.top, PulseDesign.spacing24)
                 }
                 .frame(maxWidth: .infinity)
             }
         } else {
             VStack(spacing: 0) {
-                faultDayHero
-
-                HStack(alignment: .bottom, spacing: PulseDesign.spacing16) {
-                    checkInControl
-
-                    faultRhythmStatus
-                        .padding(.bottom, PulseDesign.spacing20)
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.top, -PulseDesign.spacing12)
-
+                tidalDayHero
+                checkInControl
+                    .padding(.top, PulseDesign.checkInHeroSpacing)
                 weekRail
-                    .padding(.top, PulseDesign.spacing32)
+                    .padding(.top, PulseDesign.checkInOuterHalo + PulseDesign.spacing12)
+                tidalRhythmStatus
+                    .padding(.top, PulseDesign.spacing16)
             }
             .padding(.bottom, PulseDesign.spacing24)
         }
@@ -247,8 +255,8 @@ struct TodayView: View {
         .accessibilityElement(children: .contain)
     }
 
-    private var faultDayHero: some View {
-        ZStack(alignment: .topLeading) {
+    private var tidalDayHero: some View {
+        VStack(spacing: 0) {
             if let today = model.today, let timeZone = model.timeZone {
                 let weekday = PulseFormatting.fullWeekday(
                     today,
@@ -256,60 +264,54 @@ struct TodayView: View {
                     locale: locale
                 )
 
-                Text(
-                    String(
-                        format: PulseLocalization.string(
-                            "today.kicker_with_weekday_format",
-                            locale: locale
-                        ),
-                        PulseFormatting.numericYearAndMonth(today, timeZone: timeZone),
-                        weekday
-                    )
-                )
-                .font(.system(.caption2, design: .monospaced, weight: .bold))
-                .tracking(1.2)
-                .foregroundStyle(PulseDesign.ink)
-                .padding(.top, PulseDesign.spacing12)
-                .accessibilityIdentifier("today.hero.kicker")
+                HStack(alignment: .bottom, spacing: PulseDesign.spacing20) {
+                    Text(today.day, format: .number)
+                        .font(.system(size: tidalDayNumberSize, weight: .medium))
+                        .monospacedDigit()
+                        .tracking(-5)
+                        .fixedSize(horizontal: true, vertical: false)
+                        .foregroundStyle(PulseDesign.ink)
+                        .accessibilityIdentifier("today.day.number")
 
-                Text(today.day, format: .number)
-                    .font(.system(size: faultDayNumberSize, weight: .black, design: .rounded))
-                    .monospacedDigit()
-                    .tracking(-8)
-                    .fixedSize(horizontal: true, vertical: false)
+                    Spacer(minLength: PulseDesign.spacing16)
+
+                    VStack(alignment: .trailing, spacing: PulseDesign.spacing4) {
+                        Text(weekday)
+                            .font(.subheadline.weight(.medium))
+
+                        Text(PulseFormatting.numericYearAndMonth(today, timeZone: timeZone))
+                            .font(.caption)
+                            .monospacedDigit()
+                            .foregroundStyle(PulseDesign.secondary)
+                    }
                     .foregroundStyle(PulseDesign.ink)
-                    .offset(x: -PulseDesign.spacing8, y: PulseDesign.spacing32)
-                    .accessibilityIdentifier("today.day.number")
-
-                PulseFaultCutShape()
-                    .stroke(
-                        PulseDesign.faultAccent,
-                        style: StrokeStyle(
-                            lineWidth: 18,
-                            lineCap: .square,
-                            lineJoin: .bevel
-                        )
-                    )
-                    .frame(height: PulseDesign.faultTodayHeroMinimumHeight * 0.72)
-                    .offset(y: PulseDesign.spacing16)
-                    .accessibilityHidden(true)
+                    .padding(.bottom, PulseDesign.spacing8)
+                    .accessibilityElement(children: .combine)
+                    .accessibilityIdentifier("today.hero.kicker")
+                }
+                .padding(.bottom, PulseDesign.spacing16)
+                .overlay(alignment: .bottom) {
+                    Rectangle()
+                        .fill(PulseDesign.tidalBlueMid.opacity(0.22))
+                        .frame(height: PulseDesign.thinLineWidth)
+                        .accessibilityHidden(true)
+                }
 
                 if let commitmentName = model.habit?.name {
-                    VStack(alignment: .trailing, spacing: PulseDesign.spacing4) {
+                    VStack(alignment: .leading, spacing: PulseDesign.spacing4) {
                         Text("today.commitment.cue")
-                            .font(.caption2.weight(.bold))
-                            .foregroundStyle(PulseDesign.faultAccent)
+                            .font(.caption.weight(.medium))
+                            .foregroundStyle(PulseDesign.secondary)
 
                         Text(commitmentName)
-                            .font(.title3.weight(.black))
+                            .font(.headline.weight(.semibold))
                             .foregroundStyle(PulseDesign.ink)
-                            .lineLimit(2)
-                            .multilineTextAlignment(.trailing)
+                            .lineLimit(dynamicTypeSize.isAccessibilitySize ? nil : 2)
+                            .multilineTextAlignment(.leading)
                             .fixedSize(horizontal: false, vertical: true)
                     }
-                    .frame(maxWidth: 184, alignment: .trailing)
-                    .frame(maxWidth: .infinity, alignment: .trailing)
-                    .padding(.top, 194)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.top, PulseDesign.spacing16)
                     .accessibilityElement(children: .ignore)
                     .accessibilityLabel(
                         String(
@@ -325,7 +327,10 @@ struct TodayView: View {
             }
         }
         .frame(maxWidth: .infinity)
-        .frame(minHeight: PulseDesign.faultTodayHeroMinimumHeight, alignment: .top)
+        .padding(.horizontal, PulseDesign.spacing20)
+        .padding(.top, PulseDesign.spacing24)
+        .padding(.bottom, PulseDesign.spacing16)
+        .frame(minHeight: PulseDesign.tidalTodayHeroMinimumHeight, alignment: .top)
         .accessibilityElement(children: .contain)
     }
 
@@ -373,8 +378,8 @@ struct TodayView: View {
 
     @ViewBuilder
     private var weekRail: some View {
-        if visualTheme == .faultAlmanac && !dynamicTypeSize.isAccessibilitySize {
-            faultWeekRail
+        if visualTheme == .tidalBreath && !dynamicTypeSize.isAccessibilitySize {
+            tidalWeekRail
         } else {
             quietWeekRail
         }
@@ -383,7 +388,11 @@ struct TodayView: View {
     private var quietWeekRail: some View {
         ZStack(alignment: .bottom) {
             Rectangle()
-                .fill(PulseDesign.separator)
+                .fill(
+                    visualTheme == .tidalBreath
+                        ? PulseDesign.tidalBlueMid.opacity(0.28)
+                        : PulseDesign.separator
+                )
                 .frame(height: PulseDesign.thinLineWidth)
                 .padding(.horizontal, PulseDesign.weekRailDotDiameter / 2)
                 .padding(.bottom, PulseDesign.weekRailDotDiameter / 2)
@@ -401,16 +410,16 @@ struct TodayView: View {
         .accessibilityIdentifier("today.week.rail")
     }
 
-    private var faultWeekRail: some View {
+    private var tidalWeekRail: some View {
         VStack(spacing: PulseDesign.spacing8) {
             Rectangle()
-                .fill(PulseDesign.ink)
-                .frame(height: PulseDesign.emphasisLineWidth)
+                .fill(PulseDesign.tidalForeground.opacity(0.32))
+                .frame(height: PulseDesign.thinLineWidth)
                 .accessibilityHidden(true)
 
             HStack(alignment: .top, spacing: 0) {
                 ForEach(model.recentDays) { item in
-                    faultWeekRailDay(item)
+                    tidalWeekRailDay(item)
                         .frame(maxWidth: .infinity)
                 }
             }
@@ -438,7 +447,15 @@ struct TodayView: View {
             }
 
             Circle()
-                .fill(isChecked ? PulseDesign.grass : PulseDesign.background)
+                .fill(
+                    isChecked
+                        ? (visualTheme == .tidalBreath
+                            ? PulseDesign.tidalBlueDeep
+                            : PulseDesign.grass)
+                        : (visualTheme == .tidalBreath
+                            ? PulseDesign.tidalSky
+                            : PulseDesign.background)
+                )
                 .frame(
                     width: PulseDesign.weekRailDotDiameter,
                     height: PulseDesign.weekRailDotDiameter
@@ -446,7 +463,11 @@ struct TodayView: View {
                 .overlay {
                     Circle()
                         .stroke(
-                            isToday || isChecked ? PulseDesign.grass : PulseDesign.separator,
+                            visualTheme == .tidalBreath
+                                ? PulseDesign.tidalBlueMid
+                                : (isToday || isChecked
+                                    ? PulseDesign.grass
+                                    : PulseDesign.separator),
                             lineWidth: PulseDesign.emphasisLineWidth
                         )
                 }
@@ -457,26 +478,11 @@ struct TodayView: View {
         .accessibilityIdentifier("today.week.day.\(item.day.storageValue)")
     }
 
-    private func faultWeekRailDay(_ item: CalendarDayItem) -> some View {
+    private func tidalWeekRailDay(_ item: CalendarDayItem) -> some View {
         let isChecked = item.status == .checked
         let isToday = item.day == model.today
-        let markColor: Color = if isToday && !isChecked {
-            PulseDesign.faultAccent
-        } else if isChecked {
-            PulseDesign.grass
-        } else {
-            PulseDesign.separator
-        }
 
         return VStack(spacing: PulseDesign.spacing8) {
-            Rectangle()
-                .fill(markColor)
-                .frame(
-                    width: isToday ? 7 : (isChecked ? 5 : 2),
-                    height: isToday ? 27 : (isChecked ? 19 : 12)
-                )
-                .rotationEffect(.degrees(isToday ? -8 : 0))
-
             if let timeZone = model.timeZone {
                 Text(
                     PulseFormatting.shortWeekday(
@@ -485,9 +491,40 @@ struct TodayView: View {
                         locale: locale
                     )
                 )
-                .font(.system(.caption2, design: .monospaced, weight: isToday ? .black : .medium))
-                .foregroundStyle(isToday ? PulseDesign.ink : PulseDesign.secondary)
+                .font(.system(.caption2, design: .default, weight: isToday ? .bold : .regular))
+                .foregroundStyle(PulseDesign.tidalForeground.opacity(isToday ? 1 : 0.72))
             }
+
+            ZStack {
+                Circle()
+                    .fill(
+                        isChecked
+                            ? PulseDesign.tidalForeground
+                            : PulseDesign.tidalForeground.opacity(0.12)
+                    )
+                    .overlay {
+                        Circle()
+                            .stroke(
+                                PulseDesign.tidalForeground.opacity(isToday ? 1 : 0.58),
+                                lineWidth: PulseDesign.thinLineWidth
+                            )
+                    }
+
+                if isChecked {
+                    Image(systemName: "checkmark")
+                        .font(.system(size: 8, weight: .bold))
+                        .foregroundStyle(PulseDesign.tidalBlueDeep)
+                } else if isToday {
+                    Text(item.day.day, format: .number)
+                        .font(.system(size: 8, weight: .medium))
+                        .foregroundStyle(PulseDesign.tidalForeground)
+                } else {
+                    Image(systemName: "minus")
+                        .font(.system(size: 8, weight: .medium))
+                        .foregroundStyle(PulseDesign.tidalForeground.opacity(0.78))
+                }
+            }
+            .frame(width: 22, height: 22)
         }
         .animation(completionSecondaryAnimation, value: item.status)
         .accessibilityElement(children: .ignore)
@@ -497,16 +534,12 @@ struct TodayView: View {
 
     private var checkInControl: some View {
         let isChecked = model.todayRecord != nil
-        let controlFill = isChecked
-            ? PulseDesign.grass
-            : (visualTheme == .faultAlmanac ? PulseDesign.faultAccent : PulseDesign.action)
-        let controlForeground = isChecked
-            ? PulseDesign.grassForeground
-            : (
-                visualTheme == .faultAlmanac
-                    ? PulseDesign.faultAccentForeground
-                    : PulseDesign.actionForeground
-            )
+        let controlFill = visualTheme == .tidalBreath
+            ? PulseDesign.tidalForeground
+            : (isChecked ? PulseDesign.grass : PulseDesign.action)
+        let controlForeground = visualTheme == .tidalBreath
+            ? PulseDesign.tidalBlueDeep
+            : (isChecked ? PulseDesign.grassForeground : PulseDesign.actionForeground)
 
         return VStack(spacing: PulseDesign.spacing12) {
             checkInVisual(
@@ -569,18 +602,6 @@ struct TodayView: View {
                     .multilineTextAlignment(.center)
             }
         }
-        .overlay(alignment: .topLeading) {
-            if imprintRitualPhase == .imprinted {
-                Color.clear
-                    .frame(width: 1, height: 1)
-                    .allowsHitTesting(false)
-                    .accessibilityElement(children: .ignore)
-                    .accessibilityLabel(
-                        PulseLocalization.string("today.accessibility.checked", locale: locale)
-                    )
-                    .accessibilityIdentifier("today.checkin.presentation.imprinted")
-            }
-        }
         .onAppear {
             synchronizeRitualState(isChecked: isChecked)
         }
@@ -641,63 +662,51 @@ struct TodayView: View {
                     )
             }
             .contentShape(Capsule())
-        } else if visualTheme == .faultAlmanac {
+        } else if visualTheme == .tidalBreath {
             ZStack {
-                PulseFaultSealShape()
+                Circle()
                     .fill(fill)
                     .overlay {
-                        PulseFaultSealShape()
+                        Circle()
                             .stroke(
-                                foreground.opacity(PulseDesign.actionBorderOpacity),
-                                lineWidth: PulseDesign.emphasisLineWidth
+                                PulseDesign.tidalBlueMid.opacity(
+                                    isChecked ? 0.72 : PulseDesign.actionBorderOpacity
+                                ),
+                                lineWidth: PulseDesign.thinLineWidth
                             )
                     }
                     .shadow(
                         color: PulseDesign.shadow.opacity(PulseDesign.actionShadowOpacity),
-                        radius: PulseDesign.actionShadowRadius,
-                        y: PulseDesign.actionShadowY
+                        radius: PulseDesign.actionShadowRadius * 0.78,
+                        y: PulseDesign.actionShadowY * 0.72
                     )
 
                 checkInStatusContent(foreground: foreground)
-                    .rotationEffect(.degrees(isChecked ? -2 : 5))
             }
             .frame(
-                width: PulseDesign.faultCheckInDiameter,
-                height: PulseDesign.faultCheckInDiameter
+                width: PulseDesign.tidalCheckInDiameter,
+                height: PulseDesign.tidalCheckInDiameter
             )
-            .rotationEffect(.degrees(isChecked ? 2 : -5))
             .background {
-                ZStack {
-                    if isActive && !isChecked && model.canCheckInToday {
-                        PulseFaultSealShape()
-                            .stroke(
-                                PulseDesign.faultAccent.opacity(0.16),
-                                lineWidth: PulseDesign.emphasisLineWidth
-                            )
-                            .scaleEffect(1.14)
-                            .rotationEffect(.degrees(8))
-                    }
-
-                    PulseFaultSealShape()
-                        .stroke(
-                            PulseDesign.grass.opacity(PulseDesign.completionRippleOpacity),
-                            lineWidth: PulseDesign.emphasisLineWidth
-                        )
-                        .frame(
-                            width: PulseDesign.faultCheckInDiameter,
-                            height: PulseDesign.faultCheckInDiameter
-                        )
-                        .scaleEffect(
-                            completionRippleExpanded
-                                ? PulseDesign.completionRippleEndScale
-                                : PulseDesign.completionRippleStartScale
-                        )
-                        .opacity(completionRippleVisible ? 1 : 0)
-                }
+                Circle()
+                    .stroke(
+                        PulseDesign.tidalBluePale.opacity(PulseDesign.completionRippleOpacity),
+                        lineWidth: PulseDesign.emphasisLineWidth
+                    )
+                    .frame(
+                        width: PulseDesign.tidalCheckInDiameter,
+                        height: PulseDesign.tidalCheckInDiameter
+                    )
+                    .scaleEffect(
+                        completionRippleExpanded
+                            ? PulseDesign.completionRippleEndScale
+                            : PulseDesign.completionRippleStartScale
+                    )
+                    .opacity(completionRippleVisible ? 1 : 0)
                 .allowsHitTesting(false)
                 .accessibilityHidden(true)
             }
-            .contentShape(PulseFaultSealShape())
+            .contentShape(Circle())
             .animation(completionSecondaryAnimation, value: isChecked)
         } else {
             ZStack {
@@ -836,27 +845,19 @@ struct TodayView: View {
             .accessibilityIdentifier("today.rhythm.status")
     }
 
-    private var faultRhythmStatus: some View {
-        VStack(alignment: .trailing, spacing: PulseDesign.spacing8) {
-            Rectangle()
-                .fill(PulseDesign.faultAccent)
-                .frame(width: 44, height: PulseDesign.emphasisLineWidth)
-                .accessibilityHidden(true)
-
-            Text(rhythmStatusText)
-                .font(.system(.footnote, design: .monospaced, weight: .bold))
-                .monospacedDigit()
-                .foregroundStyle(PulseDesign.secondary)
-                .fixedSize(horizontal: false, vertical: true)
-                .multilineTextAlignment(.trailing)
-                .contentTransition(.numericText(value: Double(model.statistics.currentStreak)))
-                .animation(
-                    completionSecondaryAnimation,
-                    value: model.statistics.currentStreak
-                )
-        }
-        .frame(maxWidth: .infinity, alignment: .trailing)
-        .accessibilityElement(children: .combine)
+    private var tidalRhythmStatus: some View {
+        Text(rhythmStatusText)
+            .font(.footnote.weight(.medium))
+            .monospacedDigit()
+            .foregroundStyle(PulseDesign.tidalForeground.opacity(0.84))
+            .fixedSize(horizontal: false, vertical: true)
+            .frame(maxWidth: .infinity, alignment: .center)
+            .multilineTextAlignment(.center)
+            .contentTransition(.numericText(value: Double(model.statistics.currentStreak)))
+            .animation(
+                completionSecondaryAnimation,
+                value: model.statistics.currentStreak
+            )
         .accessibilityIdentifier("today.rhythm.status")
     }
 
@@ -893,13 +894,27 @@ struct TodayView: View {
                     }
                 }
             }
-            .foregroundStyle(PulseDesign.action)
+            .foregroundStyle(
+                visualTheme == .tidalBreath
+                    ? PulseDesign.tidalBlueDeep
+                    : PulseDesign.action
+            )
             .padding(.horizontal, PulseDesign.spacing12)
             .frame(minHeight: PulseDesign.minimumHitTarget)
-            .background(PulseDesign.surface, in: Capsule())
+            .background(
+                visualTheme == .tidalBreath
+                    ? PulseDesign.tidalForeground
+                    : PulseDesign.surface,
+                in: Capsule()
+            )
             .overlay {
                 Capsule()
-                    .stroke(PulseDesign.grass, lineWidth: PulseDesign.thinLineWidth)
+                    .stroke(
+                        visualTheme == .tidalBreath
+                            ? PulseDesign.tidalBlueMid
+                            : PulseDesign.grass,
+                        lineWidth: PulseDesign.thinLineWidth
+                    )
             }
             .shadow(
                 color: PulseDesign.shadow.opacity(PulseDesign.mediaCompanionShadowOpacity),

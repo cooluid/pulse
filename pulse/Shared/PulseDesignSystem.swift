@@ -26,9 +26,13 @@ enum PulseDesign {
     static let secondary = Color("PulseSecondary")
     static let separator = Color("PulseSeparator")
     static let field = Color("PulseField")
-    static let faultAccent = Color("PulseFaultAccent")
-    static let faultAccentForeground = Color("PulseFaultAccentForeground")
-    static let faultBackground = Color("PulseFaultBackground")
+    static let tidalBlueDeep = Color("PulseTidalBlueDeep")
+    static let tidalBlueDepth = Color("PulseTidalBlueDepth")
+    static let tidalBlueMid = Color("PulseTidalBlueMid")
+    static let tidalBluePale = Color("PulseTidalBluePale")
+    static let tidalForeground = Color("PulseTidalForeground")
+    static let tidalSky = Color("PulseTidalSky")
+    static let tidalSkyDeep = Color("PulseTidalSkyDeep")
     static let shadow = Color("PulseShadow")
     static let tint = Color("AccentColor")
     static let systemDestructive = Color(uiColor: .systemRed)
@@ -55,9 +59,9 @@ enum PulseDesign {
     static let brandMarkCornerRadius: CGFloat = 8
 
     static let todayHeroMinimumHeight: CGFloat = 270
-    static let faultTodayHeroMinimumHeight: CGFloat = 292
+    static let tidalTodayHeroMinimumHeight: CGFloat = 264
     static let dayNumberBaseSize: CGFloat = 104
-    static let faultDayNumberBaseSize: CGFloat = 164
+    static let tidalDayNumberBaseSize: CGFloat = 112
     static let dayNumberAccessibilityMaximumSize: CGFloat = 144
     static let todayCommitmentMaximumWidth: CGFloat = 360
     static let checkInHeroSpacing: CGFloat = spacing12
@@ -65,7 +69,7 @@ enum PulseDesign {
     static let weekRailWidth: CGFloat = 244
     static let weekRailDotDiameter: CGFloat = 13
     static let checkInDiameter: CGFloat = 152
-    static let faultCheckInDiameter: CGFloat = 176
+    static let tidalCheckInDiameter: CGFloat = 172
     static let checkInInnerHalo: CGFloat = 18
     static let checkInOuterHalo: CGFloat = 36
     static let checkInRingLineWidth: CGFloat = 24
@@ -163,6 +167,11 @@ enum PulseDesign {
     static let todayFieldOpacityMultiplier = 1.28
     static let todayTidalBandBaseOpacity = 0.055
     static let todayTidalBandDrift: CGFloat = 6
+    static let tidalStandardWaterlineRatio: CGFloat = 0.80
+    static let tidalTodayWaterlineRatio: CGFloat = 0.67
+    static let tidalCompletionRiseRatio: CGFloat = 0.16
+    static let tidalWaveAmplitude: CGFloat = 0.022
+    static let tidalRiseDuration = 1.1
     static let savingAnimationDuration = 0.18
     static let savingIndicatorDelay = 0.25
     static let checkInLongPressDuration = 0.45
@@ -197,9 +206,19 @@ enum PulseDesign {
 struct PulseScreenBackground: View {
     @Environment(\.pulseVisualTheme) private var visualTheme
 
+    @ViewBuilder
     var body: some View {
-        (visualTheme == .faultAlmanac ? PulseDesign.faultBackground : PulseDesign.background)
+        if visualTheme == .tidalBreath {
+            LinearGradient(
+                colors: [PulseDesign.tidalSky, PulseDesign.tidalSkyDeep],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
             .ignoresSafeArea()
+        } else {
+            PulseDesign.background
+                .ignoresSafeArea()
+        }
     }
 }
 
@@ -210,6 +229,7 @@ enum PulseFieldPresentation {
 
 struct PulseFieldBackground: View {
     var presentation: PulseFieldPresentation = .standard
+    var isCompleted = false
 
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @Environment(\.pulseVisualTheme) private var visualTheme
@@ -218,8 +238,8 @@ struct PulseFieldBackground: View {
 
     @ViewBuilder
     var body: some View {
-        if visualTheme == .faultAlmanac {
-            faultField
+        if visualTheme == .tidalBreath {
+            tidalField
         } else {
             quietField
         }
@@ -285,55 +305,33 @@ struct PulseFieldBackground: View {
         .accessibilityHidden(true)
     }
 
-    private var faultField: some View {
+    private var tidalField: some View {
         TimelineView(.animation(
             minimumInterval: PulseDesign.ambientFieldMinimumInterval,
             paused: !allowsAmbientMotion
         )) { timeline in
             GeometryReader { proxy in
                 let phase = ambientPhase(at: timeline.date)
-
-                ZStack {
-                    PulseFaultFieldBand(verticalBias: 0.34, direction: 1)
-                        .stroke(
-                            PulseDesign.faultAccent.opacity(presentation == .today ? 0.10 : 0.07),
-                            style: StrokeStyle(
-                                lineWidth: presentation == .today ? 5 : 3,
-                                lineCap: .square,
-                                lineJoin: .bevel
-                            )
-                        )
-
-                    PulseFaultFieldBand(verticalBias: 0.365, direction: -1)
-                        .stroke(
-                            PulseDesign.faultAccent.opacity(presentation == .today ? 0.14 : 0.09),
-                            style: StrokeStyle(
-                                lineWidth: PulseDesign.emphasisLineWidth,
-                                lineCap: .square
-                            )
-                        )
-                }
-                .frame(width: proxy.size.width * 1.12, height: proxy.size.height)
-                .rotationEffect(.degrees(sin(phase) * 0.35))
-                .offset(
-                    x: CGFloat(cos(phase)) * 4,
-                    y: CGFloat(sin(phase)) * 3
+                let counterPhase = ambientPhase(
+                    at: timeline.date.addingTimeInterval(
+                        PulseDesign.ambientFieldCycleDuration * 0.41
+                    )
                 )
-                .position(x: proxy.size.width / 2, y: proxy.size.height / 2)
+
+                PulseTidalFieldCanvas(
+                    size: proxy.size,
+                    phase: phase,
+                    counterPhase: counterPhase,
+                    presentation: presentation,
+                    isCompleted: isCompleted
+                )
+                .animation(
+                    allowsAmbientMotion
+                        ? .smooth(duration: PulseDesign.tidalRiseDuration)
+                        : nil,
+                    value: isCompleted
+                )
             }
-        }
-        .mask {
-            LinearGradient(
-                stops: [
-                    .init(color: .clear, location: 0.08),
-                    .init(color: .black, location: 0.18),
-                    .init(color: .black, location: presentation == .today ? 0.74 : 0.64),
-                    .init(color: .clear, location: presentation == .today ? 0.88 : 0.78)
-                ],
-                startPoint: .top,
-                endPoint: .bottom
-            )
-            .ignoresSafeArea()
         }
         .ignoresSafeArea()
         .allowsHitTesting(false)
@@ -353,47 +351,86 @@ struct PulseFieldBackground: View {
     }
 }
 
-struct PulseFaultSealShape: Shape {
+private struct PulseTidalWaveShape: Shape {
+    let verticalBias: CGFloat
+    let amplitude: CGFloat
+    let phase: Double
+    let phaseOffset: Double
+
     func path(in rect: CGRect) -> Path {
         var path = Path()
-        path.move(to: CGPoint(x: rect.width * 0.08, y: rect.height * 0.04))
-        path.addLine(to: CGPoint(x: rect.width * 0.88, y: rect.minY))
-        path.addLine(to: CGPoint(x: rect.maxX, y: rect.height * 0.16))
-        path.addLine(to: CGPoint(x: rect.width * 0.94, y: rect.height * 0.92))
-        path.addLine(to: CGPoint(x: rect.width * 0.78, y: rect.maxY))
-        path.addLine(to: CGPoint(x: rect.width * 0.02, y: rect.height * 0.93))
-        path.addLine(to: CGPoint(x: rect.minX, y: rect.height * 0.18))
+        let steps = 48
+        for step in 0...steps {
+            let progress = CGFloat(step) / CGFloat(steps)
+            let normalizedX = -0.08 + progress * 1.16
+            let angle = phase + phaseOffset + Double(normalizedX) * 2.15 * .pi
+            let point = CGPoint(
+                x: rect.width * normalizedX,
+                y: rect.height * (verticalBias + CGFloat(sin(angle)) * amplitude)
+            )
+            if step == 0 {
+                path.move(to: point)
+            } else {
+                path.addLine(to: point)
+            }
+        }
+        path.addLine(to: CGPoint(x: rect.maxX * 1.08, y: rect.maxY))
+        path.addLine(to: CGPoint(x: rect.minX - rect.width * 0.08, y: rect.maxY))
         path.closeSubpath()
         return path
     }
 }
 
-struct PulseFaultCutShape: Shape {
-    func path(in rect: CGRect) -> Path {
-        var path = Path()
-        path.move(to: CGPoint(x: rect.minX - rect.width * 0.04, y: rect.height * 0.58))
-        path.addCurve(
-            to: CGPoint(x: rect.width * 0.40, y: rect.height * 0.53),
-            control1: CGPoint(x: rect.width * 0.13, y: rect.height * 0.18),
-            control2: CGPoint(x: rect.width * 0.27, y: rect.height * 0.92)
-        )
-        path.addCurve(
-            to: CGPoint(x: rect.maxX + rect.width * 0.04, y: rect.height * 0.49),
-            control1: CGPoint(x: rect.width * 0.61, y: rect.height * 0.06),
-            control2: CGPoint(x: rect.width * 0.77, y: rect.height * 0.96)
-        )
-        return path
+private struct PulseTidalFieldCanvas: View {
+    let size: CGSize
+    let phase: Double
+    let counterPhase: Double
+    let presentation: PulseFieldPresentation
+    let isCompleted: Bool
+
+    var body: some View {
+        ZStack {
+            PulseTidalWaveShape(
+                verticalBias: waterlineRatio - 0.035,
+                amplitude: PulseDesign.tidalWaveAmplitude * 1.15,
+                phase: counterPhase,
+                phaseOffset: 0.4
+            )
+            .fill(PulseDesign.tidalBluePale)
+
+            PulseTidalWaveShape(
+                verticalBias: waterlineRatio,
+                amplitude: PulseDesign.tidalWaveAmplitude,
+                phase: phase,
+                phaseOffset: 1.8
+            )
+            .fill(PulseDesign.tidalBlueMid)
+
+            PulseTidalWaveShape(
+                verticalBias: waterlineRatio + 0.045,
+                amplitude: PulseDesign.tidalWaveAmplitude * 0.82,
+                phase: counterPhase,
+                phaseOffset: 3.1
+            )
+            .fill(PulseDesign.tidalBlueDeep)
+
+            PulseTidalWaveShape(
+                verticalBias: max(0.88, waterlineRatio + 0.18),
+                amplitude: PulseDesign.tidalWaveAmplitude * 0.45,
+                phase: phase,
+                phaseOffset: 4.2
+            )
+            .fill(PulseDesign.tidalBlueDepth.opacity(0.62))
+        }
+        .frame(width: size.width, height: size.height)
     }
-}
 
-private struct PulseFaultFieldBand: Shape {
-    let verticalBias: CGFloat
-    let direction: CGFloat
-
-    func path(in rect: CGRect) -> Path {
-        PulseFaultCutShape()
-            .path(in: rect)
-            .offsetBy(dx: 0, dy: rect.height * (verticalBias - 0.5) * direction)
+    private var waterlineRatio: CGFloat {
+        let baseRatio = presentation == .today
+            ? PulseDesign.tidalTodayWaterlineRatio
+            : PulseDesign.tidalStandardWaterlineRatio
+        guard presentation == .today, isCompleted else { return baseRatio }
+        return baseRatio - PulseDesign.tidalCompletionRiseRatio
     }
 }
 
@@ -606,18 +643,16 @@ struct PulseBrandMark: View {
 
     @ViewBuilder
     var body: some View {
-        if visualTheme == .faultAlmanac {
-            Rectangle()
-                .fill(PulseDesign.ink)
+        if visualTheme == .tidalBreath {
+            Circle()
+                .fill(PulseDesign.tidalBlueMid)
                 .overlay {
                     Image("PulseMark")
                         .resizable()
                         .renderingMode(.template)
-                        .foregroundStyle(PulseDesign.faultBackground)
-                        .padding(size * 0.12)
+                        .foregroundStyle(PulseDesign.tidalForeground)
                 }
                 .frame(width: size, height: size)
-                .rotationEffect(.degrees(-8))
                 .accessibilityHidden(true)
         } else {
             RoundedRectangle(cornerRadius: PulseDesign.brandMarkCornerRadius, style: .continuous)

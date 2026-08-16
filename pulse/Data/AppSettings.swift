@@ -39,7 +39,7 @@ enum AppTheme: String, CaseIterable, Identifiable, Sendable {
 
 enum PulseVisualTheme: String, CaseIterable, Identifiable, Sendable {
     case quietField
-    case faultAlmanac
+    case tidalBreath
 
     var id: String { rawValue }
 
@@ -47,8 +47,8 @@ enum PulseVisualTheme: String, CaseIterable, Identifiable, Sendable {
         switch self {
         case .quietField:
             PulseLocalization.string("settings.visual_theme.quiet_field", locale: locale)
-        case .faultAlmanac:
-            PulseLocalization.string("settings.visual_theme.fault_almanac", locale: locale)
+        case .tidalBreath:
+            PulseLocalization.string("settings.visual_theme.tidal_breath", locale: locale)
         }
     }
 }
@@ -137,6 +137,8 @@ extension PulseWidgetStyle {
 @MainActor
 @Observable
 final class AppSettings {
+    private static let replacedFaultAlmanacRawValue = "faultAlmanac"
+
     enum StorageKey {
         static let hapticsEnabled = "settings.hapticsEnabled"
         static let weekStart = "settings.weekStart"
@@ -213,12 +215,11 @@ final class AppSettings {
             throw PulseAppError.invalidSettings
         }
         guard let loadedWeekStart = WeekStart(rawValue: defaults.integer(forKey: StorageKey.weekStart)),
-              let loadedTheme = AppTheme(rawValue: defaults.string(forKey: StorageKey.theme) ?? ""),
-              let loadedVisualTheme = PulseVisualTheme(
-                  rawValue: defaults.string(forKey: StorageKey.visualTheme) ?? ""
-              ) else {
+              let loadedTheme = AppTheme(rawValue: defaults.string(forKey: StorageKey.theme) ?? "")
+        else {
             throw PulseAppError.invalidSettings
         }
+        let loadedVisualTheme = try Self.loadVisualTheme(defaults: defaults)
 
         hapticsEnabled = defaults.bool(forKey: StorageKey.hapticsEnabled)
         reminderEnabled = sharedSnapshot.reminderEnabled
@@ -282,5 +283,17 @@ final class AppSettings {
     private func persist(_ key: String, value: Any) {
         guard !isLoading else { return }
         defaults.set(value, forKey: key)
+    }
+
+    private static func loadVisualTheme(defaults: UserDefaults) throws -> PulseVisualTheme {
+        let storedValue = defaults.string(forKey: StorageKey.visualTheme) ?? ""
+        if storedValue == replacedFaultAlmanacRawValue {
+            defaults.set(PulseVisualTheme.tidalBreath.rawValue, forKey: StorageKey.visualTheme)
+            return .tidalBreath
+        }
+        guard let theme = PulseVisualTheme(rawValue: storedValue) else {
+            throw PulseAppError.invalidSettings
+        }
+        return theme
     }
 }

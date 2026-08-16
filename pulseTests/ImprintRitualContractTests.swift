@@ -22,9 +22,13 @@ final class ImprintRitualContractTests: XCTestCase {
         XCTAssertLessThanOrEqual(PulseDesign.todayTidalBandBaseOpacity, 0.08)
         XCTAssertGreaterThan(PulseDesign.todayTidalBandDrift, 0)
         XCTAssertLessThanOrEqual(PulseDesign.todayTidalBandDrift, 8)
+        XCTAssertGreaterThan(PulseDesign.tidalWaveAmplitude, 0)
+        XCTAssertLessThanOrEqual(PulseDesign.tidalWaveAmplitude, 0.03)
+        XCTAssertGreaterThan(PulseDesign.tidalCompletionRiseRatio, 0)
+        XCTAssertLessThanOrEqual(PulseDesign.tidalCompletionRiseRatio, 0.25)
     }
 
-    func testTodayUsesTheTidalFieldWithoutChangingOtherScreens() throws {
+    func testTidalThemeUsesSharedWaveFieldAndAuthoritativeTodayCompletion() throws {
         let repositoryRoot = URL(fileURLWithPath: #filePath)
             .deletingLastPathComponent()
             .deletingLastPathComponent()
@@ -37,8 +41,9 @@ final class ImprintRitualContractTests: XCTestCase {
             encoding: .utf8
         )
 
-        XCTAssertTrue(designSource.contains("showsTidalLayer: presentation == .today"))
-        XCTAssertTrue(todaySource.contains("PulseFieldBackground(presentation: .today)"))
+        XCTAssertTrue(designSource.contains("if visualTheme == .tidalBreath"))
+        XCTAssertTrue(designSource.contains("PulseTidalFieldCanvas("))
+        XCTAssertTrue(todaySource.contains("isCompleted: model.todayRecord != nil"))
     }
 
     func testAmbientFieldMotionHonorsLifecycleAndReduceMotion() throws {

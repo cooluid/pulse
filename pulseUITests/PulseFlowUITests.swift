@@ -607,22 +607,22 @@ final class PulseFlowUITests: XCTestCase {
         XCTAssertTrue(visualThemePicker.label.contains("静野"))
         visualThemePicker.tap()
 
-        let faultOption = app.descendants(matching: .any)
-            .matching(NSPredicate(format: "label == %@", "断层日历"))
+        let tidalOption = app.descendants(matching: .any)
+            .matching(NSPredicate(format: "label == %@", "潮汐呼吸"))
             .firstMatch
-        XCTAssertTrue(faultOption.waitForExistence(timeout: 3))
-        faultOption.tap()
+        XCTAssertTrue(tidalOption.waitForExistence(timeout: 3))
+        tidalOption.tap()
 
-        let faultThemeApplied = NSPredicate(format: "label CONTAINS %@", "断层日历")
-        expectation(for: faultThemeApplied, evaluatedWith: visualThemePicker)
+        let tidalThemeApplied = NSPredicate(format: "label CONTAINS %@", "潮汐呼吸")
+        expectation(for: tidalThemeApplied, evaluatedWith: visualThemePicker)
         waitForExpectations(timeout: 3)
 
         app.buttons["navigation.back"].tap()
-        let faultTheme = app.descendants(matching: .any)["today.theme.fault-almanac"]
-        XCTAssertTrue(faultTheme.waitForExistence(timeout: 3))
+        let tidalTheme = app.descendants(matching: .any)["today.theme.tidal-breath"]
+        XCTAssertTrue(tidalTheme.waitForExistence(timeout: 3))
 
         let pendingAttachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
-        pendingAttachment.name = "Fault Almanac before check-in"
+        pendingAttachment.name = "Tidal Breath before check-in"
         pendingAttachment.lifetime = .keepAlways
         add(pendingAttachment)
 
@@ -637,7 +637,7 @@ final class PulseFlowUITests: XCTestCase {
         )
 
         let completedAttachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
-        completedAttachment.name = "Fault Almanac after check-in"
+        completedAttachment.name = "Tidal Breath after check-in"
         completedAttachment.lifetime = .keepAlways
         add(completedAttachment)
 
@@ -646,7 +646,7 @@ final class PulseFlowUITests: XCTestCase {
         app.launch()
 
         XCTAssertTrue(
-            app.descendants(matching: .any)["today.theme.fault-almanac"]
+            app.descendants(matching: .any)["today.theme.tidal-breath"]
                 .waitForExistence(timeout: 5)
         )
         XCTAssertFalse(app.buttons["today.checkin.button"].isEnabled)

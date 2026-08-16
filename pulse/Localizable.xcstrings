@@ -2324,19 +2324,19 @@
         }
       }
     },
-    "settings.visual_theme.fault_almanac" : {
+    "settings.visual_theme.tidal_breath" : {
       "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Fault Almanac"
+            "value" : "Tidal Breath"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "断层日历"
+            "value" : "潮汐呼吸"
           }
         }
       }

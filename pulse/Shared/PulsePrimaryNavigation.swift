@@ -22,8 +22,8 @@ struct PulsePrimaryNavigation: View {
 
     @ViewBuilder
     var body: some View {
-        if visualTheme == .faultAlmanac {
-            faultNavigation
+        if visualTheme == .tidalBreath {
+            tidalNavigation
         } else {
             quietNavigation
         }
@@ -68,24 +68,17 @@ struct PulsePrimaryNavigation: View {
             .frame(maxWidth: .infinity)
     }
 
-    private var faultNavigation: some View {
+    private var tidalNavigation: some View {
         sizedNavigation
-            .background {
-                PulseFaultNavigationShape()
-                    .fill(PulseDesign.ink)
-            }
-            .clipShape(PulseFaultNavigationShape())
-            .overlay {
-                PulseFaultNavigationShape()
-                    .stroke(
-                        PulseDesign.faultAccent.opacity(0.54),
-                        lineWidth: PulseDesign.thinLineWidth
-                    )
+            .overlay(alignment: .top) {
+                Rectangle()
+                    .fill(PulseDesign.tidalForeground.opacity(0.28))
+                    .frame(height: PulseDesign.thinLineWidth)
             }
             .shadow(
-                color: PulseDesign.shadow.opacity(PulseDesign.navigationShadowOpacity * 0.7),
-                radius: PulseDesign.navigationShadowRadius * 0.75,
-                y: PulseDesign.navigationShadowY
+                color: PulseDesign.shadow.opacity(PulseDesign.navigationShadowOpacity * 0.45),
+                radius: PulseDesign.navigationShadowRadius * 0.55,
+                y: PulseDesign.navigationShadowY * 0.6
             )
             .padding(.horizontal, PulseDesign.primaryNavigationHorizontalInset)
             .padding(.vertical, PulseDesign.spacing8)
@@ -149,14 +142,10 @@ struct PulsePrimaryNavigation: View {
                 selectionBackground(for: section, isSelected: isSelected)
             }
             .clipShape(
-                visualTheme == .faultAlmanac
-                    ? AnyShape(Rectangle())
-                    : AnyShape(
-                        RoundedRectangle(
-                            cornerRadius: PulseDesign.primaryNavigationItemCornerRadius,
-                            style: .continuous
-                        )
-                    )
+                RoundedRectangle(
+                    cornerRadius: PulseDesign.primaryNavigationItemCornerRadius,
+                    style: .continuous
+                )
             )
             .contentShape(Rectangle())
         }
@@ -196,14 +185,10 @@ struct PulsePrimaryNavigation: View {
                 selectionBackground(for: section, isSelected: isSelected)
             }
             .clipShape(
-                visualTheme == .faultAlmanac
-                    ? AnyShape(Rectangle())
-                    : AnyShape(
-                        RoundedRectangle(
-                            cornerRadius: PulseDesign.primaryNavigationItemCornerRadius,
-                            style: .continuous
-                        )
-                    )
+                RoundedRectangle(
+                    cornerRadius: PulseDesign.primaryNavigationItemCornerRadius,
+                    style: .continuous
+                )
             )
             .contentShape(Rectangle())
         }
@@ -221,8 +206,12 @@ struct PulsePrimaryNavigation: View {
     ) -> some View {
         if isSelected {
             Group {
-                if visualTheme == .faultAlmanac {
-                    Rectangle().fill(selectedFill(for: section))
+                if visualTheme == .tidalBreath {
+                    RoundedRectangle(
+                        cornerRadius: PulseDesign.primaryNavigationItemCornerRadius,
+                        style: .continuous
+                    )
+                    .fill(PulseDesign.tidalForeground.opacity(0.16))
                 } else {
                     RoundedRectangle(
                         cornerRadius: PulseDesign.primaryNavigationItemCornerRadius,
@@ -253,14 +242,14 @@ struct PulsePrimaryNavigation: View {
     private func navigationGlyph(for section: PulsePrimarySection, isSelected: Bool) -> some View {
         ZStack {
             Group {
-                if visualTheme == .faultAlmanac {
-                    Rectangle()
+                if visualTheme == .tidalBreath {
+                    Circle()
                         .fill(
                             isSelected
-                                ? navigationForeground(for: section, isSelected: true).opacity(0.14)
+                                ? PulseDesign.tidalForeground.opacity(0.16)
                                 : Color.clear
                         )
-                    Rectangle()
+                    Circle()
                         .stroke(
                             navigationForeground(for: section, isSelected: isSelected),
                             lineWidth: PulseDesign.thinLineWidth
@@ -287,21 +276,14 @@ struct PulsePrimaryNavigation: View {
         .accessibilityHidden(true)
     }
 
-    private func selectedFill(for section: PulsePrimarySection) -> Color {
-        section == .today && isTodayChecked ? PulseDesign.grass : PulseDesign.faultAccent
-    }
-
     private func navigationForeground(
         for section: PulsePrimarySection,
         isSelected: Bool
     ) -> Color {
-        guard visualTheme == .faultAlmanac else {
-            return isSelected ? PulseDesign.grassForeground : PulseDesign.secondary
+        if visualTheme == .tidalBreath {
+            return PulseDesign.tidalForeground.opacity(isSelected ? 1 : 0.68)
         }
-        guard isSelected else { return PulseDesign.faultBackground.opacity(0.62) }
-        return section == .today && isTodayChecked
-            ? PulseDesign.grassForeground
-            : PulseDesign.faultAccentForeground
+        return isSelected ? PulseDesign.grassForeground : PulseDesign.secondary
     }
 
     private func glyphValue(for section: PulsePrimarySection) -> Int? {
@@ -318,18 +300,5 @@ struct PulsePrimaryNavigation: View {
         case .history:
             "history.navigation.subtitle"
         }
-    }
-}
-
-private struct PulseFaultNavigationShape: Shape {
-    func path(in rect: CGRect) -> Path {
-        var path = Path()
-        path.move(to: CGPoint(x: rect.minX, y: rect.height * 0.15))
-        path.addLine(to: CGPoint(x: rect.width * 0.62, y: rect.minY))
-        path.addLine(to: CGPoint(x: rect.maxX, y: rect.height * 0.10))
-        path.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY))
-        path.addLine(to: CGPoint(x: rect.minX, y: rect.maxY))
-        path.closeSubpath()
-        return path
     }
 }

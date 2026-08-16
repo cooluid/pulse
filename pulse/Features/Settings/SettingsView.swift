@@ -30,7 +30,7 @@ struct SettingsView: View {
         .scrollContentBackground(.hidden)
         .background(PulseScreenBackground())
         .foregroundStyle(PulseDesign.ink)
-        .tint(visualTheme == .faultAlmanac ? PulseDesign.faultAccent : PulseDesign.tint)
+        .tint(visualTheme == .tidalBreath ? PulseDesign.tidalBlueMid : PulseDesign.tint)
         .navigationTitle(
             PulseLocalization.string("settings.navigation_title", locale: locale)
         )
