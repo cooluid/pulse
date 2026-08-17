@@ -18,17 +18,17 @@ final class ImprintRitualContractTests: XCTestCase {
         XCTAssertGreaterThan(PulseDesign.ambientFieldBreathAmplitude, 0)
         XCTAssertLessThanOrEqual(PulseDesign.ambientFieldBreathAmplitude, 0.012)
         XCTAssertGreaterThanOrEqual(PulseDesign.ambientFieldMinimumInterval, 1.0 / 30.0)
-        XCTAssertGreaterThan(PulseDesign.todayTidalBandBaseOpacity, 0)
-        XCTAssertLessThanOrEqual(PulseDesign.todayTidalBandBaseOpacity, 0.08)
-        XCTAssertGreaterThan(PulseDesign.todayTidalBandDrift, 0)
-        XCTAssertLessThanOrEqual(PulseDesign.todayTidalBandDrift, 8)
-        XCTAssertGreaterThan(PulseDesign.tidalWaveAmplitude, 0)
-        XCTAssertLessThanOrEqual(PulseDesign.tidalWaveAmplitude, 0.03)
-        XCTAssertGreaterThan(PulseDesign.tidalCompletionRiseRatio, 0)
-        XCTAssertLessThanOrEqual(PulseDesign.tidalCompletionRiseRatio, 0.25)
+        XCTAssertGreaterThan(PulseDesign.todayFlowBandBaseOpacity, 0)
+        XCTAssertLessThanOrEqual(PulseDesign.todayFlowBandBaseOpacity, 0.08)
+        XCTAssertGreaterThan(PulseDesign.todayFlowBandDrift, 0)
+        XCTAssertLessThanOrEqual(PulseDesign.todayFlowBandDrift, 8)
+        XCTAssertGreaterThan(PulseDesign.archiveSurfaceDrift, 0)
+        XCTAssertLessThanOrEqual(PulseDesign.archiveSurfaceDrift, 0.03)
+        XCTAssertGreaterThan(PulseDesign.archiveCompletionRiseRatio, 0)
+        XCTAssertLessThanOrEqual(PulseDesign.archiveCompletionRiseRatio, 0.25)
     }
 
-    func testTidalThemeUsesSharedWaveFieldAndAuthoritativeTodayCompletion() throws {
+    func testTideArchiveUsesSharedFieldAndAuthoritativeTodayCompletion() throws {
         let repositoryRoot = URL(fileURLWithPath: #filePath)
             .deletingLastPathComponent()
             .deletingLastPathComponent()
@@ -41,8 +41,8 @@ final class ImprintRitualContractTests: XCTestCase {
             encoding: .utf8
         )
 
-        XCTAssertTrue(designSource.contains("if visualTheme == .tidalBreath"))
-        XCTAssertTrue(designSource.contains("PulseTidalFieldCanvas("))
+        XCTAssertTrue(designSource.contains("if visualTheme == .tideArchive"))
+        XCTAssertTrue(designSource.contains("PulseArchiveFieldCanvas("))
         XCTAssertTrue(todaySource.contains("isCompleted: model.todayRecord != nil"))
     }
 

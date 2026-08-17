@@ -65,7 +65,7 @@ final class AppSettingsTests: XCTestCase {
         XCTAssertEqual(settings.language, .system)
 
         settings.theme = .dark
-        settings.visualTheme = .tidalBreath
+        settings.visualTheme = .tideArchive
         settings.language = .english
 
         XCTAssertNil(
@@ -83,7 +83,7 @@ final class AppSettingsTests: XCTestCase {
             defaults: defaults
         )
         XCTAssertEqual(reloaded.theme, .dark)
-        XCTAssertEqual(reloaded.visualTheme, .tidalBreath)
+        XCTAssertEqual(reloaded.visualTheme, .tideArchive)
         XCTAssertEqual(reloaded.language, .english)
         XCTAssertEqual(reloaded.locale.identifier, "en")
     }
@@ -100,7 +100,7 @@ final class AppSettingsTests: XCTestCase {
             UserDefaults(suiteName: invalidVisualThemeSuite)
         )
         invalidVisualThemeDefaults.set(
-            "paperCut",
+            "tidalBreath",
             forKey: AppSettings.StorageKey.visualTheme
         )
         XCTAssertThrowsError(try makeSettings(defaults: invalidVisualThemeDefaults))
@@ -116,28 +116,13 @@ final class AppSettingsTests: XCTestCase {
         invalidLanguageDefaults.removePersistentDomain(forName: invalidLanguageSuite)
     }
 
-    func testReplacedFaultAlmanacPreferenceMigratesToTidalBreath() throws {
-        let suiteName = "AppSettingsTests.ReplacedVisualTheme.\(UUID().uuidString)"
-        let defaults = try XCTUnwrap(UserDefaults(suiteName: suiteName))
-        defer { defaults.removePersistentDomain(forName: suiteName) }
-        defaults.set("faultAlmanac", forKey: AppSettings.StorageKey.visualTheme)
-
-        let settings = try makeSettings(defaults: defaults)
-
-        XCTAssertEqual(settings.visualTheme, .tidalBreath)
-        XCTAssertEqual(
-            defaults.string(forKey: AppSettings.StorageKey.visualTheme),
-            PulseVisualTheme.tidalBreath.rawValue
-        )
-    }
-
     func testResetRestoresDefaultAppearanceVisualThemeAndLanguage() throws {
         let suiteName = "AppSettingsTests.\(UUID().uuidString)"
         let defaults = try XCTUnwrap(UserDefaults(suiteName: suiteName))
         defer { defaults.removePersistentDomain(forName: suiteName) }
         let settings = try makeSettings(defaults: defaults)
         settings.theme = .light
-        settings.visualTheme = .tidalBreath
+        settings.visualTheme = .tideArchive
         settings.language = .simplifiedChinese
 
         settings.reset()

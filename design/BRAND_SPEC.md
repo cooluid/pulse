@@ -31,7 +31,7 @@ HTML 原型仅为探索参考。
 
 新增或改色：先改令牌，再生成并 `--check`。**允许**为新氛围扩展令牌；不是“禁止新画法”。
 
-常见语义角色：`background`、`surface`、`grass` / `grassForeground`、`action` / `actionForeground`、`ink` / `secondary`、`field`、`separator` / `shadow`。潮汐呼吸主题使用 `tidalSky` / `tidalSkyDeep` 作为天空底，`tidalBluePale` / `tidalBlueMid` / `tidalBlueDeep` / `tidalBlueDepth` 表达潮面层次，`tidalForeground` 保证水面内容对比；页面不得私写第二套蓝色色板。Widget 的纸张、天光与水面分别使用 `widgetPaper`、`widgetSkyGlow`、`widgetWater`，不以局部 RGB 模拟材质。萤火日晕按系统表面拆分为 `activityIslandFirefly`、`activityIslandTime` 与 `activityLockScreenFirefly`：黑底灵动岛使用白色光源，浅底锁屏保留琥珀色对比，不复用一个含义含混的颜色角色。
+常见语义角色：`background`、`surface`、`grass` / `grassForeground`、`action` / `actionForeground`、`ink` / `secondary`、`field`、`separator` / `shadow`。潮痕档案主题使用 `archiveSky` / `archiveSkyDeep` 作为天空底，`archiveMist` / `archiveTide` / `archiveDepth` / `archiveNight` 表达单一潮位面，`archivePaper` 承担档案纸面，`archiveCopper` 只标记完成痕迹，`archiveForeground` 保证深色表面内容对比；页面不得私写第二套色板。Widget 的纸张、天光与水面分别使用 `widgetPaper`、`widgetSkyGlow`、`widgetWater`，不以局部 RGB 模拟材质。萤火日晕按系统表面拆分为 `activityIslandFirefly`、`activityIslandTime` 与 `activityLockScreenFirefly`：黑底灵动岛使用白色光源，浅底锁屏保留琥珀色对比，不复用一个含义含混的颜色角色。
 
 完成 / 漏签 / 今天等状态不能**只靠颜色**到不可辨（形状、文案或无障碍标签须有等价）。
 
@@ -93,7 +93,7 @@ HTML 原型仅为探索参考。
 - 详情：日期、签到状态、真实照片为主体；照片按真实宽高比显示，不歪曲事实裁切成“好看但假”。
 - 删除照片与删除签到：独立事务、独立确认；destructive 语义清楚。
 - 月份切换：可见按钮 / 滑动 / VoiceOver 同一状态函数。
-- 明暗外观：跟随系统 / 浅 / 深；界面主题：静野 / 潮汐呼吸。两条轴独立、全局持久化；界面主题至少统一驱动共享背景、品牌标、主导航与今日页构图，不能只做局部换色。潮汐呼吸以底部多层海蓝潮面承担环境动效，签到事实提交后水位才上涨；Reduce Motion 与非活动场景使用正确静态终态。语言：跟随系统 / English / 简体中文；App 与 Widget 内容 Locale 一致。
+- 明暗外观：跟随系统 / 浅 / 深；界面主题：静野 / 潮痕档案。两条轴独立、全局持久化；界面主题统一驱动共享背景、品牌标、主导航、今日与历史构图，不能只做局部换色。潮痕档案以单一潮位面、档案纸面与铜色完成印迹构成唯一视觉语法；签到事实提交后潮位才推进，Reduce Motion 与非活动场景使用正确静态终态。语言：跟随系统 / English / 简体中文；App 与 Widget 内容 Locale 一致。
 - Sheet / `confirmationDialog` 使用系统来源锚定与可预期 detent 行为（工程稳定），不锁视觉皮肤。
 
 ## 8. AppIcon 工程

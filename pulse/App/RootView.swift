@@ -5,6 +5,7 @@ struct RootView: View {
     @Bindable var model: PulseAppModel
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.pulseVisualTheme) private var visualTheme
     @State private var selectedSection: PulsePrimarySection = .today
     @State private var todayPath: [PulseNavigationDestination] = []
     @State private var historyPath: [PulseNavigationDestination] = []
@@ -43,7 +44,7 @@ struct RootView: View {
             }
         }
         .foregroundStyle(PulseDesign.ink)
-        .tint(PulseDesign.tint)
+        .tint(PulseDesign.appAccent(for: visualTheme))
         .task {
             if model.loadState == .loading {
                 await model.start()

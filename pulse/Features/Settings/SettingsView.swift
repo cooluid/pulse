@@ -4,6 +4,7 @@ import PulseCore
 
 struct SettingsView: View {
     @Bindable var model: PulseAppModel
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @Environment(\.openURL) private var openURL
     @Environment(\.locale) private var locale
     @Environment(\.pulseVisualTheme) private var visualTheme
@@ -30,7 +31,7 @@ struct SettingsView: View {
         .scrollContentBackground(.hidden)
         .background(PulseScreenBackground())
         .foregroundStyle(PulseDesign.ink)
-        .tint(visualTheme == .tidalBreath ? PulseDesign.tidalBlueMid : PulseDesign.tint)
+        .tint(PulseDesign.appAccent(for: visualTheme))
         .navigationTitle(
             PulseLocalization.string("settings.navigation_title", locale: locale)
         )
@@ -89,18 +90,25 @@ struct SettingsView: View {
 
     private var appearanceSection: some View {
         Section("settings.personalization.section") {
-            Picker(
-                "settings.visual_theme",
-                selection: Binding(
-                    get: { model.settings.visualTheme },
-                    set: { model.settings.visualTheme = $0 }
-                )
-            ) {
-                ForEach(PulseVisualTheme.allCases) { theme in
-                    Text(theme.localizedName(locale: locale)).tag(theme)
+            VStack(alignment: .leading, spacing: PulseDesign.spacing12) {
+                Text("settings.visual_theme")
+                    .font(.footnote.weight(.medium))
+                    .foregroundStyle(PulseDesign.secondary)
+
+                visualThemeChoiceLayout {
+                    ForEach(PulseVisualTheme.allCases) { theme in
+                        PulseVisualThemeChoice(
+                            theme: theme,
+                            isSelected: model.settings.visualTheme == theme,
+                            locale: locale
+                        ) {
+                            model.settings.visualTheme = theme
+                        }
+                    }
                 }
             }
-            .accessibilityIdentifier("settings.visual-theme.picker")
+            .accessibilityElement(children: .contain)
+            .accessibilityIdentifier("settings.visual-theme.selector")
             .id("settings.visual-theme.\(locale.identifier)")
 
             Picker(
@@ -141,6 +149,17 @@ struct SettingsView: View {
             }
             .accessibilityIdentifier("settings.widget.gallery.link")
         }
+    }
+
+    private var visualThemeChoiceLayout: AnyLayout {
+        if dynamicTypeSize.isAccessibilitySize {
+            return AnyLayout(
+                VStackLayout(alignment: .leading, spacing: PulseDesign.spacing12)
+            )
+        }
+        return AnyLayout(
+            HStackLayout(alignment: .top, spacing: PulseDesign.spacing12)
+        )
     }
 
     private var dailySection: some View {
@@ -651,6 +670,75 @@ private struct BackupPassphraseView: View {
     private func clearSensitiveState() {
         passphrase.removeAll(keepingCapacity: false)
         confirmation.removeAll(keepingCapacity: false)
+    }
+}
+
+private struct PulseVisualThemeChoice: View {
+    let theme: PulseVisualTheme
+    let isSelected: Bool
+    let locale: Locale
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            VStack(alignment: .leading, spacing: PulseDesign.spacing8) {
+                ZStack {
+                    PulseScreenBackground()
+                    PulseFieldBackground(presentation: .today, allowsMotion: false)
+
+                    PulseBrandMark(size: PulseDesign.minimumHitTarget)
+                }
+                .frame(maxWidth: .infinity)
+                .frame(height: PulseDesign.themePreviewHeight)
+                .clipShape(
+                    RoundedRectangle(
+                        cornerRadius: PulseDesign.themePreviewCornerRadius,
+                        style: .continuous
+                    )
+                )
+                .overlay {
+                    RoundedRectangle(
+                        cornerRadius: PulseDesign.themePreviewCornerRadius,
+                        style: .continuous
+                    )
+                    .stroke(
+                        selectionColor.opacity(
+                            isSelected ? 1 : PulseDesign.themePreviewUnselectedBorderOpacity
+                        ),
+                        lineWidth: isSelected
+                            ? PulseDesign.emphasisLineWidth
+                            : PulseDesign.thinLineWidth
+                    )
+                }
+                .environment(\.pulseVisualTheme, theme)
+
+                HStack(spacing: PulseDesign.spacing8) {
+                    Text(theme.localizedName(locale: locale))
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(PulseDesign.ink)
+                        .lineLimit(2)
+
+                    Spacer(minLength: 0)
+
+                    if isSelected {
+                        Image(systemName: "checkmark.circle.fill")
+                            .foregroundStyle(selectionColor)
+                            .accessibilityHidden(true)
+                    }
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .frame(maxWidth: .infinity)
+        .accessibilityLabel(theme.localizedName(locale: locale))
+        .accessibilityAddTraits(isSelected ? .isSelected : [])
+        .accessibilityIdentifier("settings.visual-theme.\(theme.rawValue)")
+    }
+
+    private var selectionColor: Color {
+        theme == .tideArchive ? PulseDesign.archiveCopper : PulseDesign.grass
     }
 }
 

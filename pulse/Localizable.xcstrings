@@ -2324,25 +2324,25 @@
         }
       }
     },
-    "settings.visual_theme.tidal_breath" : {
-      "extractionState" : "stale",
+    "settings.visual_theme.tide_archive" : {
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Tidal Breath"
+            "value" : "Tide Archive"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "潮汐呼吸"
+            "value" : "潮痕档案"
           }
         }
       }
     },
     "settings.visual_theme.quiet_field" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {

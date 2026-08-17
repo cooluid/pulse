@@ -16,13 +16,15 @@ struct PulsePrimaryNavigation: View {
     @Environment(\.pulseVisualTheme) private var visualTheme
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @ScaledMetric(relativeTo: .body) private var navigationHeight = PulseDesign.primaryNavigationHeight
+    @ScaledMetric(relativeTo: .body) private var archiveNavigationHeight =
+        PulseDesign.archiveNavigationHeight
     @ScaledMetric(relativeTo: .body) private var glyphSize = PulseDesign.primaryNavigationGlyph
     @Namespace private var selectionNamespace
 
     @ViewBuilder
     var body: some View {
-        if visualTheme == .tidalBreath {
-            tidalNavigation
+        if visualTheme == .tideArchive {
+            archiveNavigation
         } else {
             quietNavigation
         }
@@ -67,38 +69,50 @@ struct PulsePrimaryNavigation: View {
             .frame(maxWidth: .infinity)
     }
 
-    private var tidalNavigation: some View {
+    private var archiveNavigation: some View {
         sizedNavigation
             .background {
                 RoundedRectangle(
-                    cornerRadius: PulseDesign.primaryNavigationCornerRadius,
+                    cornerRadius: PulseDesign.archiveNavigationCornerRadius,
                     style: .continuous
                 )
                 .fill(
-                    LinearGradient(
-                        colors: [PulseDesign.tidalBlueDeep, PulseDesign.tidalBlueDepth],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
+                    PulseDesign.archiveNight.opacity(
+                        PulseDesign.archiveNavigationSurfaceOpacity
                     )
                 )
             }
             .clipShape(
                 RoundedRectangle(
-                    cornerRadius: PulseDesign.primaryNavigationCornerRadius,
+                    cornerRadius: PulseDesign.archiveNavigationCornerRadius,
                     style: .continuous
                 )
             )
             .overlay {
                 RoundedRectangle(
-                    cornerRadius: PulseDesign.primaryNavigationCornerRadius,
+                    cornerRadius: PulseDesign.archiveNavigationCornerRadius,
                     style: .continuous
                 )
                 .stroke(
-                    PulseDesign.tidalForeground.opacity(
-                        PulseDesign.tidalNavigationBorderOpacity
+                    PulseDesign.archiveForeground.opacity(
+                        PulseDesign.archiveNavigationBorderOpacity
                     ),
                     lineWidth: PulseDesign.thinLineWidth
                 )
+            }
+            .overlay(alignment: .top) {
+                HStack(spacing: 0) {
+                    Rectangle()
+                        .fill(PulseDesign.archiveCopper)
+                        .frame(width: PulseDesign.archiveHistoryAccentWidth)
+                    Rectangle()
+                        .fill(
+                            PulseDesign.archiveMist.opacity(
+                                PulseDesign.archiveNavigationDividerOpacity
+                            )
+                        )
+                }
+                .frame(height: PulseDesign.emphasisLineWidth)
             }
             .shadow(
                 color: PulseDesign.shadow.opacity(PulseDesign.navigationShadowOpacity),
@@ -133,7 +147,11 @@ struct PulsePrimaryNavigation: View {
                 navigationButton(for: .history)
             }
             .padding(PulseDesign.primaryNavigationPadding)
-            .frame(height: navigationHeight)
+            .frame(
+                height: visualTheme == .tideArchive
+                    ? archiveNavigationHeight
+                    : navigationHeight
+            )
         }
     }
 
@@ -166,7 +184,9 @@ struct PulsePrimaryNavigation: View {
             }
             .clipShape(
                 RoundedRectangle(
-                    cornerRadius: PulseDesign.primaryNavigationItemCornerRadius,
+                    cornerRadius: visualTheme == .tideArchive
+                        ? PulseDesign.archiveNavigationItemCornerRadius
+                        : PulseDesign.primaryNavigationItemCornerRadius,
                     style: .continuous
                 )
             )
@@ -205,7 +225,9 @@ struct PulsePrimaryNavigation: View {
             }
             .clipShape(
                 RoundedRectangle(
-                    cornerRadius: PulseDesign.primaryNavigationItemCornerRadius,
+                    cornerRadius: visualTheme == .tideArchive
+                        ? PulseDesign.archiveNavigationItemCornerRadius
+                        : PulseDesign.primaryNavigationItemCornerRadius,
                     style: .continuous
                 )
             )
@@ -222,12 +244,21 @@ struct PulsePrimaryNavigation: View {
     private func selectionBackground(isSelected: Bool) -> some View {
         if isSelected {
             Group {
-                if visualTheme == .tidalBreath {
+                if visualTheme == .tideArchive {
                     RoundedRectangle(
-                        cornerRadius: PulseDesign.primaryNavigationItemCornerRadius,
+                        cornerRadius: PulseDesign.archiveNavigationItemCornerRadius,
                         style: .continuous
                     )
-                    .fill(PulseDesign.tidalForeground)
+                    .fill(
+                        PulseDesign.archiveForeground.opacity(
+                            PulseDesign.archiveNavigationSelectionOpacity
+                        )
+                    )
+                    .overlay(alignment: .bottom) {
+                        Rectangle()
+                            .fill(PulseDesign.archiveCopper)
+                            .frame(height: PulseDesign.emphasisLineWidth)
+                    }
                 } else {
                     RoundedRectangle(
                         cornerRadius: PulseDesign.primaryNavigationItemCornerRadius,
@@ -258,18 +289,20 @@ struct PulsePrimaryNavigation: View {
     private func navigationGlyph(for section: PulsePrimarySection, isSelected: Bool) -> some View {
         ZStack {
             Group {
-                if visualTheme == .tidalBreath {
+                if visualTheme == .tideArchive {
                     Circle()
                         .fill(
                             isSelected
-                                ? PulseDesign.tidalBlueDeep.opacity(
-                                    PulseDesign.tidalNavigationSelectedGlyphOpacity
+                                ? PulseDesign.archiveForeground.opacity(
+                                    PulseDesign.archiveNavigationSelectedGlyphOpacity
                                 )
                                 : Color.clear
                         )
                     Circle()
                         .stroke(
-                            navigationForeground(isSelected: isSelected),
+                            isSelected
+                                ? PulseDesign.archiveCopper
+                                : navigationForeground(isSelected: false),
                             lineWidth: isSelected
                                 ? PulseDesign.emphasisLineWidth
                                 : PulseDesign.thinLineWidth
@@ -293,11 +326,11 @@ struct PulsePrimaryNavigation: View {
     }
 
     private func navigationForeground(isSelected: Bool) -> Color {
-        if visualTheme == .tidalBreath {
+        if visualTheme == .tideArchive {
             return isSelected
-                ? PulseDesign.tidalBlueDepth
-                : PulseDesign.tidalForeground.opacity(
-                    PulseDesign.tidalNavigationUnselectedOpacity
+                ? PulseDesign.archiveForeground
+                : PulseDesign.archiveMist.opacity(
+                    PulseDesign.archiveNavigationUnselectedOpacity
                 )
         }
         return isSelected ? PulseDesign.grassForeground : PulseDesign.secondary

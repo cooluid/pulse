@@ -98,11 +98,12 @@ struct PulseDetailActionsMenu<Content: View>: View {
                 height: PulseDesign.detailActionHitSize
             )
             .contentShape(Rectangle())
-            .accessibilityLabel(accessibilityLabel)
-            .accessibilityHint(accessibilityHint)
-            .accessibilityIdentifier(accessibilityIdentifier)
+            .accessibilityHidden(true)
         }
         .menuOrder(.fixed)
+        .accessibilityLabel(accessibilityLabel)
+        .accessibilityHint(accessibilityHint)
+        .accessibilityIdentifier(accessibilityIdentifier)
     }
 }
 

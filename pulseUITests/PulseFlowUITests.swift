@@ -4,6 +4,7 @@ import UIKit
 @MainActor
 final class PulseFlowUITests: XCTestCase {
     private var app: XCUIApplication!
+    private let bottomInteractionSafetyInset: CGFloat = 80
 
     private func configureApp() {
         continueAfterFailure = false
@@ -538,6 +539,15 @@ final class PulseFlowUITests: XCTestCase {
 
         let languagePicker = app.descendants(matching: .any)["settings.language.picker"]
         XCTAssertTrue(languagePicker.waitForExistence(timeout: 3))
+        for _ in 0..<6
+            where languagePicker.frame.maxY > app.frame.maxY - bottomInteractionSafetyInset {
+            app.swipeUp()
+        }
+        XCTAssertTrue(languagePicker.isHittable)
+        XCTAssertLessThanOrEqual(
+            languagePicker.frame.maxY,
+            app.frame.maxY - bottomInteractionSafetyInset
+        )
         languagePicker.tap()
         let englishOption = app.descendants(matching: .any)
             .matching(NSPredicate(format: "label == %@", "English"))
@@ -609,23 +619,23 @@ final class PulseFlowUITests: XCTestCase {
         XCTAssertTrue(settingsButton.waitForExistence(timeout: 3))
         settingsButton.tap()
 
-        let visualThemePicker = app.descendants(matching: .any)[
-            "settings.visual-theme.picker"
-        ]
-        XCTAssertTrue(visualThemePicker.waitForExistence(timeout: 3))
-        XCTAssertTrue(visualThemePicker.label.contains("静野"))
-        selectOption(named: "潮汐呼吸", in: visualThemePicker)
+        let quietThemeChoice = app.buttons["settings.visual-theme.quietField"]
+        let archiveThemeChoice = app.buttons["settings.visual-theme.tideArchive"]
+        XCTAssertTrue(quietThemeChoice.waitForExistence(timeout: 3))
+        XCTAssertTrue(archiveThemeChoice.exists)
+        archiveThemeChoice.tap()
 
-        let tidalThemeApplied = NSPredicate(format: "label CONTAINS %@", "潮汐呼吸")
-        expectation(for: tidalThemeApplied, evaluatedWith: visualThemePicker)
-        waitForExpectations(timeout: 3)
+        let settingsAttachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
+        settingsAttachment.name = "Tide Archive visual selector"
+        settingsAttachment.lifetime = .keepAlways
+        add(settingsAttachment)
 
         app.buttons["navigation.back"].tap()
-        let tidalTheme = app.descendants(matching: .any)["today.theme.tidal-breath"]
-        XCTAssertTrue(tidalTheme.waitForExistence(timeout: 3))
+        let archiveTheme = app.descendants(matching: .any)["today.theme.tide-archive"]
+        XCTAssertTrue(archiveTheme.waitForExistence(timeout: 3))
 
         let pendingAttachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
-        pendingAttachment.name = "Tidal Breath before check-in"
+        pendingAttachment.name = "Tide Archive before check-in"
         pendingAttachment.lifetime = .keepAlways
         add(pendingAttachment)
 
@@ -640,13 +650,13 @@ final class PulseFlowUITests: XCTestCase {
         )
 
         let completedAttachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
-        completedAttachment.name = "Tidal Breath after check-in"
+        completedAttachment.name = "Tide Archive after check-in"
         completedAttachment.lifetime = .keepAlways
         add(completedAttachment)
 
         app.buttons["primary.navigation.history"].tap()
         XCTAssertTrue(
-            app.descendants(matching: .any)["history.theme.tidal-breath"]
+            app.descendants(matching: .any)["history.theme.tide-archive"]
                 .waitForExistence(timeout: 3)
         )
         let checkedCalendarDay = app.descendants(matching: .any)["calendar.day.2026-08-10"]
@@ -655,7 +665,7 @@ final class PulseFlowUITests: XCTestCase {
         assertHistorySurfaceClearsPrimaryNavigation()
 
         let historyAttachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
-        historyAttachment.name = "Tidal Breath redesigned history"
+        historyAttachment.name = "Tide Archive redesigned history"
         historyAttachment.lifetime = .keepAlways
         add(historyAttachment)
 
@@ -665,7 +675,7 @@ final class PulseFlowUITests: XCTestCase {
                 .waitForExistence(timeout: 3)
         )
         let detailAttachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
-        detailAttachment.name = "Tidal Breath record detail"
+        detailAttachment.name = "Tide Archive record detail"
         detailAttachment.lifetime = .keepAlways
         add(detailAttachment)
         app.buttons["detail.sheet.close"].tap()
@@ -676,13 +686,13 @@ final class PulseFlowUITests: XCTestCase {
         XCTAssertTrue(storeLink.waitForExistence(timeout: 3))
         storeLink.tap()
         XCTAssertTrue(
-            app.descendants(matching: .any)["store.theme.tidal-breath"]
+            app.descendants(matching: .any)["store.theme.tide-archive"]
                 .waitForExistence(timeout: 3)
         )
         XCTAssertTrue(app.buttons["store.buy"].waitForExistence(timeout: 3))
 
         let storeAttachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
-        storeAttachment.name = "Tidal Breath advanced features"
+        storeAttachment.name = "Tide Archive advanced features"
         storeAttachment.lifetime = .keepAlways
         add(storeAttachment)
 
@@ -691,23 +701,21 @@ final class PulseFlowUITests: XCTestCase {
         app.launch()
 
         XCTAssertTrue(
-            app.descendants(matching: .any)["today.theme.tidal-breath"]
+            app.descendants(matching: .any)["today.theme.tide-archive"]
                 .waitForExistence(timeout: 5)
         )
         XCTAssertFalse(app.buttons["today.checkin.button"].isEnabled)
     }
 
-    func testTidalHistoryRemainsStructuredInDarkAppearance() throws {
+    func testTideArchiveHistoryRemainsStructuredInDarkAppearance() throws {
         configureApp()
         launchAndConfirmDefaultCommitment()
 
         app.buttons["settings.navigation.open.today"].tap()
 
-        let visualThemePicker = app.descendants(matching: .any)[
-            "settings.visual-theme.picker"
-        ]
-        XCTAssertTrue(visualThemePicker.waitForExistence(timeout: 3))
-        selectOption(named: "潮汐呼吸", in: visualThemePicker)
+        let archiveThemeChoice = app.buttons["settings.visual-theme.tideArchive"]
+        XCTAssertTrue(archiveThemeChoice.waitForExistence(timeout: 3))
+        archiveThemeChoice.tap()
 
         let appearancePicker = app.descendants(matching: .any)["settings.theme.picker"]
         XCTAssertTrue(appearancePicker.waitForExistence(timeout: 3))
@@ -719,7 +727,7 @@ final class PulseFlowUITests: XCTestCase {
 
         app.buttons["navigation.back"].tap()
         XCTAssertTrue(
-            app.descendants(matching: .any)["today.theme.tidal-breath"]
+            app.descendants(matching: .any)["today.theme.tide-archive"]
                 .waitForExistence(timeout: 3)
         )
 
@@ -733,7 +741,7 @@ final class PulseFlowUITests: XCTestCase {
         historyNavigation.tap()
 
         XCTAssertTrue(
-            app.descendants(matching: .any)["history.theme.tidal-breath"]
+            app.descendants(matching: .any)["history.theme.tide-archive"]
                 .waitForExistence(timeout: 3)
         )
         XCTAssertTrue(
@@ -743,7 +751,40 @@ final class PulseFlowUITests: XCTestCase {
         assertHistorySurfaceClearsPrimaryNavigation()
 
         let attachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
-        attachment.name = "Tidal Breath history in dark appearance"
+        attachment.name = "Tide Archive history in dark appearance"
+        attachment.lifetime = .keepAlways
+        add(attachment)
+    }
+
+    func testTideArchiveAccessibilityXXXLKeepsItsOwnOperableComposition() throws {
+        configureApp()
+        app.launchArguments += [
+            "-UIPreferredContentSizeCategoryName",
+            "UICTContentSizeCategoryAccessibilityXXXL"
+        ]
+        launchAndConfirmDefaultCommitment()
+
+        app.buttons["settings.navigation.open.today"].tap()
+        let archiveThemeChoice = app.buttons["settings.visual-theme.tideArchive"]
+        for _ in 0..<6 where !archiveThemeChoice.exists {
+            app.swipeUp()
+        }
+        XCTAssertTrue(archiveThemeChoice.waitForExistence(timeout: 3))
+        archiveThemeChoice.tap()
+        app.buttons["navigation.back"].tap()
+
+        XCTAssertTrue(
+            app.descendants(matching: .any)["today.theme.tide-archive"]
+                .waitForExistence(timeout: 3)
+        )
+        let checkInButton = app.buttons["today.checkin.button"]
+        XCTAssertTrue(checkInButton.waitForExistence(timeout: 3))
+        XCTAssertGreaterThan(checkInButton.frame.width, checkInButton.frame.height)
+        XCTAssertGreaterThanOrEqual(checkInButton.frame.minX, app.frame.minX)
+        XCTAssertLessThanOrEqual(checkInButton.frame.maxX, app.frame.maxX)
+
+        let attachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
+        attachment.name = "Tide Archive accessibility XXXL"
         attachment.lifetime = .keepAlways
         add(attachment)
     }

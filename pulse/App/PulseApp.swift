@@ -71,11 +71,15 @@ private enum PulseBootstrap {
                 isDirectory: true
             )
             try prepareArchiveWorkingDirectory(archiveWorkingDirectoryURL)
-            let settings = try AppSettings(
-                sharedSettings: try PulseSharedSettings(
-                    appGroupIdentifier: PulseRuntimeIdentity.appGroupIdentifier
-                )
+            let sharedSettings = try PulseSharedSettings(
+                appGroupIdentifier: PulseRuntimeIdentity.appGroupIdentifier
             )
+#if DEBUG
+            if ProcessInfo.processInfo.environment["PULSE_UI_TEST_RESET"] == "1" {
+                AppSettings.clearStoredValues(sharedSettings: sharedSettings)
+            }
+#endif
+            let settings = try AppSettings(sharedSettings: sharedSettings)
             let model = PulseAppModel(
                 repository: repository,
                 mediaService: ImprintMediaService(
