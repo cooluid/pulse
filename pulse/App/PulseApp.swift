@@ -90,7 +90,7 @@ private enum PulseBootstrap {
                 archiveWorkingDirectoryURL: archiveWorkingDirectoryURL,
                 settings: settings,
                 featureAccess: runtimeFeatureAccess(),
-                reminderScheduler: ReminderScheduler(),
+                reminderScheduler: runtimeReminderScheduler(),
                 clock: clock,
                 hapticFeedback: HapticFeedback()
             )
@@ -137,6 +137,16 @@ private enum PulseBootstrap {
         }
 #endif
         return FeatureAccessController()
+    }
+
+    @MainActor
+    private static func runtimeReminderScheduler() -> any ReminderScheduling {
+#if DEBUG
+        if ProcessInfo.processInfo.environment["PULSE_UI_TEST_STORE_ID"] != nil {
+            return PulseUITestReminderScheduler()
+        }
+#endif
+        return ReminderScheduler()
     }
 
     @MainActor
@@ -192,6 +202,34 @@ private enum PulseBootstrap {
         return .disk(name: PulseStoreContract.storeName, location: sharedLocation)
     }
 }
+
+#if DEBUG
+@MainActor
+private final class PulseUITestReminderScheduler: ReminderScheduling {
+    let deliveryCapabilities = PulseReminderDeliveryCapabilities(
+        supportsScheduledLiveActivities: true,
+        liveActivitiesEnabled: true
+    )
+
+    func permissionState() async -> NotificationPermissionState {
+        .authorized
+    }
+
+    func requestPermission() async throws -> Bool {
+        true
+    }
+
+    func reconcile(
+        _ snapshot: ReminderScheduleSnapshot
+    ) async throws -> PulseReminderDeliveryMode {
+        snapshot.enabled ? snapshot.deliveryMode : .disabled
+    }
+
+    func completeLiveActivity(for logicalDay: LogicalDay) async {}
+
+    func removeAllPulseNotifications() async {}
+}
+#endif
 
 @main
 struct PulseApp: App {

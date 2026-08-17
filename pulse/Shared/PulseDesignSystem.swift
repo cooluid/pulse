@@ -84,8 +84,11 @@ enum PulseDesign {
     static let archiveHistoryMonthTracking: CGFloat = -3
     static let archiveHistoryAccentWidth: CGFloat = 44
     static let archiveHistoryPanelCornerRadius: CGFloat = 12
+    static let archiveHistoryLedgerCornerRadius: CGFloat = 24
     static let archiveHistoryStatisticDividerHeight: CGFloat = 30
     static let archiveCalendarDayCornerRadius: CGFloat = 6
+    static let editorialCalendarDayCornerRadius: CGFloat = 4
+    static let editorialCalendarCheckedOpacity = 0.14
     static let checkInInnerHalo: CGFloat = 18
     static let checkInOuterHalo: CGFloat = 36
     static let checkInRingLineWidth: CGFloat = 24
@@ -144,7 +147,13 @@ enum PulseDesign {
     static let archiveNavigationDividerOpacity = 0.34
     static let archiveNavigationUnselectedOpacity = 0.68
     static let archiveNavigationSelectedGlyphOpacity = 0.10
-    static let archiveHistorySurfaceOpacity = 0.94
+    static let archiveWeekInactiveStrokeOpacity = 0.34
+    static let archiveWeekInactiveForegroundOpacity = 0.78
+    static let archiveCheckInShadowOpacity = 0.18
+    static let archiveHorizonGuideOpacity = 0.72
+    static let archiveRhythmOpacity = 0.84
+    static let archiveFieldBackLayerOpacity = 0.92
+    static let archiveFieldHorizonOpacity = 0.72
     static let archiveHistorySurfaceBorderOpacity = 0.38
     static let archiveHistoryTodayFillOpacity = 0.22
     static let archiveHistoryMissedFillOpacity = 0.10
@@ -190,11 +199,30 @@ enum PulseDesign {
     static let storeCapabilityCornerRadius: CGFloat = 22
     static let themePreviewHeight: CGFloat = 72
     static let themePreviewCornerRadius: CGFloat = 12
+    static let themePreviewEditorialPrimaryRuleWidth: CGFloat = 36
+    static let themePreviewEditorialSecondaryRuleWidth: CGFloat = 52
+    static let themePreviewEditorialAccentRuleWidth: CGFloat = 44
     static let themePreviewUnselectedBorderOpacity = 0.28
     static let journalCardCornerRadius: CGFloat = 16
+    static let journalDraftMinimumHeight: CGFloat = 76
+    static let journalHistoryEntryCornerRadius: CGFloat = 14
+    static let journalHistoryExcerptLineLimit = 4
+    static let historyModePickerHeight: CGFloat = minimumHitTarget
+    static let historyModePickerCornerRadius: CGFloat = 12
+    static let historyModePickerItemCornerRadius: CGFloat = 9
+    static let historyModePickerInset: CGFloat = spacing4
+    static let historyModePickerSurfaceOpacity = 0.82
+    static let editorialLineHeight: CGFloat = 3
+    static let editorialLineInitialWidth: CGFloat = 36
+    static let editorialCheckButtonSize: CGFloat = 36
+    static let editorialTitleTracking: CGFloat = -0.02
+    static let editorialKickerTracking: CGFloat = 0.06
     static let editorialJournalSurfaceOpacity = 0.42
     static let quietJournalSurfaceOpacity = 0.88
     static let editorialPendingStrokeOpacity = 0.55
+    static let journalHistorySurfaceOpacity = 0.72
+    static let archiveHistoryLedgerOpacity = 0.96
+    static let archiveHistoryLedgerBorderOpacity = 0.46
 
     static let idleAuraBreathHalfDuration = 0.7
     static let ambientFieldMinimumInterval = 1.0 / 12.0
@@ -204,12 +232,33 @@ enum PulseDesign {
     static let ambientFieldVerticalDrift: CGFloat = 4
     static let ambientFieldRotationAmplitude = 0.45
     static let todayFieldOpacityMultiplier = 1.28
-    static let todayFlowBandBaseOpacity = 0.055
+    static let todayFlowBandBaseOpacity = 0.075
     static let todayFlowBandDrift: CGFloat = 6
+    static let quietAmbientObjectOpacity = 0.24
+    static let quietAmbientObjectXRatio = 0.94
+    static let quietAmbientObjectYRatio = 0.38
+    static let quietAmbientObjectSwayDegrees = 2.2
+    static let quietAmbientObjectTravel: CGFloat = 5
+    static let quietAmbientLeafRotationDegrees = 28.0
+    static let editorialAmbientRuleCount = 4
+    static let editorialAmbientRuleOpacity = 0.16
+    static let editorialAmbientRuleWidthRatio = 0.84
+    static let editorialAmbientRuleYRatio = 0.54
+    static let editorialAmbientRuleTravel: CGFloat = 3
+    static let editorialAmbientBookmarkOpacity = 0.20
+    static let editorialAmbientBookmarkXRatio = 0.96
+    static let editorialAmbientBookmarkYRatio = 0.30
+    static let editorialAmbientBookmarkHeightRatio = 0.10
+    static let editorialAmbientBookmarkSwayDegrees = 1.4
+    static let editorialAmbientCounterPhaseOffset = 0.33
     static let archiveStandardWaterlineRatio: CGFloat = 0.81
     static let archiveTodayWaterlineRatio: CGFloat = 0.62
     static let archiveCompletionRiseRatio: CGFloat = 0.10
-    static let archiveSurfaceDrift: CGFloat = 0.009
+    static let archiveSurfaceDrift: CGFloat = 0.014
+    static let archiveAmbientMarkerOpacity = 0.86
+    static let archiveAmbientMarkerXRatio = 0.82
+    static let archiveAmbientMarkerTravel: CGFloat = 5
+    static let archiveAmbientMarkerSwayDegrees = 1.8
     static let archiveRiseDuration = 0.86
     static let savingAnimationDuration = 0.18
     static let savingIndicatorDelay = 0.25
@@ -289,14 +338,15 @@ struct PulseScreenBackground: View {
 
     @ViewBuilder
     var body: some View {
-        if visualTheme == .tideArchive {
+        switch visualTheme {
+        case .tideArchive:
             LinearGradient(
                 colors: [PulseDesign.archiveSky, PulseDesign.archiveSkyDeep],
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
             )
             .ignoresSafeArea()
-        } else {
+        case .editorialJournal, .quietField:
             PulseDesign.background
                 .ignoresSafeArea()
         }
@@ -320,11 +370,12 @@ struct PulseFieldBackground: View {
 
     @ViewBuilder
     var body: some View {
-        if visualTheme == .tideArchive {
+        switch visualTheme {
+        case .tideArchive:
             archiveField
-        } else if visualTheme == .editorialJournal {
-            Color.clear
-        } else {
+        case .editorialJournal:
+            editorialField
+        case .quietField:
             quietField
         }
     }
@@ -422,6 +473,32 @@ struct PulseFieldBackground: View {
         .accessibilityHidden(true)
     }
 
+    private var editorialField: some View {
+        TimelineView(.animation(
+            minimumInterval: PulseDesign.ambientFieldMinimumInterval,
+            paused: !allowsAmbientMotion
+        )) { timeline in
+            GeometryReader { proxy in
+                let phase = ambientPhase(at: timeline.date)
+                let counterPhase = ambientPhase(
+                    at: timeline.date.addingTimeInterval(
+                        PulseDesign.ambientFieldCycleDuration
+                            * PulseDesign.editorialAmbientCounterPhaseOffset
+                    )
+                )
+
+                PulseEditorialFieldCanvas(
+                    size: proxy.size,
+                    phase: phase,
+                    counterPhase: counterPhase
+                )
+            }
+        }
+        .ignoresSafeArea()
+        .allowsHitTesting(false)
+        .accessibilityHidden(true)
+    }
+
     private var allowsAmbientMotion: Bool {
         allowsMotion && !reduceMotion && scenePhase == .active
     }
@@ -504,7 +581,7 @@ private struct PulseArchiveFieldCanvas: View {
                 drift: PulseDesign.archiveSurfaceDrift * 0.52,
                 phase: counterPhase
             ))
-            .fill(PulseDesign.archiveNight.opacity(0.92))
+            .fill(PulseDesign.archiveNight.opacity(PulseDesign.archiveFieldBackLayerOpacity))
 
             PulseArchiveTideShape(geometry: PulseArchiveHorizonGeometry(
                 verticalBias: waterlineRatio,
@@ -525,11 +602,37 @@ private struct PulseArchiveFieldCanvas: View {
                 phase: phase
             ))
             .stroke(
-                PulseDesign.archiveMist.opacity(0.72),
+                PulseDesign.archiveMist.opacity(PulseDesign.archiveFieldHorizonOpacity),
                 style: StrokeStyle(lineWidth: PulseDesign.emphasisLineWidth, lineCap: .round)
             )
+
+            archiveMarker
         }
         .frame(width: size.width, height: size.height)
+    }
+
+    private var archiveMarker: some View {
+        VStack(spacing: PulseDesign.spacing4) {
+            Circle()
+                .fill(PulseDesign.archiveCopper)
+                .frame(
+                    width: PulseDesign.archiveHorizonMarkerDot,
+                    height: PulseDesign.archiveHorizonMarkerDot
+                )
+
+            Capsule()
+                .fill(PulseDesign.archiveCopper)
+                .frame(width: PulseDesign.thinLineWidth, height: PulseDesign.spacing24)
+        }
+        .opacity(PulseDesign.archiveAmbientMarkerOpacity)
+        .rotationEffect(.degrees(
+            sin(counterPhase) * PulseDesign.archiveAmbientMarkerSwayDegrees
+        ), anchor: .bottom)
+        .position(
+            x: size.width * PulseDesign.archiveAmbientMarkerXRatio,
+            y: size.height * waterlineRatio
+                + CGFloat(sin(phase)) * PulseDesign.archiveAmbientMarkerTravel
+        )
     }
 
     private var waterlineRatio: CGFloat {
@@ -559,7 +662,38 @@ private struct PulseAmbientFieldCanvas: View {
             upperFlowLine
             contours
             lowerFlowLine
+            quietFieldSprig
         }
+    }
+
+    private var quietFieldSprig: some View {
+        ZStack(alignment: .bottom) {
+            Capsule()
+                .fill(PulseDesign.field)
+                .frame(width: PulseDesign.thinLineWidth, height: PulseDesign.spacing32)
+
+            HStack(spacing: 0) {
+                Capsule()
+                    .fill(PulseDesign.grass)
+                    .frame(width: PulseDesign.spacing16, height: PulseDesign.spacing8)
+                    .rotationEffect(.degrees(-PulseDesign.quietAmbientLeafRotationDegrees))
+
+                Capsule()
+                    .fill(PulseDesign.grass)
+                    .frame(width: PulseDesign.spacing16, height: PulseDesign.spacing8)
+                    .rotationEffect(.degrees(PulseDesign.quietAmbientLeafRotationDegrees))
+            }
+            .offset(y: -PulseDesign.spacing16)
+        }
+        .opacity(PulseDesign.quietAmbientObjectOpacity * opacityMultiplier)
+        .rotationEffect(.degrees(
+            sin(counterPhase) * PulseDesign.quietAmbientObjectSwayDegrees
+        ), anchor: .bottom)
+        .position(
+            x: size.width * PulseDesign.quietAmbientObjectXRatio
+                + CGFloat(cos(phase)) * PulseDesign.quietAmbientObjectTravel,
+            y: size.height * PulseDesign.quietAmbientObjectYRatio
+        )
     }
 
     private var opacityMultiplier: Double {
@@ -639,6 +773,58 @@ private struct PulseAmbientFieldCanvas: View {
                 x: -CGFloat(sin(phase)) * PulseDesign.ambientFieldHorizontalDrift * 0.55,
                 y: CGFloat(cos(counterPhase)) * PulseDesign.ambientFieldVerticalDrift * 0.7
             )
+    }
+}
+
+private struct PulseEditorialFieldCanvas: View {
+    let size: CGSize
+    let phase: Double
+    let counterPhase: Double
+
+    var body: some View {
+        ZStack {
+            VStack(spacing: PulseDesign.spacing32) {
+                ForEach(0..<PulseDesign.editorialAmbientRuleCount, id: \.self) { _ in
+                    Rectangle()
+                        .fill(
+                            PulseDesign.separator.opacity(
+                                PulseDesign.editorialAmbientRuleOpacity
+                            )
+                        )
+                        .frame(
+                            width: size.width * PulseDesign.editorialAmbientRuleWidthRatio,
+                            height: PulseDesign.thinLineWidth
+                        )
+                }
+            }
+            .offset(y: CGFloat(sin(phase)) * PulseDesign.editorialAmbientRuleTravel)
+            .position(
+                x: size.width / 2,
+                y: size.height * PulseDesign.editorialAmbientRuleYRatio
+            )
+
+            RoundedRectangle(
+                cornerRadius: PulseDesign.spacing4,
+                style: .continuous
+            )
+            .fill(
+                PulseDesign.editorialAccent.opacity(
+                    PulseDesign.editorialAmbientBookmarkOpacity
+                )
+            )
+            .frame(
+                width: PulseDesign.spacing8,
+                height: size.height * PulseDesign.editorialAmbientBookmarkHeightRatio
+            )
+            .rotationEffect(.degrees(
+                sin(counterPhase) * PulseDesign.editorialAmbientBookmarkSwayDegrees
+            ), anchor: .top)
+            .position(
+                x: size.width * PulseDesign.editorialAmbientBookmarkXRatio,
+                y: size.height * PulseDesign.editorialAmbientBookmarkYRatio
+            )
+        }
+        .frame(width: size.width, height: size.height)
     }
 }
 
@@ -750,7 +936,8 @@ struct PulseBrandMark: View {
 
     @ViewBuilder
     var body: some View {
-        if visualTheme == .tideArchive {
+        switch visualTheme {
+        case .tideArchive:
             Circle()
                 .fill(PulseDesign.archiveDepth)
                 .overlay {
@@ -768,7 +955,31 @@ struct PulseBrandMark: View {
                 }
                 .frame(width: size, height: size)
                 .accessibilityHidden(true)
-        } else {
+        case .editorialJournal:
+            RoundedRectangle(
+                cornerRadius: PulseDesign.brandMarkCornerRadius,
+                style: .continuous
+            )
+            .fill(PulseDesign.surface)
+            .overlay {
+                Image("PulseMark")
+                    .resizable()
+                    .renderingMode(.template)
+                    .foregroundStyle(PulseDesign.editorialAccent)
+            }
+            .overlay {
+                RoundedRectangle(
+                    cornerRadius: PulseDesign.brandMarkCornerRadius,
+                    style: .continuous
+                )
+                .stroke(
+                    PulseDesign.editorialAccent,
+                    lineWidth: PulseDesign.thinLineWidth
+                )
+            }
+            .frame(width: size, height: size)
+            .accessibilityHidden(true)
+        case .quietField:
             RoundedRectangle(cornerRadius: PulseDesign.brandMarkCornerRadius, style: .continuous)
                 .fill(PulseDesign.action)
                 .overlay {

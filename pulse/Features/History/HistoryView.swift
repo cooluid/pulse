@@ -2,6 +2,25 @@ import SwiftUI
 import PulseCore
 import UniformTypeIdentifiers
 
+private enum HistoryContentMode: String {
+    case calendar
+    case journal
+
+    var titleKey: LocalizedStringKey {
+        switch self {
+        case .calendar: "history.mode.calendar"
+        case .journal: "history.mode.journal"
+        }
+    }
+
+    var systemImage: String {
+        switch self {
+        case .calendar: "calendar"
+        case .journal: "square.and.pencil"
+        }
+    }
+}
+
 struct HistoryView: View {
     @Bindable var model: PulseAppModel
 
@@ -12,6 +31,8 @@ struct HistoryView: View {
     @Environment(\.pulseVisualTheme) private var visualTheme
     @State private var selectedDay: LogicalDay?
     @State private var monthTransitionDirection = -1
+    @State private var contentMode: HistoryContentMode = .calendar
+    @Namespace private var contentModeNamespace
 
     private let columns = Array(
         repeating: GridItem(.flexible(), spacing: PulseDesign.spacing4),
@@ -29,11 +50,7 @@ struct HistoryView: View {
                 GeometryReader { proxy in
                     ScrollView {
                         historyContent
-                            .frame(
-                                maxWidth: usesRegularWidthLayout
-                                    ? PulseDesign.regularWidthContentMaxWidth
-                                    : PulseDesign.historyMaxWidth
-                            )
+                            .frame(maxWidth: PulseDesign.historyMaxWidth)
                             .frame(
                                 minHeight: usesRegularWidthLayout ? proxy.size.height : nil,
                                 alignment: .top
@@ -66,13 +83,18 @@ struct HistoryView: View {
             .allowsHitTesting(false)
             .accessibilityElement(children: .ignore)
             .accessibilityLabel(visualTheme.localizedName(locale: locale))
-            .accessibilityIdentifier(
-                visualTheme == .tideArchive
-                    ? "history.theme.tide-archive"
-                    : visualTheme == .editorialJournal
-                        ? "history.theme.editorial-journal"
-                        : "history.theme.quiet-field"
-            )
+            .accessibilityIdentifier(themeMarkerIdentifier)
+    }
+
+    private var themeMarkerIdentifier: String {
+        switch visualTheme {
+        case .quietField:
+            "history.theme.quiet-field"
+        case .editorialJournal:
+            "history.theme.editorial-journal"
+        case .tideArchive:
+            "history.theme.tide-archive"
+        }
     }
 
     @ViewBuilder
@@ -80,81 +102,159 @@ struct HistoryView: View {
         switch visualTheme {
         case .tideArchive:
             archiveHistoryContent
-        case .editorialJournal:
-            editorialJournalHistoryContent
-        default:
-            quietHistoryContent
+        case .editorialJournal, .quietField:
+            standardHistoryContent
         }
     }
 
-    @ViewBuilder
-    private var editorialJournalHistoryContent: some View {
-        if usesRegularWidthLayout {
-            HStack(alignment: .top, spacing: PulseDesign.regularWidthColumnGap) {
-                VStack(spacing: 0) {
-                    historyHeading
-                    statisticsRow
-                    EditorialHistoryContent(model: model, selectedDay: $selectedDay)
+    private var standardHistoryContent: some View {
+        VStack(spacing: 0) {
+            historyHeading
+            statisticsRow
+            historyModePicker
+                .padding(.top, PulseDesign.spacing16)
+            Group {
+                switch contentMode {
+                case .calendar:
+                    animatedCalendar
+                case .journal:
+                    JournalHistorySection(model: model, selectedDay: $selectedDay)
                 }
-                .frame(maxWidth: .infinity)
-
-                animatedCalendar
-                    .frame(maxWidth: .infinity)
             }
-        } else {
-            VStack(spacing: 0) {
-                historyHeading
-                statisticsRow
-                animatedCalendar
-                EditorialHistoryContent(model: model, selectedDay: $selectedDay)
-            }
-            .padding(.bottom, PulseDesign.spacing24)
+            .id(contentMode)
+            .transition(.opacity)
         }
+        .padding(.bottom, PulseDesign.spacing24)
     }
 
-    @ViewBuilder
-    private var quietHistoryContent: some View {
-        if usesRegularWidthLayout {
-            HStack(alignment: .top, spacing: PulseDesign.regularWidthColumnGap) {
-                VStack(spacing: 0) {
-                    historyHeading
-                    statisticsRow
-                }
-                .frame(maxWidth: .infinity)
-
-                animatedCalendar
-                    .frame(maxWidth: .infinity)
-            }
-        } else {
-            VStack(spacing: 0) {
-                historyHeading
-                statisticsRow
-                animatedCalendar
-            }
-            .padding(.bottom, PulseDesign.spacing24)
-        }
-    }
-
-    @ViewBuilder
     private var archiveHistoryContent: some View {
-        if usesRegularWidthLayout {
-            HStack(alignment: .top, spacing: PulseDesign.regularWidthColumnGap) {
-                VStack(spacing: PulseDesign.spacing16) {
-                    archiveMonthHero
-                    archiveStatisticsBand
+        VStack(spacing: 0) {
+            archiveMonthHero
+            archiveStatisticsBand
+            historyModePicker
+                .padding(.top, PulseDesign.spacing16)
+            Group {
+                switch contentMode {
+                case .calendar:
+                    animatedCalendar
+                case .journal:
+                    JournalHistorySection(model: model, selectedDay: $selectedDay)
                 }
-                .frame(maxWidth: .infinity)
+            }
+            .id(contentMode)
+            .transition(.opacity)
+        }
+        .padding(PulseDesign.spacing20)
+        .background {
+            RoundedRectangle(
+                cornerRadius: PulseDesign.archiveHistoryLedgerCornerRadius,
+                style: .continuous
+            )
+            .fill(
+                PulseDesign.archivePaper.opacity(
+                    PulseDesign.archiveHistoryLedgerOpacity
+                )
+            )
+        }
+        .overlay {
+            RoundedRectangle(
+                cornerRadius: PulseDesign.archiveHistoryLedgerCornerRadius,
+                style: .continuous
+            )
+            .stroke(
+                PulseDesign.archiveCopper.opacity(
+                    PulseDesign.archiveHistoryLedgerBorderOpacity
+                ),
+                lineWidth: PulseDesign.thinLineWidth
+            )
+        }
+        .overlay(alignment: .leading) {
+            Rectangle()
+                .fill(PulseDesign.archiveCopper)
+                .frame(width: PulseDesign.emphasisLineWidth)
+                .padding(.vertical, PulseDesign.spacing24)
+        }
+        .padding(.bottom, PulseDesign.spacing24)
+    }
 
-                archiveCalendarPanel
-                    .frame(maxWidth: .infinity)
+    private var historyModePicker: some View {
+        HStack(spacing: PulseDesign.spacing4) {
+            historyModeButton(.calendar)
+            historyModeButton(.journal)
+        }
+        .padding(PulseDesign.historyModePickerInset)
+        .frame(height: PulseDesign.historyModePickerHeight)
+        .background {
+            RoundedRectangle(
+                cornerRadius: PulseDesign.historyModePickerCornerRadius,
+                style: .continuous
+            )
+            .fill(historyModePickerSurface)
+        }
+        .overlay {
+            RoundedRectangle(
+                cornerRadius: PulseDesign.historyModePickerCornerRadius,
+                style: .continuous
+            )
+            .stroke(PulseDesign.separator, lineWidth: PulseDesign.thinLineWidth)
+        }
+    }
+
+    private func historyModeButton(_ mode: HistoryContentMode) -> some View {
+        let isSelected = contentMode == mode
+
+        return Button {
+            guard contentMode != mode else { return }
+            if reduceMotion {
+                contentMode = mode
+            } else {
+                withAnimation(
+                    .easeInOut(duration: PulseDesign.primaryContentTransitionDuration)
+                ) {
+                    contentMode = mode
+                }
             }
-        } else {
-            VStack(spacing: PulseDesign.spacing16) {
-                archiveMonthHero
-                archiveStatisticsBand
-                archiveCalendarPanel
-            }
-            .padding(.bottom, PulseDesign.spacing24)
+        } label: {
+            Label(mode.titleKey, systemImage: mode.systemImage)
+                .font(.subheadline.weight(isSelected ? .semibold : .regular))
+                .foregroundStyle(
+                    isSelected ? historyModeSelectedForeground : PulseDesign.secondary
+                )
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .background {
+                    if isSelected {
+                        RoundedRectangle(
+                            cornerRadius: PulseDesign.historyModePickerItemCornerRadius,
+                            style: .continuous
+                        )
+                        .fill(PulseDesign.appSuccess(for: visualTheme))
+                        .matchedGeometryEffect(
+                            id: "history.mode.selection",
+                            in: contentModeNamespace
+                        )
+                    }
+                }
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityIdentifier("history.mode.\(mode.rawValue)")
+        .accessibilityAddTraits(isSelected ? .isSelected : [])
+    }
+
+    private var historyModePickerSurface: Color {
+        PulseDesign.appSurface(for: visualTheme).opacity(
+            PulseDesign.historyModePickerSurfaceOpacity
+        )
+    }
+
+    private var historyModeSelectedForeground: Color {
+        switch visualTheme {
+        case .quietField:
+            PulseDesign.grassForeground
+        case .editorialJournal:
+            PulseDesign.background
+        case .tideArchive:
+            PulseDesign.archiveNight
         }
     }
 
@@ -363,43 +463,6 @@ struct HistoryView: View {
                 height: PulseDesign.archiveHistoryStatisticDividerHeight
             )
             .accessibilityHidden(true)
-    }
-
-    private var archiveCalendarPanel: some View {
-        animatedCalendar
-            .padding(.horizontal, PulseDesign.spacing12)
-            .padding(.top, PulseDesign.spacing8)
-            .padding(.bottom, PulseDesign.spacing20)
-            .background {
-                RoundedRectangle(
-                    cornerRadius: PulseDesign.archiveHistoryPanelCornerRadius,
-                    style: .continuous
-                )
-                .fill(
-                    PulseDesign.archivePaper.opacity(
-                        PulseDesign.archiveHistorySurfaceOpacity
-                    )
-                )
-            }
-            .clipShape(
-                RoundedRectangle(
-                    cornerRadius: PulseDesign.archiveHistoryPanelCornerRadius,
-                    style: .continuous
-                )
-            )
-            .overlay {
-                RoundedRectangle(
-                    cornerRadius: PulseDesign.archiveHistoryPanelCornerRadius,
-                    style: .continuous
-                )
-                .stroke(
-                    PulseDesign.archiveCopper.opacity(
-                        PulseDesign.archiveHistorySurfaceBorderOpacity
-                    ),
-                    lineWidth: PulseDesign.thinLineWidth
-                )
-            }
-            .accessibilityIdentifier("history.calendar.surface")
     }
 
     private var monthTitle: some View {
@@ -657,9 +720,12 @@ private struct CalendarDayCell: View {
 
     @ViewBuilder
     var body: some View {
-        if visualTheme == .tideArchive {
+        switch visualTheme {
+        case .tideArchive:
             archiveCell
-        } else {
+        case .editorialJournal:
+            editorialCell
+        case .quietField:
             quietCell
         }
     }
@@ -851,6 +917,119 @@ private struct CalendarDayCell: View {
         .accessibilityIdentifier("calendar.day.\(item.day.storageValue)")
     }
 
+    private var editorialCell: some View {
+        ZStack {
+            RoundedRectangle(
+                cornerRadius: PulseDesign.editorialCalendarDayCornerRadius,
+                style: .continuous
+            )
+            .fill(
+                item.status == .checked
+                    ? PulseDesign.editorialAccent.opacity(
+                        PulseDesign.editorialCalendarCheckedOpacity
+                    )
+                    : Color.clear
+            )
+            .frame(
+                width: PulseDesign.calendarDayVisualSize,
+                height: PulseDesign.calendarDayVisualSize
+            )
+
+            if item.status == .checked {
+                VStack(spacing: 0) {
+                    Text(item.day.day, format: .number)
+                        .font(.system(.caption2, design: .serif, weight: .bold))
+                        .monospacedDigit()
+                    Image(systemName: "checkmark")
+                        .font(.caption2.bold())
+                }
+                .foregroundStyle(PulseDesign.editorialAccent)
+            } else if item.status == .missed {
+                VStack(spacing: 0) {
+                    Text(item.day.day, format: .number)
+                        .font(.system(.caption, design: .serif))
+                        .monospacedDigit()
+                    Image(systemName: "minus")
+                        .font(.caption2.bold())
+                        .accessibilityHidden(true)
+                }
+                .foregroundStyle(PulseDesign.secondary)
+            } else if item.status == .beforeHabit {
+                VStack(spacing: 0) {
+                    Text(item.day.day, format: .number)
+                        .font(.system(.caption, design: .serif))
+                        .monospacedDigit()
+                    Image(systemName: "circle.dotted")
+                        .font(
+                            .system(
+                                size: PulseDesign.calendarAccessoryGlyphSize,
+                                weight: .semibold
+                            )
+                        )
+                        .accessibilityHidden(true)
+                }
+                .foregroundStyle(quietPassiveForeground)
+            } else {
+                Text(item.day.day, format: .number)
+                    .font(
+                        .system(
+                            .caption,
+                            design: .serif,
+                            weight: isToday ? .bold : .regular
+                        )
+                    )
+                    .monospacedDigit()
+                    .foregroundStyle(quietPassiveForeground)
+            }
+        }
+        .frame(maxWidth: .infinity)
+        .frame(height: PulseDesign.calendarDayHitSize)
+        .overlay {
+            if isToday {
+                RoundedRectangle(
+                    cornerRadius: PulseDesign.editorialCalendarDayCornerRadius,
+                    style: .continuous
+                )
+                .stroke(
+                    PulseDesign.editorialAccent,
+                    lineWidth: PulseDesign.emphasisLineWidth
+                )
+                .frame(
+                    width: PulseDesign.calendarDayVisualSize,
+                    height: PulseDesign.calendarDayVisualSize
+                )
+            }
+        }
+        .overlay(alignment: .bottom) {
+            if item.status == .checked {
+                Rectangle()
+                    .fill(PulseDesign.editorialAccent)
+                    .frame(
+                        width: PulseDesign.calendarDayVisualSize,
+                        height: PulseDesign.thinLineWidth
+                    )
+            }
+        }
+        .overlay(alignment: .bottomTrailing) {
+            if hasMedia {
+                Image(systemName: "camera.fill")
+                    .font(
+                        .system(
+                            size: PulseDesign.calendarAccessoryGlyphSize,
+                            weight: .bold
+                        )
+                    )
+                    .foregroundStyle(PulseDesign.editorialAccent)
+                    .padding(PulseDesign.spacing4)
+                    .accessibilityHidden(true)
+            }
+        }
+        .contentShape(Rectangle())
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(accessibilityLabel)
+        .accessibilityIdentifier("calendar.day.\(item.day.storageValue)")
+    }
+
     private var archiveCellFill: Color {
         switch item.status {
         case .checked:
@@ -995,7 +1174,7 @@ private struct DayArchiveDetailView: View {
             )
         case .tideArchive:
             archiveDetailIdentity
-        default:
+        case .quietField:
             quietArchiveIdentity
         }
     }

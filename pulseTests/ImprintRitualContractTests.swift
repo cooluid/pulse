@@ -22,8 +22,16 @@ final class ImprintRitualContractTests: XCTestCase {
         XCTAssertLessThanOrEqual(PulseDesign.todayFlowBandBaseOpacity, 0.08)
         XCTAssertGreaterThan(PulseDesign.todayFlowBandDrift, 0)
         XCTAssertLessThanOrEqual(PulseDesign.todayFlowBandDrift, 8)
+        XCTAssertGreaterThan(PulseDesign.quietAmbientObjectOpacity, 0)
+        XCTAssertLessThanOrEqual(PulseDesign.quietAmbientObjectOpacity, 0.3)
+        XCTAssertGreaterThan(PulseDesign.editorialAmbientRuleOpacity, 0)
+        XCTAssertLessThanOrEqual(PulseDesign.editorialAmbientRuleOpacity, 0.2)
+        XCTAssertGreaterThan(PulseDesign.editorialAmbientBookmarkOpacity, 0)
+        XCTAssertLessThanOrEqual(PulseDesign.editorialAmbientBookmarkOpacity, 0.3)
         XCTAssertGreaterThan(PulseDesign.archiveSurfaceDrift, 0)
         XCTAssertLessThanOrEqual(PulseDesign.archiveSurfaceDrift, 0.03)
+        XCTAssertGreaterThan(PulseDesign.archiveAmbientMarkerTravel, 0)
+        XCTAssertLessThanOrEqual(PulseDesign.archiveAmbientMarkerTravel, 8)
         XCTAssertGreaterThan(PulseDesign.archiveCompletionRiseRatio, 0)
         XCTAssertLessThanOrEqual(PulseDesign.archiveCompletionRiseRatio, 0.25)
     }
@@ -41,7 +49,7 @@ final class ImprintRitualContractTests: XCTestCase {
             encoding: .utf8
         )
 
-        XCTAssertTrue(designSource.contains("if visualTheme == .tideArchive"))
+        XCTAssertTrue(designSource.contains("case .tideArchive:\n            archiveField"))
         XCTAssertTrue(designSource.contains("PulseArchiveFieldCanvas("))
         XCTAssertTrue(todaySource.contains("isCompleted: model.todayRecord != nil"))
     }

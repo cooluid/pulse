@@ -1,14 +1,7 @@
 import PulseCore
 import SwiftUI
 
-enum EditorialJournalDesign {
-    static let accent = PulseDesign.editorialAccent
-    static let lineHeight: CGFloat = 3
-    static let lineInitialWidth: CGFloat = 36
-    static let checkButtonSize: CGFloat = 36
-    static let titleTracking: CGFloat = -0.02
-    static let kickerTracking: CGFloat = 0.06
-
+enum EditorialJournalPrompt {
     static func promptKey(for day: LogicalDay) -> LocalizedStringKey {
         let index = ((day.year * 12 + day.month) * 31 + day.day) % 4
         switch index {
@@ -22,16 +15,15 @@ enum EditorialJournalDesign {
 
 struct EditorialTodayContent: View {
     @Bindable var model: PulseAppModel
+    @Binding var draftJournalNote: String
+    @FocusState.Binding var isJournalFocused: Bool
+    let onCheckIn: () -> Void
     let onEditJournal: () -> Void
     let onCaptureMedia: () -> Void
     let onShowMedia: () -> Void
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @Environment(\.locale) private var locale
-    @FocusState private var isJournalFocused: Bool
-    @State private var draftJournalNote = ""
-    @State private var isCheckingIn = false
     @State private var lineExpanded = false
 
     var body: some View {
@@ -48,9 +40,8 @@ struct EditorialTodayContent: View {
                 .padding(.bottom, PulseDesign.spacing8)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-        .onAppear(perform: syncDraftJournalNote)
+        .onAppear { lineExpanded = isChecked }
         .onChange(of: model.todayRecord?.id) { _, _ in
-            syncDraftJournalNote()
             updateLineState(animated: !reduceMotion)
         }
     }
@@ -66,7 +57,7 @@ struct EditorialTodayContent: View {
                     .font(.caption.weight(.medium))
                     .foregroundStyle(PulseDesign.secondary)
                     .textCase(.uppercase)
-                    .tracking(EditorialJournalDesign.kickerTracking)
+                    .tracking(PulseDesign.editorialKickerTracking)
                     .accessibilityIdentifier("today.hero.kicker")
             }
 
@@ -74,7 +65,7 @@ struct EditorialTodayContent: View {
                 Text(habitName)
                     .font(.system(.largeTitle, design: .serif).weight(.bold))
                     .foregroundStyle(PulseDesign.ink)
-                    .tracking(EditorialJournalDesign.titleTracking)
+                    .tracking(PulseDesign.editorialTitleTracking)
                     .fixedSize(horizontal: false, vertical: true)
                     .accessibilityIdentifier("today.commitment.name")
             }
@@ -86,7 +77,7 @@ struct EditorialTodayContent: View {
     private var editorialPromptBlock: some View {
         VStack(alignment: .leading, spacing: PulseDesign.spacing12) {
             if let today = model.today {
-                Text(EditorialJournalDesign.promptKey(for: today))
+                Text(EditorialJournalPrompt.promptKey(for: today))
                     .font(.system(.subheadline, design: .serif))
                     .italic()
                     .foregroundStyle(PulseDesign.secondary)
@@ -95,50 +86,13 @@ struct EditorialTodayContent: View {
             if let record = model.todayRecord {
                 JournalNoteSummary(record: record, onEdit: onEditJournal)
             } else {
-                Group {
-                    if dynamicTypeSize.isAccessibilitySize {
-                        TextField(
-                            "editorial.journal.placeholder",
-                            text: $draftJournalNote,
-                            axis: .vertical
-                        )
-                        .lineLimit(3...6)
-                    } else {
-                        TextField(
-                            "editorial.journal.placeholder",
-                            text: $draftJournalNote,
-                            axis: .vertical
-                        )
-                        .lineLimit(1...4)
-                    }
-                }
-                .font(.body)
-                .foregroundStyle(PulseDesign.ink)
-                .disabled(model.isSaving)
-                .focused($isJournalFocused)
-                .accessibilityIdentifier("editorial.journal.input")
-
-                HStack(alignment: .firstTextBaseline, spacing: PulseDesign.spacing8) {
-                    if !isDraftValid {
-                        Text(journalValidationMessage)
-                            .foregroundStyle(PulseDesign.systemDestructive)
-                            .accessibilityIdentifier("editorial.journal.validation")
-                    }
-
-                    Spacer(minLength: 0)
-
-                    Text(journalCharacterCount)
-                        .foregroundStyle(
-                            isDraftValid ? PulseDesign.secondary : PulseDesign.systemDestructive
-                        )
-                        .accessibilityIdentifier("editorial.journal.count")
-                }
-                .font(.caption2)
+                JournalDraftComposer(
+                    text: $draftJournalNote,
+                    isFocused: $isJournalFocused,
+                    isDisabled: model.isSaving,
+                    showsHeader: false
+                )
             }
-
-            Rectangle()
-                .fill(isChecked ? EditorialJournalDesign.accent : PulseDesign.separator)
-                .frame(height: PulseDesign.thinLineWidth)
         }
     }
 
@@ -146,7 +100,7 @@ struct EditorialTodayContent: View {
         VStack(alignment: .leading, spacing: PulseDesign.spacing12) {
             HStack(alignment: .center, spacing: PulseDesign.spacing16) {
                 Button {
-                    performCheckIn()
+                    onCheckIn()
                 } label: {
                     HStack(spacing: PulseDesign.spacing8) {
                         ZStack {
@@ -160,22 +114,22 @@ struct EditorialTodayContent: View {
                                     lineWidth: PulseDesign.emphasisLineWidth
                                 )
                                 .frame(
-                                    width: EditorialJournalDesign.checkButtonSize,
-                                    height: EditorialJournalDesign.checkButtonSize
+                                    width: PulseDesign.editorialCheckButtonSize,
+                                    height: PulseDesign.editorialCheckButtonSize
                                 )
 
                             if isChecked {
                                 Circle()
                                     .fill(PulseDesign.ink)
                                     .frame(
-                                        width: EditorialJournalDesign.checkButtonSize,
-                                        height: EditorialJournalDesign.checkButtonSize
+                                        width: PulseDesign.editorialCheckButtonSize,
+                                        height: PulseDesign.editorialCheckButtonSize
                                     )
 
                                 Image(systemName: "checkmark")
                                     .font(.caption.weight(.bold))
                                     .foregroundStyle(PulseDesign.background)
-                            } else if model.isSaving || isCheckingIn {
+                            } else if model.isSaving {
                                 ProgressView()
                                     .controlSize(.small)
                             }
@@ -190,7 +144,6 @@ struct EditorialTodayContent: View {
                 .disabled(
                     !model.canCheckInToday
                         || model.isSaving
-                        || isCheckingIn
                         || !isDraftValid
                 )
                 .accessibilityLabel(checkInAccessibilityLabel)
@@ -235,7 +188,7 @@ struct EditorialTodayContent: View {
                     .frame(minHeight: PulseDesign.minimumHitTarget)
                 }
                 .buttonStyle(.plain)
-                .foregroundStyle(EditorialJournalDesign.accent)
+                .foregroundStyle(PulseDesign.editorialAccent)
                 .disabled(model.operation == .saveMedia)
                 .accessibilityIdentifier(
                     model.todayMedia == nil
@@ -252,28 +205,6 @@ struct EditorialTodayContent: View {
 
     private var isDraftValid: Bool {
         JournalNote.accepts(userInput: draftJournalNote)
-    }
-
-    private var journalCharacterCount: String {
-        String(
-            format: PulseLocalization.string("journal.character_count_format", locale: locale),
-            locale: locale,
-            arguments: [
-                Int64(draftJournalNote.count),
-                Int64(JournalNote.maximumCharacterCount),
-            ]
-        )
-    }
-
-    private var journalValidationMessage: String {
-        String(
-            format: PulseLocalization.string("journal.validation_format", locale: locale),
-            locale: locale,
-            arguments: [
-                Int64(JournalNote.maximumCharacterCount),
-                Int64(JournalNote.maximumLineCount),
-            ]
-        )
     }
 
     private var checkInAccessibilityLabel: String {
@@ -293,11 +224,6 @@ struct EditorialTodayContent: View {
         )
     }
 
-    private func syncDraftJournalNote() {
-        draftJournalNote = model.todayRecord?.journalNote ?? ""
-        lineExpanded = model.todayRecord != nil
-    }
-
     private func updateLineState(animated: Bool) {
         let shouldExpand = model.todayRecord != nil
         guard animated else {
@@ -309,20 +235,6 @@ struct EditorialTodayContent: View {
         }
     }
 
-    private func performCheckIn() {
-        guard model.canCheckInToday else { return }
-        isCheckingIn = true
-        isJournalFocused = false
-
-        Task {
-            guard await model.checkIn(journalNote: draftJournalNote) != nil else {
-                isCheckingIn = false
-                return
-            }
-            isCheckingIn = false
-            updateLineState(animated: !reduceMotion)
-        }
-    }
 }
 
 struct EditorialAccentLine: View {
@@ -333,10 +245,10 @@ struct EditorialAccentLine: View {
     var body: some View {
         GeometryReader { proxy in
             Rectangle()
-                .fill(isExpanded ? EditorialJournalDesign.accent : PulseDesign.separator)
+                .fill(isExpanded ? PulseDesign.editorialAccent : PulseDesign.separator)
                 .frame(
-                    width: isExpanded ? proxy.size.width : EditorialJournalDesign.lineInitialWidth,
-                    height: EditorialJournalDesign.lineHeight,
+                    width: isExpanded ? proxy.size.width : PulseDesign.editorialLineInitialWidth,
+                    height: PulseDesign.editorialLineHeight,
                     alignment: .leading
                 )
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -347,114 +259,9 @@ struct EditorialAccentLine: View {
                     value: isExpanded
                 )
         }
-        .frame(height: EditorialJournalDesign.lineHeight)
+        .frame(height: PulseDesign.editorialLineHeight)
         .accessibilityHidden(true)
     }
-}
-
-struct EditorialHistoryContent: View {
-    @Bindable var model: PulseAppModel
-    @Binding var selectedDay: LogicalDay?
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            VStack(alignment: .leading, spacing: PulseDesign.spacing4) {
-                Text("editorial.history.notes_title")
-                    .font(.system(.title2, design: .serif).weight(.bold))
-                    .foregroundStyle(PulseDesign.ink)
-
-                Text("editorial.history.notes_subtitle")
-                    .font(.caption)
-                    .foregroundStyle(PulseDesign.secondary)
-            }
-            .padding(.top, PulseDesign.spacing16)
-            .padding(.bottom, PulseDesign.spacing20)
-
-            if sortedRecords.isEmpty {
-                Text("editorial.history.notes_empty")
-                    .font(.body)
-                    .foregroundStyle(PulseDesign.secondary)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.vertical, PulseDesign.spacing16)
-                    .accessibilityIdentifier("history.notes.empty")
-            } else {
-                LazyVStack(spacing: 0) {
-                    ForEach(sortedRecords) { record in
-                        Button {
-                            selectedDay = record.logicalDay
-                        } label: {
-                            EditorialHistoryEntryRow(
-                                record: record,
-                                habitName: model.habit?.name,
-                                timeZone: model.timeZone
-                            )
-                        }
-                        .buttonStyle(.plain)
-                    }
-                }
-            }
-        }
-        .frame(maxWidth: .infinity, alignment: .topLeading)
-    }
-
-    private var sortedRecords: [CheckInRecordSnapshot] {
-        let month = model.selectedMonth ?? model.today?.firstDayOfMonth()
-        return model.records
-            .filter { record in
-                record.journalNote != nil
-                    && record.logicalDay.year == month?.year
-                    && record.logicalDay.month == month?.month
-            }
-            .sorted { $0.checkedAt > $1.checkedAt }
-    }
-}
-
-private struct EditorialHistoryEntryRow: View {
-    let record: CheckInRecordSnapshot
-    let habitName: String?
-    let timeZone: TimeZone?
-
-    @Environment(\.locale) private var locale
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: PulseDesign.spacing8) {
-            if let timeZone {
-                Text(
-                    PulseFormatting.fullDate(
-                        record.logicalDay,
-                        timeZone: timeZone,
-                        locale: locale
-                    )
-                )
-                .font(.caption2.weight(.medium))
-                .foregroundStyle(PulseDesign.secondary)
-                .textCase(.uppercase)
-                .tracking(EditorialJournalDesign.kickerTracking)
-            }
-
-            Text(record.journalNote ?? "")
-                .font(.system(.body, design: .serif))
-                .foregroundStyle(PulseDesign.ink)
-                .multilineTextAlignment(.leading)
-                .frame(maxWidth: .infinity, alignment: .leading)
-
-            if let habitName {
-                Text(habitName)
-                    .font(.caption.weight(.medium))
-                    .foregroundStyle(EditorialJournalDesign.accent)
-            }
-        }
-        .padding(.vertical, PulseDesign.spacing16)
-        .overlay(alignment: .bottom) {
-            Rectangle()
-                .fill(PulseDesign.separator)
-                .frame(height: PulseDesign.thinLineWidth)
-        }
-        .contentShape(Rectangle())
-        .accessibilityElement(children: .combine)
-        .accessibilityIdentifier("history.entry.\(record.logicalDay.storageValue)")
-    }
-
 }
 
 struct EditorialRecordDetailIdentity: View {
@@ -473,7 +280,7 @@ struct EditorialRecordDetailIdentity: View {
             .font(.caption.weight(.medium))
             .foregroundStyle(PulseDesign.secondary)
             .textCase(.uppercase)
-            .tracking(EditorialJournalDesign.kickerTracking)
+            .tracking(PulseDesign.editorialKickerTracking)
 
             if let habitName {
                 Text(habitName)
@@ -483,8 +290,8 @@ struct EditorialRecordDetailIdentity: View {
             }
 
             Rectangle()
-                .fill(EditorialJournalDesign.accent)
-                .frame(height: EditorialJournalDesign.lineHeight)
+                .fill(PulseDesign.editorialAccent)
+                .frame(height: PulseDesign.editorialLineHeight)
 
             if let record {
                 Text(
@@ -562,6 +369,6 @@ struct EditorialPrimaryNavigation: View {
             .frame(minHeight: PulseDesign.minimumHitTarget)
         }
         .buttonStyle(.plain)
-        .accessibilityIdentifier("navigation.section.\(section.rawValue)")
+        .accessibilityIdentifier("primary.navigation.\(section.rawValue)")
     }
 }

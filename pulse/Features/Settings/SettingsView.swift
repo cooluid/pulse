@@ -756,13 +756,22 @@ private struct PulseVisualThemeChoice: View {
                 VStack(alignment: .leading, spacing: PulseDesign.spacing4) {
                     Rectangle()
                         .fill(PulseDesign.ink)
-                        .frame(width: 36, height: PulseDesign.emphasisLineWidth)
+                        .frame(
+                            width: PulseDesign.themePreviewEditorialPrimaryRuleWidth,
+                            height: PulseDesign.emphasisLineWidth
+                        )
                     Rectangle()
                         .fill(PulseDesign.secondary)
-                        .frame(width: 52, height: PulseDesign.thinLineWidth)
+                        .frame(
+                            width: PulseDesign.themePreviewEditorialSecondaryRuleWidth,
+                            height: PulseDesign.thinLineWidth
+                        )
                     Rectangle()
                         .fill(PulseDesign.editorialAccent)
-                        .frame(width: 44, height: PulseDesign.thinLineWidth)
+                        .frame(
+                            width: PulseDesign.themePreviewEditorialAccentRuleWidth,
+                            height: PulseDesign.thinLineWidth
+                        )
                 }
 
                 Image(systemName: "checkmark.circle")

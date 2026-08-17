@@ -27,6 +27,8 @@ struct TodayView: View {
     @State private var showsCameraPermissionAlert = false
     @State private var showsTodayMediaDetail = false
     @State private var showsTodayJournalEditor = false
+    @State private var draftJournalNote = ""
+    @FocusState private var isJournalFocused: Bool
 
     var body: some View {
         ZStack {
@@ -109,6 +111,13 @@ struct TodayView: View {
         } message: {
             Text("camera.permission.message")
         }
+        .onAppear(perform: synchronizeJournalDraft)
+        .onChange(of: model.today) { _, _ in
+            synchronizeJournalDraft()
+        }
+        .onChange(of: model.todayRecord?.id) { _, _ in
+            synchronizeJournalDraft()
+        }
     }
 
     @ViewBuilder
@@ -119,11 +128,14 @@ struct TodayView: View {
         case .editorialJournal:
             EditorialTodayContent(
                 model: model,
+                draftJournalNote: $draftJournalNote,
+                isJournalFocused: $isJournalFocused,
+                onCheckIn: { performCheckIn(thenOpenCamera: false) },
                 onEditJournal: { showsTodayJournalEditor = true },
                 onCaptureMedia: requestCamera,
                 onShowMedia: { showsTodayMediaDetail = true }
             )
-        default:
+        case .quietField:
             quietFieldContent
         }
     }
@@ -134,13 +146,7 @@ struct TodayView: View {
                 .frame(width: 1, height: 1)
                 .accessibilityElement(children: .ignore)
                 .accessibilityLabel(visualTheme.localizedName(locale: locale))
-                .accessibilityIdentifier(
-                    visualTheme == .tideArchive
-                        ? "today.theme.tide-archive"
-                        : visualTheme == .editorialJournal
-                            ? "today.theme.editorial-journal"
-                            : "today.theme.quiet-field"
-                )
+                .accessibilityIdentifier(themeMarkerIdentifier)
 
             if imprintRitualPhase == .imprinted {
                 Color.clear
@@ -154,6 +160,17 @@ struct TodayView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .allowsHitTesting(false)
+    }
+
+    private var themeMarkerIdentifier: String {
+        switch visualTheme {
+        case .quietField:
+            "today.theme.quiet-field"
+        case .editorialJournal:
+            "today.theme.editorial-journal"
+        case .tideArchive:
+            "today.theme.tide-archive"
+        }
     }
 
     @ViewBuilder
@@ -171,7 +188,7 @@ struct TodayView: View {
                     weekRail
                     rhythmStatus
                         .padding(.top, PulseDesign.spacing32)
-                    todayJournalSummary
+                    todayJournalSection
                         .padding(.top, PulseDesign.spacing24)
                 }
                 .frame(maxWidth: .infinity)
@@ -181,12 +198,12 @@ struct TodayView: View {
                 dayHero
                 checkInControl
                     .padding(.top, PulseDesign.checkInHeroSpacing)
+                todayJournalSection
+                    .padding(.top, PulseDesign.spacing24)
                 weekRail
-                    .padding(.top, PulseDesign.checkInOuterHalo + PulseDesign.spacing12)
+                    .padding(.top, PulseDesign.spacing24)
                 rhythmStatus
                     .padding(.top, PulseDesign.spacing24)
-                todayJournalSummary
-                    .padding(.top, PulseDesign.spacing20)
             }
             .padding(.bottom, PulseDesign.spacing24)
         }
@@ -207,7 +224,7 @@ struct TodayView: View {
                     weekRail
                     archiveRhythmStatus
                         .padding(.top, PulseDesign.spacing24)
-                    todayJournalSummary
+                    todayJournalSection
                         .padding(.top, PulseDesign.spacing20)
                 }
                 .frame(maxWidth: .infinity)
@@ -217,12 +234,12 @@ struct TodayView: View {
                 archiveDayHero
                 checkInControl
                     .padding(.top, PulseDesign.spacing20)
+                todayJournalSection
+                    .padding(.top, PulseDesign.spacing24)
                 weekRail
-                    .padding(.top, PulseDesign.spacing32)
+                    .padding(.top, PulseDesign.spacing24)
                 archiveRhythmStatus
                     .padding(.top, PulseDesign.spacing16)
-                todayJournalSummary
-                    .padding(.top, PulseDesign.spacing20)
             }
             .padding(.bottom, PulseDesign.spacing24)
         }
@@ -496,11 +513,7 @@ struct TodayView: View {
     private var quietWeekRail: some View {
         ZStack(alignment: .bottom) {
             Rectangle()
-                .fill(
-                    visualTheme == .tideArchive
-                        ? PulseDesign.archiveTide.opacity(0.28)
-                        : PulseDesign.separator
-                )
+                .fill(PulseDesign.separator)
                 .frame(height: PulseDesign.thinLineWidth)
                 .padding(.horizontal, PulseDesign.weekRailDotDiameter / 2)
                 .padding(.bottom, PulseDesign.weekRailDotDiameter / 2)
@@ -550,15 +563,7 @@ struct TodayView: View {
             }
 
             Circle()
-                .fill(
-                    isChecked
-                        ? (visualTheme == .tideArchive
-                            ? PulseDesign.archiveDepth
-                            : PulseDesign.grass)
-                        : (visualTheme == .tideArchive
-                            ? PulseDesign.archiveSky
-                            : PulseDesign.background)
-                )
+                .fill(isChecked ? PulseDesign.grass : PulseDesign.background)
                 .frame(
                     width: PulseDesign.weekRailDotDiameter,
                     height: PulseDesign.weekRailDotDiameter
@@ -566,11 +571,9 @@ struct TodayView: View {
                 .overlay {
                     Circle()
                         .stroke(
-                            visualTheme == .tideArchive
-                                ? PulseDesign.archiveTide
-                                : (isToday || isChecked
-                                    ? PulseDesign.grass
-                                    : PulseDesign.separator),
+                            isToday || isChecked
+                                ? PulseDesign.grass
+                                : PulseDesign.separator,
                             lineWidth: PulseDesign.emphasisLineWidth
                         )
                 }
@@ -612,7 +615,9 @@ struct TodayView: View {
                             .stroke(
                                 isToday
                                     ? PulseDesign.archiveForeground
-                                    : PulseDesign.archiveForeground.opacity(0.34),
+                                    : PulseDesign.archiveForeground.opacity(
+                                        PulseDesign.archiveWeekInactiveStrokeOpacity
+                                    ),
                                 lineWidth: isToday
                                     ? PulseDesign.emphasisLineWidth
                                     : PulseDesign.thinLineWidth
@@ -630,7 +635,11 @@ struct TodayView: View {
                 } else {
                     Image(systemName: "minus")
                         .font(.system(size: 8, weight: .medium))
-                        .foregroundStyle(PulseDesign.archiveForeground.opacity(0.78))
+                        .foregroundStyle(
+                            PulseDesign.archiveForeground.opacity(
+                                PulseDesign.archiveWeekInactiveForegroundOpacity
+                            )
+                        )
                 }
             }
             .frame(
@@ -661,7 +670,7 @@ struct TodayView: View {
             )
             .overlay {
                 PulseCombinedPressControl(
-                    isEnabled: !isChecked && model.canCheckInToday,
+                    isEnabled: !isChecked && model.canCheckInToday && isJournalDraftValid,
                     accessibilityLabel: checkInAccessibilityLabel,
                     accessibilityHint: isChecked
                         ? ""
@@ -794,7 +803,9 @@ struct TodayView: View {
                             )
                     }
                     .shadow(
-                        color: PulseDesign.archiveNight.opacity(0.18),
+                        color: PulseDesign.archiveNight.opacity(
+                            PulseDesign.archiveCheckInShadowOpacity
+                        ),
                         radius: PulseDesign.spacing16,
                         y: PulseDesign.spacing8
                     )
@@ -808,7 +819,11 @@ struct TodayView: View {
             .background {
                 ZStack {
                     Rectangle()
-                        .fill(PulseDesign.archiveMist.opacity(0.72))
+                        .fill(
+                            PulseDesign.archiveMist.opacity(
+                                PulseDesign.archiveHorizonGuideOpacity
+                            )
+                        )
                         .frame(
                             width: PulseDesign.archiveHorizonMarkerWidth,
                             height: PulseDesign.thinLineWidth
@@ -986,7 +1001,9 @@ struct TodayView: View {
         Text(rhythmStatusText)
             .font(.footnote.weight(.medium))
             .monospacedDigit()
-            .foregroundStyle(PulseDesign.archiveForeground.opacity(0.84))
+            .foregroundStyle(
+                PulseDesign.archiveForeground.opacity(PulseDesign.archiveRhythmOpacity)
+            )
             .fixedSize(horizontal: false, vertical: true)
             .frame(maxWidth: .infinity, alignment: .center)
             .multilineTextAlignment(.center)
@@ -999,11 +1016,17 @@ struct TodayView: View {
     }
 
     @ViewBuilder
-    private var todayJournalSummary: some View {
+    private var todayJournalSection: some View {
         if let record = model.todayRecord {
             JournalNoteSummary(record: record) {
                 showsTodayJournalEditor = true
             }
+        } else {
+            JournalDraftComposer(
+                text: $draftJournalNote,
+                isFocused: $isJournalFocused,
+                isDisabled: model.isSaving
+            )
         }
     }
 
@@ -1078,11 +1101,12 @@ struct TodayView: View {
     }
 
     private func performCheckIn(thenOpenCamera: Bool) {
-        guard model.canCheckInToday else { return }
+        guard model.canCheckInToday, isJournalDraftValid else { return }
+        isJournalFocused = false
         imprintRitualPhase = .saving
 
         Task {
-            guard let receipt = await model.checkIn() else {
+            guard let receipt = await model.checkIn(journalNote: draftJournalNote) else {
                 synchronizeRitualState(isChecked: model.todayRecord != nil)
                 return
             }
@@ -1098,6 +1122,14 @@ struct TodayView: View {
                 requestCamera()
             }
         }
+    }
+
+    private var isJournalDraftValid: Bool {
+        JournalNote.accepts(userInput: draftJournalNote)
+    }
+
+    private func synchronizeJournalDraft() {
+        draftJournalNote = model.todayRecord?.journalNote ?? ""
     }
 
     private func requestCamera() {

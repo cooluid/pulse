@@ -45,7 +45,6 @@ final class PulseAppModel {
     private var reminderReconcileRevision = 0
     private var reminderIntentRevision = 0
     private var reminderEnabledIntent: Bool?
-    private var hasAppliedUITestReset = false
     private var recordsByDay: [LogicalDay: CheckInRecordSnapshot] = [:]
     private var mediaByDay: [LogicalDay: ImprintMediaSnapshot] = [:]
 
@@ -165,18 +164,6 @@ final class PulseAppModel {
         let featureAccessTask = Task { @MainActor [featureAccess] in
             await featureAccess.start()
         }
-#if DEBUG
-        if !hasAppliedUITestReset,
-           ProcessInfo.processInfo.environment["PULSE_UI_TEST_RESET"] == "1" {
-            hasAppliedUITestReset = true
-            loadState = await resetAllData() ? .ready : .failed
-            await featureAccessTask.value
-            if loadState == .ready {
-                await enqueueReminderReconciliation().value
-            }
-            return
-        }
-#endif
         if settings.isResetPending {
             loadState = await resetAllData() ? .ready : .failed
         } else {

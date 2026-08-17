@@ -70,6 +70,19 @@ final class DebugBuildIsolationTests: XCTestCase {
         XCTAssertTrue(settingsSource.contains("#if DEBUG\n    private var developerSection"))
     }
 
+    func testUITestRuntimeUsesAnIsolatedStoreAndDeterministicSystemDependencies() throws {
+        let root = projectRoot
+        let appSource = try source(at: root.appendingPathComponent("pulse/App/PulseApp.swift"))
+        let modelSource = try source(
+            at: root.appendingPathComponent("pulse/App/PulseAppModel.swift")
+        )
+
+        XCTAssertTrue(appSource.contains("PULSE_UI_TEST_STORE_ID"))
+        XCTAssertTrue(appSource.contains("PulseUITestReminderScheduler"))
+        XCTAssertTrue(appSource.contains("UITestStoreKitAccessClient"))
+        XCTAssertFalse(modelSource.contains("PULSE_UI_TEST_RESET"))
+    }
+
     private var projectRoot: URL {
         URL(fileURLWithPath: #filePath)
             .deletingLastPathComponent()

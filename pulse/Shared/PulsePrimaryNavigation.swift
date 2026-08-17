@@ -23,11 +23,12 @@ struct PulsePrimaryNavigation: View {
 
     @ViewBuilder
     var body: some View {
-        if visualTheme == .tideArchive {
+        switch visualTheme {
+        case .tideArchive:
             archiveNavigation
-        } else if visualTheme == .editorialJournal {
+        case .editorialJournal:
             EditorialPrimaryNavigation(selection: $selection)
-        } else {
+        case .quietField:
             quietNavigation
         }
     }

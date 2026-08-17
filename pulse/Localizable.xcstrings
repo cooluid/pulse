@@ -1284,18 +1284,52 @@
         }
       }
     },
-    "history.navigation.subtitle" : {
+    "history.mode.calendar" : {
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "View calendar"
+            "value" : "Calendar"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "查看日历"
+            "value" : "月历"
+          }
+        }
+      }
+    },
+    "history.mode.journal" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Notes"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "记事"
+          }
+        }
+      }
+    },
+    "history.navigation.subtitle" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Review records"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "查看记录"
           }
         }
       }
@@ -2510,7 +2544,7 @@
         }
       }
     },
-    "editorial.journal.placeholder" : {
+    "journal.draft.placeholder" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
@@ -2561,7 +2595,7 @@
         }
       }
     },
-    "editorial.history.notes_title" : {
+    "journal.history.title" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
@@ -2578,7 +2612,7 @@
         }
       }
     },
-    "editorial.history.notes_subtitle" : {
+    "journal.history.subtitle" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
@@ -2595,7 +2629,7 @@
         }
       }
     },
-    "editorial.history.notes_empty" : {
+    "journal.history.empty" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {

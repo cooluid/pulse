@@ -609,11 +609,37 @@ final class PulseFlowUITests: XCTestCase {
 
         let quietTheme = app.descendants(matching: .any)["today.theme.quiet-field"]
         XCTAssertTrue(quietTheme.waitForExistence(timeout: 3))
+        XCTAssertTrue(
+            app.descendants(matching: .any)["journal.draft.input"]
+                .waitForExistence(timeout: 3)
+        )
 
         let quietAttachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
         quietAttachment.name = "Quiet Field before check-in"
         quietAttachment.lifetime = .keepAlways
         add(quietAttachment)
+
+        app.buttons["primary.navigation.history"].tap()
+        XCTAssertTrue(
+            app.descendants(matching: .any)["history.theme.quiet-field"]
+                .waitForExistence(timeout: 3)
+        )
+        let quietHistoryAttachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
+        quietHistoryAttachment.name = "Quiet Field history calendar"
+        quietHistoryAttachment.lifetime = .keepAlways
+        add(quietHistoryAttachment)
+
+        app.buttons["history.mode.journal"].tap()
+        XCTAssertTrue(
+            app.descendants(matching: .any)["history.journal.section"]
+                .waitForExistence(timeout: 3)
+        )
+        let quietJournalAttachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
+        quietJournalAttachment.name = "Quiet Field journal records"
+        quietJournalAttachment.lifetime = .keepAlways
+        add(quietJournalAttachment)
+        app.buttons["history.mode.calendar"].tap()
+        app.buttons["primary.navigation.today"].tap()
 
         let settingsButton = app.buttons["settings.navigation.open.today"]
         XCTAssertTrue(settingsButton.waitForExistence(timeout: 3))
@@ -633,6 +659,10 @@ final class PulseFlowUITests: XCTestCase {
         app.buttons["navigation.back"].tap()
         let archiveTheme = app.descendants(matching: .any)["today.theme.tide-archive"]
         XCTAssertTrue(archiveTheme.waitForExistence(timeout: 3))
+        XCTAssertTrue(
+            app.descendants(matching: .any)["journal.draft.input"]
+                .waitForExistence(timeout: 3)
+        )
 
         let pendingAttachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
         pendingAttachment.name = "Tide Archive before check-in"
@@ -662,6 +692,21 @@ final class PulseFlowUITests: XCTestCase {
         let checkedCalendarDay = app.descendants(matching: .any)["calendar.day.2026-08-10"]
         XCTAssertTrue(checkedCalendarDay.waitForExistence(timeout: 3))
         XCTAssertTrue(checkedCalendarDay.label.contains("已签到"))
+
+        let journalMode = app.buttons["history.mode.journal"]
+        XCTAssertTrue(journalMode.waitForExistence(timeout: 3))
+        journalMode.tap()
+        XCTAssertTrue(
+            app.descendants(matching: .any)["history.journal.section"]
+                .waitForExistence(timeout: 3)
+        )
+
+        let journalHistoryAttachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
+        journalHistoryAttachment.name = "Tide Archive journal records"
+        journalHistoryAttachment.lifetime = .keepAlways
+        add(journalHistoryAttachment)
+
+        app.buttons["history.mode.calendar"].tap()
         assertHistorySurfaceClearsPrimaryNavigation()
 
         let historyAttachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
@@ -721,8 +766,14 @@ final class PulseFlowUITests: XCTestCase {
             app.descendants(matching: .any)["today.theme.editorial-journal"]
                 .waitForExistence(timeout: 3)
         )
-        let inlineNote = app.descendants(matching: .any)["editorial.journal.input"]
+        let inlineNote = app.descendants(matching: .any)["journal.draft.input"]
         XCTAssertTrue(inlineNote.waitForExistence(timeout: 3))
+
+        let editorialTodayAttachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
+        editorialTodayAttachment.name = "Editorial Journal before check-in"
+        editorialTodayAttachment.lifetime = .keepAlways
+        add(editorialTodayAttachment)
+
         replaceText(in: inlineNote, with: "Today stayed focused")
 
         let checkInButton = app.buttons["today.checkin.button"]
@@ -746,15 +797,28 @@ final class PulseFlowUITests: XCTestCase {
         XCTAssertTrue(noteSummary.waitForExistence(timeout: 3))
         XCTAssertEqual(noteSummary.label, "Edited after check-in")
 
-        app.buttons["navigation.section.history"].tap()
+        app.buttons["primary.navigation.history"].tap()
         XCTAssertTrue(
             app.descendants(matching: .any)["history.theme.editorial-journal"]
                 .waitForExistence(timeout: 3)
         )
         XCTAssertTrue(app.descendants(matching: .any)["history.stat.total"].exists)
-        let checkedDay = app.descendants(matching: .any)["calendar.day.2026-08-10"]
-        XCTAssertTrue(checkedDay.waitForExistence(timeout: 3))
-        checkedDay.tap()
+        app.buttons["history.mode.journal"].tap()
+        XCTAssertTrue(
+            app.descendants(matching: .any)["history.journal.section"]
+                .waitForExistence(timeout: 3)
+        )
+
+        let editorialHistoryAttachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
+        editorialHistoryAttachment.name = "Editorial Journal record stream"
+        editorialHistoryAttachment.lifetime = .keepAlways
+        add(editorialHistoryAttachment)
+
+        let journalEntry = app.descendants(matching: .any)[
+            "history.journal.entry.2026-08-10"
+        ]
+        XCTAssertTrue(journalEntry.waitForExistence(timeout: 3))
+        journalEntry.tap()
         XCTAssertTrue(
             app.descendants(matching: .any)["journal.summary"]
                 .waitForExistence(timeout: 3)
@@ -777,7 +841,7 @@ final class PulseFlowUITests: XCTestCase {
         let deleteNote = app.buttons["journal.delete.button"]
         XCTAssertTrue(deleteNote.waitForExistence(timeout: 3))
         deleteNote.tap()
-        let confirmDeleteNote = app.buttons["journal.delete.confirmation.action"]
+        let confirmDeleteNote = app.buttons["journal.delete.confirmation.action"].firstMatch
         XCTAssertTrue(confirmDeleteNote.waitForExistence(timeout: 3))
         confirmDeleteNote.tap()
         let clearedNote = app.descendants(matching: .any)
@@ -798,6 +862,9 @@ final class PulseFlowUITests: XCTestCase {
         archiveThemeChoice.tap()
 
         let appearancePicker = app.descendants(matching: .any)["settings.theme.picker"]
+        for _ in 0..<4 where !appearancePicker.exists {
+            app.swipeUp()
+        }
         XCTAssertTrue(appearancePicker.waitForExistence(timeout: 3))
         selectOption(named: "深色", in: appearancePicker)
 
@@ -1403,7 +1470,7 @@ final class PulseFlowUITests: XCTestCase {
     }
 
     private func assertHistorySurfaceClearsPrimaryNavigation() {
-        let calendarSurface = app.descendants(matching: .any)["history.calendar.surface"]
+        let calendarSurface = app.descendants(matching: .any)["calendar.day.2026-08-10"]
         let historyNavigation = app.buttons["primary.navigation.history"]
         XCTAssertTrue(calendarSurface.waitForExistence(timeout: 3))
         XCTAssertTrue(historyNavigation.waitForExistence(timeout: 3))
