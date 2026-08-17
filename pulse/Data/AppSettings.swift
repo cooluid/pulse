@@ -38,6 +38,7 @@ enum AppTheme: String, CaseIterable, Identifiable, Sendable {
 }
 
 enum PulseVisualTheme: String, CaseIterable, Identifiable, Sendable {
+    case editorialJournal
     case quietField
     case tideArchive
 
@@ -45,6 +46,8 @@ enum PulseVisualTheme: String, CaseIterable, Identifiable, Sendable {
 
     func localizedName(locale: Locale) -> String {
         switch self {
+        case .editorialJournal:
+            PulseLocalization.string("settings.visual_theme.editorial_journal", locale: locale)
         case .quietField:
             PulseLocalization.string("settings.visual_theme.quiet_field", locale: locale)
         case .tideArchive:
@@ -203,7 +206,7 @@ final class AppSettings {
             StorageKey.hapticsEnabled: true,
             StorageKey.weekStart: WeekStart.monday.rawValue,
             StorageKey.theme: AppTheme.system.rawValue,
-            StorageKey.visualTheme: PulseVisualTheme.quietField.rawValue,
+            StorageKey.visualTheme: PulseVisualTheme.editorialJournal.rawValue,
             StorageKey.mediaInvitationEnabled: true
         ])
         let sharedSnapshot: PulseSharedSettings.Snapshot
@@ -250,7 +253,7 @@ final class AppSettings {
         reminderTime = .standard
         weekStart = .monday
         theme = .system
-        visualTheme = .quietField
+        visualTheme = .editorialJournal
         mediaInvitationEnabled = true
         language = .system
         isLoading = false

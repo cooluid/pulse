@@ -14,6 +14,7 @@ public struct CheckInRecordSnapshot: Equatable, Identifiable, Sendable {
     public let createdAt: Date
     public let timeZoneIdentifier: String
     public let timeZone: TimeZone
+    public let journalNote: String?
 
     init(model: CheckInRecord, logicalDay: LogicalDay, timeZone: TimeZone) {
         id = model.id
@@ -23,5 +24,6 @@ public struct CheckInRecordSnapshot: Equatable, Identifiable, Sendable {
         createdAt = model.createdAt
         timeZoneIdentifier = model.timeZoneIdentifier
         self.timeZone = timeZone
+        journalNote = model.journalNote
     }
 }

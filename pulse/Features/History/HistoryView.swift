@@ -69,17 +69,28 @@ struct HistoryView: View {
             .accessibilityIdentifier(
                 visualTheme == .tideArchive
                     ? "history.theme.tide-archive"
-                    : "history.theme.quiet-field"
+                    : visualTheme == .editorialJournal
+                        ? "history.theme.editorial-journal"
+                        : "history.theme.quiet-field"
             )
     }
 
     @ViewBuilder
     private var historyContent: some View {
-        if visualTheme == .tideArchive {
+        switch visualTheme {
+        case .tideArchive:
             archiveHistoryContent
-        } else {
+        case .editorialJournal:
+            editorialJournalHistoryContent
+        default:
             quietHistoryContent
         }
+    }
+
+    @ViewBuilder
+    private var editorialJournalHistoryContent: some View {
+        EditorialHistoryContent(model: model, selectedDay: $selectedDay)
+            .padding(.bottom, PulseDesign.spacing24)
     }
 
     @ViewBuilder
@@ -940,9 +951,17 @@ private struct DayArchiveDetailView: View {
 
     @ViewBuilder
     private var archiveIdentity: some View {
-        if visualTheme == .tideArchive {
+        switch visualTheme {
+        case .editorialJournal:
+            EditorialRecordDetailIdentity(
+                day: day,
+                record: record,
+                habitName: model.habit?.name,
+                timeZone: model.timeZone ?? .autoupdatingCurrent
+            )
+        case .tideArchive:
             archiveDetailIdentity
-        } else {
+        default:
             quietArchiveIdentity
         }
     }

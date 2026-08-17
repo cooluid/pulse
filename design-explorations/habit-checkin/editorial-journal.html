@@ -1,0 +1,452 @@
+<!doctype html>
+<!--
+  System: Editorial Journal — 编辑日志
+  Product: 单习惯打卡 · 无断签 · 可选一句日记
+  Type: Georgia/Songti display 28–32 · PingFang body 14–15 · uppercase date 11
+  Color: #111 on #fff · accent #2d6a4f (editorial green) · muted #888
+  Grid: 22px horizontal padding · display title breaks at natural phrase
+  Motion: line extend 0.5s ease · check fill 0.35s · reduced-motion instant
+-->
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>编辑日志 · 习惯打卡原型</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, "PingFang SC", sans-serif;
+      background: #e8e5e0;
+      color: #111;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 32px 16px 48px;
+    }
+
+    .intro {
+      max-width: 420px;
+      text-align: center;
+      margin-bottom: 24px;
+    }
+    .intro h1 { font-size: 18px; font-weight: 650; }
+    .intro p { font-size: 13px; color: #666; margin-top: 8px; line-height: 1.5; }
+    .intro .note {
+      margin-top: 12px; font-size: 12px; color: #888;
+      padding: 10px 14px; background: #fff; border-radius: 8px;
+    }
+
+    .device-wrap { position: relative; }
+
+    .phone {
+      width: 300px; height: 620px;
+      border-radius: 40px; overflow: hidden;
+      box-shadow: 0 0 0 2px #111, 0 0 0 5px #2a2a2a, 0 28px 56px rgba(0,0,0,0.2);
+      background: #fff;
+      display: flex; flex-direction: column;
+      position: relative;
+    }
+    .notch {
+      position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+      width: 110px; height: 28px; background: #111;
+      border-radius: 0 0 18px 18px; z-index: 30;
+    }
+    .screen-area {
+      flex: 1; display: flex; flex-direction: column;
+      overflow: hidden; position: relative;
+    }
+
+    /* Views */
+    .view {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column;
+      background: #fff;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.25s ease;
+    }
+    .view.active { opacity: 1; pointer-events: auto; z-index: 1; }
+
+    .status {
+      height: 48px; flex-shrink: 0;
+      display: flex; align-items: flex-end; justify-content: center;
+      padding-bottom: 6px; font-size: 12px; font-weight: 600;
+    }
+
+    /* ── Today ── */
+    .today-top { padding: 8px 26px 0; }
+    .today-date {
+      font-size: 11px; color: #999;
+      letter-spacing: 0.06em; text-transform: uppercase;
+    }
+    .today-title {
+      font-family: Georgia, "Songti SC", "Noto Serif SC", serif;
+      font-size: 36px; font-weight: 700;
+      line-height: 1.08; letter-spacing: -0.02em;
+      margin-top: 10px;
+    }
+    .accent-line {
+      height: 3px; background: #ddd; margin-top: 14px;
+      width: 36px; transition: width 0.55s cubic-bezier(0.4,0,0.2,1), background 0.4s;
+    }
+    .today.done .accent-line { width: 100%; background: #2d6a4f; }
+
+    .today-body { flex: 1; padding: 28px 26px; display: flex; flex-direction: column; }
+    .prompt {
+      font-family: Georgia, "Songti SC", serif;
+      font-size: 14px; color: #888; font-style: italic;
+    }
+    .journal-input {
+      margin-top: 14px;
+      font-size: 16px; line-height: 1.55;
+      color: #111; border: none; outline: none;
+      background: transparent; resize: none;
+      font-family: inherit;
+      min-height: 72px;
+      border-bottom: 1px solid #eee;
+      padding-bottom: 10px;
+      transition: border-color 0.3s;
+    }
+    .journal-input::placeholder { color: #ccc; }
+    .today.done .journal-input {
+      border-color: #2d6a4f;
+      color: #333;
+    }
+    .journal-input:disabled {
+      opacity: 0.85; cursor: default;
+    }
+
+    .today-foot {
+      padding: 0 26px 40px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .check-btn {
+      width: 44px; height: 44px; border-radius: 50%;
+      border: 2px solid #ccc; background: #fff;
+      cursor: pointer; display: grid; place-items: center;
+      transition: all 0.35s cubic-bezier(0.34,1.2,0.64,1);
+      -webkit-tap-highlight-color: transparent;
+    }
+    .check-btn:hover { border-color: #999; }
+    .check-btn:focus-visible { outline: 2px solid #2d6a4f; outline-offset: 3px; }
+    .check-btn svg { opacity: 0; transform: scale(0.5); transition: all 0.3s; }
+    .today.done .check-btn {
+      background: #111; border-color: #111;
+    }
+    .today.done .check-btn svg { opacity: 1; transform: scale(1); }
+
+    .record-meta { text-align: right; }
+    .record-count { font-size: 13px; color: #666; font-weight: 500; }
+    .record-sub { font-size: 11px; color: #bbb; margin-top: 2px; }
+
+    /* ── Archive ── */
+    .archive-head {
+      padding: 8px 26px 16px;
+      border-bottom: 1px solid #f0f0f0;
+    }
+    .archive-head h2 {
+      font-family: Georgia, "Songti SC", serif;
+      font-size: 22px; font-weight: 700;
+    }
+    .archive-head p { font-size: 12px; color: #999; margin-top: 4px; }
+
+    .archive-list {
+      flex: 1; overflow-y: auto;
+      padding: 8px 0 24px;
+      -webkit-overflow-scrolling: touch;
+    }
+    .entry {
+      padding: 18px 26px;
+      border-bottom: 1px solid #f5f5f5;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .entry:hover { background: #fafafa; }
+    .entry:focus-visible { outline: 2px solid #2d6a4f; outline-offset: -2px; }
+    .entry-date {
+      font-size: 10px; color: #aaa;
+      letter-spacing: 0.08em; text-transform: uppercase;
+    }
+    .entry-note {
+      font-family: Georgia, "Songti SC", serif;
+      font-size: 15px; line-height: 1.45;
+      margin-top: 6px; color: #333;
+    }
+    .entry-note.empty {
+      font-style: italic; color: #ccc;
+    }
+    .entry-habit {
+      font-size: 11px; color: #2d6a4f; margin-top: 8px; font-weight: 500;
+    }
+
+    /* ── Detail ── */
+    .detail-top { padding: 8px 26px 0; }
+    .back-btn {
+      font: inherit; font-size: 13px; color: #2d6a4f;
+      background: none; border: none; cursor: pointer;
+      padding: 4px 0; margin-bottom: 12px;
+    }
+    .back-btn:focus-visible { outline: 2px solid #2d6a4f; outline-offset: 2px; }
+    .detail-date {
+      font-size: 11px; color: #999;
+      letter-spacing: 0.06em; text-transform: uppercase;
+    }
+    .detail-title {
+      font-family: Georgia, "Songti SC", serif;
+      font-size: 28px; font-weight: 700;
+      margin-top: 8px; line-height: 1.15;
+    }
+    .detail-line {
+      width: 100%; height: 3px; background: #2d6a4f; margin-top: 14px;
+    }
+    .detail-body { flex: 1; padding: 28px 26px; }
+    .detail-quote {
+      font-family: Georgia, serif;
+      font-size: 20px; line-height: 1.5;
+      color: #222; font-style: italic;
+    }
+    .detail-quote.empty { color: #ccc; font-size: 16px; }
+    .detail-byline {
+      margin-top: 24px; font-size: 12px; color: #aaa;
+    }
+
+    /* Tab bar */
+    .tab-bar {
+      flex-shrink: 0;
+      display: flex; border-top: 1px solid #eee;
+      background: #fff; z-index: 10;
+    }
+    .tab {
+      flex: 1; padding: 12px 0 28px;
+      font: inherit; font-size: 11px; color: #aaa;
+      background: none; border: none; cursor: pointer;
+      letter-spacing: 0.04em;
+      transition: color 0.2s;
+    }
+    .tab.active { color: #111; font-weight: 600; }
+    .tab:focus-visible { outline: 2px solid #2d6a4f; outline-offset: -2px; }
+
+    /* Toast */
+    .toast {
+      position: absolute; top: 60px; left: 50%; transform: translateX(-50%) translateY(-8px);
+      background: #111; color: #fff; font-size: 12px;
+      padding: 8px 16px; border-radius: 100px;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.3s, transform 0.3s;
+      z-index: 40; white-space: nowrap;
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    @media (prefers-reduced-motion: reduce) {
+      .accent-line, .check-btn, .check-btn svg, .view, .toast { transition-duration: 0.01ms !important; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="intro">
+    <h1>编辑日志 · 深度原型</h1>
+    <p>杂志排版 + 可选一句。打卡不强制写字，留空也算记录。</p>
+    <div class="note">底部切换「今日 / 记录」· 点勾选完成 · 再点撤销 · 记录页可点条目看详情</div>
+  </div>
+
+  <div class="device-wrap">
+    <div class="phone" id="phone">
+      <div class="notch"></div>
+      <div class="toast" id="toast"></div>
+
+      <div class="screen-area">
+        <!-- TODAY -->
+        <div class="view active" id="view-today">
+          <div class="status">9:41</div>
+          <div class="today-top today" id="todayRoot">
+            <div class="today-date" id="todayDate">8月17日 · 周一 · 晨</div>
+            <div class="today-title">晨间<br>冥想</div>
+            <div class="accent-line"></div>
+          </div>
+          <div class="today-body">
+            <div class="prompt">今天感觉如何？</div>
+            <textarea class="journal-input" id="journalInput"
+              placeholder="写下一句，或留空直接打卡"
+              maxlength="120" rows="3"></textarea>
+          </div>
+          <div class="today-foot">
+            <button class="check-btn" id="checkBtn" type="button" aria-label="完成今日记录" aria-pressed="false">
+              <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+                <path d="M3 9l4 4 8-8" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+            <div class="record-meta">
+              <div class="record-count" id="recordCount">已记录 47 天</div>
+              <div class="record-sub">无断签 · 只累计</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ARCHIVE -->
+        <div class="view" id="view-archive">
+          <div class="status">9:41</div>
+          <div class="archive-head">
+            <h2>记录</h2>
+            <p>只显示你签到的日子，空白不算失败</p>
+          </div>
+          <div class="archive-list" id="archiveList"></div>
+        </div>
+
+        <!-- DETAIL -->
+        <div class="view" id="view-detail">
+          <div class="status">9:41</div>
+          <div class="detail-top">
+            <button class="back-btn" id="backBtn" type="button">← 返回</button>
+            <div class="detail-date" id="detailDate"></div>
+            <div class="detail-title">晨间冥想</div>
+            <div class="detail-line"></div>
+          </div>
+          <div class="detail-body">
+            <div class="detail-quote" id="detailQuote"></div>
+            <div class="detail-byline" id="detailByline"></div>
+          </div>
+        </div>
+      </div>
+
+      <nav class="tab-bar" id="tabBar">
+        <button class="tab active" data-tab="today" type="button">今日</button>
+        <button class="tab" data-tab="archive" type="button">记录</button>
+      </nav>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const BASE_COUNT = 47;
+      const PROMPTS = [
+        '今天感觉如何？',
+        '此刻在想什么？',
+        '身体有什么信号？',
+        '用一个词形容现在。',
+      ];
+
+      const MOCK_ENTRIES = [
+        { date: '8月16日 · 周日', note: '醒来比闹钟早十分钟，脑子还算清楚。' },
+        { date: '8月15日 · 周六', note: '' },
+        { date: '8月14日 · 周五', note: '呼吸比昨天深一点。' },
+        { date: '8月13日 · 周四', note: '有点困，但签完感觉对了。' },
+        { date: '8月12日 · 周三', note: '雨声很好听。' },
+        { date: '8月11日 · 周二', note: '' },
+        { date: '8月10日 · 周一', note: '第一次试 15 分钟，其实很快。' },
+      ];
+
+      const todayRoot = document.getElementById('todayRoot');
+      const journalInput = document.getElementById('journalInput');
+      const checkBtn = document.getElementById('checkBtn');
+      const recordCount = document.getElementById('recordCount');
+      const archiveList = document.getElementById('archiveList');
+      const toast = document.getElementById('toast');
+      const tabBar = document.getElementById('tabBar');
+
+      let checked = false;
+      let todayNote = '';
+      let toastTimer = null;
+
+      function showToast(msg) {
+        toast.textContent = msg;
+        toast.classList.add('show');
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => toast.classList.remove('show'), 1800);
+      }
+
+      function updateCount() {
+        recordCount.textContent = '已记录 ' + (checked ? BASE_COUNT + 1 : BASE_COUNT) + ' 天';
+      }
+
+      function setChecked(on) {
+        checked = on;
+        todayRoot.classList.toggle('done', on);
+        checkBtn.setAttribute('aria-pressed', on ? 'true' : 'false');
+        journalInput.disabled = on;
+        updateCount();
+        if (on) {
+          todayNote = journalInput.value.trim();
+          showToast(todayNote ? '已记录 · 含日记' : '已记录 · 今日留白');
+        } else {
+          showToast('已撤销');
+        }
+      }
+
+      checkBtn.addEventListener('click', () => setChecked(!checked));
+
+      // Rotate prompt daily (demo: random on load)
+      document.querySelector('.prompt').textContent =
+        PROMPTS[Math.floor(Math.random() * PROMPTS.length)];
+
+      // Archive
+      function renderArchive() {
+        archiveList.innerHTML = '';
+        const todayEntry = checked ? [{
+          date: '8月17日 · 周一 · 今天',
+          note: todayNote,
+          isToday: true,
+        }] : [];
+
+        [...todayEntry, ...MOCK_ENTRIES].forEach((entry, i) => {
+          const el = document.createElement('div');
+          el.className = 'entry';
+          el.tabIndex = 0;
+          el.innerHTML =
+            '<div class="entry-date">' + entry.date + '</div>' +
+            '<div class="entry-note' + (entry.note ? '' : ' empty') + '">' +
+              (entry.note || '（留白）') +
+            '</div>' +
+            '<div class="entry-habit">晨间冥想</div>';
+          el.addEventListener('click', () => openDetail(entry));
+          el.addEventListener('keydown', e => {
+            if (e.key === 'Enter') openDetail(entry);
+          });
+          archiveList.appendChild(el);
+        });
+      }
+
+      function openDetail(entry) {
+        document.getElementById('detailDate').textContent = entry.date;
+        const q = document.getElementById('detailQuote');
+        q.textContent = entry.note || '（这一天选择留白）';
+        q.classList.toggle('empty', !entry.note);
+        document.getElementById('detailByline').textContent =
+          '晨间冥想 · 第 ' + (entry.isToday ? BASE_COUNT + 1 : BASE_COUNT - MOCK_ENTRIES.indexOf(entry)) + ' 次记录';
+        switchView('detail');
+        tabBar.style.display = 'none';
+      }
+
+      document.getElementById('backBtn').addEventListener('click', () => {
+        switchView('archive');
+        tabBar.style.display = 'flex';
+      });
+
+      // Tabs
+      const views = {
+        today: document.getElementById('view-today'),
+        archive: document.getElementById('view-archive'),
+        detail: document.getElementById('view-detail'),
+      };
+
+      function switchView(name) {
+        Object.values(views).forEach(v => v.classList.remove('active'));
+        views[name].classList.add('active');
+        document.querySelectorAll('.tab').forEach(t => {
+          t.classList.toggle('active', t.dataset.tab === name);
+        });
+        if (name === 'archive') renderArchive();
+      }
+
+      tabBar.addEventListener('click', e => {
+        const tab = e.target.closest('.tab');
+        if (!tab) return;
+        switchView(tab.dataset.tab);
+        tabBar.style.display = 'flex';
+      });
+
+      renderArchive();
+    })();
+  </script>
+</body>
+</html>

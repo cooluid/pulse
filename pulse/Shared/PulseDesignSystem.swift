@@ -235,20 +235,46 @@ enum PulseDesign {
     static let idleAuraBreathDuration = idleAuraBreathHalfDuration * 2
 
     static func appAccent(for theme: PulseVisualTheme) -> Color {
-        theme == .tideArchive ? archiveCopper : action
+        switch theme {
+        case .editorialJournal:
+            editorialAccent
+        case .tideArchive:
+            archiveCopper
+        case .quietField:
+            action
+        }
     }
 
     static func appSuccess(for theme: PulseVisualTheme) -> Color {
-        theme == .tideArchive ? archiveCopper : grass
+        switch theme {
+        case .editorialJournal:
+            editorialAccent
+        case .tideArchive:
+            archiveCopper
+        case .quietField:
+            grass
+        }
     }
 
     static func appChromeBackground(for theme: PulseVisualTheme) -> Color {
-        theme == .tideArchive ? archiveSky : background
+        switch theme {
+        case .editorialJournal, .quietField:
+            background
+        case .tideArchive:
+            archiveSky
+        }
     }
 
     static func appSurface(for theme: PulseVisualTheme) -> Color {
-        theme == .tideArchive ? archivePaper : surface
+        switch theme {
+        case .editorialJournal, .quietField:
+            surface
+        case .tideArchive:
+            archivePaper
+        }
     }
+
+    static let editorialAccent = Color(red: 0.176, green: 0.416, blue: 0.310)
 }
 
 struct PulseScreenBackground: View {
@@ -289,6 +315,8 @@ struct PulseFieldBackground: View {
     var body: some View {
         if visualTheme == .tideArchive {
             archiveField
+        } else if visualTheme == .editorialJournal {
+            Color.clear
         } else {
             quietField
         }

@@ -109,9 +109,12 @@ struct TodayView: View {
 
     @ViewBuilder
     private var todayContent: some View {
-        if visualTheme == .tideArchive {
+        switch visualTheme {
+        case .tideArchive:
             archiveContent
-        } else {
+        case .editorialJournal:
+            EditorialTodayContent(model: model)
+        default:
             quietFieldContent
         }
     }
@@ -125,7 +128,9 @@ struct TodayView: View {
                 .accessibilityIdentifier(
                     visualTheme == .tideArchive
                         ? "today.theme.tide-archive"
-                        : "today.theme.quiet-field"
+                        : visualTheme == .editorialJournal
+                            ? "today.theme.editorial-journal"
+                            : "today.theme.quiet-field"
                 )
 
             if imprintRitualPhase == .imprinted {

@@ -25,6 +25,8 @@ struct PulsePrimaryNavigation: View {
     var body: some View {
         if visualTheme == .tideArchive {
             archiveNavigation
+        } else if visualTheme == .editorialJournal {
+            EditorialPrimaryNavigation(selection: $selection)
         } else {
             quietNavigation
         }

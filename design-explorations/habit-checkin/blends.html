@@ -1,0 +1,765 @@
+<!doctype html>
+<!--
+  System: Habit Check-in Blend Explorer — 单习惯 · 无断签 · 8 混搭方案
+  Pick: F「水墨格子」为首选 · E「台账仪式」为稳妥备选
+  Type: -apple-system / PingFang SC · 各方向自定义 scale
+  Interaction: 点击手机打卡 · 再点撤销 · prefers-reduced-motion 降级
+-->
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>习惯打卡 · 混搭探索</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: -apple-system, "PingFang SC", "Helvetica Neue", sans-serif;
+      background: #e8e5e0;
+      color: #1a1a1a;
+      line-height: 1.5;
+    }
+
+    .header {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 40px 28px 20px;
+    }
+    .header h1 { font-size: 21px; font-weight: 650; letter-spacing: -0.02em; }
+    .header .lead { margin-top: 8px; font-size: 14px; color: #555; max-width: 680px; }
+    .pick-banner {
+      margin-top: 20px;
+      padding: 16px 20px;
+      background: linear-gradient(135deg, #2a2826 0%, #4a4640 100%);
+      color: #f7f5f0;
+      border-radius: 12px;
+      font-size: 13px;
+      max-width: 680px;
+    }
+    .pick-banner strong { color: #e8dcc8; }
+    .tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+    .tag {
+      font-size: 11px; padding: 4px 10px; border-radius: 100px;
+      background: #fff; border: 1px solid #ccc; color: #555;
+    }
+    .toolbar {
+      max-width: 1280px; margin: 0 auto; padding: 8px 28px 20px;
+      display: flex; flex-wrap: wrap; gap: 12px; align-items: center;
+    }
+    .toolbar button {
+      font: inherit; font-size: 12px; padding: 8px 14px;
+      border-radius: 8px; border: 1px solid #ccc; background: #fff;
+      cursor: pointer;
+    }
+    .toolbar button:hover { background: #f5f5f5; }
+    .toolbar button:focus-visible { outline: 2px solid #4a7; outline-offset: 2px; }
+    .toolbar .hint { font-size: 12px; color: #888; }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 28px;
+      padding: 0 28px 48px;
+      max-width: 1280px;
+      margin: 0 auto;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      transition: box-shadow 0.2s;
+    }
+    .card.recommended { box-shadow: 0 0 0 2px #8a7a60, 0 8px 32px rgba(80,60,40,0.12); }
+    .card-head { padding: 16px 20px; border-bottom: 1px solid #f0f0f0; }
+    .card-head .id {
+      font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase;
+      color: #999; font-weight: 600;
+    }
+    .card-head .id .star { color: #b8860b; }
+    .card-head h2 { font-size: 16px; font-weight: 650; margin-top: 3px; }
+    .card-head .mix { font-size: 11px; color: #aaa; margin-top: 2px; }
+    .card-head p { font-size: 12px; color: #777; margin-top: 8px; line-height: 1.45; }
+
+    .card-body {
+      display: flex; justify-content: center; align-items: center;
+      padding: 28px 20px 32px;
+      background: #f5f5f5;
+    }
+
+    /* Phone shell */
+    .phone {
+      width: 252px; height: 504px;
+      border-radius: 34px; overflow: hidden; position: relative;
+      cursor: pointer;
+      box-shadow: 0 0 0 2px #111, 0 0 0 4px #333, 0 20px 40px rgba(0,0,0,0.15);
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+    .phone:focus-visible { outline: 3px solid #4a7; outline-offset: 4px; }
+    .notch {
+      position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+      width: 96px; height: 24px; background: #111;
+      border-radius: 0 0 14px 14px; z-index: 20; pointer-events: none;
+    }
+    .screen {
+      width: 100%; height: 100%;
+      display: flex; flex-direction: column;
+      position: relative; overflow: hidden;
+    }
+    .sb {
+      height: 40px; flex-shrink: 0;
+      display: flex; align-items: flex-end; justify-content: center;
+      padding-bottom: 5px; font-size: 11px; font-weight: 600; z-index: 5;
+    }
+    .tap-hint {
+      position: absolute; bottom: 12px; left: 0; right: 0;
+      text-align: center; font-size: 9px; opacity: 0.35;
+      pointer-events: none; z-index: 15; letter-spacing: 0.06em;
+    }
+
+    /* ── E · 台账仪式 D+A ── */
+    .s-e { background: #f7f5f0; color: #3a3836; }
+    .s-e .sb { color: #3a3836; opacity: 0.45; }
+    .s-e .top { padding: 42px 24px 0; display: flex; justify-content: space-between; font-size: 11px; color: #aaa; }
+    .s-e .title { padding: 6px 24px 0; font-size: 19px; font-weight: 500; }
+    .s-e .seal-wrap { flex: 1; display: grid; place-items: center; }
+    .s-e .seal {
+      width: 118px; height: 118px; border-radius: 50%;
+      border: 1.5px solid #c8c4bc; display: grid; place-items: center;
+      transition: transform 0.5s cubic-bezier(0.34,1.2,0.64,1), border-color 0.4s;
+    }
+    .s-e .seal-core {
+      width: 78px; height: 78px; border-radius: 50%;
+      border: 1px dashed #d0ccc4; transition: all 0.6s ease;
+    }
+    .s-e.checked .seal { transform: scale(0.96); border-color: #8a7a68; }
+    .s-e.checked .seal-core {
+      background: radial-gradient(circle, #6a5a48 0%, #4a3a28 70%);
+      border: none; box-shadow: inset 0 0 20px rgba(0,0,0,0.2);
+      animation: inkBloom 0.7s ease forwards;
+    }
+    @keyframes inkBloom {
+      0% { transform: scale(0.3); opacity: 0; }
+      60% { transform: scale(1.08); opacity: 1; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    .s-e .week { display: flex; gap: 8px; padding: 0 20px 36px; justify-content: center; }
+    .s-e .wd { text-align: center; flex: 1; }
+    .s-e .wd-l { font-size: 8px; color: #bbb; margin-bottom: 3px; }
+    .s-e .wd-c {
+      width: 22px; height: 22px; border-radius: 50%; margin: 0 auto;
+      border: 1px solid #d8d4cc; transition: background 0.3s;
+    }
+    .s-e .wd-c.on { background: #5a5650; border-color: #5a5650; }
+    .s-e .wd-c.tod { border-color: #5a5650; border-width: 1.5px; }
+
+    /* ── F · 水墨格子 A+B ── */
+    .s-f { background: #faf8f4; color: #2a2826; }
+    .s-f .sb { color: #2a2826; opacity: 0.4; }
+    .s-f .head-f { padding: 42px 22px 0; text-align: center; }
+    .s-f .head-f h3 {
+      font-family: "Songti SC", "Noto Serif SC", serif;
+      font-size: 16px; font-weight: 400; letter-spacing: 0.3em;
+    }
+    .s-f .count-f { font-size: 10px; color: #aaa; margin-top: 6px; letter-spacing: 0.1em; }
+    .s-f .grid-f {
+      flex: 1; padding: 20px 22px; display: flex; flex-direction: column; justify-content: center;
+    }
+    .s-f .grid-f-inner {
+      display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px;
+    }
+    .s-f .gf {
+      aspect-ratio: 1; border-radius: 3px;
+      background: #eeeae4; transition: background 0.4s, transform 0.3s;
+    }
+    .s-f .gf.on { background: #5a5048; }
+    .s-f .gf.tod {
+      background: #fff; border: 1.5px solid #8a8078;
+      display: grid; place-items: center;
+    }
+    .s-f .gf.tod::after {
+      content: ''; width: 6px; height: 6px; border-radius: 50%;
+      background: #c8c0b8; transition: all 0.5s ease;
+    }
+    .s-f.checked .gf.tod {
+      background: #5a5048; border-color: #5a5048;
+      animation: cellFill 0.5s ease;
+    }
+    .s-f.checked .gf.tod::after { width: 0; height: 0; opacity: 0; }
+    @keyframes cellFill {
+      0% { transform: scale(0.85); opacity: 0.5; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    .s-f .foot-f { text-align: center; padding-bottom: 36px; font-size: 10px; color: #bbb; letter-spacing: 0.15em; }
+
+    /* ── G · 柔光清单 D+C-lite ── */
+    .s-g { background: #f8f8fa; color: #1a1a1e; }
+    .s-g .sb { color: #1a1a1e; }
+    .s-g .hg { padding: 42px 22px 16px; }
+    .s-g .hg .d { font-size: 12px; color: #888; }
+    .s-g .hg .g { font-size: 26px; font-weight: 650; letter-spacing: -0.03em; margin-top: 2px; }
+    .s-g .card-g {
+      margin: 8px 18px; padding: 18px; background: #fff;
+      border-radius: 14px; border: 1px solid #ececef;
+      display: flex; align-items: center; gap: 14px;
+      position: relative; overflow: hidden;
+      transition: border-color 0.3s, box-shadow 0.4s;
+    }
+    .s-g .card-g .glow {
+      position: absolute; inset: -20px;
+      background: radial-gradient(circle at 30% 50%, rgba(100,140,255,0.15), transparent 60%);
+      opacity: 0; transition: opacity 0.6s;
+      pointer-events: none;
+    }
+    .s-g.checked .card-g {
+      border-color: #b0c0e8;
+      box-shadow: 0 4px 24px rgba(80,120,255,0.12);
+    }
+    .s-g.checked .card-g .glow { opacity: 1; }
+    .s-g .ck {
+      width: 26px; height: 26px; border-radius: 50%;
+      border: 2px solid #ccc; flex-shrink: 0; z-index: 1;
+      transition: all 0.35s cubic-bezier(0.34,1.3,0.64,1);
+    }
+    .s-g.checked .ck {
+      background: #6080e0; border-color: #6080e0;
+      box-shadow: 0 0 16px rgba(80,120,255,0.4);
+    }
+    .s-g.checked .ck::after {
+      content: '✓'; color: #fff; font-size: 13px; font-weight: 700;
+      display: grid; place-items: center; width: 100%; height: 100%;
+    }
+    .s-g .info-g { z-index: 1; }
+    .s-g .info-g .n { font-size: 16px; font-weight: 500; }
+    .s-g .info-g .s { font-size: 11px; color: #999; margin-top: 2px; }
+    .s-g.checked .info-g .n { text-decoration: line-through; color: #999; }
+    .s-g .stats-g {
+      margin: auto 18px 36px; padding: 14px 16px;
+      background: #fff; border-radius: 12px; border: 1px solid #ececef;
+      display: flex; justify-content: space-between;
+    }
+    .s-g .stats-g .v { font-size: 18px; font-weight: 650; }
+    .s-g .stats-g .l { font-size: 10px; color: #999; }
+
+    /* ── H · 夜禅 A+暗色 ── */
+    .s-h { background: #141820; color: #d8dce8; }
+    .s-h .sb { color: #d8dce8; opacity: 0.5; }
+    .s-h .ring-bg {
+      position: absolute; top: 50%; left: 50%;
+      width: 180px; height: 180px; transform: translate(-50%, -55%);
+      border-radius: 50%;
+      border: 1px solid rgba(180,200,240,0.08);
+      transition: all 0.8s ease;
+    }
+    .s-h.checked .ring-bg {
+      border-color: rgba(140,180,255,0.25);
+      box-shadow: 0 0 60px rgba(80,120,200,0.15);
+      animation: ringPulse 2s ease-in-out infinite;
+    }
+    @keyframes ringPulse {
+      0%, 100% { transform: translate(-50%, -55%) scale(1); }
+      50% { transform: translate(-50%, -55%) scale(1.04); }
+    }
+    .s-h .center-h {
+      flex: 1; display: grid; place-items: center; position: relative; z-index: 2;
+    }
+    .s-h .name-h {
+      position: absolute; top: 100px; width: 100%; text-align: center;
+      font-size: 12px; letter-spacing: 0.25em; opacity: 0.4;
+    }
+    .s-h .moon {
+      width: 64px; height: 64px; border-radius: 50%;
+      background: rgba(200,210,240,0.06);
+      border: 1px solid rgba(200,210,240,0.12);
+      transition: all 0.7s ease;
+    }
+    .s-h.checked .moon {
+      background: radial-gradient(circle at 40% 35%, #e8ecf8, #8090b0);
+      box-shadow: 0 0 40px rgba(160,180,240,0.3);
+    }
+    .s-h .bot-h {
+      padding-bottom: 40px; text-align: center;
+      font-size: 10px; opacity: 0.3; letter-spacing: 0.08em; z-index: 2;
+    }
+
+    /* ── I · 双色 Risograph A+Zine ── */
+    .s-i { background: #f0ece4; color: #1a2838; }
+    .s-i .sb { color: #1a2838; }
+    .s-i .top-i { padding: 42px 20px 0; }
+    .s-i .top-i .habit {
+      font-family: Georgia, "Songti SC", serif;
+      font-size: 22px; font-weight: 700; color: #1a2838;
+    }
+    .s-i .top-i .sub { font-size: 10px; color: #e07060; font-weight: 700; letter-spacing: 0.1em; margin-top: 4px; }
+    .s-i .stamp-i {
+      flex: 1; display: grid; place-items: center;
+    }
+    .s-i .stamp-box {
+      width: 100px; height: 100px;
+      border: 3px solid #1a5880;
+      display: grid; place-items: center;
+      transform: rotate(-3deg);
+      transition: transform 0.4s;
+    }
+    .s-i .stamp-box span {
+      font-size: 28px; font-weight: 900; color: #e07060;
+      font-family: Georgia, serif;
+      opacity: 0.15; transition: opacity 0.4s;
+    }
+    .s-i.checked .stamp-box { transform: rotate(0deg) scale(1.02); }
+    .s-i.checked .stamp-box span { opacity: 1; }
+    .s-i .halftone {
+      position: absolute; bottom: 80px; right: 16px;
+      width: 80px; height: 80px; opacity: 0.06;
+      background: radial-gradient(circle, #1a5880 1px, transparent 1px);
+      background-size: 6px 6px;
+    }
+    .s-i .bot-i {
+      padding: 0 20px 36px; font-size: 11px; color: #1a5880; font-weight: 600;
+    }
+
+    /* ── J · 编辑日志 Editorial ── */
+    .s-j { background: #fff; color: #111; }
+    .s-j .sb { color: #111; }
+    .s-j .ed-top { padding: 42px 22px 0; }
+    .s-j .ed-date { font-size: 11px; color: #999; text-transform: uppercase; letter-spacing: 0.08em; }
+    .s-j .ed-title {
+      font-family: Georgia, "Songti SC", serif;
+      font-size: 32px; font-weight: 700; line-height: 1.1;
+      margin-top: 8px; letter-spacing: -0.02em;
+    }
+    .s-j .ed-line {
+      width: 40px; height: 3px; background: #111; margin-top: 12px;
+      transition: width 0.5s ease;
+    }
+    .s-j.checked .ed-line { width: 100%; background: #4a8; }
+    .s-j .ed-body { flex: 1; padding: 24px 22px; }
+    .s-j .ed-q { font-size: 13px; color: #888; font-style: italic; }
+    .s-j .ed-input {
+      margin-top: 12px; font-size: 15px; color: #ccc;
+      border-bottom: 1px solid #eee; padding-bottom: 8px;
+      transition: color 0.3s, border-color 0.3s;
+    }
+    .s-j.checked .ed-input { color: #333; border-color: #4a8; }
+    .s-j .ed-foot {
+      padding: 0 22px 36px; display: flex; justify-content: space-between; align-items: center;
+    }
+    .s-j .ed-check {
+      width: 36px; height: 36px; border-radius: 50%;
+      border: 2px solid #ddd; transition: all 0.35s;
+    }
+    .s-j.checked .ed-check { background: #111; border-color: #111; }
+    .s-j.checked .ed-check::after {
+      content: '✓'; color: #fff; display: grid; place-items: center;
+      width: 100%; height: 100%; font-size: 16px;
+    }
+    .s-j .ed-count { font-size: 11px; color: #aaa; }
+
+    /* ── K · 几何印章 B+A ── */
+    .s-k { background: #fff; color: #111; }
+    .s-k .sb { color: #111; }
+    .s-k .top-k {
+      padding: 42px 20px 0;
+      display: flex; justify-content: space-between; align-items: flex-start;
+    }
+    .s-k .top-k h3 {
+      font-family: "Futura", "Avenir Next", sans-serif;
+      font-size: 20px; font-weight: 800; text-transform: uppercase;
+      letter-spacing: -0.01em; line-height: 1.1;
+    }
+    .s-k .badge-k {
+      width: 36px; height: 36px; background: #f5e100;
+      display: grid; place-items: center;
+      font-family: "Futura", sans-serif; font-size: 13px; font-weight: 800;
+    }
+    .s-k .seal-k-wrap { flex: 1; display: grid; place-items: center; }
+    .s-k .seal-k {
+      width: 130px; height: 130px; border-radius: 50%;
+      border: 3px solid #111;
+      display: grid; place-items: center;
+      transition: background 0.4s, transform 0.4s cubic-bezier(0.34,1.4,0.64,1);
+    }
+    .s-k .seal-k-inner {
+      width: 90px; height: 90px; border-radius: 50%;
+      border: 2px dashed #ccc;
+      transition: all 0.4s;
+    }
+    .s-k.checked .seal-k { background: #ff3c00; border-color: #ff3c00; transform: scale(0.94); }
+    .s-k.checked .seal-k-inner {
+      background: #fff; border: none;
+      clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+      width: 40px; height: 40px;
+    }
+    .s-k .bar-k {
+      margin: 0 20px 36px; height: 8px;
+      display: flex; gap: 4px;
+    }
+    .s-k .bar-k div { flex: 1; background: #eee; transition: background 0.3s; }
+    .s-k .bar-k div.on { background: #ff3c00; }
+    .s-k .bar-k div.tod { background: #fff; border: 2px solid #111; }
+    .s-k.checked .bar-k div.tod { background: #ff3c00; border-color: #ff3c00; }
+
+    /* ── L · 触点扩张 自定义 ── */
+    .s-l { background: #fafafa; color: #222; }
+    .s-l .sb { color: #222; }
+    .s-l .mid-l {
+      flex: 1; display: grid; place-items: center; position: relative;
+    }
+    .s-l .habit-l {
+      position: absolute; top: 110px; font-size: 14px; font-weight: 500;
+      letter-spacing: 0.05em; opacity: 0.5;
+    }
+    .s-l .dot-l {
+      width: 48px; height: 48px; border-radius: 50%;
+      background: #222; transition: all 0.7s cubic-bezier(0.34,1.2,0.64,1);
+      position: relative; z-index: 2;
+    }
+    .s-l .ripple {
+      position: absolute; width: 48px; height: 48px; border-radius: 50%;
+      border: 1px solid #222; opacity: 0;
+      transition: none; pointer-events: none;
+    }
+    .s-l.checked .dot-l {
+      transform: scale(0.6); background: #4a8;
+    }
+    .s-l.checked .ripple {
+      animation: rippleOut 0.8s ease forwards;
+    }
+    @keyframes rippleOut {
+      0% { transform: scale(1); opacity: 0.6; }
+      100% { transform: scale(8); opacity: 0; }
+    }
+    .s-l .count-l {
+      position: absolute; bottom: 50px; font-size: 48px; font-weight: 200;
+      letter-spacing: -0.04em; opacity: 0.12; transition: opacity 0.4s;
+    }
+    .s-l.checked .count-l { opacity: 0.25; color: #4a8; }
+    .s-l .sub-l {
+      position: absolute; bottom: 36px; font-size: 10px; color: #aaa;
+    }
+
+    /* Reduced motion */
+    @media (prefers-reduced-motion: reduce) {
+      .s-e.checked .seal-core,
+      .s-f.checked .gf.tod,
+      .s-h.checked .ring-bg,
+      .s-l.checked .ripple { animation: none !important; }
+      .s-e .seal, .s-g .ck, .s-k .seal-k, .s-l .dot-l { transition-duration: 0.01ms; }
+    }
+
+    @media (max-width: 720px) {
+      .grid { grid-template-columns: 1fr; padding: 0 16px 40px; }
+      .header, .toolbar { padding-left: 16px; padding-right: 16px; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="header">
+    <h1>习惯打卡 · 混搭探索</h1>
+    <p class="lead">我替你定了 8 个方向——每个都能<strong>点击手机</strong>试打卡效果，再点撤销。无断签，只累计记录。</p>
+    <div class="pick-banner">
+      我的首选：<strong>F · 水墨格子</strong> — 禅意留白 + 格子一览，气质和功能都够。<br>
+      稳妥备选：<strong>E · 台账仪式</strong> — 开发简单，仪式感到位。<br>
+      想玩个性：<strong>I · 双色 Risograph</strong> 或 <strong>K · 几何印章</strong>。
+    </div>
+    <div class="tags">
+      <span class="tag">单习惯</span>
+      <span class="tag">无断签</span>
+      <span class="tag">点击交互</span>
+      <span class="tag">8 混搭方案</span>
+    </div>
+  </header>
+
+  <div class="toolbar">
+    <button type="button" id="resetAll">全部重置</button>
+    <button type="button" id="checkAll">全部打卡</button>
+    <span class="hint">点击任意手机 · 切换打卡 / 撤销</span>
+  </div>
+
+  <main class="grid" id="grid">
+
+    <article class="card recommended" data-variant="e">
+      <header class="card-head">
+        <div class="id"><span class="star">★ </span>Blend E · 稳妥备选</div>
+        <h2>台账仪式</h2>
+        <div class="mix">D 信息架构 + A 印章</div>
+        <p>顶部日期和累计，中央印章，底部本周圆点。最平衡的单 habit 方案。</p>
+      </header>
+      <div class="card-body">
+        <div class="phone" tabindex="0" role="button" aria-label="台账仪式：点击打卡">
+          <div class="notch"></div>
+          <div class="screen s-e">
+            <div class="sb">9:41</div>
+            <div class="top"><span>8月17日</span><span class="rec-count">已记录 47 天</span></div>
+            <div class="title">晨间冥想</div>
+            <div class="seal-wrap"><div class="seal"><div class="seal-core"></div></div></div>
+            <div class="week">
+              <div class="wd"><div class="wd-l">一</div><div class="wd-c on"></div></div>
+              <div class="wd"><div class="wd-l">二</div><div class="wd-c on"></div></div>
+              <div class="wd"><div class="wd-l">三</div><div class="wd-c on"></div></div>
+              <div class="wd"><div class="wd-l">四</div><div class="wd-c on"></div></div>
+              <div class="wd"><div class="wd-l">五</div><div class="wd-c on"></div></div>
+              <div class="wd"><div class="wd-l">六</div><div class="wd-c"></div></div>
+              <div class="wd"><div class="wd-l">日</div><div class="wd-c tod"></div></div>
+            </div>
+            <div class="tap-hint">点击打卡</div>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <article class="card recommended" data-variant="f">
+      <header class="card-head">
+        <div class="id"><span class="star">★ </span>Blend F · 我的首选</div>
+        <h2>水墨格子</h2>
+        <div class="mix">A 禅意 + B 矩阵</div>
+        <p>宋体 habit 名 + 水墨色块月历。今天格空心，打卡后渗成墨色。历史一眼扫完，又不破坏留白。</p>
+      </header>
+      <div class="card-body">
+        <div class="phone" tabindex="0" role="button" aria-label="水墨格子：点击打卡">
+          <div class="notch"></div>
+          <div class="screen s-f">
+            <div class="sb">9:41</div>
+            <div class="head-f">
+              <h3>晨 间 冥 想</h3>
+              <div class="count-f rec-count">已记录 47 天</div>
+            </div>
+            <div class="grid-f"><div class="grid-f-inner" id="grid-f-cells"></div></div>
+            <div class="foot-f">轻触今日格</div>
+            <div class="tap-hint">点击打卡</div>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <article class="card" data-variant="g">
+      <header class="card-head">
+        <div class="id">Blend G</div>
+        <h2>柔光清单</h2>
+        <div class="mix">D 效率 + C 轻反馈</div>
+        <p>清单 card 结构，打卡时柔光晕开 + 勾选发光。没有 C 的粒子负担，日常更轻。</p>
+      </header>
+      <div class="card-body">
+        <div class="phone" tabindex="0" role="button" aria-label="柔光清单：点击打卡">
+          <div class="notch"></div>
+          <div class="screen s-g">
+            <div class="sb">9:41</div>
+            <div class="hg"><div class="d">8月17日 周一</div><div class="g">今天</div></div>
+            <div class="card-g">
+              <div class="glow"></div>
+              <div class="ck"></div>
+              <div class="info-g"><div class="n">晨间冥想</div><div class="s">15 分钟</div></div>
+            </div>
+            <div class="stats-g">
+              <div><div class="v rec-count">47</div><div class="l">已记录天数</div></div>
+              <div><div class="v">15/17</div><div class="l">本月</div></div>
+            </div>
+            <div class="tap-hint">点击打卡</div>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <article class="card" data-variant="h">
+      <header class="card-head">
+        <div class="id">Blend H</div>
+        <h2>夜禅</h2>
+        <div class="mix">A 仪式 + 暗色 C-lite</div>
+        <p>深色底 + 月相圆。适合晚间习惯（阅读、日记）。打卡后月面亮起，光环轻 pulse。</p>
+      </header>
+      <div class="card-body">
+        <div class="phone" tabindex="0" role="button" aria-label="夜禅：点击打卡">
+          <div class="notch"></div>
+          <div class="screen s-h">
+            <div class="sb">9:41</div>
+            <div class="ring-bg"></div>
+            <div class="name-h">晨间冥想</div>
+            <div class="center-h"><div class="moon"></div></div>
+            <div class="bot-h rec-count">已记录 47 天</div>
+            <div class="tap-hint">点击打卡</div>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <article class="card" data-variant="i">
+      <header class="card-head">
+        <div class="id">Blend I · 个性</div>
+        <h2>双色 Risograph</h2>
+        <div class="mix">A 印章 + Zine 两色</div>
+        <p>靛蓝框 + 珊瑚印泥「记」字。打卡后印章显现，像盖在账本上。有手作温度。</p>
+      </header>
+      <div class="card-body">
+        <div class="phone" tabindex="0" role="button" aria-label="双色 Risograph：点击打卡">
+          <div class="notch"></div>
+          <div class="screen s-i">
+            <div class="sb">9:41</div>
+            <div class="halftone"></div>
+            <div class="top-i">
+              <div class="habit">晨间冥想</div>
+              <div class="sub rec-count">DAY 047</div>
+            </div>
+            <div class="stamp-i"><div class="stamp-box"><span>记</span></div></div>
+            <div class="bot-i">盖章以记</div>
+            <div class="tap-hint">点击打卡</div>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <article class="card" data-variant="j">
+      <header class="card-head">
+        <div class="id">Blend J</div>
+        <h2>编辑日志</h2>
+        <div class="mix">Editorial 杂志 + 可选一句</div>
+        <p>大标题 + 斜体引导「今天感觉如何？」。打卡 = 勾 + 绿线延伸。适合 reflective 习惯。</p>
+      </header>
+      <div class="card-body">
+        <div class="phone" tabindex="0" role="button" aria-label="编辑日志：点击打卡">
+          <div class="notch"></div>
+          <div class="screen s-j">
+            <div class="sb">9:41</div>
+            <div class="ed-top">
+              <div class="ed-date">August 17 · Morning</div>
+              <div class="ed-title">晨间<br>冥想</div>
+              <div class="ed-line"></div>
+            </div>
+            <div class="ed-body">
+              <div class="ed-q">今天感觉如何？</div>
+              <div class="ed-input">写下一句，或留空</div>
+            </div>
+            <div class="ed-foot">
+              <div class="ed-check"></div>
+              <div class="ed-count rec-count">47 天</div>
+            </div>
+            <div class="tap-hint">点击打卡</div>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <article class="card" data-variant="k">
+      <header class="card-head">
+        <div class="id">Blend K · 个性</div>
+        <h2>几何印章</h2>
+        <div class="mix">B 包豪斯 + A 圆印</div>
+        <p>Futura 大字 + 粗框圆印。打卡后变橙填实，内圈变星形。底部色条是本周进度。</p>
+      </header>
+      <div class="card-body">
+        <div class="phone" tabindex="0" role="button" aria-label="几何印章：点击打卡">
+          <div class="notch"></div>
+          <div class="screen s-k">
+            <div class="sb">9:41</div>
+            <div class="top-k">
+              <h3>晨间<br>冥想</h3>
+              <div class="badge-k rec-count">47</div>
+            </div>
+            <div class="seal-k-wrap"><div class="seal-k"><div class="seal-k-inner"></div></div></div>
+            <div class="bar-k">
+              <div class="on"></div><div class="on"></div><div class="on"></div>
+              <div class="on"></div><div class="on"></div><div></div><div class="tod"></div>
+            </div>
+            <div class="tap-hint">点击打卡</div>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <article class="card" data-variant="l">
+      <header class="card-head">
+        <div class="id">Custom L · 实验</div>
+        <h2>触点扩张</h2>
+        <div class="mix">自定义极简</div>
+        <p>屏幕中央一个点。打卡时 ripple 扩散全屏，数字 47 淡入。极端克制，赌的是单次交互记忆点。</p>
+      </header>
+      <div class="card-body">
+        <div class="phone" tabindex="0" role="button" aria-label="触点扩张：点击打卡">
+          <div class="notch"></div>
+          <div class="screen s-l">
+            <div class="sb">9:41</div>
+            <div class="mid-l">
+              <div class="habit-l">晨间冥想</div>
+              <div class="ripple"></div>
+              <div class="dot-l"></div>
+              <div class="count-l rec-count">47</div>
+            </div>
+            <div class="sub-l">点击完成</div>
+            <div class="tap-hint">点击打卡</div>
+          </div>
+        </div>
+      </div>
+    </article>
+
+  </main>
+
+  <script>
+    (function () {
+      const BASE = 47;
+
+      // Build F grid: 28 cells, 17 filled, 1 today
+      const gridF = document.getElementById('grid-f-cells');
+      if (gridF) {
+        for (let i = 0; i < 28; i++) {
+          const c = document.createElement('div');
+          c.className = 'gf';
+          if (i < 17) c.classList.add('on');
+          if (i === 16) { c.classList.remove('on'); c.classList.add('tod'); }
+          gridF.appendChild(c);
+        }
+      }
+
+      function updateCounts(checked) {
+        const n = checked ? BASE + 1 : BASE;
+        document.querySelectorAll('.rec-count').forEach(el => {
+          const t = el.textContent;
+          if (t.includes('已记录')) el.textContent = '已记录 ' + n + ' 天';
+          else if (t.includes('DAY')) el.textContent = 'DAY ' + String(n).padStart(3, '0');
+          else if (el.classList.contains('v')) el.textContent = String(n);
+          else if (el.classList.contains('count-l')) el.textContent = String(n);
+          else if (el.classList.contains('badge-k')) el.textContent = String(n);
+          else if (el.classList.contains('ed-count')) el.textContent = n + ' 天';
+          else el.textContent = String(n);
+        });
+      }
+
+      function setChecked(phone, on) {
+        const screen = phone.querySelector('.screen');
+        if (!screen) return;
+        screen.classList.toggle('checked', on);
+        phone.setAttribute('aria-pressed', on ? 'true' : 'false');
+      }
+
+      document.querySelectorAll('.phone').forEach(phone => {
+        phone.setAttribute('aria-pressed', 'false');
+        phone.addEventListener('click', () => {
+          const screen = phone.querySelector('.screen');
+          const now = !screen.classList.contains('checked');
+          setChecked(phone, now);
+          // Update global count based on any checked phone (use F if checked for demo)
+          const anyChecked = document.querySelector('.screen.checked');
+          updateCounts(!!anyChecked);
+        });
+        phone.addEventListener('keydown', e => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            phone.click();
+          }
+        });
+      });
+
+      document.getElementById('resetAll').addEventListener('click', () => {
+        document.querySelectorAll('.phone').forEach(p => setChecked(p, false));
+        updateCounts(false);
+      });
+
+      document.getElementById('checkAll').addEventListener('click', () => {
+        document.querySelectorAll('.phone').forEach(p => setChecked(p, true));
+        updateCounts(true);
+      });
+    })();
+  </script>
+</body>
+</html>

@@ -55,7 +55,8 @@ enum PulseDataValidator {
                   record.createdAt >= record.checkedAt,
                   record.createdAt <= payload.exportedAt,
                   logicalDays.insert(logicalDay).inserted,
-                  recordIDs.insert(record.id).inserted else {
+                  recordIDs.insert(record.id).inserted,
+                  isValidJournalNote(record.journalNote) else {
                 throw PulseCoreError.invalidBackup
             }
             return .init(payload: record, logicalDay: logicalDay)
@@ -126,6 +127,12 @@ enum PulseDataValidator {
             records: records,
             media: media
         )
+    }
+
+    private static func isValidJournalNote(_ note: String?) -> Bool {
+        guard let note else { return true }
+        let normalized = JournalNote.normalized(note)
+        return normalized == note
     }
 
     private static func validPath(_ path: String, prefix: String) -> Bool {

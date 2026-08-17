@@ -199,7 +199,7 @@ final class PulseAppModel {
     }
 
     @discardableResult
-    func checkIn() async -> CheckInCommitReceipt? {
+    func checkIn(journalNote: String? = nil) async -> CheckInCommitReceipt? {
         guard operation == nil,
               todayRecord == nil,
               let habit,
@@ -211,7 +211,10 @@ final class PulseAppModel {
 
         await Task.yield()
         do {
-            let receipt = try repository.checkIn(habitID: habit.id)
+            let receipt = try repository.checkIn(
+                habitID: habit.id,
+                journalNote: journalNote
+            )
             try loadSnapshot()
             if settings.hapticsEnabled, receipt.disposition == .created {
                 hapticFeedback.notifySuccess()
@@ -493,7 +496,8 @@ final class PulseAppModel {
                     logicalDay: $0.logicalDay.storageValue,
                     checkedAt: $0.checkedAt,
                     createdAt: $0.createdAt,
-                    timeZoneIdentifier: $0.timeZoneIdentifier
+                    timeZoneIdentifier: $0.timeZoneIdentifier,
+                    journalNote: $0.journalNote
                 )
             },
             media: media.map(PulseBackupPayload.MediaPayload.init(snapshot:))

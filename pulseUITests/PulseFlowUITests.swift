@@ -14,6 +14,7 @@ final class PulseFlowUITests: XCTestCase {
         app.launchEnvironment["PULSE_UI_TEST_STORE_ID"] = UUID().uuidString
         app.launchEnvironment["PULSE_UI_TEST_NOW"] = "2026-08-10T04:00:00Z"
         app.launchEnvironment["PULSE_UI_TEST_ENHANCEMENT_PURCHASED"] = "0"
+        app.launchEnvironment["PULSE_UI_TEST_VISUAL_THEME"] = "quietField"
     }
 
     private func launchAndConfirmDefaultCommitment() {

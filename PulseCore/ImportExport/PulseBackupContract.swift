@@ -71,19 +71,22 @@ public struct PulseBackupPayload: Codable, Sendable {
         public let checkedAt: Date
         public let createdAt: Date
         public let timeZoneIdentifier: String
+        public let journalNote: String?
 
         public init(
             id: UUID,
             logicalDay: String,
             checkedAt: Date,
             createdAt: Date,
-            timeZoneIdentifier: String
+            timeZoneIdentifier: String,
+            journalNote: String? = nil
         ) {
             self.id = id
             self.logicalDay = logicalDay
             self.checkedAt = checkedAt
             self.createdAt = createdAt
             self.timeZoneIdentifier = timeZoneIdentifier
+            self.journalNote = JournalNote.normalized(journalNote)
         }
     }
 

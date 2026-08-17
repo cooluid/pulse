@@ -102,6 +102,21 @@ final class PulseRepositoryTests: XCTestCase {
         XCTAssertEqual(records.count, 1)
     }
 
+    func testCheckInPersistsOptionalJournalNote() throws {
+        let clock = MutableRepositoryClock(now: makeDate(day: 10, hour: 9))
+        let repository = try makeRepository(clock: clock)
+        let habit = try repository.primaryHabit(systemTimeZone: timeZone)
+
+        _ = try repository.checkIn(
+            habitID: habit.id,
+            journalNote: "  今天状态不错  "
+        )
+        let records = try repository.allRecords(habitID: habit.id)
+
+        XCTAssertEqual(records.count, 1)
+        XCTAssertEqual(records.first?.journalNote, "今天状态不错")
+    }
+
     func testSeparateContainersObserveOneSharedDiskCheckInFact() throws {
         let directory = FileManager.default.temporaryDirectory
             .appendingPathComponent(

@@ -8,13 +8,19 @@ public protocol PulseRepositoryProtocol: AnyObject {
     func allRecords(habitID: UUID) throws -> [CheckInRecordSnapshot]
     func allMedia(habitID: UUID) throws -> [ImprintMediaSnapshot]
     func updateIdentity(habitID: UUID, identity: HabitIdentity) throws -> HabitSnapshot
-    func checkIn(habitID: UUID) throws -> CheckInCommitReceipt
+    func checkIn(habitID: UUID, journalNote: String?) throws -> CheckInCommitReceipt
     func delete(recordID: UUID) throws
     func upsertMedia(_ draft: ImprintMediaDraft) throws -> ImprintMediaSnapshot
     func deleteMedia(id: UUID) throws
     func updateTimeZone(habitID: UUID, identifier: String) throws
     func resetAll(systemTimeZone: TimeZone) throws -> HabitSnapshot
     func replaceAll(with payload: PulseBackupPayload) throws -> HabitSnapshot
+}
+
+public extension PulseRepositoryProtocol {
+    func checkIn(habitID: UUID) throws -> CheckInCommitReceipt {
+        try checkIn(habitID: habitID, journalNote: nil)
+    }
 }
 
 public enum PrimaryHabitProvisioning: Sendable {
@@ -121,7 +127,7 @@ public final class SwiftDataPulseRepository: PulseRepositoryProtocol {
         return try validatedHabitSnapshot(persistedHabit)
     }
 
-    public func checkIn(habitID: UUID) throws -> CheckInCommitReceipt {
+    public func checkIn(habitID: UUID, journalNote: String? = nil) throws -> CheckInCommitReceipt {
         let persistedHabit = try requirePrimaryHabit(id: habitID)
         let date = clock.now
         let day = try persistedHabit.logicalDay(at: date)
@@ -129,6 +135,7 @@ public final class SwiftDataPulseRepository: PulseRepositoryProtocol {
               day >= startLogicalDay else {
             throw PulseCoreError.invalidCheckIn
         }
+        let normalizedJournalNote = JournalNote.normalized(journalNote)
 
         let sameDayRecords = try recordsForLogicalDay(
             habitID: persistedHabit.id,
@@ -157,7 +164,8 @@ public final class SwiftDataPulseRepository: PulseRepositoryProtocol {
             logicalDay: day,
             checkedAt: date,
             createdAt: date,
-            timeZoneIdentifier: persistedHabit.timeZoneIdentifier
+            timeZoneIdentifier: persistedHabit.timeZoneIdentifier,
+            journalNote: normalizedJournalNote
         )
         context.insert(newRecord)
         try attachMediaIfNeeded(
@@ -418,7 +426,8 @@ public final class SwiftDataPulseRepository: PulseRepositoryProtocol {
                     logicalDay: validatedRecord.logicalDay,
                     checkedAt: record.checkedAt,
                     createdAt: record.createdAt,
-                    timeZoneIdentifier: record.timeZoneIdentifier
+                    timeZoneIdentifier: record.timeZoneIdentifier,
+                    journalNote: record.journalNote
                 )
             )
         }

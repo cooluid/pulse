@@ -738,7 +738,14 @@ private struct PulseVisualThemeChoice: View {
     }
 
     private var selectionColor: Color {
-        theme == .tideArchive ? PulseDesign.archiveCopper : PulseDesign.grass
+        switch theme {
+        case .tideArchive:
+            PulseDesign.archiveCopper
+        case .editorialJournal:
+            PulseDesign.editorialAccent
+        case .quietField:
+            PulseDesign.grass
+        }
     }
 }
 
