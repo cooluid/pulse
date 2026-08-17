@@ -89,8 +89,27 @@ struct HistoryView: View {
 
     @ViewBuilder
     private var editorialJournalHistoryContent: some View {
-        EditorialHistoryContent(model: model, selectedDay: $selectedDay)
+        if usesRegularWidthLayout {
+            HStack(alignment: .top, spacing: PulseDesign.regularWidthColumnGap) {
+                VStack(spacing: 0) {
+                    historyHeading
+                    statisticsRow
+                    EditorialHistoryContent(model: model, selectedDay: $selectedDay)
+                }
+                .frame(maxWidth: .infinity)
+
+                animatedCalendar
+                    .frame(maxWidth: .infinity)
+            }
+        } else {
+            VStack(spacing: 0) {
+                historyHeading
+                statisticsRow
+                animatedCalendar
+                EditorialHistoryContent(model: model, selectedDay: $selectedDay)
+            }
             .padding(.bottom, PulseDesign.spacing24)
+        }
     }
 
     @ViewBuilder
@@ -908,6 +927,7 @@ private struct DayArchiveDetailView: View {
     @State private var photoDocument: ImprintPhotoDocument?
     @State private var showsPhotoExporter = false
     @State private var isPreparingPhotoExport = false
+    @State private var showsJournalEditor = false
 
     private enum DestructiveAction {
         case media(UUID)
@@ -923,6 +943,12 @@ private struct DayArchiveDetailView: View {
             detents: archivePresentationDetents
         ) {
             archiveIdentity
+
+            if let record {
+                JournalNoteSummary(record: record) {
+                    showsJournalEditor = true
+                }
+            }
 
             if let media {
                 ImprintMediaPreview(media: media, load: model.thumbnailData)
@@ -940,11 +966,19 @@ private struct DayArchiveDetailView: View {
         ) { _ in
             photoDocument = nil
         }
+        .sheet(isPresented: $showsJournalEditor) {
+            if let record {
+                JournalNoteEditorSheet(record: record, model: model)
+            }
+        }
     }
 
     private var archivePresentationDetents: Set<PresentationDetent> {
         if media != nil || dynamicTypeSize.isAccessibilitySize || verticalSizeClass == .compact {
             return [.large]
+        }
+        if record != nil {
+            return [.fraction(PulseDesign.journalDetailDetentFraction), .large]
         }
         return [.fraction(PulseDesign.compactDetailDetentFraction), .large]
     }
@@ -1160,7 +1194,9 @@ private struct DayArchiveDetailView: View {
         case .media:
             "media.delete_confirmation.message"
         case .record:
-            "history.delete_confirmation.message"
+            record?.journalNote == nil
+                ? "history.delete_confirmation.message"
+                : "history.delete_confirmation.message_with_journal"
         case nil:
             "history.record_actions_hint"
         }

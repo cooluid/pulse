@@ -9,18 +9,13 @@ public protocol PulseRepositoryProtocol: AnyObject {
     func allMedia(habitID: UUID) throws -> [ImprintMediaSnapshot]
     func updateIdentity(habitID: UUID, identity: HabitIdentity) throws -> HabitSnapshot
     func checkIn(habitID: UUID, journalNote: String?) throws -> CheckInCommitReceipt
+    func updateJournalNote(recordID: UUID, journalNote: String?) throws -> CheckInRecordSnapshot
     func delete(recordID: UUID) throws
     func upsertMedia(_ draft: ImprintMediaDraft) throws -> ImprintMediaSnapshot
     func deleteMedia(id: UUID) throws
     func updateTimeZone(habitID: UUID, identifier: String) throws
     func resetAll(systemTimeZone: TimeZone) throws -> HabitSnapshot
     func replaceAll(with payload: PulseBackupPayload) throws -> HabitSnapshot
-}
-
-public extension PulseRepositoryProtocol {
-    func checkIn(habitID: UUID) throws -> CheckInCommitReceipt {
-        try checkIn(habitID: habitID, journalNote: nil)
-    }
 }
 
 public enum PrimaryHabitProvisioning: Sendable {
@@ -127,7 +122,7 @@ public final class SwiftDataPulseRepository: PulseRepositoryProtocol {
         return try validatedHabitSnapshot(persistedHabit)
     }
 
-    public func checkIn(habitID: UUID, journalNote: String? = nil) throws -> CheckInCommitReceipt {
+    public func checkIn(habitID: UUID, journalNote: String?) throws -> CheckInCommitReceipt {
         let persistedHabit = try requirePrimaryHabit(id: habitID)
         let date = clock.now
         let day = try persistedHabit.logicalDay(at: date)
@@ -135,7 +130,7 @@ public final class SwiftDataPulseRepository: PulseRepositoryProtocol {
               day >= startLogicalDay else {
             throw PulseCoreError.invalidCheckIn
         }
-        let normalizedJournalNote = JournalNote.normalized(journalNote)
+        let canonicalJournalNote = try JournalNote.canonicalText(userInput: journalNote)
 
         let sameDayRecords = try recordsForLogicalDay(
             habitID: persistedHabit.id,
@@ -145,6 +140,11 @@ public final class SwiftDataPulseRepository: PulseRepositoryProtocol {
             _ = try validatedRecordSnapshots(
                 sameDayRecords,
                 habit: persistedHabit
+            )
+            try attachJournalNoteIfNeeded(
+                to: sameDayRecord,
+                journalNote: canonicalJournalNote,
+                modifiedAt: date
             )
             try attachMediaIfNeeded(
                 habitID: persistedHabit.id,
@@ -165,7 +165,8 @@ public final class SwiftDataPulseRepository: PulseRepositoryProtocol {
             checkedAt: date,
             createdAt: date,
             timeZoneIdentifier: persistedHabit.timeZoneIdentifier,
-            journalNote: normalizedJournalNote
+            journalNote: canonicalJournalNote,
+            journalNoteModifiedAt: canonicalJournalNote == nil ? nil : date
         )
         context.insert(newRecord)
         try attachMediaIfNeeded(
@@ -177,14 +178,45 @@ public final class SwiftDataPulseRepository: PulseRepositoryProtocol {
         return try saveNewCheckInOrResolveConcurrentWriter(
             newRecord,
             habitID: persistedHabit.id,
-            day: day
+            day: day,
+            journalNote: canonicalJournalNote,
+            journalNoteModifiedAt: date
         )
+    }
+
+    public func updateJournalNote(
+        recordID: UUID,
+        journalNote: String?
+    ) throws -> CheckInRecordSnapshot {
+        var descriptor = FetchDescriptor<CheckInRecord>(
+            predicate: #Predicate { record in record.id == recordID }
+        )
+        descriptor.fetchLimit = 1
+        guard let record = try context.fetch(descriptor).first else {
+            throw PulseCoreError.invalidCheckIn
+        }
+        let habit = try requirePrimaryHabit(id: record.habitID)
+        let canonicalJournalNote = try JournalNote.canonicalText(userInput: journalNote)
+        guard record.journalNote != canonicalJournalNote else {
+            return try validatedRecordSnapshots([record], habit: habit)[0]
+        }
+        let modificationDate = clock.now
+        guard modificationDate >= record.checkedAt else {
+            throw PulseCoreError.invalidJournalNote
+        }
+
+        record.journalNote = canonicalJournalNote
+        record.journalNoteModifiedAt = modificationDate
+        try saveOrRollback()
+        return try validatedRecordSnapshots([record], habit: habit)[0]
     }
 
     private func saveNewCheckInOrResolveConcurrentWriter(
         _ newRecord: CheckInRecord,
         habitID: UUID,
-        day: LogicalDay
+        day: LogicalDay,
+        journalNote: String?,
+        journalNoteModifiedAt: Date
     ) throws -> CheckInCommitReceipt {
         do {
             try context.save()
@@ -202,6 +234,11 @@ public final class SwiftDataPulseRepository: PulseRepositoryProtocol {
             guard let concurrentRecord else {
                 throw saveError
             }
+            try attachJournalNoteIfNeeded(
+                to: concurrentRecord,
+                journalNote: journalNote,
+                modifiedAt: journalNoteModifiedAt
+            )
             try attachMediaIfNeeded(
                 habitID: habitID,
                 day: day,
@@ -265,6 +302,20 @@ public final class SwiftDataPulseRepository: PulseRepositoryProtocol {
                 }
             )
         )
+    }
+
+    private func attachJournalNoteIfNeeded(
+        to record: CheckInRecord,
+        journalNote: String?,
+        modifiedAt: Date
+    ) throws {
+        guard record.journalNote == nil, let journalNote else { return }
+        guard modifiedAt >= record.checkedAt else {
+            throw PulseCoreError.invalidJournalNote
+        }
+        record.journalNote = journalNote
+        record.journalNoteModifiedAt = modifiedAt
+        try saveOrRollback()
     }
 
     private func attachMediaIfNeeded(
@@ -427,7 +478,8 @@ public final class SwiftDataPulseRepository: PulseRepositoryProtocol {
                     checkedAt: record.checkedAt,
                     createdAt: record.createdAt,
                     timeZoneIdentifier: record.timeZoneIdentifier,
-                    journalNote: record.journalNote
+                    journalNote: record.journalNote,
+                    journalNoteModifiedAt: record.journalNoteModifiedAt
                 )
             )
         }
@@ -500,6 +552,12 @@ public final class SwiftDataPulseRepository: PulseRepositoryProtocol {
 
         var logicalDays = Set<LogicalDay>()
         return try records.map { record in
+            let validatedJournalNote: String?
+            do {
+                validatedJournalNote = try JournalNote.validatedStoredText(record.journalNote)
+            } catch {
+                throw PulseCoreError.invalidJournalNote
+            }
             guard record.habitID == habit.id,
                   let logicalDay = record.logicalDay,
                   let recordTimeZone = record.timeZone,
@@ -508,6 +566,10 @@ public final class SwiftDataPulseRepository: PulseRepositoryProtocol {
                   logicalDay >= habitStartDay,
                   record.checkedAt >= habit.createdAt,
                   record.createdAt >= record.checkedAt,
+                  validatedJournalNote == record.journalNote,
+                  record.journalNote == nil || record.journalNoteModifiedAt != nil,
+                  record.journalNoteModifiedAt == nil
+                    || record.journalNoteModifiedAt! >= record.checkedAt,
                   record.recordKey == CheckInRecordKey.make(
                     habitID: habit.id,
                     logicalDay: logicalDay

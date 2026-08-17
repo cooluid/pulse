@@ -12,6 +12,7 @@ enum AppLoadState: Equatable {
 enum AppOperation: Equatable {
     case updateHabitIdentity
     case checkIn
+    case updateJournalNote
     case deleteRecord
     case resetData
     case restoreBackup
@@ -242,6 +243,23 @@ final class PulseAppModel {
             )
             try loadSnapshot()
             widgetTimelineReloader.reloadDailyImprint()
+            return true
+        } catch {
+            present(error)
+            return false
+        }
+    }
+
+    func updateJournalNote(recordID: UUID, journalNote: String?) async -> Bool {
+        guard operation == nil else { return false }
+        operation = .updateJournalNote
+        defer { operation = nil }
+        do {
+            _ = try repository.updateJournalNote(
+                recordID: recordID,
+                journalNote: journalNote
+            )
+            try loadSnapshot()
             return true
         } catch {
             present(error)
@@ -497,7 +515,8 @@ final class PulseAppModel {
                     checkedAt: $0.checkedAt,
                     createdAt: $0.createdAt,
                     timeZoneIdentifier: $0.timeZoneIdentifier,
-                    journalNote: $0.journalNote
+                    journalNote: $0.journalNote,
+                    journalNoteModifiedAt: $0.journalNoteModifiedAt
                 )
             },
             media: media.map(PulseBackupPayload.MediaPayload.init(snapshot:))

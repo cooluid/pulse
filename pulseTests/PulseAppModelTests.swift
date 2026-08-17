@@ -75,6 +75,25 @@ final class PulseAppModelTests: XCTestCase {
         XCTAssertEqual(context.scheduler.completedLiveActivityDays, [context.model.today!])
     }
 
+    func testJournalNoteUpdateRefreshesSnapshotWithoutChangingCheckInFacts() async throws {
+        let context = try makeContext()
+        await context.model.start()
+        let receipt = await context.model.checkIn()
+        let originalStatistics = context.model.statistics
+        let originalCheckedAt = context.model.todayRecord?.checkedAt
+
+        let didUpdate = await context.model.updateJournalNote(
+            recordID: try XCTUnwrap(receipt?.recordID),
+            journalNote: "  今天保持了专注  "
+        )
+
+        XCTAssertTrue(didUpdate)
+        XCTAssertEqual(context.model.todayRecord?.journalNote, "今天保持了专注")
+        XCTAssertEqual(context.model.todayRecord?.checkedAt, originalCheckedAt)
+        XCTAssertEqual(context.model.statistics, originalStatistics)
+        XCTAssertNil(context.model.operation)
+    }
+
     func testRejectedCheckInReturnsNoReceiptOrSuccessFeedback() async throws {
         let context = try makeContext()
         await context.model.start()

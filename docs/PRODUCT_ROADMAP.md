@@ -41,7 +41,7 @@
 
 ### 3.2 数据与恢复
 
-- 唯一 schema 为 1.1.0，唯一归档为 `.pulsebackup` v2；不接受预发布 v1。
+- 唯一 schema 为 1.1.1，唯一归档为 `.pulsebackup` container v2 / payload v3；不接受实验性 schema 1.1.0、payload v1/v2 或 container v1。
 - SwiftData 保存元数据，受保护文件仓储保存不可变 JPEG；原图和缩略图各有 byteCount 与 SHA-256 身份。
 - 导出包含签到与全部媒体；逐条目 AES-256-GCM 认证，恢复先在隔离目录完成解密和完整性验证，再经确认全量替换。
 - 清除数据删除记录、媒体、staging 和归档工作区；启动清理崩溃遗留与孤儿文件。

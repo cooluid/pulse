@@ -37,7 +37,7 @@ FileManager.containerURL(forSecurityApplicationGroupIdentifier:)
 ```
 
 - `PulseStoreLocator` 是相对路径唯一实现，只接受系统提供的 App Group container。
-- `PersistenceController` 使用唯一 `PulseSchema 1.1.0` 创建目录并打开 store；schema 含媒体元数据，但 Widget 不查询、读取或显示照片。
+- `PersistenceController` 使用唯一 `PulseSchema 1.1.1` 创建目录并打开 store；schema 含记事与媒体元数据，但 Widget 不查询、读取或显示记事与照片。
 - App 首次启动建立 store 和未确认主承诺；Widget 不建立默认项目。
 - Widget 打开 ModelContainer 前必须确认主 store 文件存在；不存在时显示“打开 Pulse 完成设置”。
 - 不存在 App 私有 store、旧库迁移、journal、staging、fallback 或双写。

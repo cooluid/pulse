@@ -36,6 +36,14 @@ enum PulseFormatting {
         return formatter.string(from: day.date(timeZone: timeZone))
     }
 
+    static func numericDate(_ day: LogicalDay, timeZone: TimeZone, locale: Locale) -> String {
+        formatter(
+            template: "yMd",
+            timeZone: timeZone,
+            locale: locale
+        ).string(from: day.date(timeZone: timeZone))
+    }
+
     static func fullWeekday(_ day: LogicalDay, timeZone: TimeZone, locale: Locale) -> String {
         formatter(
             template: "EEEE",

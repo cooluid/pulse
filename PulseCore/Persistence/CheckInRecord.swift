@@ -14,6 +14,7 @@ extension PulseSchema {
         var createdAt: Date
         var timeZoneIdentifier: String
         var journalNote: String?
+        var journalNoteModifiedAt: Date?
 
         init(
             id: UUID = UUID(),
@@ -22,7 +23,8 @@ extension PulseSchema {
             checkedAt: Date,
             createdAt: Date,
             timeZoneIdentifier: String,
-            journalNote: String? = nil
+            journalNote: String? = nil,
+            journalNoteModifiedAt: Date? = nil
         ) {
             self.id = id
             self.recordKey = CheckInRecordKey.make(habitID: habitID, logicalDay: logicalDay)
@@ -31,7 +33,8 @@ extension PulseSchema {
             self.checkedAt = checkedAt
             self.createdAt = createdAt
             self.timeZoneIdentifier = timeZoneIdentifier
-            self.journalNote = JournalNote.normalized(journalNote)
+            self.journalNote = journalNote
+            self.journalNoteModifiedAt = journalNoteModifiedAt
         }
 
         var logicalDay: LogicalDay? {

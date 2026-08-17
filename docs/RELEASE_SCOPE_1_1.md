@@ -6,7 +6,7 @@
 
 ## 1. 发布目标
 
-Pulse 1.1 把“每天可靠签到”升级为“每天留下一个可验证事实和一块私人记忆”。签到与影像是两个独立事实：前者计算连续状态，后者承载时间感。两者都必须本地优先、可删除、可完整加密备份，不以社交、打卡证明或人脸评分为目标。
+Pulse 1.1 把“每天可靠签到”升级为“每天留下一个可验证事实和一块私人记忆”。签到是唯一统计事实；短记事是其可编辑注释，影像是独立私人事实。三者都必须本地优先、可删除、可完整加密备份，不以社交、打卡证明或人脸评分为目标。
 
 本版本仍为首次公开发布前的唯一开发基线。工程不保留 1.0 SwiftData schema、备份 v1、旧类名、兼容 decoder 或双轨消费者；历史 TestFlight Build 1/2 只保留为历史证据，不能代表 1.1。
 
@@ -18,9 +18,10 @@ Pulse 1.1 把“每天可靠签到”升级为“每天留下一个可验证事�
 - 每个逻辑日最多一条 `ImprintMedia`；统一保存去元数据 JPEG 原图和缩略图，原图最大边 4096 px，缩略图最大边 720 px。
 - 照片失败、取消或拒绝权限不撤销签到；照片成功状态只来自文件安装与数据库提交完成。
 - 删除/重拍照片不改变签到与统计；删除签到只解除照片关联，不暗中删除照片。历史月历以相机标记显示仍保留影像的日期。
+- 每条签到可选一条最多 120 字、4 行的每日记事；支持签到后补写、编辑和清空。删除签到同时删除记事，主题切换不得隐藏记事、照片、月历或统计能力。
 - 设置中可永久关闭签到后拍照邀请，并查看照片占用；真实照片不进入 Widget、Live Activity、Lock Screen、StandBy 或通知。
-- App Group SwiftData `PulseSchema 1.1.0` + 受 Data Protection 保护的 `Media` 文件目录；启动时执行引用完整性和孤儿文件审计。
-- `.pulsebackup` 容器 v2 / payload v2：项目、签到与全部原图/缩略图逐条 AES-256-GCM 认证加密；不把多年影像归档整体读入内存。
+- App Group SwiftData `PulseSchema 1.1.1` + 受 Data Protection 保护的 `Media` 文件目录；启动时执行引用完整性和孤儿文件审计。
+- `.pulsebackup` container v2 / payload v3：项目、签到、记事与全部原图/缩略图逐条 AES-256-GCM 认证加密；不把多年影像归档整体读入内存。
 - 免费基础提醒、一次买断高阶权益、八种逐实例 Home Screen Widget 构图（待落之处免费，星环 / 叠印 / 数影 / 手札 / 静场 / 来路 / 潮痕收费）与 iOS 26 scheduled Live Activity，沿用正式权益合同。八式产品清单见 [widget-ritual-objects](./prototypes/widget-ritual-objects/)（外观可迭代）。
 - English / 简体中文、主题、Dynamic Type、VoiceOver、Reduce Motion、iPhone/iPad 正式布局。
 
@@ -50,18 +51,18 @@ Pulse 1.1 把“每天可靠签到”升级为“每天留下一个可验证事�
 | --- | --- |
 | Marketing Version | `1.1` |
 | Build Number | `4` |
-| SwiftData | 只接受 `PulseSchema 1.1.0` marker；旧内部安装明确要求清洁安装 |
-| 加密归档 | 只接受 container v2 / payload v2；v1 明确报版本不支持 |
+| SwiftData | 只接受 `PulseSchema 1.1.1` marker；实验性 1.1.0 与更旧内部安装明确要求清洁安装 |
+| 加密归档 | 只接受 container v2 / payload v3；payload v1/v2 与 container v1 明确报版本不支持 |
 | Bundle / App Group | `co.fanr.pulse` / `group.co.fanr.pulse` |
 | 最低系统 | iOS / iPadOS 18.0 |
 
-首次公开发布 1.1 后，这一 schema 与归档 v2 才成为必须长期迁移的公开基线。
+首次公开发布 1.1 后，这一 schema 与 container v2 / payload v3 归档才成为必须长期迁移的公开基线。
 
 ## 7. 发布门禁
 
 工程实现不以“必须先有 30 名用户”作为开工或合并条件，也不要求等公开上线后才完善功能。发布前必须完成：
 
-1. 自动化覆盖影像独立性、重拍事务、低空间/文件失败、孤儿审计、清除、v2 完整归档、错误口令/篡改/缺条目失败关闭。
+1. 自动化覆盖记事校验/编辑/删除、Widget 先签到、主题切换、影像独立性、重拍事务、低空间/文件失败、孤儿审计、清除、payload v3 完整归档、错误口令/篡改/缺字段/缺条目失败关闭。
 2. 真实 iPhone 验证相机授权、前后镜头、取消、重拍、后台/重启、低存储和照片保护；模拟器不能替代真实相机。
 3. 真实 iPad 验证布局、权限、旋转/分屏、历史详情与大字号。
 4. 清洁 TestFlight 安装验证签到/照片/Widget 一致性、导出、清除、完整恢复；1.0 内部开发数据不承担迁移门禁。
@@ -73,7 +74,7 @@ Pulse 1.1 把“每天可靠签到”升级为“每天留下一个可验证事�
 ## 8. 变更控制
 
 - 产品范围修改本文与 `PRODUCT_REQUIREMENTS.md`。
-- 日期、签到、影像独立性与删除语义修改 `DOMAIN_CONTRACT.md`。
+- 日期、签到、记事、影像独立性与删除语义修改 `DOMAIN_CONTRACT.md`。
 - 文件保护和归档协议修改 `DATA_ENCRYPTION_CONTRACT.md`。
 - 领域/仪式/隐私/权益事实修改对应合同；外观改代码后人工截图验收即可。
 - 自动化通过不是相机真机、视觉人工或 App Store 发布 GO。

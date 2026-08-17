@@ -5,12 +5,12 @@ enum EditorialJournalDesign {
     static let accent = PulseDesign.editorialAccent
     static let lineHeight: CGFloat = 3
     static let lineInitialWidth: CGFloat = 36
-    static let checkButtonSize: CGFloat = 44
+    static let checkButtonSize: CGFloat = 36
     static let titleTracking: CGFloat = -0.02
     static let kickerTracking: CGFloat = 0.06
 
     static func promptKey(for day: LogicalDay) -> LocalizedStringKey {
-        let index = abs(day.storageValue.hashValue) % 4
+        let index = ((day.year * 12 + day.month) * 31 + day.day) % 4
         switch index {
         case 0: return "editorial.prompt.feel"
         case 1: return "editorial.prompt.mind"
@@ -22,6 +22,9 @@ enum EditorialJournalDesign {
 
 struct EditorialTodayContent: View {
     @Bindable var model: PulseAppModel
+    let onEditJournal: () -> Void
+    let onCaptureMedia: () -> Void
+    let onShowMedia: () -> Void
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
@@ -89,31 +92,49 @@ struct EditorialTodayContent: View {
                     .foregroundStyle(PulseDesign.secondary)
             }
 
-            Group {
-                if dynamicTypeSize.isAccessibilitySize {
-                    TextField(
-                        "editorial.journal.placeholder",
-                        text: $draftJournalNote,
-                        axis: .vertical
-                    )
-                    .lineLimit(3...6)
-                } else {
-                    TextField(
-                        "editorial.journal.placeholder",
-                        text: $draftJournalNote,
-                        axis: .vertical
-                    )
-                    .lineLimit(1...4)
+            if let record = model.todayRecord {
+                JournalNoteSummary(record: record, onEdit: onEditJournal)
+            } else {
+                Group {
+                    if dynamicTypeSize.isAccessibilitySize {
+                        TextField(
+                            "editorial.journal.placeholder",
+                            text: $draftJournalNote,
+                            axis: .vertical
+                        )
+                        .lineLimit(3...6)
+                    } else {
+                        TextField(
+                            "editorial.journal.placeholder",
+                            text: $draftJournalNote,
+                            axis: .vertical
+                        )
+                        .lineLimit(1...4)
+                    }
                 }
+                .font(.body)
+                .foregroundStyle(PulseDesign.ink)
+                .disabled(model.isSaving)
+                .focused($isJournalFocused)
+                .accessibilityIdentifier("editorial.journal.input")
+
+                HStack(alignment: .firstTextBaseline, spacing: PulseDesign.spacing8) {
+                    if !isDraftValid {
+                        Text(journalValidationMessage)
+                            .foregroundStyle(PulseDesign.systemDestructive)
+                            .accessibilityIdentifier("editorial.journal.validation")
+                    }
+
+                    Spacer(minLength: 0)
+
+                    Text(journalCharacterCount)
+                        .foregroundStyle(
+                            isDraftValid ? PulseDesign.secondary : PulseDesign.systemDestructive
+                        )
+                        .accessibilityIdentifier("editorial.journal.count")
+                }
+                .font(.caption2)
             }
-            .font(.body)
-            .foregroundStyle(PulseDesign.ink)
-            .disabled(isChecked || model.isSaving)
-            .focused($isJournalFocused)
-            .onChange(of: draftJournalNote) { _, newValue in
-                draftJournalNote = String(newValue.prefix(JournalNote.maxCharacterCount))
-            }
-            .accessibilityIdentifier("editorial.journal.input")
 
             Rectangle()
                 .fill(isChecked ? EditorialJournalDesign.accent : PulseDesign.separator)
@@ -122,70 +143,137 @@ struct EditorialTodayContent: View {
     }
 
     private var editorialFooter: some View {
-        HStack(alignment: .center, spacing: PulseDesign.spacing16) {
-            Button {
-                performCheckIn()
-            } label: {
-                ZStack {
-                    Circle()
-                        .stroke(
-                            isChecked ? PulseDesign.ink : PulseDesign.secondary.opacity(0.45),
-                            lineWidth: PulseDesign.emphasisLineWidth
-                        )
-                        .frame(
-                            width: EditorialJournalDesign.checkButtonSize,
-                            height: EditorialJournalDesign.checkButtonSize
-                        )
+        VStack(alignment: .leading, spacing: PulseDesign.spacing12) {
+            HStack(alignment: .center, spacing: PulseDesign.spacing16) {
+                Button {
+                    performCheckIn()
+                } label: {
+                    HStack(spacing: PulseDesign.spacing8) {
+                        ZStack {
+                            Circle()
+                                .stroke(
+                                    isChecked
+                                        ? PulseDesign.ink
+                                        : PulseDesign.secondary.opacity(
+                                            PulseDesign.editorialPendingStrokeOpacity
+                                        ),
+                                    lineWidth: PulseDesign.emphasisLineWidth
+                                )
+                                .frame(
+                                    width: EditorialJournalDesign.checkButtonSize,
+                                    height: EditorialJournalDesign.checkButtonSize
+                                )
 
-                    if isChecked {
-                        Circle()
-                            .fill(PulseDesign.ink)
-                            .frame(
-                                width: EditorialJournalDesign.checkButtonSize,
-                                height: EditorialJournalDesign.checkButtonSize
-                            )
+                            if isChecked {
+                                Circle()
+                                    .fill(PulseDesign.ink)
+                                    .frame(
+                                        width: EditorialJournalDesign.checkButtonSize,
+                                        height: EditorialJournalDesign.checkButtonSize
+                                    )
 
-                        Image(systemName: "checkmark")
-                            .font(.body.weight(.bold))
-                            .foregroundStyle(Color.white)
-                    } else if model.isSaving || isCheckingIn {
-                        ProgressView()
-                            .controlSize(.regular)
+                                Image(systemName: "checkmark")
+                                    .font(.caption.weight(.bold))
+                                    .foregroundStyle(PulseDesign.background)
+                            } else if model.isSaving || isCheckingIn {
+                                ProgressView()
+                                    .controlSize(.small)
+                            }
+                        }
+
+                        Text(isChecked ? "today.accessibility.checked" : "today.check_in")
+                            .font(.subheadline.weight(.semibold))
                     }
+                    .frame(minHeight: PulseDesign.minimumHitTarget)
+                }
+                .buttonStyle(.plain)
+                .disabled(
+                    !model.canCheckInToday
+                        || model.isSaving
+                        || isCheckingIn
+                        || !isDraftValid
+                )
+                .accessibilityLabel(checkInAccessibilityLabel)
+                .accessibilityIdentifier("today.checkin.button")
+
+                Spacer(minLength: PulseDesign.spacing12)
+
+                VStack(alignment: .trailing, spacing: PulseDesign.spacing4) {
+                    Text(
+                        String(
+                            format: PulseLocalization.string(
+                                "editorial.record.total_format",
+                                locale: locale
+                            ),
+                            locale: locale,
+                            arguments: [Int64(displayedTotalCount)]
+                        )
+                    )
+                    .font(.subheadline.weight(.medium))
+                    .monospacedDigit()
+                    .foregroundStyle(PulseDesign.ink)
+                    .accessibilityIdentifier("today.rhythm.status")
+
+                    Text("editorial.record.cumulative_hint")
+                        .font(.caption2)
+                        .foregroundStyle(PulseDesign.secondary)
                 }
             }
-            .buttonStyle(.plain)
-            .disabled(!model.canCheckInToday || model.isSaving || isCheckingIn)
-            .accessibilityLabel(checkInAccessibilityLabel)
-            .accessibilityIdentifier("today.checkin.button")
 
-            Spacer(minLength: PulseDesign.spacing12)
-
-            VStack(alignment: .trailing, spacing: PulseDesign.spacing4) {
-                Text(
-                    String(
-                        format: PulseLocalization.string(
-                            "editorial.record.total_format",
-                            locale: locale
-                        ),
-                        locale: locale,
-                        arguments: [Int64(displayedTotalCount)]
+            if isChecked,
+               model.settings.mediaInvitationEnabled || model.todayMedia != nil {
+                Button {
+                    model.todayMedia == nil ? onCaptureMedia() : onShowMedia()
+                } label: {
+                    Label(
+                        model.todayMedia == nil
+                            ? "today.media.capture_compact"
+                            : "today.media.view_compact",
+                        systemImage: model.todayMedia == nil ? "camera" : "photo"
                     )
+                    .font(.caption.weight(.semibold))
+                    .frame(minHeight: PulseDesign.minimumHitTarget)
+                }
+                .buttonStyle(.plain)
+                .foregroundStyle(EditorialJournalDesign.accent)
+                .disabled(model.operation == .saveMedia)
+                .accessibilityIdentifier(
+                    model.todayMedia == nil
+                        ? "today.media.capture.button"
+                        : "today.media.preview.button"
                 )
-                .font(.subheadline.weight(.medium))
-                .monospacedDigit()
-                .foregroundStyle(PulseDesign.ink)
-                .accessibilityIdentifier("today.rhythm.status")
-
-                Text("editorial.record.cumulative_hint")
-                    .font(.caption2)
-                    .foregroundStyle(PulseDesign.secondary)
             }
         }
     }
 
     private var displayedTotalCount: Int {
         model.statistics.totalCount
+    }
+
+    private var isDraftValid: Bool {
+        JournalNote.accepts(userInput: draftJournalNote)
+    }
+
+    private var journalCharacterCount: String {
+        String(
+            format: PulseLocalization.string("journal.character_count_format", locale: locale),
+            locale: locale,
+            arguments: [
+                Int64(draftJournalNote.count),
+                Int64(JournalNote.maximumCharacterCount),
+            ]
+        )
+    }
+
+    private var journalValidationMessage: String {
+        String(
+            format: PulseLocalization.string("journal.validation_format", locale: locale),
+            locale: locale,
+            arguments: [
+                Int64(JournalNote.maximumCharacterCount),
+                Int64(JournalNote.maximumLineCount),
+            ]
+        )
     }
 
     private var checkInAccessibilityLabel: String {
@@ -197,7 +285,7 @@ struct EditorialTodayContent: View {
 
     private func editorialDateKicker(today: LogicalDay, timeZone: TimeZone) -> String {
         let weekday = PulseFormatting.fullWeekday(today, timeZone: timeZone, locale: locale)
-        let date = EditorialDateFormatting.numericYearMonthDay(today, timeZone: timeZone)
+        let date = PulseFormatting.numericDate(today, timeZone: timeZone, locale: locale)
         return String(
             format: PulseLocalization.string("editorial.date_kicker_format", locale: locale),
             date,
@@ -227,8 +315,7 @@ struct EditorialTodayContent: View {
         isJournalFocused = false
 
         Task {
-            let note = JournalNote.normalized(draftJournalNote)
-            guard await model.checkIn(journalNote: note) != nil else {
+            guard await model.checkIn(journalNote: draftJournalNote) != nil else {
                 isCheckingIn = false
                 return
             }
@@ -254,7 +341,9 @@ struct EditorialAccentLine: View {
                 )
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .animation(
-                    reduceMotion ? nil : .easeOut(duration: 0.55),
+                    reduceMotion
+                        ? nil
+                        : .easeOut(duration: PulseDesign.editorialAccentExpansionDuration),
                     value: isExpanded
                 )
         }
@@ -270,29 +359,38 @@ struct EditorialHistoryContent: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             VStack(alignment: .leading, spacing: PulseDesign.spacing4) {
-                Text("editorial.history.title")
+                Text("editorial.history.notes_title")
                     .font(.system(.title2, design: .serif).weight(.bold))
                     .foregroundStyle(PulseDesign.ink)
 
-                Text("editorial.history.subtitle")
+                Text("editorial.history.notes_subtitle")
                     .font(.caption)
                     .foregroundStyle(PulseDesign.secondary)
             }
             .padding(.top, PulseDesign.spacing16)
             .padding(.bottom, PulseDesign.spacing20)
 
-            LazyVStack(spacing: 0) {
-                ForEach(sortedRecords) { record in
-                    Button {
-                        selectedDay = record.logicalDay
-                    } label: {
-                        EditorialHistoryEntryRow(
-                            record: record,
-                            habitName: model.habit?.name,
-                            timeZone: model.timeZone
-                        )
+            if sortedRecords.isEmpty {
+                Text("editorial.history.notes_empty")
+                    .font(.body)
+                    .foregroundStyle(PulseDesign.secondary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.vertical, PulseDesign.spacing16)
+                    .accessibilityIdentifier("history.notes.empty")
+            } else {
+                LazyVStack(spacing: 0) {
+                    ForEach(sortedRecords) { record in
+                        Button {
+                            selectedDay = record.logicalDay
+                        } label: {
+                            EditorialHistoryEntryRow(
+                                record: record,
+                                habitName: model.habit?.name,
+                                timeZone: model.timeZone
+                            )
+                        }
+                        .buttonStyle(.plain)
                     }
-                    .buttonStyle(.plain)
                 }
             }
         }
@@ -300,7 +398,14 @@ struct EditorialHistoryContent: View {
     }
 
     private var sortedRecords: [CheckInRecordSnapshot] {
-        model.records.sorted { $0.checkedAt > $1.checkedAt }
+        let month = model.selectedMonth ?? model.today?.firstDayOfMonth()
+        return model.records
+            .filter { record in
+                record.journalNote != nil
+                    && record.logicalDay.year == month?.year
+                    && record.logicalDay.month == month?.month
+            }
+            .sorted { $0.checkedAt > $1.checkedAt }
     }
 }
 
@@ -327,10 +432,9 @@ private struct EditorialHistoryEntryRow: View {
                 .tracking(EditorialJournalDesign.kickerTracking)
             }
 
-            Text(displayNote)
+            Text(record.journalNote ?? "")
                 .font(.system(.body, design: .serif))
-                .foregroundStyle(record.journalNote == nil ? PulseDesign.secondary : PulseDesign.ink)
-                .italic(record.journalNote == nil)
+                .foregroundStyle(PulseDesign.ink)
                 .multilineTextAlignment(.leading)
                 .frame(maxWidth: .infinity, alignment: .leading)
 
@@ -351,12 +455,6 @@ private struct EditorialHistoryEntryRow: View {
         .accessibilityIdentifier("history.entry.\(record.logicalDay.storageValue)")
     }
 
-    private var displayNote: String {
-        if let note = record.journalNote, !note.isEmpty {
-            return note
-        }
-        return PulseLocalization.string("editorial.journal.blank", locale: locale)
-    }
 }
 
 struct EditorialRecordDetailIdentity: View {
@@ -388,13 +486,6 @@ struct EditorialRecordDetailIdentity: View {
                 .fill(EditorialJournalDesign.accent)
                 .frame(height: EditorialJournalDesign.lineHeight)
 
-            Text(quoteText)
-                .font(.system(.title3, design: .serif))
-                .italic(record?.journalNote == nil)
-                .foregroundStyle(record?.journalNote == nil ? PulseDesign.secondary : PulseDesign.ink)
-                .fixedSize(horizontal: false, vertical: true)
-                .padding(.top, PulseDesign.spacing8)
-
             if let record {
                 Text(
                     String(
@@ -419,12 +510,6 @@ struct EditorialRecordDetailIdentity: View {
         .accessibilityIdentifier("history.record.detail.identity")
     }
 
-    private var quoteText: String {
-        if let note = record?.journalNote, !note.isEmpty {
-            return note
-        }
-        return PulseLocalization.string("editorial.journal.detail_blank", locale: locale)
-    }
 }
 
 struct EditorialPrimaryNavigation: View {
@@ -478,19 +563,5 @@ struct EditorialPrimaryNavigation: View {
         }
         .buttonStyle(.plain)
         .accessibilityIdentifier("navigation.section.\(section.rawValue)")
-    }
-}
-
-private enum EditorialDateFormatting {
-    static func numericYearMonthDay(_ day: LogicalDay, timeZone: TimeZone) -> String {
-        let calendar = Calendar.pulseGregorian(timeZone: timeZone)
-        let date = day.date(timeZone: timeZone)
-        let components = calendar.dateComponents([.year, .month, .day], from: date)
-        guard let year = components.year,
-              let month = components.month,
-              let dayValue = components.day else {
-            return day.storageValue
-        }
-        return String(format: "%d/%d/%d", year, month, dayValue)
     }
 }

@@ -80,9 +80,6 @@ private enum PulseBootstrap {
             }
 #endif
             let settings = try AppSettings(sharedSettings: sharedSettings)
-#if DEBUG
-            applyUITestOverrides(to: settings)
-#endif
             let model = PulseAppModel(
                 repository: repository,
                 mediaService: ImprintMediaService(
@@ -151,16 +148,6 @@ private enum PulseBootstrap {
             sharedSettings: sharedSettings
         )
     }
-
-#if DEBUG
-    @MainActor
-    private static func applyUITestOverrides(to settings: AppSettings) {
-        if let value = ProcessInfo.processInfo.environment["PULSE_UI_TEST_VISUAL_THEME"],
-           let theme = PulseVisualTheme(rawValue: value) {
-            settings.visualTheme = theme
-        }
-    }
-#endif
 
     @MainActor
     private static func runtimeClock() -> any PulseClock {

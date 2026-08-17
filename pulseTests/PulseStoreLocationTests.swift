@@ -107,6 +107,34 @@ final class PulseStoreLocationTests: XCTestCase {
         XCTAssertEqual(location.storeURL.lastPathComponent, "Pulse.store")
     }
 
+    func testSchemaMarkerUsesCleanBaselineAndRejectsExperimentalVersion() throws {
+        let root = FileManager.default.temporaryDirectory
+            .appendingPathComponent("PulseSchemaMarker-\(UUID().uuidString)", isDirectory: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        let storeURL = root.appendingPathComponent("Pulse.store")
+
+        _ = try PersistenceController.makeContainer(
+            storeName: "PulseSchemaMarker",
+            storeURL: storeURL
+        )
+        let markerURL = root.appendingPathComponent(".pulse-schema-version")
+        XCTAssertEqual(try String(contentsOf: markerURL, encoding: .utf8), "1.1.1")
+
+        try "1.1.0".write(to: markerURL, atomically: true, encoding: .utf8)
+        XCTAssertThrowsError(
+            try PersistenceController.makeContainer(
+                storeName: "PulseSchemaMarker",
+                storeURL: storeURL
+            )
+        ) { error in
+            XCTAssertEqual(
+                error as? PulseStoreLocationError,
+                .incompatibleStoreVersion
+            )
+        }
+    }
+
     func testLocationRejectsNonFileURL() {
         XCTAssertThrowsError(
             try PulseStoreLocation(directoryURL: URL(string: "https://example.com/store")!)

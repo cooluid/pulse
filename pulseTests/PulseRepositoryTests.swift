@@ -51,7 +51,7 @@ final class PulseRepositoryTests: XCTestCase {
         let clock = MutableRepositoryClock(now: makeDate(day: 10, hour: 9))
         let repository = try makeRepository(clock: clock)
         let habit = try repository.primaryHabit(systemTimeZone: timeZone)
-        let record = try repository.checkIn(habitID: habit.id)
+        let record = try repository.checkIn(habitID: habit.id, journalNote: nil)
         let originalStart = habit.startLogicalDay
         let originalCreatedAt = habit.createdAt
 
@@ -90,9 +90,12 @@ final class PulseRepositoryTests: XCTestCase {
         let repository = try makeRepository(clock: clock)
         let habit = try repository.primaryHabit(systemTimeZone: timeZone)
 
-        let first = try repository.checkIn(habitID: habit.id)
+        let first = try repository.checkIn(habitID: habit.id, journalNote: nil)
         clock.now = makeDate(day: 10, hour: 21)
-        let second = try repository.checkIn(habitID: habit.id)
+        let second = try repository.checkIn(
+            habitID: habit.id,
+            journalNote: "并发签到后补上的记事"
+        )
         let records = try repository.allRecords(habitID: habit.id)
 
         XCTAssertEqual(first.recordID, second.recordID)
@@ -100,6 +103,22 @@ final class PulseRepositoryTests: XCTestCase {
         XCTAssertEqual(first.disposition, .created)
         XCTAssertEqual(second.disposition, .alreadyPresent)
         XCTAssertEqual(records.count, 1)
+        XCTAssertEqual(records.first?.journalNote, "并发签到后补上的记事")
+        XCTAssertEqual(records.first?.journalNoteModifiedAt, clock.now)
+    }
+
+    func testRepeatedCheckInNeverOverwritesAnExistingJournalNote() throws {
+        let clock = MutableRepositoryClock(now: makeDate(day: 10, hour: 9))
+        let repository = try makeRepository(clock: clock)
+        let habit = try repository.primaryHabit(systemTimeZone: timeZone)
+        _ = try repository.checkIn(habitID: habit.id, journalNote: "第一条记事")
+
+        clock.now = makeDate(day: 10, hour: 21)
+        _ = try repository.checkIn(habitID: habit.id, journalNote: "不应覆盖")
+        let record = try XCTUnwrap(repository.allRecords(habitID: habit.id).first)
+
+        XCTAssertEqual(record.journalNote, "第一条记事")
+        XCTAssertEqual(record.journalNoteModifiedAt, makeDate(day: 10, hour: 9))
     }
 
     func testCheckInPersistsOptionalJournalNote() throws {
@@ -115,6 +134,76 @@ final class PulseRepositoryTests: XCTestCase {
 
         XCTAssertEqual(records.count, 1)
         XCTAssertEqual(records.first?.journalNote, "今天状态不错")
+        XCTAssertEqual(records.first?.journalNoteModifiedAt, makeDate(day: 10, hour: 9))
+    }
+
+    func testJournalNoteCanBeAddedAfterExternalCheckInEditedAndCleared() throws {
+        let clock = MutableRepositoryClock(now: makeDate(day: 10, hour: 9))
+        let repository = try makeRepository(clock: clock)
+        let habit = try repository.primaryHabit(systemTimeZone: timeZone)
+        let receipt = try repository.checkIn(habitID: habit.id, journalNote: nil)
+
+        clock.now = makeDate(day: 10, hour: 10)
+        let added = try repository.updateJournalNote(
+            recordID: receipt.recordID,
+            journalNote: "  第一次记录  "
+        )
+        XCTAssertEqual(added.journalNote, "第一次记录")
+        XCTAssertEqual(added.journalNoteModifiedAt, clock.now)
+
+        clock.now = makeDate(day: 10, hour: 11)
+        let edited = try repository.updateJournalNote(
+            recordID: receipt.recordID,
+            journalNote: "更新后的记录"
+        )
+        XCTAssertEqual(edited.journalNote, "更新后的记录")
+        XCTAssertEqual(edited.journalNoteModifiedAt, clock.now)
+
+        clock.now = makeDate(day: 10, hour: 12)
+        let cleared = try repository.updateJournalNote(
+            recordID: receipt.recordID,
+            journalNote: "  "
+        )
+        XCTAssertNil(cleared.journalNote)
+        XCTAssertEqual(cleared.journalNoteModifiedAt, clock.now)
+    }
+
+    func testInvalidJournalNoteNeverMutatesStoredRecord() throws {
+        let clock = MutableRepositoryClock(now: makeDate(day: 10, hour: 9))
+        let repository = try makeRepository(clock: clock)
+        let habit = try repository.primaryHabit(systemTimeZone: timeZone)
+        let receipt = try repository.checkIn(
+            habitID: habit.id,
+            journalNote: "正式记录"
+        )
+        let oversized = String(repeating: "记", count: JournalNote.maximumCharacterCount + 1)
+
+        XCTAssertThrowsError(
+            try repository.updateJournalNote(
+                recordID: receipt.recordID,
+                journalNote: oversized
+            )
+        ) { error in
+            XCTAssertEqual(error as? PulseCoreError, .invalidJournalNote)
+        }
+        XCTAssertEqual(
+            try repository.allRecords(habitID: habit.id).first?.journalNote,
+            "正式记录"
+        )
+
+        clock.now = makeDate(day: 9, hour: 9)
+        XCTAssertThrowsError(
+            try repository.updateJournalNote(
+                recordID: receipt.recordID,
+                journalNote: "不能倒写修改时间"
+            )
+        ) { error in
+            XCTAssertEqual(error as? PulseCoreError, .invalidJournalNote)
+        }
+        XCTAssertEqual(
+            try repository.allRecords(habitID: habit.id).first?.journalNote,
+            "正式记录"
+        )
     }
 
     func testSeparateContainersObserveOneSharedDiskCheckInFact() throws {
@@ -153,8 +242,8 @@ final class PulseRepositoryTests: XCTestCase {
         XCTAssertEqual(secondHabit.id, firstHabit.id)
         XCTAssertTrue(try secondRepository.allRecords(habitID: secondHabit.id).isEmpty)
 
-        let firstReceipt = try firstRepository.checkIn(habitID: firstHabit.id)
-        let secondReceipt = try secondRepository.checkIn(habitID: secondHabit.id)
+        let firstReceipt = try firstRepository.checkIn(habitID: firstHabit.id, journalNote: nil)
+        let secondReceipt = try secondRepository.checkIn(habitID: secondHabit.id, journalNote: nil)
 
         let verificationRepository = SwiftDataPulseRepository(
             container: try PersistenceController.makeContainer(
@@ -177,13 +266,13 @@ final class PulseRepositoryTests: XCTestCase {
         let repository = try makeRepository(clock: clock)
         let habit = try repository.primaryHabit(systemTimeZone: timeZone)
 
-        _ = try repository.checkIn(habitID: habit.id)
+        _ = try repository.checkIn(habitID: habit.id, journalNote: nil)
         clock.now = makeDate(day: 11, hour: 0)
-        _ = try repository.checkIn(habitID: habit.id)
+        _ = try repository.checkIn(habitID: habit.id, journalNote: nil)
         XCTAssertEqual(try repository.allRecords(habitID: habit.id).count, 2)
 
         clock.now = makeDate(day: 9, hour: 12)
-        XCTAssertThrowsError(try repository.checkIn(habitID: habit.id)) { error in
+        XCTAssertThrowsError(try repository.checkIn(habitID: habit.id, journalNote: nil)) { error in
             XCTAssertEqual(error as? PulseCoreError, .invalidCheckIn)
         }
         XCTAssertEqual(try repository.allRecords(habitID: habit.id).count, 2)
@@ -193,21 +282,25 @@ final class PulseRepositoryTests: XCTestCase {
         let clock = MutableRepositoryClock(now: makeDate(day: 10, hour: 9))
         let repository = try makeRepository(clock: clock)
         let habit = try repository.primaryHabit(systemTimeZone: timeZone)
-        let first = try repository.checkIn(habitID: habit.id)
+        let first = try repository.checkIn(
+            habitID: habit.id,
+            journalNote: "会随签到删除的记事"
+        )
         clock.now = makeDate(day: 11, hour: 9)
-        let second = try repository.checkIn(habitID: habit.id)
+        let second = try repository.checkIn(habitID: habit.id, journalNote: nil)
 
         try repository.delete(recordID: first.recordID)
         let remaining = try repository.allRecords(habitID: habit.id)
 
         XCTAssertEqual(remaining.map(\.id), [second.recordID])
+        XCTAssertFalse(remaining.contains { $0.journalNote != nil })
     }
 
     func testResetCreatesANewEmptyPrimaryHabitAtAuthoritativeNow() throws {
         let clock = MutableRepositoryClock(now: makeDate(day: 10, hour: 9))
         let repository = try makeRepository(clock: clock)
         let original = try repository.primaryHabit(systemTimeZone: timeZone)
-        _ = try repository.checkIn(habitID: original.id)
+        _ = try repository.checkIn(habitID: original.id, journalNote: nil)
 
         clock.now = makeDate(day: 11, hour: 9)
         let replacement = try repository.resetAll(systemTimeZone: timeZone)
@@ -259,7 +352,7 @@ final class PulseRepositoryTests: XCTestCase {
         let clock = MutableRepositoryClock(now: makeDate(day: 10, hour: 9))
         let repository = try makeRepository(clock: clock)
         let original = try repository.primaryHabit(systemTimeZone: timeZone)
-        _ = try repository.checkIn(habitID: original.id)
+        _ = try repository.checkIn(habitID: original.id, journalNote: nil)
         let importedHabitID = UUID()
         let importedRecordID = UUID()
         let createdAt = makeDate(day: 9, hour: 8)
@@ -295,7 +388,7 @@ final class PulseRepositoryTests: XCTestCase {
         let clock = MutableRepositoryClock(now: makeDate(day: 10, hour: 9))
         let repository = try makeRepository(clock: clock)
         let original = try repository.primaryHabit(systemTimeZone: timeZone)
-        let originalRecord = try repository.checkIn(habitID: original.id)
+        let originalRecord = try repository.checkIn(habitID: original.id, journalNote: nil)
         let checkedAt = makeDate(day: 9, hour: 9)
         let duplicateDay = PulseBackupPayload.RecordPayload(
             id: UUID(),
@@ -377,7 +470,7 @@ final class PulseRepositoryTests: XCTestCase {
         let container = try PersistenceController.makeInMemoryContainer()
         let repository = try makeRepository(container: container, clock: clock)
         let habit = try repository.primaryHabit(systemTimeZone: timeZone)
-        let receipt = try repository.checkIn(habitID: habit.id)
+        let receipt = try repository.checkIn(habitID: habit.id, journalNote: nil)
 
         let mutationContext = ModelContext(container)
         mutationContext.autosaveEnabled = false
@@ -390,7 +483,7 @@ final class PulseRepositoryTests: XCTestCase {
 
         let validatingRepository = try makeRepository(container: container, clock: clock)
         XCTAssertThrowsError(
-            try validatingRepository.checkIn(habitID: habit.id)
+            try validatingRepository.checkIn(habitID: habit.id, journalNote: nil)
         ) { error in
             XCTAssertEqual(
                 error as? PulseCoreError,

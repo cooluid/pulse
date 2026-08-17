@@ -26,6 +26,7 @@ enum PulseDesign {
     static let secondary = Color("PulseSecondary")
     static let separator = Color("PulseSeparator")
     static let field = Color("PulseField")
+    static let editorialAccent = Color("PulseEditorialAccent")
     static let archiveDepth = Color("PulseArchiveDepth")
     static let archiveNight = Color("PulseArchiveNight")
     static let archiveTide = Color("PulseArchiveTide")
@@ -48,6 +49,7 @@ enum PulseDesign {
 
     static let horizontalPadding: CGFloat = spacing20
     static let screenMaxWidth: CGFloat = 680
+    static let editorialContentMaxWidth: CGFloat = 720
     static let historyMaxWidth: CGFloat = 760
     static let regularWidthContentMaxWidth: CGFloat = 1_080
     static let regularWidthColumnGap: CGFloat = spacing32 + spacing16
@@ -55,6 +57,7 @@ enum PulseDesign {
     static let minimumHitTarget: CGFloat = 44
     static let detailActionHitSize: CGFloat = minimumHitTarget + spacing4
     static let compactDetailDetentFraction = 0.32
+    static let journalDetailDetentFraction = 0.52
 
     static let topBarHeight: CGFloat = 58
     static let brandMarkSize: CGFloat = 28
@@ -188,6 +191,10 @@ enum PulseDesign {
     static let themePreviewHeight: CGFloat = 72
     static let themePreviewCornerRadius: CGFloat = 12
     static let themePreviewUnselectedBorderOpacity = 0.28
+    static let journalCardCornerRadius: CGFloat = 16
+    static let editorialJournalSurfaceOpacity = 0.42
+    static let quietJournalSurfaceOpacity = 0.88
+    static let editorialPendingStrokeOpacity = 0.55
 
     static let idleAuraBreathHalfDuration = 0.7
     static let ambientFieldMinimumInterval = 1.0 / 12.0
@@ -219,6 +226,7 @@ enum PulseDesign {
     static let primaryNavigationSelectionDuration = 0.24
     static let mediaDetailDismissDelay = 0.24
     static let primaryContentTransitionDuration = 0.18
+    static let editorialAccentExpansionDuration = 0.55
     static let primaryContentTransitionOffset: CGFloat = spacing8
     static let monthTransitionDuration = 0.2
     static let completionRippleStartScale: CGFloat = 0.92
@@ -274,7 +282,6 @@ enum PulseDesign {
         }
     }
 
-    static let editorialAccent = Color(red: 0.176, green: 0.416, blue: 0.310)
 }
 
 struct PulseScreenBackground: View {

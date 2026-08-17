@@ -35,6 +35,17 @@ enum PulseErrorPresentation {
                     Int64(PulseBackupContract.minimumPassphraseCharacterCount)
                 )
             }
+            if case .invalidJournalNote = coreError {
+                return String(
+                    format: PulseLocalization.string(
+                        "error.journal_note_format",
+                        locale: locale
+                    ),
+                    locale: locale,
+                    Int64(JournalNote.maximumCharacterCount),
+                    Int64(JournalNote.maximumLineCount)
+                )
+            }
 
             let key = switch coreError {
             case .invalidTimeZone:
@@ -49,6 +60,8 @@ enum PulseErrorPresentation {
                 "error.primary_habit_unavailable"
             case .invalidHabitIdentity:
                 "error.habit_identity_format"
+            case .invalidJournalNote:
+                "error.journal_note_format"
             case .backupUnavailable:
                 "error.backup_unavailable"
             case .invalidBackupPassphrase:

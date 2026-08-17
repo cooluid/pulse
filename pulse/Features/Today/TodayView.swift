@@ -26,6 +26,7 @@ struct TodayView: View {
     @State private var showsCamera = false
     @State private var showsCameraPermissionAlert = false
     @State private var showsTodayMediaDetail = false
+    @State private var showsTodayJournalEditor = false
 
     var body: some View {
         ZStack {
@@ -42,9 +43,7 @@ struct TodayView: View {
                     ScrollView {
                         todayContent
                             .frame(
-                                maxWidth: usesRegularWidthLayout
-                                    ? PulseDesign.regularWidthContentMaxWidth
-                                    : PulseDesign.screenMaxWidth
+                                maxWidth: todayContentMaxWidth
                             )
                             .frame(
                                 minHeight: usesRegularWidthLayout ? proxy.size.height : nil,
@@ -96,6 +95,11 @@ struct TodayView: View {
                 )
             }
         }
+        .sheet(isPresented: $showsTodayJournalEditor) {
+            if let record = model.todayRecord {
+                JournalNoteEditorSheet(record: record, model: model)
+            }
+        }
         .alert("camera.permission.title", isPresented: $showsCameraPermissionAlert) {
             Button("camera.permission.open_settings") {
                 guard let url = URL(string: UIApplication.openSettingsURLString) else { return }
@@ -113,7 +117,12 @@ struct TodayView: View {
         case .tideArchive:
             archiveContent
         case .editorialJournal:
-            EditorialTodayContent(model: model)
+            EditorialTodayContent(
+                model: model,
+                onEditJournal: { showsTodayJournalEditor = true },
+                onCaptureMedia: requestCamera,
+                onShowMedia: { showsTodayMediaDetail = true }
+            )
         default:
             quietFieldContent
         }
@@ -162,6 +171,8 @@ struct TodayView: View {
                     weekRail
                     rhythmStatus
                         .padding(.top, PulseDesign.spacing32)
+                    todayJournalSummary
+                        .padding(.top, PulseDesign.spacing24)
                 }
                 .frame(maxWidth: .infinity)
             }
@@ -174,6 +185,8 @@ struct TodayView: View {
                     .padding(.top, PulseDesign.checkInOuterHalo + PulseDesign.spacing12)
                 rhythmStatus
                     .padding(.top, PulseDesign.spacing24)
+                todayJournalSummary
+                    .padding(.top, PulseDesign.spacing20)
             }
             .padding(.bottom, PulseDesign.spacing24)
         }
@@ -194,6 +207,8 @@ struct TodayView: View {
                     weekRail
                     archiveRhythmStatus
                         .padding(.top, PulseDesign.spacing24)
+                    todayJournalSummary
+                        .padding(.top, PulseDesign.spacing20)
                 }
                 .frame(maxWidth: .infinity)
             }
@@ -206,6 +221,8 @@ struct TodayView: View {
                     .padding(.top, PulseDesign.spacing32)
                 archiveRhythmStatus
                     .padding(.top, PulseDesign.spacing16)
+                todayJournalSummary
+                    .padding(.top, PulseDesign.spacing20)
             }
             .padding(.bottom, PulseDesign.spacing24)
         }
@@ -213,6 +230,15 @@ struct TodayView: View {
 
     private var usesRegularWidthLayout: Bool {
         horizontalSizeClass == .regular && !dynamicTypeSize.isAccessibilitySize
+    }
+
+    private var todayContentMaxWidth: CGFloat {
+        if visualTheme == .editorialJournal {
+            return PulseDesign.editorialContentMaxWidth
+        }
+        return usesRegularWidthLayout
+            ? PulseDesign.regularWidthContentMaxWidth
+            : PulseDesign.screenMaxWidth
     }
 
     private var dayHero: some View {
@@ -970,6 +996,15 @@ struct TodayView: View {
                 value: model.statistics.currentStreak
             )
         .accessibilityIdentifier("today.rhythm.status")
+    }
+
+    @ViewBuilder
+    private var todayJournalSummary: some View {
+        if let record = model.todayRecord {
+            JournalNoteSummary(record: record) {
+                showsTodayJournalEditor = true
+            }
+        }
     }
 
     @ViewBuilder

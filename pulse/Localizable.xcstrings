@@ -82,6 +82,22 @@
         }
       }
     },
+    "action.save" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Save"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "保存"
+          }
+        }
+      }
+    },
     "activity.reminder.alert.body" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -800,6 +816,23 @@
         }
       }
     },
+    "error.journal_note_format" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A note can contain up to %1$lld characters and %2$lld lines."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "记事最多可写 %1$lld 个字符、%2$lld 行。"
+          }
+        }
+      }
+    },
     "error.live_activities_unavailable" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -1166,6 +1199,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "删除后，连续天数和统计会立即重新计算；当天照片如已留存，将独立保留。"
+          }
+        }
+      }
+    },
+    "history.delete_confirmation.message_with_journal" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The check-in and its note will be deleted, and statistics will be recalculated. A photo from this day, if present, is kept separately."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "签到与记事将一并删除，连续天数和统计会立即重新计算；当天照片如已留存，将独立保留。"
           }
         }
       }
@@ -2364,13 +2414,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Editorial Journal"
+            "value" : "Journal Page"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "编辑日志"
+            "value" : "纸页手记"
           }
         }
       }
@@ -2477,40 +2527,6 @@
         }
       }
     },
-    "editorial.journal.blank" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "(blank)"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "（留白）"
-          }
-        }
-      }
-    },
-    "editorial.journal.detail_blank" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "You chose to leave this day blank."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "（这一天选择留白）"
-          }
-        }
-      }
-    },
     "editorial.record.total_format" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -2545,36 +2561,53 @@
         }
       }
     },
-    "editorial.history.title" : {
+    "editorial.history.notes_title" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Records"
+            "value" : "Notes"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "记录"
+            "value" : "手记"
           }
         }
       }
     },
-    "editorial.history.subtitle" : {
+    "editorial.history.notes_subtitle" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Only days you checked in appear here"
+            "value" : "Notes attached to your check-ins"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "只显示你签到的日子"
+            "value" : "随签到保存的片刻记录"
+          }
+        }
+      }
+    },
+    "editorial.history.notes_empty" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No notes yet. Open a checked day to add one."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "还没有记事。打开已签到日期即可添加。"
           }
         }
       }
@@ -2609,6 +2642,227 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "记录"
+          }
+        }
+      }
+    },
+    "journal.action.add" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "添加"
+          }
+        }
+      }
+    },
+    "journal.action.delete" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete Note"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "删除记事"
+          }
+        }
+      }
+    },
+    "journal.action.edit" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edit"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "编辑"
+          }
+        }
+      }
+    },
+    "journal.character_count_format" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld/%2$lld characters"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld/%2$lld 字"
+          }
+        }
+      }
+    },
+    "journal.delete_confirmation.action" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete Note"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "删除记事"
+          }
+        }
+      }
+    },
+    "journal.delete_confirmation.message" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The check-in and its photo are not affected."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "签到与当天照片不受影响。"
+          }
+        }
+      }
+    },
+    "journal.delete_confirmation.title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete this note?"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "删除这条记事？"
+          }
+        }
+      }
+    },
+    "journal.editor.placeholder" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Write a few words about this day"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "写下这一天的片刻感受"
+          }
+        }
+      }
+    },
+    "journal.editor.title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Daily Note"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "每日记事"
+          }
+        }
+      }
+    },
+    "journal.empty" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No note for this day"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "这一天还没有记事"
+          }
+        }
+      }
+    },
+    "journal.privacy" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Saved on this device and included in encrypted Pulse backups."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "保存在本机，并包含在 Pulse 加密备份中。"
+          }
+        }
+      }
+    },
+    "journal.section.title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Daily Note"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "每日记事"
+          }
+        }
+      }
+    },
+    "journal.validation_format" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Use no more than %1$lld characters and %2$lld lines."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "最多 %1$lld 个字符、%2$lld 行。"
           }
         }
       }

@@ -1,6 +1,6 @@
 # Pulse 1.1 实现与验收状态
 
-更新时间：2026-08-15
+更新时间：2026-08-17
 
 当前 checkout 结论：**1.1 (4) ENGINEERING CANDIDATE / INTERFACE CANDIDATE / DISTRIBUTION NO-GO**。
 
@@ -10,12 +10,12 @@
 
 - 最低部署版本为 iOS / iPadOS 18.0；App 与 Widget 版本统一为 `1.1 (4)`。
 - `PulseRepository` 独占 Habit、CheckInRecord 与 ImprintMedia 的事实写入；页面和 Widget 只消费不可变快照。
-- SwiftData 只接受 `PulseSchema 1.1.0` 精确 marker。当前仍处于首次公开发布前，旧内部安装要求清洁安装，不保留 schema 1.0 迁移分支或双轨消费者。
+- SwiftData 只接受 `PulseSchema 1.1.1` 精确 marker。当前仍处于首次公开发布前，实验性 1.1.0 与更旧内部安装要求清洁安装，不保留迁移分支或双轨消费者。
 - 正式 store 只有 App Group 下 `Library/Application Support/Pulse/Pulse.store`；媒体只有 `Media/originals`、`Media/thumbnails` 与事务用 `Media/staging`。
 - 每个逻辑日最多一条媒体。签到与媒体是独立事实：删除媒体不影响签到；删除签到保留媒体并解除关联；同日重新签到重新关联。
 - 图片处理只接受用户主动拍摄，统一去元数据并生成 JPEG 原图与缩略图；相机不可用、拒绝或失败时明确报错，不回退相册、样例图或占位图。
 - 原图和缩略图各自保存 byteCount 与 SHA-256；不可变 UUID 路径、路径穿越、符号链接、尺寸上限、孤儿文件与损坏文件都由正式仓储和启动审计处理。
-- `.pulsebackup` 只有 container v2 / payload v2。Manifest、签到、原图与缩略图逐条 AES-256-GCM 认证；错误口令、篡改、缺失、额外、重复、未知版本或超限均失败关闭，v1 不读取。
+- `.pulsebackup` 只有 container v2 / payload v3。Manifest、签到、记事、原图与缩略图逐条 AES-256-GCM 认证；Record 的两个记事字段必须显式存在。错误口令、篡改、缺字段、缺失、额外、重复、未知版本或超限均失败关闭，payload v1/v2 与 container v1 不读取。
 - 恢复先在受保护隔离目录完成解密和全部身份验证，再经用户确认替换正式数据；提交前失败回收新文件，提交后的孤儿清理由启动审计收敛，不能误删已提交文件。
 - 照片从不进入 Widget、Live Activity、Lock Screen、StandBy、通知或共享偏好。
 
@@ -30,6 +30,9 @@
 
 ## 本轮 clean break
 
+- 每日记事成为 `CheckInRecord` 的可编辑注释：最多 120 字、4 行，非法输入明确拒绝；签到时可原子写入，签到后由唯一 Repository 更新接口补写、编辑或清空。Widget/Live Activity 先签到及同日并发不会丢失空记录上的用户输入，已有记事绝不被重复签到覆盖。
+- 静野、纸页手记、潮痕档案保持功能等价：均可查看和编辑记事，并保留照片、月历、漏签和统计。纸页手记只改变构图与输入前置方式；默认主题继续是已验收基线静野。编辑强调色进入品牌令牌，日期使用集中 Locale 格式，提示轮换使用稳定逻辑日映射。
+- 删除签到会同时删除其记事并在确认中明确后果；当天照片仍作为独立事实保留。三个无引用的手记探索 HTML 已删除，有效结论只存在于正式合同、代码和 String Catalog。
 - 品牌颜色由 `design/brand-tokens.json` 生成；主导航为状态式悬浮底栏等现行结构。全 App 外观可持续改画，以代码与人工截图为准。
 - 今日主动作支持单击签到与 0.45 秒长按“签到并拍照”；长按先权威签到再请求相机，VoiceOver 提供独立动作。待签到进入时最多一次有限呼吸；权威提交后才播放成功反馈；Reduce Motion 使用静态等价。
 - 高阶权益在独立权益页；价格只读 StoreKit，已交付能力只读 `PulseEnhancementContract.currentCapabilities`。Widget 画廊收费卡以标题行“锁 + 高级功能”徽标作为唯一购买页入口，不再保留卡片底部的重复查看按钮。末项权益与恢复购买须能完整滚到购买条上方。
@@ -50,13 +53,13 @@
 
 ## 当前自动化与构建证据
 
-验证环境：macOS 26.6、Xcode 26.6（17F113）、iPhone 17 Pro / iOS 26.5 Simulator（arm64）。
+验证环境：macOS 26.6、Xcode 26.4（17E192）、iPhone 16 Pro / iOS 18.6 Simulator（arm64）。
 
-- 八式 Home Screen Widget 共享渲染器与唯一“萤火日晕”Live Activity 共享渲染器已落地；锁屏圆弧端点与萤火点由同一极坐标几何计算，compact / expanded 显示 attributes 中的真实提醒时间。本轮 153 项单元/集成测试与 22 项 UI 测试全部通过；锁屏明暗态、完成态、compact、expanded 与无障碍大字号均有确定性快照。真实 Lock Screen / Dynamic Island、最大 Dynamic Type、通知到达、设备锁定 Intent 认证和 StoreKit Sandbox 仍需真机取证。在这些证据完成前保持 **ENGINEERING CANDIDATE / INTERFACE CANDIDATE**。
+- 八式 Home Screen Widget 共享渲染器与唯一“萤火日晕”Live Activity 共享渲染器已落地；锁屏圆弧端点与萤火点由同一极坐标几何计算，compact / expanded 显示 attributes 中的真实提醒时间。本轮 172 项单元/集成测试与 26 项 UI 测试全部通过；新增覆盖记事校验/编辑/清空/并发、schema marker、payload v3 必需字段、三主题能力等价。未签名 Release generic-iOS Build 与 Analyze 通过，品牌资产、JSON 和 diff 静态门禁通过。真实 Lock Screen / Dynamic Island、最大 Dynamic Type、通知到达、设备锁定 Intent 认证、记事真机输入和 StoreKit Sandbox 仍需取证。在这些证据完成前保持 **ENGINEERING CANDIDATE / INTERFACE CANDIDATE**。
 - 媒体自动化覆盖独立删除/重新关联、同日替换、文件安装/读取/审计、缩略图损坏、无相册回退、v2 归档往返、随机性、错误口令、篡改、v1 拒绝、缺条目与缩略图身份不匹配。
 - 本轮有八式画廊待办/完成共 16 张原始截图及部分 ImageRenderer 附件；单卡变化预览约 5 秒（早/日/晚/完成串联），各段 ≤ 两秒。这只证明 App 内共享 Renderer 预览，仍为 **INTERFACE CANDIDATE**；不能代替真实 Widget host、系统 reload、Lock Screen kind、Clear/vibrant、Reduce Motion 或真机体验 GO。
-- 本轮未签名 Release `generic/platform=iOS Simulator` 构建通过；Debug 静态分析通过；Swift 警告按错误处理。
-- 24 项品牌生成资产检查通过（含 AppIcon 三外观、小尺寸评审图与 Live Activity 语义色）。App、InfoPlist 与 Widget String Catalog / plist 可解析。
+- 本轮未签名 Release `generic/platform=iOS` Build 与 Analyze 通过；Swift 警告按错误处理。
+- 36 项品牌生成输出检查通过（含 AppIcon 三外观、小尺寸评审图、纸页手记强调色与 Live Activity 语义色）。App、InfoPlist 与 Widget String Catalog / plist 可解析。
 - `git diff --check` 通过；生产 Swift 源码没有 TODO/FIXME/HACK、相册回退、样例照片或演示数据路径。
 
 ## 仍为 NO-GO 的证据
@@ -75,7 +78,7 @@ Build 2 曾生成、上传并由内部 TestFlight 验证；Apple Delivery UUID �
 
 ## 下一步顺序
 
-1. 在真实 iPhone / iPad 关闭媒体、权限、低存储、恢复和无障碍门禁，记录设备、系统版本、步骤与结果。
+1. 在真实 iPhone / iPad 关闭记事输入/编辑/删除、三主题切换、媒体、权限、低存储、恢复和无障碍门禁，记录设备、系统版本、步骤与结果。
 2. 回归通知、Widget、scheduled Live Activity 与 StoreKit Sandbox；这些能力与照片事实互不兜底。
 3. 完成当前 `1.1 (4)` 的签名 Archive 和完整产物审计，再进入 TestFlight 清洁安装。
 4. 用小规模真实使用先发现理解和摩擦问题；留存或“岁月流影”付费判断按预登记实验扩大样本，不等待某个通用整数才继续工程开发。

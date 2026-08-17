@@ -9,7 +9,7 @@ final class ImprintMediaRepositoryTests: XCTestCase {
         let clock = MutableMediaClock(now: date(hour: 9))
         let repository = try makeRepository(clock: clock)
         let habit = try repository.primaryHabit(systemTimeZone: .gmt)
-        let receipt = try repository.checkIn(habitID: habit.id)
+        let receipt = try repository.checkIn(habitID: habit.id, journalNote: nil)
         let media = try repository.upsertMedia(
             draft(
                 habitID: habit.id,
@@ -25,7 +25,7 @@ final class ImprintMediaRepositoryTests: XCTestCase {
         XCTAssertNil(try XCTUnwrap(repository.allMedia(habitID: habit.id).first).recordID)
 
         clock.now = date(hour: 10)
-        let secondReceipt = try repository.checkIn(habitID: habit.id)
+        let secondReceipt = try repository.checkIn(habitID: habit.id, journalNote: nil)
         XCTAssertNotEqual(secondReceipt.recordID, receipt.recordID)
         XCTAssertEqual(
             try XCTUnwrap(repository.allMedia(habitID: habit.id).first).recordID,
@@ -46,7 +46,7 @@ final class ImprintMediaRepositoryTests: XCTestCase {
             XCTAssertEqual(error as? PulseCoreError, .invalidMedia)
         }
 
-        let receipt = try repository.checkIn(habitID: habit.id)
+        let receipt = try repository.checkIn(habitID: habit.id, journalNote: nil)
         let first = try repository.upsertMedia(
             draft(
                 habitID: habit.id,

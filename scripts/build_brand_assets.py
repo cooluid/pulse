@@ -32,6 +32,7 @@ COLOR_ASSETS = {
     "PulseActivityLockScreenFirefly": "activityLockScreenFirefly",
     "PulseActivityMark": "activityMark",
     "PulseBackground": "background",
+    "PulseEditorialAccent": "editorialAccent",
     "PulseField": "field",
     "PulseGrass": "grass",
     "PulseGrassForeground": "grassForeground",

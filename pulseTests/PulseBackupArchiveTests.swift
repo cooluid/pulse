@@ -11,7 +11,7 @@ final class PulseBackupArchiveTests: XCTestCase {
     func testExportedContentTypeRemainsSinglePulseArchiveType() {
         XCTAssertEqual(UTType.pulseBackup.identifier, PulseBackupContract.contentTypeIdentifier)
         XCTAssertEqual(PulseBackupContract.containerVersion, 2)
-        XCTAssertEqual(PulseBackupContract.payloadSchemaVersion, 2)
+        XCTAssertEqual(PulseBackupContract.payloadSchemaVersion, 3)
     }
 
     func testBackupExportCarriesANonemptySuggestedFilename() throws {
@@ -43,8 +43,10 @@ final class PulseBackupArchiveTests: XCTestCase {
             stagingDirectoryURL: stagingURL,
             passphrase: passphrase
         )
-        XCTAssertEqual(decoded.payload.schemaVersion, 2)
+        XCTAssertEqual(decoded.payload.schemaVersion, 3)
         XCTAssertEqual(decoded.payload.records.count, 1)
+        XCTAssertEqual(decoded.payload.records.first?.journalNote, "Stayed focused")
+        XCTAssertEqual(decoded.payload.records.first?.journalNoteModifiedAt, checkedNoteDate)
         XCTAssertEqual(decoded.payload.media.count, 1)
         let media = try XCTUnwrap(decoded.payload.media.first)
         XCTAssertEqual(
@@ -194,6 +196,45 @@ final class PulseBackupArchiveTests: XCTestCase {
         }
     }
 
+    func testPayloadThreeRequiresExplicitJournalFieldsAndRejectsPayloadTwo() throws {
+        let fixture = try makeMediaFixture()
+        let encoded = try PulseBackupPayloadCodec.encode(fixture.payload)
+        var object = try XCTUnwrap(
+            try JSONSerialization.jsonObject(with: encoded) as? [String: Any]
+        )
+        var records = try XCTUnwrap(object["records"] as? [[String: Any]])
+        XCTAssertEqual(records.count, 1)
+        XCTAssertTrue(records[0].keys.contains("journalNote"))
+        XCTAssertTrue(records[0].keys.contains("journalNoteModifiedAt"))
+        XCTAssertEqual(records[0]["journalNote"] as? String, "Stayed focused")
+        XCTAssertNotNil(records[0]["journalNoteModifiedAt"] as? String)
+
+        var unknownFieldObject = object
+        var unknownFieldRecords = records
+        unknownFieldRecords[0]["legacyNote"] = "must fail closed"
+        unknownFieldObject["records"] = unknownFieldRecords
+        XCTAssertThrowsError(
+            try PulseBackupPayloadCodec.decode(
+                try JSONSerialization.data(withJSONObject: unknownFieldObject)
+            )
+        ) { error in
+            XCTAssertEqual(error as? PulseCoreError, .invalidBackup)
+        }
+
+        records[0].removeValue(forKey: "journalNote")
+        object["records"] = records
+        let missingField = try JSONSerialization.data(withJSONObject: object)
+        XCTAssertThrowsError(try PulseBackupPayloadCodec.decode(missingField)) { error in
+            XCTAssertEqual(error as? PulseCoreError, .invalidBackup)
+        }
+
+        object["schemaVersion"] = 2
+        let payloadTwo = try JSONSerialization.data(withJSONObject: object)
+        XCTAssertThrowsError(try PulseBackupPayloadCodec.decode(payloadTwo)) { error in
+            XCTAssertEqual(error as? PulseCoreError, .unsupportedBackupPayloadVersion(2))
+        }
+    }
+
     func testShortPassphraseAndMissingMediaFailClosed() throws {
         let fixture = try makeMediaFixture()
         XCTAssertThrowsError(
@@ -273,7 +314,9 @@ final class PulseBackupArchiveTests: XCTestCase {
                     logicalDay: "2024-01-01",
                     checkedAt: checkedAt,
                     createdAt: checkedAt,
-                    timeZoneIdentifier: "UTC"
+                    timeZoneIdentifier: "UTC",
+                    journalNote: "Stayed focused",
+                    journalNoteModifiedAt: checkedAt
                 )
             ],
             media: [
@@ -299,6 +342,10 @@ final class PulseBackupArchiveTests: XCTestCase {
             ]
         )
         return (root, payload, [originalPath: original, thumbnailPath: thumbnail])
+    }
+
+    private var checkedNoteDate: Date {
+        Date(timeIntervalSince1970: 1_704_067_200).addingTimeInterval(3_600)
     }
 
     private func makeTemporaryDirectory() throws -> URL {

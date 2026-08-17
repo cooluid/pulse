@@ -54,6 +54,11 @@ enum PulseDataValidator {
                   record.checkedAt >= payload.habit.createdAt,
                   record.createdAt >= record.checkedAt,
                   record.createdAt <= payload.exportedAt,
+                  record.journalNote == nil || record.journalNoteModifiedAt != nil,
+                  record.journalNoteModifiedAt == nil
+                    || record.journalNoteModifiedAt! >= record.checkedAt,
+                  record.journalNoteModifiedAt == nil
+                    || record.journalNoteModifiedAt! <= payload.exportedAt,
                   logicalDays.insert(logicalDay).inserted,
                   recordIDs.insert(record.id).inserted,
                   isValidJournalNote(record.journalNote) else {
@@ -130,9 +135,11 @@ enum PulseDataValidator {
     }
 
     private static func isValidJournalNote(_ note: String?) -> Bool {
-        guard let note else { return true }
-        let normalized = JournalNote.normalized(note)
-        return normalized == note
+        do {
+            return try JournalNote.validatedStoredText(note) == note
+        } catch {
+            return false
+        }
     }
 
     private static func validPath(_ path: String, prefix: String) -> Bool {

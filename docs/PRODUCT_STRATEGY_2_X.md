@@ -93,7 +93,7 @@ flowchart LR
 - `CheckInRecord` 是历史和统计的唯一事实源，不持久化连续天数等派生状态。
 - `recordKey`、SwiftData 唯一约束和 Repository 幂等写入共同保护同日唯一性。
 - 项目创建时区、当前签到时区和记录发生时区分开保存，历史不会随设备时区漂移。
-- 加密归档 v2 包含签到、媒体清单、原图与缩略图；每条目独立认证，并对原图和缩略图执行 byteCount + SHA-256 校验。错误口令、篡改、缺失/额外条目、未知版本与超限失败关闭。
+- 加密归档 container v2 / payload v3 包含签到、记事、媒体清单、原图与缩略图；每条目独立认证，并对原图和缩略图执行 byteCount + SHA-256 校验。错误口令、篡改、缺字段、缺失/额外条目、未知版本与超限失败关闭。
 - 所有事实写入集中在 `SwiftDataPulseRepository`，媒体文件集中在 `PulseMediaFileStore` actor；AppModel 串行化操作，提醒使用快照与 revision 防止陈旧结果回写。
 - 品牌、双语、动态字体、Reduce Motion、iPhone/iPad 布局和错误状态已经进入正式实现。
 

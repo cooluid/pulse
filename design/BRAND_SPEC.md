@@ -1,6 +1,6 @@
 # 一日一印（Pulse）1.1 品牌与界面规范
 
-更新日期：2026-08-15  
+更新日期：2026-08-17
 适用范围：App（今日 / 历史 / 设置 / 权益 / 入镜）、Widget、AppIcon、商店素材
 
 ## 全局原则（全产品）
@@ -10,7 +10,7 @@
 3. **改画不必写长文**：默认只改代码与必要短说明；不为同步文档停工。
 4. **硬边界只有**：领域事实、签到成功时序、隐私、可访问性语义、权益与 StoreKit 诚实、颜色工程入口、系统控件可预期行为。
 
-HTML 原型仅为探索参考。
+探索稿不是设计权威；获准结论进入正式实现与本规范后，临时原型必须清理。
 
 ## 0. 品牌名称
 
@@ -31,7 +31,7 @@ HTML 原型仅为探索参考。
 
 新增或改色：先改令牌，再生成并 `--check`。**允许**为新氛围扩展令牌；不是“禁止新画法”。
 
-常见语义角色：`background`、`surface`、`grass` / `grassForeground`、`action` / `actionForeground`、`ink` / `secondary`、`field`、`separator` / `shadow`。潮痕档案主题使用 `archiveSky` / `archiveSkyDeep` 作为天空底，`archiveMist` / `archiveTide` / `archiveDepth` / `archiveNight` 表达单一潮位面，`archivePaper` 承担档案纸面，`archiveCopper` 只标记完成痕迹，`archiveForeground` 保证深色表面内容对比；页面不得私写第二套色板。Widget 的纸张、天光与水面分别使用 `widgetPaper`、`widgetSkyGlow`、`widgetWater`，不以局部 RGB 模拟材质。萤火日晕按系统表面拆分为 `activityIslandFirefly`、`activityIslandTime` 与 `activityLockScreenFirefly`：黑底灵动岛使用白色光源，浅底锁屏保留琥珀色对比，不复用一个含义含混的颜色角色。
+常见语义角色：`background`、`surface`、`grass` / `grassForeground`、`action` / `actionForeground`、`ink` / `secondary`、`field`、`separator` / `shadow`。纸页手记只使用 `editorialAccent` 标记编辑与完成线索；潮痕档案主题使用 `archiveSky` / `archiveSkyDeep` 作为天空底，`archiveMist` / `archiveTide` / `archiveDepth` / `archiveNight` 表达单一潮位面，`archivePaper` 承担档案纸面，`archiveCopper` 只标记完成痕迹，`archiveForeground` 保证深色表面内容对比；页面不得私写第二套色板。Widget 的纸张、天光与水面分别使用 `widgetPaper`、`widgetSkyGlow`、`widgetWater`，不以局部 RGB 模拟材质。萤火日晕按系统表面拆分为 `activityIslandFirefly`、`activityIslandTime` 与 `activityLockScreenFirefly`：黑底灵动岛使用白色光源，浅底锁屏保留琥珀色对比，不复用一个含义含混的颜色角色。
 
 完成 / 漏签 / 今天等状态不能**只靠颜色**到不可辨（形状、文案或无障碍标签须有等价）。
 
@@ -53,6 +53,7 @@ HTML 原型仅为探索参考。
 - 成功视觉 / 触觉只在 Repository 权威提交之后；短写入可不闪加载器。
 - Reduce Motion：有限呼吸与环境动效停止，终态仍正确。
 - 今日入镜是签到后的伴生入口，不是第三套底栏；真实照片在详情 Sheet，与历史共用详情骨架与管理菜单语义。
+- 每日记事是签到记录的可选内容；纸页手记可在签到前突出输入，所有主题在签到后都必须提供同一查看与编辑能力。
 - Accessibility 大字号下主动作须可完整阅读与操作（可改布局，不可裁切到不可用）。
 - 内容变长时顺序下移，不重叠、不靠设备特判硬修。
 
@@ -93,7 +94,7 @@ HTML 原型仅为探索参考。
 - 详情：日期、签到状态、真实照片为主体；照片按真实宽高比显示，不歪曲事实裁切成“好看但假”。
 - 删除照片与删除签到：独立事务、独立确认；destructive 语义清楚。
 - 月份切换：可见按钮 / 滑动 / VoiceOver 同一状态函数。
-- 明暗外观：跟随系统 / 浅 / 深；界面主题：静野 / 潮痕档案。两条轴独立、全局持久化；界面主题统一驱动共享背景、品牌标、主导航、今日与历史构图，不能只做局部换色。潮痕档案以单一潮位面、档案纸面与铜色完成印迹构成唯一视觉语法；签到事实提交后潮位才推进，Reduce Motion 与非活动场景使用正确静态终态。语言：跟随系统 / English / 简体中文；App 与 Widget 内容 Locale 一致。
+- 明暗外观：跟随系统 / 浅 / 深；界面主题：静野 / 纸页手记 / 潮痕档案。两条轴独立、全局持久化；界面主题统一驱动共享背景、品牌标、主导航、今日与历史构图，不能只做局部换色。三套主题必须保留签到、记事、照片、月历、漏签与统计的能力等价；纸页手记以编辑线、衬线标题和短手记形成视觉语法，潮痕档案以单一潮位面、档案纸面与铜色完成印迹构成视觉语法。成功外观只能在签到事实提交后推进，Reduce Motion 与非活动场景使用正确静态终态。语言：跟随系统 / English / 简体中文；App 与 Widget 内容 Locale 一致。
 - Sheet / `confirmationDialog` 使用系统来源锚定与可预期 detent 行为（工程稳定），不锁视觉皮肤。
 
 ## 8. AppIcon 工程

@@ -90,7 +90,7 @@ enum PulseWidgetSharedRuntime {
               habit.isIdentityConfirmed else {
             throw RuntimeError.missingPrimaryHabit
         }
-        return try repository.checkIn(habitID: habit.id)
+        return try repository.checkIn(habitID: habit.id, journalNote: nil)
     }
 
     @discardableResult
@@ -108,7 +108,7 @@ enum PulseWidgetSharedRuntime {
             throw RuntimeError.missingPrimaryHabit
         }
 
-        let receipt = try repository.checkIn(habitID: habit.id)
+        let receipt = try repository.checkIn(habitID: habit.id, journalNote: nil)
         let today = LogicalDay.resolve(
             at: clock.now,
             timeZone: habit.timeZone

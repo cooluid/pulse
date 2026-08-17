@@ -686,7 +686,7 @@ private struct PulseVisualThemeChoice: View {
                     PulseScreenBackground()
                     PulseFieldBackground(presentation: .today, allowsMotion: false)
 
-                    PulseBrandMark(size: PulseDesign.minimumHitTarget)
+                    themePreviewMark
                 }
                 .frame(maxWidth: .infinity)
                 .frame(height: PulseDesign.themePreviewHeight)
@@ -745,6 +745,32 @@ private struct PulseVisualThemeChoice: View {
             PulseDesign.editorialAccent
         case .quietField:
             PulseDesign.grass
+        }
+    }
+
+    @ViewBuilder
+    private var themePreviewMark: some View {
+        switch theme {
+        case .editorialJournal:
+            HStack(spacing: PulseDesign.spacing8) {
+                VStack(alignment: .leading, spacing: PulseDesign.spacing4) {
+                    Rectangle()
+                        .fill(PulseDesign.ink)
+                        .frame(width: 36, height: PulseDesign.emphasisLineWidth)
+                    Rectangle()
+                        .fill(PulseDesign.secondary)
+                        .frame(width: 52, height: PulseDesign.thinLineWidth)
+                    Rectangle()
+                        .fill(PulseDesign.editorialAccent)
+                        .frame(width: 44, height: PulseDesign.thinLineWidth)
+                }
+
+                Image(systemName: "checkmark.circle")
+                    .foregroundStyle(PulseDesign.editorialAccent)
+            }
+            .accessibilityHidden(true)
+        case .quietField, .tideArchive:
+            PulseBrandMark(size: PulseDesign.minimumHitTarget)
         }
     }
 }

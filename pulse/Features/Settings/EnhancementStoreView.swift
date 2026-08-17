@@ -41,11 +41,7 @@ struct EnhancementStoreView: View {
                 .allowsHitTesting(false)
                 .accessibilityElement(children: .ignore)
                 .accessibilityLabel(visualTheme.localizedName(locale: locale))
-                .accessibilityIdentifier(
-                    visualTheme == .tideArchive
-                        ? "store.theme.tide-archive"
-                        : "store.theme.quiet-field"
-                )
+                .accessibilityIdentifier(storeThemeIdentifier)
         }
         .safeAreaInset(edge: .bottom, spacing: PulseDesign.spacing8) {
             purchaseAction
@@ -62,10 +58,19 @@ struct EnhancementStoreView: View {
 
     @ViewBuilder
     private var hero: some View {
-        if visualTheme == .tideArchive {
+        switch visualTheme {
+        case .tideArchive:
             archiveHero
-        } else {
+        case .editorialJournal, .quietField:
             quietHero
+        }
+    }
+
+    private var storeThemeIdentifier: String {
+        switch visualTheme {
+        case .editorialJournal: "store.theme.editorial-journal"
+        case .quietField: "store.theme.quiet-field"
+        case .tideArchive: "store.theme.tide-archive"
         }
     }
 

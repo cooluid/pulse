@@ -1,8 +1,8 @@
 # Pulse 1.1 数据保护与加密归档合同
 
-版本：2.0
+版本：2.1
 状态：Canonical Contract
-更新时间：2026-08-12
+更新时间：2026-08-17
 
 ## 1. 安全目标
 
@@ -23,7 +23,7 @@ App 与 Widget 不声明 `com.apple.developer.default-data-protection`。iOS 在
 
 ## 3. 唯一归档协议
 
-文件类型 `co.fanr.pulse.backup`，扩展名 `.pulsebackup`；container `2`，payload `2`。v1 与预发布明文格式不是兼容输入。
+文件类型 `co.fanr.pulse.backup`，扩展名 `.pulsebackup`；container `2`，payload `3`。payload v1/v2、container v1 与预发布明文格式不是兼容输入。
 
 ### 3.1 固定头（大端序）
 
@@ -45,7 +45,7 @@ App 与 Widget 不声明 `com.apple.developer.default-data-protection`。iOS 在
 
 固定头 + salt + 条目头 + 条目名称全部作为 AES-GCM authenticated data。每个条目使用同一派生密钥、独立随机 nonce 和 AES-256-GCM 密封。解析按条目有界读取和解密，不把整个多年归档加载到内存。
 
-Manifest 是确定性 sorted-key UTF-8 JSON，包含 Habit、Records 和全部 Media 元数据；上限 16 MiB、记录 50,000、媒体 20,000。单原图最大 24 MiB、缩略图最大 2 MiB、归档文件最大 512 GiB。所有 UInt64 到内存长度的转换必须先受当前条目上限约束。
+Manifest 是确定性 sorted-key UTF-8 JSON，包含 Habit、Records 和全部 Media 元数据；根对象及每类 payload 都先校验允许/必需字段集合，未知字段失败关闭。每条 Record 必须显式包含可空 `journalNote` 与 `journalNoteModifiedAt`，缺字段不得自动解释为 `nil`。上限 16 MiB、记录 50,000、媒体 20,000。单原图最大 24 MiB、缩略图最大 2 MiB、归档文件最大 512 GiB。所有 UInt64 到内存长度的转换必须先受当前条目上限约束。
 
 ### 3.3 KDF 与口令
 
@@ -68,6 +68,7 @@ Manifest 是确定性 sorted-key UTF-8 JSON，包含 Habit、Records 和全部 M
 
 - 同一 payload/口令两次文件字节不同；正确口令可完整 round-trip。
 - header、salt、entry header/name/nonce/ciphertext/tag 任一变化失败；缺条目、重条目、额外条目、路径穿越、超限和尾随失败。
+- payload v2、Record 缺少任一记事字段、非法记事内容或无效修改时间全部失败关闭；空记事使用显式 JSON `null`。
 - 多媒体归档以逐文件内存峰值运行；低空间写入不覆盖旧归档或当前媒体。
 - 清除/恢复中断后数据库不指向半文件；下次启动审计收敛孤儿。
 - 真机验证首次解锁前后文件保护、后台/Widget 边界和导出到文件提供器。

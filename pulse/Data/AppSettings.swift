@@ -206,7 +206,7 @@ final class AppSettings {
             StorageKey.hapticsEnabled: true,
             StorageKey.weekStart: WeekStart.monday.rawValue,
             StorageKey.theme: AppTheme.system.rawValue,
-            StorageKey.visualTheme: PulseVisualTheme.editorialJournal.rawValue,
+            StorageKey.visualTheme: PulseVisualTheme.quietField.rawValue,
             StorageKey.mediaInvitationEnabled: true
         ])
         let sharedSnapshot: PulseSharedSettings.Snapshot
@@ -253,7 +253,7 @@ final class AppSettings {
         reminderTime = .standard
         weekStart = .monday
         theme = .system
-        visualTheme = .editorialJournal
+        visualTheme = .quietField
         mediaInvitationEnabled = true
         language = .system
         isLoading = false

@@ -7,6 +7,7 @@ public enum PulseCoreError: Error, Equatable, Sendable {
     case invalidCheckIn
     case primaryHabitUnavailable
     case invalidHabitIdentity
+    case invalidJournalNote
     case backupUnavailable
     case invalidBackupPassphrase
     case backupAuthenticationFailed

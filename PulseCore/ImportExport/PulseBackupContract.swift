@@ -4,7 +4,7 @@ public enum PulseBackupContract {
     public static let contentTypeIdentifier = "co.fanr.pulse.backup"
     public static let fileExtension = "pulsebackup"
     public static let payloadFormatIdentifier = "co.fanr.pulse.payload"
-    public static let payloadSchemaVersion = 2
+    public static let payloadSchemaVersion = 3
     public static let containerVersion: UInt16 = 2
     public static let keyDerivationIdentifier: UInt8 = 1
     public static let cipherIdentifier: UInt8 = 1
@@ -72,6 +72,7 @@ public struct PulseBackupPayload: Codable, Sendable {
         public let createdAt: Date
         public let timeZoneIdentifier: String
         public let journalNote: String?
+        public let journalNoteModifiedAt: Date?
 
         public init(
             id: UUID,
@@ -79,14 +80,63 @@ public struct PulseBackupPayload: Codable, Sendable {
             checkedAt: Date,
             createdAt: Date,
             timeZoneIdentifier: String,
-            journalNote: String? = nil
+            journalNote: String? = nil,
+            journalNoteModifiedAt: Date? = nil
         ) {
             self.id = id
             self.logicalDay = logicalDay
             self.checkedAt = checkedAt
             self.createdAt = createdAt
             self.timeZoneIdentifier = timeZoneIdentifier
-            self.journalNote = JournalNote.normalized(journalNote)
+            self.journalNote = journalNote
+            self.journalNoteModifiedAt = journalNoteModifiedAt
+        }
+
+        private enum CodingKeys: String, CodingKey {
+            case id
+            case logicalDay
+            case checkedAt
+            case createdAt
+            case timeZoneIdentifier
+            case journalNote
+            case journalNoteModifiedAt
+        }
+
+        public init(from decoder: Decoder) throws {
+            let container = try decoder.container(keyedBy: CodingKeys.self)
+            guard container.contains(.journalNote),
+                  container.contains(.journalNoteModifiedAt) else {
+                throw DecodingError.keyNotFound(
+                    container.contains(.journalNote)
+                        ? CodingKeys.journalNoteModifiedAt
+                        : CodingKeys.journalNote,
+                    .init(
+                        codingPath: container.codingPath,
+                        debugDescription: "Pulse backup record is missing required journal fields."
+                    )
+                )
+            }
+            id = try container.decode(UUID.self, forKey: .id)
+            logicalDay = try container.decode(String.self, forKey: .logicalDay)
+            checkedAt = try container.decode(Date.self, forKey: .checkedAt)
+            createdAt = try container.decode(Date.self, forKey: .createdAt)
+            timeZoneIdentifier = try container.decode(String.self, forKey: .timeZoneIdentifier)
+            journalNote = try container.decodeIfPresent(String.self, forKey: .journalNote)
+            journalNoteModifiedAt = try container.decodeIfPresent(
+                Date.self,
+                forKey: .journalNoteModifiedAt
+            )
+        }
+
+        public func encode(to encoder: Encoder) throws {
+            var container = encoder.container(keyedBy: CodingKeys.self)
+            try container.encode(id, forKey: .id)
+            try container.encode(logicalDay, forKey: .logicalDay)
+            try container.encode(checkedAt, forKey: .checkedAt)
+            try container.encode(createdAt, forKey: .createdAt)
+            try container.encode(timeZoneIdentifier, forKey: .timeZoneIdentifier)
+            try container.encode(journalNote, forKey: .journalNote)
+            try container.encode(journalNoteModifiedAt, forKey: .journalNoteModifiedAt)
         }
     }
 
@@ -215,6 +265,7 @@ public enum PulseBackupPayloadCodec {
             throw PulseCoreError.unsupportedBackupPayloadVersion(envelope.schemaVersion)
         }
         do {
+            try validateManifestShape(data)
             let payload = try decoder.decode(PulseBackupPayload.self, from: data)
             _ = try PulseDataValidator.validate(payload)
             return payload
@@ -236,6 +287,75 @@ public enum PulseBackupPayloadCodec {
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .iso8601
         return decoder
+    }
+
+    private static func validateManifestShape(_ data: Data) throws {
+        guard let root = try JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+            throw PulseCoreError.invalidBackup
+        }
+        try requireKeys(
+            in: root,
+            required: ["format", "schemaVersion", "exportedAt", "habit", "records", "media"],
+            allowed: ["format", "schemaVersion", "exportedAt", "habit", "records", "media"]
+        )
+
+        guard let habit = root["habit"] as? [String: Any],
+              let records = root["records"] as? [[String: Any]],
+              let media = root["media"] as? [[String: Any]] else {
+            throw PulseCoreError.invalidBackup
+        }
+        try requireKeys(
+            in: habit,
+            required: [
+                "id", "name", "isIdentityConfirmed", "createdAt", "startLogicalDay",
+                "creationTimeZoneIdentifier", "timeZoneIdentifier",
+            ],
+            allowed: [
+                "id", "name", "purpose", "isIdentityConfirmed", "createdAt",
+                "startLogicalDay", "creationTimeZoneIdentifier", "timeZoneIdentifier",
+            ]
+        )
+        for record in records {
+            try requireKeys(
+                in: record,
+                required: [
+                    "id", "logicalDay", "checkedAt", "createdAt", "timeZoneIdentifier",
+                    "journalNote", "journalNoteModifiedAt",
+                ],
+                allowed: [
+                    "id", "logicalDay", "checkedAt", "createdAt", "timeZoneIdentifier",
+                    "journalNote", "journalNoteModifiedAt",
+                ]
+            )
+        }
+        for item in media {
+            try requireKeys(
+                in: item,
+                required: [
+                    "id", "logicalDay", "capturedAt", "createdAt", "modifiedAt",
+                    "originalRelativePath", "thumbnailRelativePath", "byteCount",
+                    "thumbnailByteCount", "pixelWidth", "pixelHeight", "sha256",
+                    "thumbnailSHA256", "cameraPosition",
+                ],
+                allowed: [
+                    "id", "recordID", "logicalDay", "capturedAt", "createdAt", "modifiedAt",
+                    "originalRelativePath", "thumbnailRelativePath", "byteCount",
+                    "thumbnailByteCount", "pixelWidth", "pixelHeight", "sha256",
+                    "thumbnailSHA256", "cameraPosition",
+                ]
+            )
+        }
+    }
+
+    private static func requireKeys(
+        in object: [String: Any],
+        required: Set<String>,
+        allowed: Set<String>
+    ) throws {
+        let actual = Set(object.keys)
+        guard required.isSubset(of: actual), actual.isSubset(of: allowed) else {
+            throw PulseCoreError.invalidBackup
+        }
     }
 }
 

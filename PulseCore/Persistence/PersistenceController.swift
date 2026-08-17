@@ -2,7 +2,7 @@ import Foundation
 import SwiftData
 
 enum PulseSchema: VersionedSchema {
-    static let versionIdentifier = Schema.Version(1, 1, 0)
+    static let versionIdentifier = Schema.Version(1, 1, 1)
 
     static var models: [any PersistentModel.Type] {
         [Habit.self, CheckInRecord.self, ImprintMedia.self]
@@ -11,7 +11,7 @@ enum PulseSchema: VersionedSchema {
 
 public enum PersistenceController {
     private static let schemaMarkerFilename = ".pulse-schema-version"
-    private static let schemaMarkerValue = "1.1.0"
+    private static let schemaMarkerValue = "1.1.1"
 
     public static func makeContainer(
         storeName: String = PulseStoreContract.storeName,

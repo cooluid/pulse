@@ -1606,7 +1606,7 @@ final class PulseWidgetSnapshotTests: XCTestCase {
             habitID: initialHabit.id,
             identity: HabitIdentity(userName: "每天走路", userPurpose: "保持活力")
         )
-        _ = try repository.checkIn(habitID: habit.id)
+        _ = try repository.checkIn(habitID: habit.id, journalNote: nil)
         clock.now = makeDate(2026, 8, 11, 12, timeZone: timeZone)
 
         let plan = try XCTUnwrap(
@@ -1838,7 +1838,7 @@ final class PulseWidgetSnapshotTests: XCTestCase {
             habitID: initialHabit.id,
             identity: HabitIdentity(userName: "每天写一页", userPurpose: nil)
         )
-        let receipt = try repository.checkIn(habitID: habit.id)
+        let receipt = try repository.checkIn(habitID: habit.id, journalNote: nil)
 
         let plan = try XCTUnwrap(
             PulseWidgetSnapshotReader.readTimelinePlan(

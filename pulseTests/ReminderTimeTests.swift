@@ -61,7 +61,7 @@ final class AppSettingsTests: XCTestCase {
             defaults: defaults
         )
         XCTAssertEqual(settings.theme, .system)
-        XCTAssertEqual(settings.visualTheme, .editorialJournal)
+        XCTAssertEqual(settings.visualTheme, .quietField)
         XCTAssertEqual(settings.language, .system)
 
         settings.theme = .dark
@@ -128,11 +128,11 @@ final class AppSettingsTests: XCTestCase {
         settings.reset()
 
         XCTAssertEqual(settings.theme, .system)
-        XCTAssertEqual(settings.visualTheme, .editorialJournal)
+        XCTAssertEqual(settings.visualTheme, .quietField)
         XCTAssertEqual(settings.language, .system)
         let reloaded = try makeSettings(defaults: defaults)
         XCTAssertEqual(reloaded.theme, .system)
-        XCTAssertEqual(reloaded.visualTheme, .editorialJournal)
+        XCTAssertEqual(reloaded.visualTheme, .quietField)
         XCTAssertEqual(reloaded.language, .system)
     }
 

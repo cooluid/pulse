@@ -14,7 +14,6 @@ final class PulseFlowUITests: XCTestCase {
         app.launchEnvironment["PULSE_UI_TEST_STORE_ID"] = UUID().uuidString
         app.launchEnvironment["PULSE_UI_TEST_NOW"] = "2026-08-10T04:00:00Z"
         app.launchEnvironment["PULSE_UI_TEST_ENHANCEMENT_PURCHASED"] = "0"
-        app.launchEnvironment["PULSE_UI_TEST_VISUAL_THEME"] = "quietField"
     }
 
     private func launchAndConfirmDefaultCommitment() {
@@ -706,6 +705,86 @@ final class PulseFlowUITests: XCTestCase {
                 .waitForExistence(timeout: 5)
         )
         XCTAssertFalse(app.buttons["today.checkin.button"].isEnabled)
+    }
+
+    func testJournalPageKeepsNotePhotoHistoryAndEditingCapabilitiesUnified() throws {
+        configureApp()
+        launchAndConfirmDefaultCommitment()
+
+        app.buttons["settings.navigation.open.today"].tap()
+        let journalTheme = app.buttons["settings.visual-theme.editorialJournal"]
+        XCTAssertTrue(journalTheme.waitForExistence(timeout: 3))
+        journalTheme.tap()
+        app.buttons["navigation.back"].tap()
+
+        XCTAssertTrue(
+            app.descendants(matching: .any)["today.theme.editorial-journal"]
+                .waitForExistence(timeout: 3)
+        )
+        let inlineNote = app.descendants(matching: .any)["editorial.journal.input"]
+        XCTAssertTrue(inlineNote.waitForExistence(timeout: 3))
+        replaceText(in: inlineNote, with: "Today stayed focused")
+
+        let checkInButton = app.buttons["today.checkin.button"]
+        XCTAssertTrue(checkInButton.isEnabled)
+        checkInButton.tap()
+        XCTAssertFalse(checkInButton.isEnabled)
+        XCTAssertTrue(app.buttons["today.media.capture.button"].waitForExistence(timeout: 3))
+
+        let noteSummary = app.descendants(matching: .any)["journal.summary.text"]
+        XCTAssertTrue(noteSummary.waitForExistence(timeout: 3))
+        XCTAssertEqual(noteSummary.label, "Today stayed focused")
+        app.buttons["journal.edit.button"].tap()
+
+        let editor = app.descendants(matching: .any)["journal.editor.input"]
+        XCTAssertTrue(editor.waitForExistence(timeout: 3))
+        let save = app.buttons["journal.editor.save"]
+        XCTAssertFalse(save.isEnabled)
+        replaceText(in: editor, with: "Edited after check-in")
+        XCTAssertTrue(save.isEnabled)
+        save.tap()
+        XCTAssertTrue(noteSummary.waitForExistence(timeout: 3))
+        XCTAssertEqual(noteSummary.label, "Edited after check-in")
+
+        app.buttons["navigation.section.history"].tap()
+        XCTAssertTrue(
+            app.descendants(matching: .any)["history.theme.editorial-journal"]
+                .waitForExistence(timeout: 3)
+        )
+        XCTAssertTrue(app.descendants(matching: .any)["history.stat.total"].exists)
+        let checkedDay = app.descendants(matching: .any)["calendar.day.2026-08-10"]
+        XCTAssertTrue(checkedDay.waitForExistence(timeout: 3))
+        checkedDay.tap()
+        XCTAssertTrue(
+            app.descendants(matching: .any)["journal.summary"]
+                .waitForExistence(timeout: 3)
+        )
+        XCTAssertEqual(
+            app.descendants(matching: .any)
+                .matching(identifier: "journal.summary.text")
+                .firstMatch
+                .label,
+            "Edited after check-in"
+        )
+
+        let detailEdit = try XCTUnwrap(
+            app.buttons
+                .matching(identifier: "journal.edit.button")
+                .allElementsBoundByIndex
+                .first(where: \.isHittable)
+        )
+        detailEdit.tap()
+        let deleteNote = app.buttons["journal.delete.button"]
+        XCTAssertTrue(deleteNote.waitForExistence(timeout: 3))
+        deleteNote.tap()
+        let confirmDeleteNote = app.buttons["journal.delete.confirmation.action"]
+        XCTAssertTrue(confirmDeleteNote.waitForExistence(timeout: 3))
+        confirmDeleteNote.tap()
+        let clearedNote = app.descendants(matching: .any)
+            .matching(identifier: "journal.summary.text")
+            .firstMatch
+        XCTAssertTrue(clearedNote.waitForExistence(timeout: 3))
+        XCTAssertEqual(clearedNote.label, "这一天还没有记事")
     }
 
     func testTideArchiveHistoryRemainsStructuredInDarkAppearance() throws {
