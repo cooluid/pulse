@@ -120,31 +120,10 @@ struct HistoryView: View {
                 switch contentMode {
                 case .calendar:
                     animatedCalendar
-                        .padding(.horizontal, PulseDesign.spacing12)
-                        .padding(.bottom, PulseDesign.spacing16)
-                        .background(
-                            PulseDesign.quietSurface,
-                            in: RoundedRectangle(
-                                cornerRadius: PulseDesign.quietBubbleCornerRadius,
-                                style: .continuous
-                            )
-                        )
-                        .overlay {
-                            RoundedRectangle(
-                                cornerRadius: PulseDesign.quietBubbleCornerRadius,
-                                style: .continuous
-                            )
-                            .stroke(
-                                PulseDesign.quietDivider,
-                                lineWidth: PulseDesign.thinLineWidth
-                            )
-                        }
                 case .journal:
                     JournalHistorySection(model: model, selectedDay: $selectedDay)
                 }
             }
-            .id(contentMode)
-            .transition(.opacity)
         }
         .padding(.top, PulseDesign.spacing8)
         .padding(.bottom, PulseDesign.spacing24)
@@ -164,8 +143,6 @@ struct HistoryView: View {
                     JournalHistorySection(model: model, selectedDay: $selectedDay)
                 }
             }
-            .id(contentMode)
-            .transition(.opacity)
         }
         .padding(.bottom, PulseDesign.spacing24)
     }
@@ -184,8 +161,6 @@ struct HistoryView: View {
                     JournalHistorySection(model: model, selectedDay: $selectedDay)
                 }
             }
-            .id(contentMode)
-            .transition(.opacity)
         }
         .padding(.top, PulseDesign.spacing8)
         .padding(.bottom, PulseDesign.spacing24)
@@ -326,6 +301,12 @@ struct HistoryView: View {
                 lineWidth: PulseDesign.thinLineWidth
             )
         }
+        .animation(
+            reduceMotion
+                ? nil
+                : .easeInOut(duration: PulseDesign.primaryContentTransitionDuration),
+            value: contentMode
+        )
     }
 
     private func historyModeButton(_ mode: HistoryContentMode) -> some View {
@@ -333,15 +314,7 @@ struct HistoryView: View {
 
         return Button {
             guard contentMode != mode else { return }
-            if reduceMotion {
-                contentMode = mode
-            } else {
-                withAnimation(
-                    .easeInOut(duration: PulseDesign.primaryContentTransitionDuration)
-                ) {
-                    contentMode = mode
-                }
-            }
+            contentMode = mode
         } label: {
             Label(mode.titleKey, systemImage: mode.systemImage)
                 .font(

@@ -115,6 +115,28 @@ final class ThemeExperienceContractTests: XCTestCase {
         XCTAssertFalse(designSource.contains("PulseFieldContourRing"))
     }
 
+    func testHistoryModeSwitchKeepsPageLayoutOutOfThePickerAnimation() throws {
+        let historySource = try source("pulse/Features/History/HistoryView.swift")
+        let quietStart = try XCTUnwrap(
+            historySource.range(of: "private var quietHistoryContent: some View")
+        )
+        let standardStart = try XCTUnwrap(
+            historySource.range(of: "private var standardHistoryContent: some View")
+        )
+        let quietContent = historySource[quietStart.lowerBound..<standardStart.lowerBound]
+
+        XCTAssertFalse(quietContent.contains(".background("))
+        XCTAssertFalse(quietContent.contains(".overlay"))
+        XCTAssertFalse(historySource.contains(".id(contentMode)"))
+        XCTAssertFalse(historySource.contains(".transition(.opacity)"))
+        XCTAssertTrue(
+            historySource.contains(
+                "guard contentMode != mode else { return }\n            contentMode = mode"
+            )
+        )
+        XCTAssertTrue(historySource.contains("value: contentMode"))
+    }
+
     func testRemovedThemeSpecificContractsDoNotRemain() throws {
         let repositoryRoot = repositoryRoot
         let productionRoots = [
