@@ -16,6 +16,7 @@
 
 ## 文档入口
 
+- [代理须知](./AGENTS.md)：编码代理的工作人格与合同入口
 - [文档总览](./docs/README.md)
 - [产品需求](./docs/PRODUCT_REQUIREMENTS.md)
 - [1.1 发布范围合同](./docs/RELEASE_SCOPE_1_1.md)
