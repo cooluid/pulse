@@ -22,7 +22,8 @@ struct PulseReminderLiveActivity: Widget {
                 phase: context.state.phase,
                 reminderDate: context.attributes.reminderDate,
                 timeZoneIdentifier: context.attributes.timeZoneIdentifier,
-                locale: locale
+                locale: locale,
+                animatesAppearance: true
             )
                 .activityBackgroundTint(nil)
                 .activitySystemActionForegroundColor(nil)
@@ -33,7 +34,8 @@ struct PulseReminderLiveActivity: Widget {
                 DynamicIslandExpandedRegion(.leading) {
                     PulseReminderActivityMark(
                         phase: context.state.phase,
-                        layout: .islandExpanded
+                        layout: .islandExpanded,
+                        animatesAppearance: true
                     )
                 }
 
@@ -59,7 +61,8 @@ struct PulseReminderLiveActivity: Widget {
                 PulseReminderActivityMark(
                     phase: context.state.phase,
                     layout: .islandCompact,
-                    locale: locale
+                    locale: locale,
+                    animatesAppearance: true
                 )
             } compactTrailing: {
                 EmptyView()
@@ -67,7 +70,8 @@ struct PulseReminderLiveActivity: Widget {
                 PulseReminderActivityMark(
                     phase: context.state.phase,
                     layout: .islandMinimal,
-                    locale: locale
+                    locale: locale,
+                    animatesAppearance: true
                 )
             }
             .keylineTint(PulseWidgetDesign.activityIslandFirefly)

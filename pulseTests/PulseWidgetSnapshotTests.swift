@@ -286,10 +286,17 @@ final class PulseWidgetSnapshotTests: XCTestCase {
                     canvasRadius + 0.0001
                 )
                 XCTAssertLessThan(metrics.fireflyDiameter, metrics.ringDiameter)
-                XCTAssertEqual(
+                XCTAssertGreaterThan(
                     metrics.fireflyGlowDiameter,
-                    metrics.fireflyDiameter,
-                    accuracy: 0.0001
+                    metrics.fireflyDiameter
+                )
+                XCTAssertLessThanOrEqual(
+                    abs(offset.width) + metrics.fireflyGlowDiameter / 2,
+                    canvasRadius + 0.0001
+                )
+                XCTAssertLessThanOrEqual(
+                    abs(offset.height) + metrics.fireflyGlowDiameter / 2,
+                    canvasRadius + 0.0001
                 )
                 let ringOuterRadius = metrics.ringDiameter / 2 + metrics.lineWidth / 2
                 XCTAssertLessThanOrEqual(ringOuterRadius, canvasRadius + 0.0001)
@@ -1808,6 +1815,23 @@ final class PulseWidgetSnapshotTests: XCTestCase {
 
     func testWidgetMotionSpecificationsRespectSystemLimitAndMaterialIdentity() {
         let materials = PulseWidgetMotionPresentation.Material.allCases
+
+        XCTAssertLessThanOrEqual(
+            PulseWidgetDesign.activityAppearanceAnimationDuration,
+            PulseWidgetMotionPresentation.systemMaximumAnimationDuration
+        )
+        XCTAssertLessThanOrEqual(
+            PulseWidgetDesign.activityCompletionAnimationDuration,
+            PulseWidgetMotionPresentation.systemMaximumAnimationDuration
+        )
+        XCTAssertLessThanOrEqual(
+            PulseWidgetDesign.activityCopyTransitionDuration,
+            PulseWidgetMotionPresentation.systemMaximumAnimationDuration
+        )
+        XCTAssertLessThan(
+            PulseWidgetDesign.activityAppearanceAnimationDuration,
+            PulseWidgetDesign.activityCompletionAnimationDuration
+        )
 
         XCTAssertEqual(
             PulseWidgetMotionPresentation.completionDuration(for: .starRing),

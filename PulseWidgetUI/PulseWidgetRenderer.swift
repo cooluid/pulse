@@ -2990,10 +2990,17 @@ enum PulseWidgetDesign {
     static let activityIslandForeground = Color.white
     static let activityLockScreenBackground = Color(uiColor: .systemBackground)
     static let activityCompletionAnimationDuration: TimeInterval = 1.25
+    static let activityAppearanceAnimationDuration: TimeInterval = 0.85
+    static let activityCopyTransitionDuration: TimeInterval = 0.32
+    static let activityAppearanceInitialCoreScale: CGFloat = 0.68
+    static let activityAppearanceInitialGlowScale: CGFloat = 0.72
+    static let activityAppearanceInitialGlowOpacity = 0.18
+    static let activityPendingCoreHighlightOpacity = 0.24
+    static let activityLockScreenPendingRingOpacity = 0.72
     static let activityIslandFireflyGlowCoreOpacity = 0.90
     static let activityIslandFireflyGlowMiddleOpacity = 0.46
     static let activityIslandSecondaryOpacity = 0.56
-    static let activityIslandActionFillOpacity = 0.16
+    static let activityIslandActionFillOpacity = 0.12
     static let activityExpandedMarkSize: CGFloat = 36
     static let activityCompactMarkSize: CGFloat = 26
     static let activityMinimalMarkSize: CGFloat = 26
@@ -3006,6 +3013,7 @@ enum PulseWidgetDesign {
     static let activityActionHorizontalPadding: CGFloat = 15
     static let activityActionMinimumWidth: CGFloat = 72
     static let activityActionMinimumHeight: CGFloat = 44
+    static let activityIslandActionVisibleHeight: CGFloat = 36
     static let activityPreviewItemSpacing: CGFloat = 12
     static let activityPreviewHorizontalInset: CGFloat = 14
     static let activityPreviewVerticalInset: CGFloat = 12
