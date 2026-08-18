@@ -2232,21 +2232,54 @@
       }
     },
     "feedback.value.runtime.failed" : {
+      "extractionState" : "stale",
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Failed" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "失败" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Failed"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "失败"
+          }
+        }
       }
     },
     "feedback.value.runtime.loading" : {
+      "extractionState" : "stale",
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Loading" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "载入中" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Loading"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "载入中"
+          }
+        }
       }
     },
     "feedback.value.runtime.ready" : {
+      "extractionState" : "stale",
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Ready" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "就绪" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ready"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "就绪"
+          }
+        }
       }
     },
     "feedback.value.unavailable" : {
