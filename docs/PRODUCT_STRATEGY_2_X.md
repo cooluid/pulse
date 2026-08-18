@@ -106,7 +106,7 @@ flowchart LR
 - 记录只有完成事实，没有可选的轻量上下文，也没有真实的缺席说明。
 - 今日入镜、Widget 和一次买断权益已形成工程实现；Watch、同步与 Plus 仍无生产基础设施。
 - 没有真实留存、付费转化或目标用户访谈证据。
-- 发布合同已记录公开隐私政策与产品支持 URL，App 内使用集中链接；对应 `site/` 以正式 submodule 纳入主仓版本边界。公开可访问性、线上部署 commit 与 submodule 锁定值一致性、App Store Connect 元数据仍需作为发布证据分别确认。
+- 发布合同已记录公开隐私政策与产品支持 URL，App 内使用集中链接。`/Users/fanr/Documents/work/coco-web` 是公开正文与生产部署的唯一权威；`site/` submodule 只保留到 `fanr.co/pulse` 正式 URL 的稳定跳转，不得复制隐私、支持或产品正文。公开可访问性、线上部署 commit、跳转目标与 App Store Connect 元数据仍需作为发布证据分别确认。
 
 ## 5. 市场与竞品快照
 

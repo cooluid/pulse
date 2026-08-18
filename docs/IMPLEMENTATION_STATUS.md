@@ -61,6 +61,7 @@
 - 本轮未签名 Release `generic/platform=iOS` Build 与 Analyze 通过；Swift 警告按错误处理。
 - 36 项品牌生成输出检查通过（含 AppIcon 三外观、小尺寸评审图、纸页手记强调色与 Live Activity 语义色）。App、InfoPlist 与 Widget String Catalog / plist 可解析。
 - `git diff --check` 通过；生产 Swift 源码没有 TODO/FIXME/HACK、相册回退、样例照片或演示数据路径。
+- 公开产品、隐私与支持正文已在唯一权威 `/Users/fanr/Documents/work/coco-web` 提交 `75929e408c647cc34e4a334c9ab0c19c5ab03aac` 并发布到 `/var/www/fanr.co.releases/75929e408c64-20260818T095124Z`；三个正式 HTTPS 页面均返回 200，线上与本地 HTML SHA-256 一致。正文已覆盖本地记事/照片、相机权限、独立删除、完整加密备份、当前密码下限与安全提示、免费通知/高级 Live Activity 和 StoreKit 边界，不再保留旧 JSON、12 字符或“提醒增强”描述。`site` submodule 只保留正式 URL 跳转，三条跳转测试与 0 漏洞依赖审计通过，不再维护第二套正文。
 
 ## 仍为 NO-GO 的证据
 
@@ -68,7 +69,7 @@
 - 真实 iPad：相机能力差异、横竖屏、分屏、大字号和文件导入/导出。
 - 数据恢复：从真实设备导出带多张原图的 v2 归档，在另一清洁安装恢复并逐张核对；清除与卸载后确认无非预期残留。
 - 系统与无障碍：真人 VoiceOver、最大 Dynamic Type、Reduce Motion、提高对比度、通知、Widget host、iOS 26 Live Activity / Dynamic Island 和 StoreKit Sandbox/TestFlight。Home Screen 外观以同设备、同尺寸真机复拍为准；模拟器安全区 / 静态渲染 / 构建通过不能写成主屏视觉 GO。
-- 分发：当前源码的不可变提交、Apple Distribution Archive、签名/entitlement/dSYM/隐私清单核验、TestFlight 处理与清洁安装、App Store 商品/隐私答案/截图/文案和公开支持/隐私站点一致性。
+- 分发：当前源码的不可变提交、Apple Distribution Archive、签名/entitlement/dSYM/隐私清单核验、TestFlight 处理与清洁安装，以及 App Store 商品/隐私答案/截图/文案仍待关闭。公开站点的当前 1.1 正文一致性已关闭，但正式候选仍须重新记录站点提交、HTTP 状态与哈希。
 
 ## 历史证据边界
 
