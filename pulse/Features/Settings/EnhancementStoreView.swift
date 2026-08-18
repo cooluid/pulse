@@ -167,7 +167,7 @@ struct EnhancementStoreView: View {
     private var sunlitHero: some View {
         HStack(alignment: .center, spacing: PulseDesign.spacing16) {
             VStack(alignment: .leading, spacing: PulseDesign.spacing12) {
-                Label("store.lifetime_badge", systemImage: "arrow.up.right")
+                Label("store.lifetime_badge", systemImage: "checkmark.seal.fill")
                     .font(.caption.weight(.black))
                     .foregroundStyle(PulseDesign.sunlitChromeForeground)
                     .padding(.horizontal, PulseDesign.spacing12)
