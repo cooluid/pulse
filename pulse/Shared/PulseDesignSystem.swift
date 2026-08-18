@@ -30,6 +30,20 @@ enum PulseDesign {
     static let background = Color("PulseBackground")
     static let surface = Color("PulseSurface")
     static let navigationGlyphSurface = Color("PulseNavigationGlyphSurface")
+    static let quietBlue = Color("PulseQuietBlue")
+    static let quietCanvas = Color("PulseQuietCanvas")
+    static let quietChrome = Color("PulseQuietChrome")
+    static let quietChromeForeground = Color("PulseQuietChromeForeground")
+    static let quietDivider = Color("PulseQuietDivider")
+    static let quietGreen = Color("PulseQuietGreen")
+    static let quietGreenDeep = Color("PulseQuietGreenDeep")
+    static let quietGreenSoft = Color("PulseQuietGreenSoft")
+    static let quietInk = Color("PulseQuietInk")
+    static let quietMuted = Color("PulseQuietMuted")
+    static let quietOnGreen = Color("PulseQuietOnGreen")
+    static let quietPink = Color("PulseQuietPink")
+    static let quietSurface = Color("PulseQuietSurface")
+    static let quietYellow = Color("PulseQuietYellow")
     static let grass = Color("PulseGrass")
     static let grassForeground = Color("PulseGrassForeground")
     static let action = Color("PulseAction")
@@ -130,21 +144,15 @@ enum PulseDesign {
     static let mediaCompanionThumbnailSize: CGFloat = 28
     static let thinLineWidth: CGFloat = 1
     static let emphasisLineWidth: CGFloat = 2
-    static let fieldBandWidth: CGFloat = 1
-    static let fieldRingCount = 3
-    static let fieldWidthRatio = 2.1
-    static let fieldHeightRatio = 1.05
-    static let fieldRingInset: CGFloat = 76
-    static let fieldVerticalPositionRatio = 0.275
-    static let regularWidthFieldWidthRatio = 1.45
-    static let regularWidthFieldHeightRatio = 0.82
-    static let regularWidthFieldRingInset: CGFloat = 96
-    static let regularWidthFieldVerticalPositionRatio = 0.46
-    static let fieldFadeInEndRatio = 0.08
-    static let fieldFadeStartRatio = 0.52
-    static let fieldFadeEndRatio = 0.72
-    static let regularWidthFieldFadeStartRatio = 0.66
-    static let regularWidthFieldFadeEndRatio = 0.86
+    static let quietCompanionWidth: CGFloat = 184
+    static let quietCompanionHeight: CGFloat = 164
+    static let quietCompanionLineWidth: CGFloat = 2
+    static let quietCompanionShadowOpacity = 0.18
+    static let quietCompanionShadowRadius: CGFloat = 20
+    static let quietCompanionShadowY: CGFloat = 12
+    static let quietBubbleCornerRadius: CGFloat = 28
+    static let quietBubbleTailSize: CGFloat = 18
+    static let quietConfettiSize: CGFloat = 9
     static let navigationShadowOpacity = 0.12
     static let navigationShadowRadius: CGFloat = 30
     static let navigationShadowY: CGFloat = 10
@@ -176,8 +184,9 @@ enum PulseDesign {
     static let idleAuraCollapsedOpacity = 0.72
     static let idleAuraRingExpandedOpacity = 0.16
     static let completionRippleOpacity = 0.44
-    static let fieldOutlineOpacity = 0.28
-    static let fieldBandOpacity = 0.12
+    static let quietAmbientBackOpacity = 0.34
+    static let quietAmbientFrontOpacity = 0.16
+    static let quietAmbientConfettiOpacity = 0.58
 
     static let storeBrandMarkSize: CGFloat = 72
     static let storePreviewWidth: CGFloat = 248
@@ -229,18 +238,9 @@ enum PulseDesign {
     static let idleAuraBreathHalfDuration = 0.7
     static let ambientFieldMinimumInterval = 1.0 / 12.0
     static let ambientFieldCycleDuration = 18.0
-    static let ambientFieldBreathAmplitude: CGFloat = 0.009
-    static let ambientFieldHorizontalDrift: CGFloat = 7
-    static let ambientFieldVerticalDrift: CGFloat = 4
-    static let ambientFieldRotationAmplitude = 0.45
-    static let todayFieldOpacityMultiplier = 1.28
-    static let todayFlowBandBaseOpacity = 0.075
-    static let todayFlowBandDrift: CGFloat = 6
-    static let quietAmbientObjectOpacity = 0.24
-    static let quietAmbientObjectXRatio = 0.94
-    static let quietAmbientObjectYRatio = 0.38
-    static let quietAmbientObjectSwayDegrees = 2.2
-    static let quietAmbientObjectTravel: CGFloat = 5
+    static let quietAmbientObjectOpacity = 0.38
+    static let quietAmbientObjectSwayDegrees = 2.8
+    static let quietAmbientObjectTravel: CGFloat = 7
     static let quietAmbientLeafRotationDegrees = 28.0
     static let editorialAmbientRuleCount = 4
     static let editorialAmbientRuleOpacity = 0.16
@@ -323,15 +323,15 @@ enum PulseDesign {
             )
         case .quietField:
             PulseThemePalette(
-                canvas: background,
-                canvasDeep: background,
-                surface: surface,
-                ink: ink,
-                muted: secondary,
-                divider: separator,
-                accent: action,
-                accentForeground: actionForeground,
-                accentSoft: field.opacity(0.14)
+                canvas: quietCanvas,
+                canvasDeep: quietCanvas,
+                surface: quietSurface,
+                ink: quietInk,
+                muted: quietMuted,
+                divider: quietDivider,
+                accent: quietGreen,
+                accentForeground: quietOnGreen,
+                accentSoft: quietGreenSoft
             )
         }
     }
@@ -347,7 +347,7 @@ enum PulseDesign {
         case .tideArchive:
             archiveAccent
         case .quietField:
-            grass
+            quietGreen
         }
     }
 
@@ -394,8 +394,11 @@ struct PulseScreenBackground: View {
                 endPoint: .bottomTrailing
             )
             .ignoresSafeArea()
-        case .editorialJournal, .quietField:
+        case .editorialJournal:
             PulseDesign.background
+                .ignoresSafeArea()
+        case .quietField:
+            PulseDesign.quietCanvas
                 .ignoresSafeArea()
         }
     }
@@ -434,54 +437,19 @@ struct PulseFieldBackground: View {
             paused: !allowsAmbientMotion
         )) { timeline in
             GeometryReader { proxy in
-                let usesRegularWidthGeometry = horizontalSizeClass == .regular
                 let phase = ambientPhase(at: timeline.date)
                 let counterPhase = ambientPhase(
                     at: timeline.date.addingTimeInterval(PulseDesign.ambientFieldCycleDuration * 0.37)
                 )
 
-                PulseAmbientFieldCanvas(
+                PulseQuietFieldCanvas(
                     size: proxy.size,
-                    widthRatio: usesRegularWidthGeometry
-                        ? PulseDesign.regularWidthFieldWidthRatio
-                        : PulseDesign.fieldWidthRatio,
-                    heightRatio: usesRegularWidthGeometry
-                        ? PulseDesign.regularWidthFieldHeightRatio
-                        : PulseDesign.fieldHeightRatio,
-                    ringInset: usesRegularWidthGeometry
-                        ? PulseDesign.regularWidthFieldRingInset
-                        : PulseDesign.fieldRingInset,
-                    verticalPositionRatio: usesRegularWidthGeometry
-                        ? PulseDesign.regularWidthFieldVerticalPositionRatio
-                        : PulseDesign.fieldVerticalPositionRatio,
                     phase: phase,
                     counterPhase: counterPhase,
-                    showsFlowLayer: presentation == .today
+                    showsPlayfulLayer: presentation == .today,
+                    usesRegularWidthGeometry: horizontalSizeClass == .regular
                 )
             }
-        }
-        .mask {
-            LinearGradient(
-                stops: [
-                    .init(color: .clear, location: 0),
-                    .init(color: .black, location: PulseDesign.fieldFadeInEndRatio),
-                    .init(
-                        color: .black,
-                        location: horizontalSizeClass == .regular
-                            ? PulseDesign.regularWidthFieldFadeStartRatio
-                            : PulseDesign.fieldFadeStartRatio
-                    ),
-                    .init(
-                        color: .clear,
-                        location: horizontalSizeClass == .regular
-                            ? PulseDesign.regularWidthFieldFadeEndRatio
-                            : PulseDesign.fieldFadeEndRatio
-                    )
-                ],
-                startPoint: .top,
-                endPoint: .bottom
-            )
-            .ignoresSafeArea()
         }
         .ignoresSafeArea()
         .allowsHitTesting(false)
@@ -702,135 +670,92 @@ private struct PulseArchiveFieldCanvas: View {
     }
 }
 
-private struct PulseAmbientFieldCanvas: View {
+private struct PulseQuietFieldCanvas: View {
     let size: CGSize
-    let widthRatio: CGFloat
-    let heightRatio: CGFloat
-    let ringInset: CGFloat
-    let verticalPositionRatio: CGFloat
     let phase: Double
     let counterPhase: Double
-    let showsFlowLayer: Bool
+    let showsPlayfulLayer: Bool
+    let usesRegularWidthGeometry: Bool
 
     var body: some View {
         ZStack {
-            if showsFlowLayer {
-                flowBands
-            }
-            upperFlowLine
-            contours
-            lowerFlowLine
+            rearField
+            frontField
+            if showsPlayfulLayer { quietConfetti }
             quietFieldSprig
         }
+        .frame(width: size.width, height: size.height)
+    }
+
+    private var rearField: some View {
+        PulseQuietCompanionShape()
+            .fill(PulseDesign.quietGreenSoft)
+            .frame(
+                width: size.width * (usesRegularWidthGeometry ? 0.62 : 0.92),
+                height: size.height * 0.34
+            )
+            .rotationEffect(.degrees(-11 + sin(counterPhase) * 0.6))
+            .opacity(PulseDesign.quietAmbientBackOpacity)
+            .position(
+                x: size.width * (usesRegularWidthGeometry ? 0.84 : 0.82),
+                y: size.height * 0.12 + CGFloat(sin(phase)) * 4
+            )
+    }
+
+    private var frontField: some View {
+        PulseQuietCompanionShape()
+            .fill(PulseDesign.quietGreen)
+            .frame(
+                width: size.width * (usesRegularWidthGeometry ? 0.55 : 0.98),
+                height: size.height * 0.31
+            )
+            .rotationEffect(.degrees(13 + cos(phase) * 0.7))
+            .opacity(PulseDesign.quietAmbientFrontOpacity)
+            .position(
+                x: size.width * (usesRegularWidthGeometry ? 0.12 : 0.05),
+                y: size.height * 0.82 + CGFloat(cos(counterPhase)) * 5
+            )
+    }
+
+    private var quietConfetti: some View {
+        ZStack {
+            confetti("circle.fill", color: PulseDesign.quietBlue, x: 0.10, y: 0.30)
+            confetti("sparkle", color: PulseDesign.quietPink, x: 0.91, y: 0.43)
+            confetti("triangle.fill", color: PulseDesign.quietYellow, x: 0.14, y: 0.68)
+            confetti("diamond.fill", color: PulseDesign.quietGreen, x: 0.88, y: 0.72)
+            confetti("circle.fill", color: PulseDesign.quietPink, x: 0.78, y: 0.24)
+        }
+        .opacity(PulseDesign.quietAmbientConfettiOpacity)
+    }
+
+    private func confetti(
+        _ systemName: String,
+        color: Color,
+        x: CGFloat,
+        y: CGFloat
+    ) -> some View {
+        Image(systemName: systemName)
+            .font(.system(size: PulseDesign.quietConfettiSize, weight: .black))
+            .foregroundStyle(color)
+            .rotationEffect(.degrees(sin(phase + Double(x)) * 12))
+            .position(
+                x: size.width * x + CGFloat(cos(counterPhase + Double(y))) * 3,
+                y: size.height * y + CGFloat(sin(phase + Double(x))) * 4
+            )
     }
 
     private var quietFieldSprig: some View {
-        ZStack(alignment: .bottom) {
-            Capsule()
-                .fill(PulseDesign.field)
-                .frame(width: PulseDesign.thinLineWidth, height: PulseDesign.spacing32)
-
-            HStack(spacing: 0) {
-                Capsule()
-                    .fill(PulseDesign.grass)
-                    .frame(width: PulseDesign.spacing16, height: PulseDesign.spacing8)
-                    .rotationEffect(.degrees(-PulseDesign.quietAmbientLeafRotationDegrees))
-
-                Capsule()
-                    .fill(PulseDesign.grass)
-                    .frame(width: PulseDesign.spacing16, height: PulseDesign.spacing8)
-                    .rotationEffect(.degrees(PulseDesign.quietAmbientLeafRotationDegrees))
-            }
-            .offset(y: -PulseDesign.spacing16)
-        }
-        .opacity(PulseDesign.quietAmbientObjectOpacity * opacityMultiplier)
-        .rotationEffect(.degrees(
-            sin(counterPhase) * PulseDesign.quietAmbientObjectSwayDegrees
-        ), anchor: .bottom)
+        PulseQuietSprig()
+            .frame(width: PulseDesign.spacing32, height: PulseDesign.spacing32 + PulseDesign.spacing8)
+            .opacity(PulseDesign.quietAmbientObjectOpacity)
+            .rotationEffect(.degrees(
+                sin(counterPhase) * PulseDesign.quietAmbientObjectSwayDegrees
+            ), anchor: .bottom)
         .position(
-            x: size.width * PulseDesign.quietAmbientObjectXRatio
+            x: size.width * (usesRegularWidthGeometry ? 0.72 : 0.90)
                 + CGFloat(cos(phase)) * PulseDesign.quietAmbientObjectTravel,
-            y: size.height * PulseDesign.quietAmbientObjectYRatio
+            y: size.height * 0.54
         )
-    }
-
-    private var opacityMultiplier: Double {
-        showsFlowLayer ? PulseDesign.todayFieldOpacityMultiplier : 1
-    }
-
-    private var flowBands: some View {
-        ZStack {
-            PulseFieldFlowBand(verticalBias: 0.30, thickness: 0.075, direction: 1)
-                .fill(PulseDesign.field.opacity(PulseDesign.todayFlowBandBaseOpacity * 0.72))
-            PulseFieldFlowBand(verticalBias: 0.40, thickness: 0.090, direction: -1)
-                .fill(PulseDesign.field.opacity(PulseDesign.todayFlowBandBaseOpacity))
-            PulseFieldFlowBand(verticalBias: 0.50, thickness: 0.105, direction: 1)
-                .fill(PulseDesign.grass.opacity(PulseDesign.todayFlowBandBaseOpacity * 0.72))
-        }
-        .scaleEffect(x: 1.02 + CGFloat(sin(phase)) * 0.006, y: 1, anchor: .center)
-        .offset(
-            x: CGFloat(cos(counterPhase)) * PulseDesign.todayFlowBandDrift,
-            y: CGFloat(sin(phase)) * PulseDesign.ambientFieldVerticalDrift * 0.85
-        )
-    }
-
-    private var upperFlowLine: some View {
-        PulseFieldFlowLine(verticalBias: 0.34)
-            .stroke(
-                PulseDesign.field.opacity(PulseDesign.fieldBandOpacity * opacityMultiplier),
-                style: StrokeStyle(lineWidth: PulseDesign.thinLineWidth, lineCap: .round)
-            )
-            .offset(
-                x: CGFloat(cos(counterPhase))
-                    * PulseDesign.ambientFieldHorizontalDrift * 0.45,
-                y: CGFloat(sin(counterPhase))
-                    * PulseDesign.ambientFieldVerticalDrift * 0.55
-            )
-    }
-
-    private var contours: some View {
-        ZStack {
-            Ellipse()
-                .stroke(
-                    PulseDesign.field.opacity(PulseDesign.fieldOutlineOpacity * opacityMultiplier),
-                    lineWidth: PulseDesign.emphasisLineWidth
-                )
-                .frame(width: size.width * widthRatio, height: size.height * heightRatio)
-
-            ForEach(1...PulseDesign.fieldRingCount, id: \.self) { ring in
-                PulseFieldContourRing(
-                    size: size,
-                    widthRatio: widthRatio,
-                    heightRatio: heightRatio,
-                    ringInset: ringInset,
-                    ring: ring,
-                    opacityMultiplier: opacityMultiplier
-                )
-            }
-        }
-        .scaleEffect(1 + CGFloat(sin(phase)) * PulseDesign.ambientFieldBreathAmplitude)
-        .rotationEffect(.degrees(
-            sin(counterPhase) * PulseDesign.ambientFieldRotationAmplitude
-        ))
-        .offset(
-            x: CGFloat(sin(counterPhase)) * PulseDesign.ambientFieldHorizontalDrift,
-            y: CGFloat(cos(phase)) * PulseDesign.ambientFieldVerticalDrift
-        )
-        .position(x: size.width / 2, y: size.height * verticalPositionRatio)
-    }
-
-    private var lowerFlowLine: some View {
-        PulseFieldFlowLine(verticalBias: 0.57)
-            .stroke(
-                PulseDesign.field.opacity(
-                    PulseDesign.fieldBandOpacity * 0.72 * opacityMultiplier
-                ),
-                style: StrokeStyle(lineWidth: PulseDesign.thinLineWidth, lineCap: .round)
-            )
-            .offset(
-                x: -CGFloat(sin(phase)) * PulseDesign.ambientFieldHorizontalDrift * 0.55,
-                y: CGFloat(cos(counterPhase)) * PulseDesign.ambientFieldVerticalDrift * 0.7
-            )
     }
 }
 
@@ -886,91 +811,122 @@ private struct PulseEditorialFieldCanvas: View {
     }
 }
 
-private struct PulseFieldContourRing: View {
-    let size: CGSize
-    let widthRatio: CGFloat
-    let heightRatio: CGFloat
-    let ringInset: CGFloat
-    let ring: Int
-    let opacityMultiplier: Double
-
-    var body: some View {
-        Ellipse()
-            .stroke(
-                PulseDesign.field.opacity(ringOpacity),
-                lineWidth: PulseDesign.fieldBandWidth
-            )
-            .frame(width: ringWidth, height: ringHeight)
-    }
-
-    private var ringOpacity: Double {
-        (PulseDesign.fieldBandOpacity - Double(ring - 1) * 0.025) * opacityMultiplier
-    }
-
-    private var ringWidth: CGFloat {
-        max(0, size.width * widthRatio - CGFloat(ring) * ringInset)
-    }
-
-    private var ringHeight: CGFloat {
-        max(0, size.height * heightRatio - CGFloat(ring) * ringInset)
-    }
-}
-
-private struct PulseFieldFlowLine: Shape {
-    let verticalBias: CGFloat
-
+struct PulseQuietCompanionShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
-        path.move(to: CGPoint(x: rect.minX - rect.width * 0.08, y: rect.height * verticalBias))
-        path.addCurve(
-            to: CGPoint(x: rect.maxX + rect.width * 0.08, y: rect.height * (verticalBias + 0.03)),
-            control1: CGPoint(x: rect.width * 0.24, y: rect.height * (verticalBias - 0.12)),
-            control2: CGPoint(x: rect.width * 0.68, y: rect.height * (verticalBias + 0.15))
+        path.move(to: CGPoint(x: rect.width * 0.06, y: rect.height * 0.58))
+        path.addQuadCurve(
+            to: CGPoint(x: rect.width * 0.13, y: rect.height * 0.40),
+            control: CGPoint(x: rect.width * 0.05, y: rect.height * 0.49)
         )
-        return path
-    }
-}
-
-private struct PulseFieldFlowBand: Shape {
-    let verticalBias: CGFloat
-    let thickness: CGFloat
-    let direction: CGFloat
-
-    func path(in rect: CGRect) -> Path {
-        var path = Path()
-        let upperStart = rect.height * verticalBias
-        let upperEnd = rect.height * (verticalBias + 0.018 * direction)
-        let lowerStart = rect.height * (verticalBias + thickness)
-        let lowerEnd = rect.height * (verticalBias + thickness - 0.015 * direction)
-
-        path.move(to: CGPoint(x: rect.minX - rect.width * 0.08, y: upperStart))
-        path.addCurve(
-            to: CGPoint(x: rect.maxX + rect.width * 0.08, y: upperEnd),
-            control1: CGPoint(
-                x: rect.width * 0.28,
-                y: rect.height * (verticalBias - 0.055 * direction)
-            ),
-            control2: CGPoint(
-                x: rect.width * 0.68,
-                y: rect.height * (verticalBias + 0.070 * direction)
-            )
+        path.addLine(to: CGPoint(x: rect.width * 0.42, y: rect.height * 0.07))
+        path.addQuadCurve(
+            to: CGPoint(x: rect.width * 0.57, y: rect.height * 0.08),
+            control: CGPoint(x: rect.width * 0.49, y: rect.height * 0.01)
         )
-        path.addLine(to: CGPoint(x: rect.maxX + rect.width * 0.08, y: lowerEnd))
-        path.addCurve(
-            to: CGPoint(x: rect.minX - rect.width * 0.08, y: lowerStart),
-            control1: CGPoint(
-                x: rect.width * 0.70,
-                y: rect.height * (verticalBias + thickness + 0.050 * direction)
-            ),
-            control2: CGPoint(
-                x: rect.width * 0.25,
-                y: rect.height * (verticalBias + thickness - 0.040 * direction)
-            )
+        path.addLine(to: CGPoint(x: rect.width * 0.89, y: rect.height * 0.42))
+        path.addQuadCurve(
+            to: CGPoint(x: rect.width * 0.92, y: rect.height * 0.64),
+            control: CGPoint(x: rect.width * 0.98, y: rect.height * 0.52)
         )
+        path.addLine(to: CGPoint(x: rect.width * 0.78, y: rect.height * 0.87))
+        path.addQuadCurve(
+            to: CGPoint(x: rect.width * 0.65, y: rect.height * 0.93),
+            control: CGPoint(x: rect.width * 0.74, y: rect.height * 0.94)
+        )
+        path.addLine(to: CGPoint(x: rect.width * 0.25, y: rect.height * 0.93))
+        path.addQuadCurve(
+            to: CGPoint(x: rect.width * 0.12, y: rect.height * 0.84),
+            control: CGPoint(x: rect.width * 0.16, y: rect.height * 0.94)
+        )
+        path.addLine(to: CGPoint(x: rect.width * 0.06, y: rect.height * 0.58))
         path.closeSubpath()
         return path
     }
 }
+
+struct PulseQuietCompanionFace: View {
+    var isSmiling = true
+    var lineWidth: CGFloat = PulseDesign.quietCompanionLineWidth
+
+    var body: some View {
+        GeometryReader { proxy in
+            Path { path in
+                let width = proxy.size.width
+                let height = proxy.size.height
+                path.move(to: CGPoint(x: width * 0.37, y: height * 0.42))
+                path.addLine(to: CGPoint(x: width * 0.37, y: height * 0.49))
+                path.move(to: CGPoint(x: width * 0.63, y: height * 0.42))
+                path.addLine(to: CGPoint(x: width * 0.63, y: height * 0.49))
+                path.move(to: CGPoint(x: width * 0.40, y: height * 0.60))
+                if isSmiling {
+                    path.addCurve(
+                        to: CGPoint(x: width * 0.61, y: height * 0.60),
+                        control1: CGPoint(x: width * 0.43, y: height * 0.75),
+                        control2: CGPoint(x: width * 0.58, y: height * 0.75)
+                    )
+                } else {
+                    path.addLine(to: CGPoint(x: width * 0.60, y: height * 0.60))
+                }
+            }
+            .stroke(
+                PulseDesign.quietOnGreen,
+                style: StrokeStyle(lineWidth: lineWidth, lineCap: .round)
+            )
+        }
+        .accessibilityHidden(true)
+    }
+}
+
+struct PulseQuietSprig: View {
+    var body: some View {
+        ZStack(alignment: .bottom) {
+            Capsule()
+                .fill(PulseDesign.quietGreenDeep)
+                .frame(width: PulseDesign.emphasisLineWidth, height: PulseDesign.spacing32)
+
+            HStack(spacing: 0) {
+                Capsule()
+                    .fill(PulseDesign.quietGreen)
+                    .frame(width: PulseDesign.spacing16, height: PulseDesign.spacing8)
+                    .rotationEffect(.degrees(-PulseDesign.quietAmbientLeafRotationDegrees))
+
+                Capsule()
+                    .fill(PulseDesign.quietGreen)
+                    .frame(width: PulseDesign.spacing16, height: PulseDesign.spacing8)
+                    .rotationEffect(.degrees(PulseDesign.quietAmbientLeafRotationDegrees))
+            }
+            .offset(y: -PulseDesign.spacing16)
+        }
+        .accessibilityHidden(true)
+    }
+}
+
+struct PulseQuietSpeechBubbleShape: Shape {
+    func path(in rect: CGRect) -> Path {
+        let tail = min(PulseDesign.quietBubbleTailSize, rect.height * 0.20)
+        let bubbleRect = CGRect(
+            x: rect.minX,
+            y: rect.minY,
+            width: rect.width,
+            height: rect.height - tail * 0.58
+        )
+        var path = Path(
+            roundedRect: bubbleRect,
+            cornerRadius: min(PulseDesign.quietBubbleCornerRadius, bubbleRect.height * 0.45)
+        )
+        path.move(to: CGPoint(x: bubbleRect.minX + tail * 1.45, y: bubbleRect.maxY - 1))
+        path.addCurve(
+            to: CGPoint(x: bubbleRect.minX + tail * 0.62, y: rect.maxY),
+            control1: CGPoint(x: bubbleRect.minX + tail * 1.22, y: bubbleRect.maxY + tail * 0.24),
+            control2: CGPoint(x: bubbleRect.minX + tail * 0.88, y: rect.maxY)
+        )
+        path.addLine(to: CGPoint(x: bubbleRect.minX + tail * 2.10, y: bubbleRect.maxY - 1))
+        path.closeSubpath()
+        return path
+    }
+}
+
 
 struct PulseOpenRing: View {
     let color: Color
@@ -1031,13 +987,13 @@ struct PulseBrandMark: View {
             .frame(width: size, height: size)
             .accessibilityHidden(true)
         case .quietField:
-            RoundedRectangle(cornerRadius: PulseDesign.brandMarkCornerRadius, style: .continuous)
-                .fill(PulseDesign.action)
+            PulseQuietCompanionShape()
+                .fill(PulseDesign.quietGreen)
                 .overlay {
-                    Image("PulseMark")
-                        .resizable()
-                        .renderingMode(.template)
-                        .foregroundStyle(PulseDesign.actionForeground)
+                    PulseQuietCompanionFace(
+                        lineWidth: max(PulseDesign.thinLineWidth, size * 0.065)
+                    )
+                    .padding(size * 0.15)
                 }
                 .frame(width: size, height: size)
                 .accessibilityHidden(true)
@@ -1056,7 +1012,11 @@ struct PulseAppHeader: View {
             PulseBrandMark()
 
             Text("today.navigation_title")
-                .font(.subheadline.weight(.medium))
+                .font(
+                    visualTheme == .quietField
+                        ? .system(.subheadline, design: .rounded, weight: .black)
+                        : .subheadline.weight(.medium)
+                )
                 .foregroundStyle(PulseDesign.appInk(for: visualTheme))
                 .lineLimit(1)
 
@@ -1071,18 +1031,35 @@ struct PulseAppHeader: View {
                             minWidth: PulseDesign.minimumHitTarget,
                             minHeight: PulseDesign.minimumHitTarget
                         )
+                        .background {
+                            if visualTheme == .quietField {
+                                Circle().fill(PulseDesign.quietGreenSoft)
+                            }
+                        }
                 }
                 .accessibilityLabel("settings.navigation_title")
                 .accessibilityIdentifier("settings.navigation.open.\(source.rawValue)")
             } else {
                 NavigationLink(value: PulseNavigationDestination.settings) {
-                    Text("settings.navigation_title")
-                        .font(.subheadline.weight(.semibold))
-                        .foregroundStyle(PulseDesign.appInk(for: visualTheme))
-                        .frame(
-                            minWidth: PulseDesign.minimumHitTarget,
-                            minHeight: PulseDesign.minimumHitTarget
-                        )
+                    Group {
+                        if visualTheme == .quietField {
+                            Image(systemName: "gearshape")
+                                .font(.subheadline.weight(.bold))
+                        } else {
+                            Text("settings.navigation_title")
+                                .font(.subheadline.weight(.semibold))
+                        }
+                    }
+                    .foregroundStyle(PulseDesign.appInk(for: visualTheme))
+                    .frame(
+                        minWidth: PulseDesign.minimumHitTarget,
+                        minHeight: PulseDesign.minimumHitTarget
+                    )
+                    .background {
+                        if visualTheme == .quietField {
+                            Circle().fill(PulseDesign.quietGreenSoft)
+                        }
+                    }
                 }
                 .accessibilityLabel("settings.navigation_title")
                 .accessibilityIdentifier("settings.navigation.open.\(source.rawValue)")

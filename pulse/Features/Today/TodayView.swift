@@ -277,23 +277,27 @@ struct TodayView: View {
                         weekday
                     )
                 )
-                .font(.system(.caption2, design: .default, weight: .bold))
-                .foregroundStyle(PulseDesign.ink)
+                .font(.system(.caption2, design: .rounded, weight: .black))
+                .foregroundStyle(PulseDesign.quietChromeForeground)
+                .textCase(.uppercase)
+                .padding(.horizontal, PulseDesign.spacing16)
+                .frame(minHeight: PulseDesign.spacing32)
+                .background(PulseDesign.quietChrome, in: Capsule())
                 .accessibilityIdentifier("today.hero.kicker")
 
                 dayNumber(today)
-                    .padding(.top, PulseDesign.spacing12)
+                    .padding(.top, PulseDesign.spacing8)
 
                 if let commitmentName = model.habit?.name {
                     commitmentCue(commitmentName)
-                        .padding(.top, PulseDesign.spacing16)
+                        .padding(.top, PulseDesign.spacing8)
                 }
             }
         }
         .frame(maxWidth: .infinity)
         .padding(.horizontal, PulseDesign.spacing20)
-        .padding(.top, PulseDesign.spacing32)
-        .padding(.bottom, PulseDesign.spacing20)
+        .padding(.top, PulseDesign.spacing20)
+        .padding(.bottom, PulseDesign.spacing12)
         .frame(minHeight: PulseDesign.todayHeroMinimumHeight, alignment: .top)
         .accessibilityElement(children: .contain)
     }
@@ -429,25 +433,43 @@ struct TodayView: View {
 
     private func dayNumber(_ today: LogicalDay) -> some View {
         Text(today.day, format: .number)
-            .font(.system(size: resolvedDayNumberSize, weight: .regular))
+            .font(.system(size: resolvedDayNumberSize, weight: .black, design: .rounded))
             .monospacedDigit()
             .fixedSize(horizontal: true, vertical: false)
-            .foregroundStyle(PulseDesign.ink)
+            .foregroundStyle(PulseDesign.quietInk)
+            .overlay(alignment: .topTrailing) {
+                Image(systemName: "sparkle")
+                    .font(.system(size: PulseDesign.spacing20, weight: .black))
+                    .foregroundStyle(PulseDesign.quietPink)
+                    .offset(x: PulseDesign.spacing16, y: PulseDesign.spacing8)
+                    .accessibilityHidden(true)
+            }
             .accessibilityIdentifier("today.day.number")
     }
 
     private func commitmentCue(_ name: String) -> some View {
         VStack(spacing: PulseDesign.spacing4) {
             Text("today.commitment.cue")
-                .font(.caption.weight(.medium))
-                .foregroundStyle(PulseDesign.secondary)
+                .font(.system(.caption2, design: .rounded, weight: .bold))
+                .foregroundStyle(PulseDesign.quietMuted)
 
             Text(name)
-                .font(.headline.weight(.semibold))
-                .foregroundStyle(PulseDesign.ink)
+                .font(.system(.headline, design: .rounded, weight: .black))
+                .foregroundStyle(PulseDesign.quietInk)
                 .lineLimit(dynamicTypeSize.isAccessibilitySize ? nil : 2)
                 .multilineTextAlignment(.center)
                 .fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(.horizontal, PulseDesign.spacing20)
+        .padding(.top, PulseDesign.spacing12)
+        .padding(.bottom, PulseDesign.spacing16 + PulseDesign.spacing4)
+        .background {
+            PulseQuietSpeechBubbleShape()
+                .fill(PulseDesign.quietSurface)
+        }
+        .overlay {
+            PulseQuietSpeechBubbleShape()
+                .stroke(PulseDesign.quietDivider, lineWidth: PulseDesign.thinLineWidth)
         }
         .frame(maxWidth: PulseDesign.todayCommitmentMaximumWidth)
         .accessibilityElement(children: .ignore)
@@ -487,10 +509,10 @@ struct TodayView: View {
     private var quietWeekRail: some View {
         ZStack(alignment: .bottom) {
             Rectangle()
-                .fill(PulseDesign.separator)
+                .fill(PulseDesign.quietDivider)
                 .frame(height: PulseDesign.thinLineWidth)
-                .padding(.horizontal, PulseDesign.weekRailDotDiameter / 2)
-                .padding(.bottom, PulseDesign.weekRailDotDiameter / 2)
+                .padding(.horizontal, (PulseDesign.weekRailDotDiameter + PulseDesign.spacing4) / 2)
+                .padding(.bottom, (PulseDesign.weekRailDotDiameter + PulseDesign.spacing4) / 2)
                 .accessibilityHidden(true)
 
             HStack(alignment: .bottom, spacing: 0) {
@@ -532,25 +554,32 @@ struct TodayView: View {
                         locale: locale
                     )
                 )
-                .font(.system(.caption2, design: .default, weight: isToday ? .bold : .regular))
-                .foregroundStyle(isToday ? PulseDesign.ink : PulseDesign.secondary)
+                .font(.system(.caption2, design: .rounded, weight: isToday ? .black : .medium))
+                .foregroundStyle(isToday ? PulseDesign.quietInk : PulseDesign.quietMuted)
             }
 
-            Circle()
-                .fill(isChecked ? PulseDesign.grass : PulseDesign.background)
-                .frame(
-                    width: PulseDesign.weekRailDotDiameter,
-                    height: PulseDesign.weekRailDotDiameter
-                )
-                .overlay {
-                    Circle()
-                        .stroke(
-                            isToday || isChecked
-                                ? PulseDesign.grass
-                                : PulseDesign.separator,
-                            lineWidth: PulseDesign.emphasisLineWidth
-                        )
+            ZStack {
+                Circle()
+                    .fill(isChecked ? PulseDesign.quietGreen : PulseDesign.quietSurface)
+                Circle()
+                    .stroke(
+                        isToday
+                            ? PulseDesign.quietPink
+                            : (isChecked ? PulseDesign.quietGreenDeep : PulseDesign.quietDivider),
+                        lineWidth: isToday
+                            ? PulseDesign.emphasisLineWidth
+                            : PulseDesign.thinLineWidth
+                    )
+                if isChecked {
+                    Image(systemName: "checkmark")
+                        .font(.system(size: 6, weight: .black))
+                        .foregroundStyle(PulseDesign.quietOnGreen)
                 }
+            }
+            .frame(
+                width: PulseDesign.weekRailDotDiameter + PulseDesign.spacing4,
+                height: PulseDesign.weekRailDotDiameter + PulseDesign.spacing4
+            )
         }
         .animation(completionSecondaryAnimation, value: item.status)
         .accessibilityElement(children: .ignore)
@@ -629,12 +658,22 @@ struct TodayView: View {
 
     private var checkInControl: some View {
         let isChecked = model.todayRecord != nil
-        let controlFill = visualTheme == .tideArchive
-            ? (isChecked ? PulseDesign.archiveAccent : PulseDesign.archiveSurface)
-            : (isChecked ? PulseDesign.grass : PulseDesign.action)
-        let controlForeground = visualTheme == .tideArchive
-            ? PulseDesign.archiveInk
-            : (isChecked ? PulseDesign.grassForeground : PulseDesign.actionForeground)
+        let controlFill = switch visualTheme {
+        case .tideArchive:
+            isChecked ? PulseDesign.archiveAccent : PulseDesign.archiveSurface
+        case .editorialJournal:
+            isChecked ? PulseDesign.grass : PulseDesign.action
+        case .quietField:
+            PulseDesign.quietGreen
+        }
+        let controlForeground = switch visualTheme {
+        case .tideArchive:
+            PulseDesign.archiveInk
+        case .editorialJournal:
+            isChecked ? PulseDesign.grassForeground : PulseDesign.actionForeground
+        case .quietField:
+            PulseDesign.quietOnGreen
+        }
 
         return VStack(spacing: PulseDesign.spacing12) {
             checkInVisual(
@@ -692,11 +731,13 @@ struct TodayView: View {
 
             if !isChecked {
                 Text("today.check_in_hint_visible")
-                    .font(.caption.weight(.medium))
+                    .font(.system(.caption, design: .rounded, weight: .semibold))
                     .foregroundStyle(
                         visualTheme == .tideArchive
                             ? PulseDesign.archiveMuted
-                            : PulseDesign.secondary
+                            : (visualTheme == .quietField
+                                ? PulseDesign.quietMuted
+                                : PulseDesign.secondary)
                     )
                     .multilineTextAlignment(.center)
             }
@@ -761,6 +802,62 @@ struct TodayView: View {
                     )
             }
             .contentShape(Capsule())
+        } else if visualTheme == .quietField {
+            ZStack {
+                PulseQuietCompanionShape()
+                    .fill(fill)
+                    .overlay {
+                        PulseQuietCompanionShape()
+                            .stroke(
+                                PulseDesign.quietOnGreen.opacity(0.18),
+                                lineWidth: PulseDesign.quietCompanionLineWidth
+                            )
+                    }
+                    .shadow(
+                        color: PulseDesign.shadow.opacity(
+                            PulseDesign.quietCompanionShadowOpacity
+                        ),
+                        radius: PulseDesign.quietCompanionShadowRadius,
+                        y: PulseDesign.quietCompanionShadowY
+                    )
+
+                quietCheckInStatusContent
+                    .padding(.horizontal, PulseDesign.spacing20)
+            }
+            .frame(
+                width: PulseDesign.quietCompanionWidth,
+                height: PulseDesign.quietCompanionHeight
+            )
+            .background {
+                ZStack {
+                    PulseQuietCompanionShape()
+                        .fill(PulseDesign.quietGreenSoft.opacity(0.72))
+                        .frame(
+                            width: PulseDesign.quietCompanionWidth + PulseDesign.spacing32,
+                            height: PulseDesign.quietCompanionHeight + PulseDesign.spacing24
+                        )
+                        .rotationEffect(.degrees(-7))
+
+                    PulseQuietCompanionShape()
+                        .stroke(
+                            PulseDesign.quietPink.opacity(PulseDesign.completionRippleOpacity),
+                            lineWidth: PulseDesign.emphasisLineWidth
+                        )
+                        .frame(
+                            width: PulseDesign.quietCompanionWidth,
+                            height: PulseDesign.quietCompanionHeight
+                        )
+                        .scaleEffect(
+                            completionRippleExpanded
+                                ? PulseDesign.completionRippleEndScale
+                                : PulseDesign.completionRippleStartScale
+                        )
+                        .opacity(completionRippleVisible ? 1 : 0)
+                }
+                .allowsHitTesting(false)
+                .accessibilityHidden(true)
+            }
+            .contentShape(PulseQuietCompanionShape())
         } else if visualTheme == .tideArchive {
             ZStack {
                 Circle()
@@ -898,6 +995,32 @@ struct TodayView: View {
         }
     }
 
+    @ViewBuilder
+    private var quietCheckInStatusContent: some View {
+        if imprintRitualPhase == .saving, model.isSaving && showsSavingIndicator {
+            ProgressView()
+                .controlSize(.large)
+                .tint(PulseDesign.quietOnGreen)
+        } else {
+            VStack(spacing: PulseDesign.spacing4) {
+                PulseQuietCompanionFace(
+                    isSmiling: model.todayRecord != nil,
+                    lineWidth: PulseDesign.quietCompanionLineWidth + 1
+                )
+                .frame(width: 96, height: 60)
+                .scaleEffect(imprintGlyphScale)
+
+                Text(completedCheckInText ?? PulseLocalization.string("today.check_in", locale: locale))
+                    .font(.system(.headline, design: .rounded, weight: .black))
+                    .foregroundStyle(PulseDesign.quietOnGreen)
+                    .multilineTextAlignment(.center)
+                    .lineLimit(2)
+                    .minimumScaleFactor(0.82)
+            }
+            .transition(.opacity)
+        }
+    }
+
     private func pendingCheckInStatusContent(foreground: Color) -> some View {
         VStack(spacing: PulseDesign.spacing8) {
             PulseImprintGlyph(isSolid: false, foreground: foreground)
@@ -940,9 +1063,12 @@ struct TodayView: View {
 
     private var rhythmStatus: some View {
         Text(rhythmStatusText)
-            .font(.footnote.weight(.medium))
+            .font(.system(.footnote, design: .rounded, weight: .bold))
             .monospacedDigit()
-            .foregroundStyle(PulseDesign.secondary)
+            .foregroundStyle(PulseDesign.quietInk)
+            .padding(.horizontal, PulseDesign.spacing16)
+            .frame(minHeight: PulseDesign.spacing32)
+            .background(PulseDesign.quietGreenSoft, in: Capsule())
             .fixedSize(horizontal: false, vertical: true)
             .frame(maxWidth: .infinity, alignment: .center)
             .multilineTextAlignment(.center)
@@ -1020,27 +1146,13 @@ struct TodayView: View {
                     }
                 }
             }
-            .foregroundStyle(
-                visualTheme == .tideArchive
-                    ? PulseDesign.archiveInk
-                    : PulseDesign.action
-            )
+            .foregroundStyle(mediaActionForeground)
             .padding(.horizontal, PulseDesign.spacing12)
             .frame(minHeight: PulseDesign.minimumHitTarget)
-            .background(
-                visualTheme == .tideArchive
-                    ? PulseDesign.archiveSurface
-                    : PulseDesign.surface,
-                in: Capsule()
-            )
+            .background(mediaActionSurface, in: Capsule())
             .overlay {
                 Capsule()
-                    .stroke(
-                        visualTheme == .tideArchive
-                            ? PulseDesign.archiveAccent
-                            : PulseDesign.grass,
-                        lineWidth: PulseDesign.thinLineWidth
-                    )
+                    .stroke(mediaActionBorder, lineWidth: PulseDesign.thinLineWidth)
             }
             .shadow(
                 color: PulseDesign.shadow.opacity(PulseDesign.mediaCompanionShadowOpacity),
@@ -1054,6 +1166,30 @@ struct TodayView: View {
                     ? "today.media.capture.button"
                     : "today.media.preview.button"
             )
+        }
+    }
+
+    private var mediaActionForeground: Color {
+        switch visualTheme {
+        case .tideArchive: PulseDesign.archiveInk
+        case .editorialJournal: PulseDesign.action
+        case .quietField: PulseDesign.quietInk
+        }
+    }
+
+    private var mediaActionSurface: Color {
+        switch visualTheme {
+        case .tideArchive: PulseDesign.archiveSurface
+        case .editorialJournal: PulseDesign.surface
+        case .quietField: PulseDesign.quietSurface
+        }
+    }
+
+    private var mediaActionBorder: Color {
+        switch visualTheme {
+        case .tideArchive: PulseDesign.archiveAccent
+        case .editorialJournal: PulseDesign.grass
+        case .quietField: PulseDesign.quietGreen
         }
     }
 

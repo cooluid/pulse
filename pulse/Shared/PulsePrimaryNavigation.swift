@@ -38,14 +38,7 @@ struct PulsePrimaryNavigation: View {
                     cornerRadius: PulseDesign.primaryNavigationCornerRadius,
                     style: .continuous
                 )
-                .fill(.ultraThinMaterial)
-                .overlay {
-                    RoundedRectangle(
-                        cornerRadius: PulseDesign.primaryNavigationCornerRadius,
-                        style: .continuous
-                    )
-                    .fill(PulseDesign.surface.opacity(PulseDesign.navigationSurfaceOpacity))
-                }
+                .fill(PulseDesign.quietChrome)
             }
             .clipShape(
                 RoundedRectangle(
@@ -58,7 +51,10 @@ struct PulsePrimaryNavigation: View {
                     cornerRadius: PulseDesign.primaryNavigationCornerRadius,
                     style: .continuous
                 )
-                .stroke(PulseDesign.separator, lineWidth: PulseDesign.thinLineWidth)
+                .stroke(
+                    PulseDesign.quietGreen.opacity(0.34),
+                    lineWidth: PulseDesign.thinLineWidth
+                )
             }
             .shadow(
                 color: PulseDesign.shadow.opacity(PulseDesign.navigationShadowOpacity),
@@ -274,7 +270,7 @@ struct PulsePrimaryNavigation: View {
                 cornerRadius: PulseDesign.primaryNavigationItemCornerRadius,
                 style: .continuous
             )
-            .fill(PulseDesign.grass)
+            .fill(PulseDesign.quietGreen)
             .matchedGeometryEffect(
                 id: "primary.navigation.selection",
                 in: selectionNamespace
@@ -297,10 +293,12 @@ struct PulsePrimaryNavigation: View {
     private func navigationGlyph(for section: PulsePrimarySection, isSelected: Bool) -> some View {
         ZStack {
             Circle()
-                .fill(isSelected ? PulseDesign.navigationGlyphSurface : Color.clear)
+                .fill(isSelected ? PulseDesign.quietSurface : Color.clear)
             Circle()
                 .stroke(
-                    isSelected ? PulseDesign.navigationGlyphSurface : PulseDesign.secondary,
+                    isSelected
+                        ? PulseDesign.quietSurface
+                        : PulseDesign.quietChromeForeground.opacity(0.46),
                     lineWidth: PulseDesign.thinLineWidth
                 )
 
@@ -312,7 +310,7 @@ struct PulsePrimaryNavigation: View {
     }
 
     private func navigationForeground(isSelected: Bool) -> Color {
-        isSelected ? PulseDesign.grassForeground : PulseDesign.secondary
+        isSelected ? PulseDesign.quietOnGreen : PulseDesign.quietChromeForeground
     }
 
     private var resolvedGlyphSize: CGFloat {

@@ -61,8 +61,10 @@ struct EnhancementStoreView: View {
         switch visualTheme {
         case .tideArchive:
             archiveHero
-        case .editorialJournal, .quietField:
+        case .editorialJournal:
             quietHero
+        case .quietField:
+            playfulQuietHero
         }
     }
 
@@ -114,6 +116,50 @@ struct EnhancementStoreView: View {
             cornerRadius: PulseDesign.storeHeroCornerRadius,
             style: .continuous
         ))
+        .accessibilityElement(children: .contain)
+        .accessibilityIdentifier("store.hero")
+    }
+
+    private var playfulQuietHero: some View {
+        HStack(alignment: .center, spacing: PulseDesign.spacing16) {
+            VStack(alignment: .leading, spacing: PulseDesign.spacing12) {
+                Label("store.lifetime_badge", systemImage: "sparkles")
+                    .font(.system(.caption, design: .rounded, weight: .black))
+                    .foregroundStyle(PulseDesign.quietOnGreen)
+                    .padding(.horizontal, PulseDesign.spacing12)
+                    .padding(.vertical, PulseDesign.spacing8)
+                    .background(PulseDesign.quietYellow, in: Capsule())
+
+                Text("store.hero.tagline")
+                    .font(.system(.title2, design: .rounded, weight: .black))
+                    .foregroundStyle(PulseDesign.quietInk)
+                    .fixedSize(horizontal: false, vertical: true)
+
+                Text("store.hero.scope")
+                    .font(.system(.caption, design: .rounded, weight: .semibold))
+                    .foregroundStyle(PulseDesign.quietMuted)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+
+            ZStack {
+                Image(systemName: "sparkle")
+                    .font(.system(size: PulseDesign.spacing16, weight: .black))
+                    .foregroundStyle(PulseDesign.quietPink)
+                    .offset(x: PulseDesign.spacing24, y: -PulseDesign.spacing24)
+
+                PulseBrandMark(size: PulseDesign.storeBrandMarkSize)
+            }
+            .accessibilityHidden(true)
+        }
+        .padding(PulseDesign.spacing20)
+        .background {
+            PulseQuietSpeechBubbleShape()
+                .fill(PulseDesign.quietSurface)
+        }
+        .overlay {
+            PulseQuietSpeechBubbleShape()
+                .stroke(PulseDesign.quietDivider, lineWidth: PulseDesign.thinLineWidth)
+        }
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("store.hero")
     }

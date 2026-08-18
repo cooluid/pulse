@@ -750,7 +750,7 @@ private struct PulseVisualThemeChoice: View {
         case .editorialJournal:
             PulseDesign.editorialAccent
         case .quietField:
-            PulseDesign.grass
+            PulseDesign.quietGreen
         }
     }
 
@@ -784,7 +784,25 @@ private struct PulseVisualThemeChoice: View {
                     .foregroundStyle(PulseDesign.editorialAccent)
             }
             .accessibilityHidden(true)
-        case .quietField, .tideArchive:
+        case .quietField:
+            HStack(spacing: PulseDesign.spacing12) {
+                PulseBrandMark(size: PulseDesign.minimumHitTarget)
+
+                VStack(alignment: .leading, spacing: PulseDesign.spacing4) {
+                    Capsule()
+                        .fill(PulseDesign.quietChrome)
+                        .frame(width: 48, height: PulseDesign.spacing8)
+                    Capsule()
+                        .fill(PulseDesign.quietGreen)
+                        .frame(width: 64, height: PulseDesign.spacing8)
+                }
+
+                Image(systemName: "sparkle")
+                    .font(.system(size: PulseDesign.spacing16, weight: .black))
+                    .foregroundStyle(PulseDesign.quietPink)
+            }
+            .accessibilityHidden(true)
+        case .tideArchive:
             PulseBrandMark(size: PulseDesign.minimumHitTarget)
         }
     }

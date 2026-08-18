@@ -31,7 +31,7 @@
 
 新增或改色：先改令牌，再生成并 `--check`。**允许**为新氛围扩展令牌；不是“禁止新画法”。
 
-常见语义角色：`background`、`surface`、`grass` / `grassForeground`、`action` / `actionForeground`、`ink` / `secondary`、`field`、`separator` / `shadow`。纸页手记只使用 `editorialAccent` 标记编辑与完成线索；潮痕档案统一使用 `archiveCanvas` / `archiveCanvasDeep`、`archiveSurface`、`archiveInk` / `archiveMuted`、`archiveDivider`、`archiveAccent` / `archiveAccentSoft`、`archiveTide` / `archiveTideDeep`。页面不得继续引用旧橙铜 / 蓝黑令牌，也不得私写第二套色板。Widget 的纸张、天光与水面分别使用 `widgetPaper`、`widgetSkyGlow`、`widgetWater`，不以局部 RGB 模拟材质。萤火日晕按系统表面拆分为 `activityIslandFirefly`、`activityIslandTime` 与 `activityLockScreenFirefly`：黑底灵动岛使用白色光源，浅底锁屏保留琥珀色对比，不复用一个含义含混的颜色角色。
+常见语义角色：`background`、`surface`、`grass` / `grassForeground`、`action` / `actionForeground`、`ink` / `secondary`、`field`、`separator` / `shadow`。静野统一使用 `quietCanvas` / `quietSurface`、`quietInk` / `quietMuted`、`quietDivider`、`quietGreen` / `quietGreenDeep` / `quietGreenSoft`、`quietChrome` / `quietChromeForeground` / `quietOnGreen` 与三种节奏点色；纸页手记只使用 `editorialAccent` 标记编辑与完成线索；潮痕档案统一使用 `archiveCanvas` / `archiveCanvasDeep`、`archiveSurface`、`archiveInk` / `archiveMuted`、`archiveDivider`、`archiveAccent` / `archiveAccentSoft`、`archiveTide` / `archiveTideDeep`。页面不得继续引用旧橙铜 / 蓝黑令牌，也不得私写第二套色板。Widget 的纸张、天光与水面分别使用 `widgetPaper`、`widgetSkyGlow`、`widgetWater`，不以局部 RGB 模拟材质。萤火日晕按系统表面拆分为 `activityIslandFirefly`、`activityIslandTime` 与 `activityLockScreenFirefly`：黑底灵动岛使用白色光源，浅底锁屏保留琥珀色对比，不复用一个含义含混的颜色角色。
 
 完成 / 漏签 / 今天等状态不能**只靠颜色**到不可辨（形状、文案或无障碍标签须有等价）。
 
@@ -94,7 +94,7 @@
 - 详情：日期、签到状态、真实照片为主体；照片按真实宽高比显示，不歪曲事实裁切成“好看但假”。
 - 删除照片与删除签到：独立事务、独立确认；destructive 语义清楚。
 - 月份切换：可见按钮 / 滑动 / VoiceOver 同一状态函数；月历 / 记事模式入口在三个主题中能力、命名和可访问性标识一致。
-- 明暗外观：跟随系统 / 浅 / 深；界面主题：静野 / 纸页手记 / 潮痕档案。两条轴独立、全局持久化；界面主题统一驱动共享背景、品牌标、主导航、今日与历史构图，不能只做局部换色。三套主题必须保留签到、记事、照片、月历、漏签与统计的能力等价；纸页手记以编辑线、衬线标题和短手记形成视觉语法，潮痕档案以单一潮位面、档案纸面与铜色完成印迹构成视觉语法。成功外观只能在签到事实提交后推进，Reduce Motion 与非活动场景使用正确静态终态。语言：跟随系统 / English / 简体中文；App 与 Widget 内容 Locale 一致。
+- 明暗外观：跟随系统 / 浅 / 深；界面主题：静野 / 纸页手记 / 潮痕档案。两条轴独立、全局持久化；界面主题统一驱动共享背景、品牌标、主导航、今日与历史构图，不能只做局部换色。三套主题必须保留签到、记事、照片、月历、漏签与统计的能力等价；静野以暖奶油纸底、草绿山形伙伴、深色控制条、圆润重字和少量彩色节奏碎屑形成视觉语法，彩色碎屑只作氛围而不承载事实；纸页手记以编辑线、衬线标题和短手记形成视觉语法，潮痕档案以单一潮位面、档案纸面与铜色完成印迹构成视觉语法。成功外观只能在签到事实提交后推进，Reduce Motion 与非活动场景使用正确静态终态。语言：跟随系统 / English / 简体中文；App 与 Widget 内容 Locale 一致。
 - Sheet / `confirmationDialog` 使用系统来源锚定与可预期 detent 行为（工程稳定），不锁视觉皮肤。
 
 ## 8. AppIcon 工程

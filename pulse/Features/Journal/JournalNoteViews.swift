@@ -45,7 +45,14 @@ struct JournalNoteSummary: View {
     }
 
     private var noteFont: Font {
-        visualTheme == .editorialJournal ? .system(.body, design: .serif) : .body
+        switch visualTheme {
+        case .editorialJournal:
+            .system(.body, design: .serif)
+        case .quietField:
+            .system(.body, design: .rounded)
+        case .tideArchive:
+            .body
+        }
     }
 
     @ViewBuilder
@@ -62,11 +69,8 @@ struct JournalNoteSummary: View {
                 PulseDesign.surface.opacity(PulseDesign.editorialJournalSurfaceOpacity)
             )
         case .quietField:
-            RoundedRectangle(
-                cornerRadius: PulseDesign.journalCardCornerRadius,
-                style: .continuous
-            )
-            .fill(PulseDesign.surface.opacity(PulseDesign.quietJournalSurfaceOpacity))
+            PulseQuietSpeechBubbleShape()
+                .fill(PulseDesign.quietSurface.opacity(PulseDesign.quietJournalSurfaceOpacity))
         }
     }
 
@@ -86,11 +90,8 @@ struct JournalNoteSummary: View {
             Rectangle()
                 .stroke(PulseDesign.editorialAccent, lineWidth: PulseDesign.thinLineWidth)
         case .quietField:
-            RoundedRectangle(
-                cornerRadius: PulseDesign.journalCardCornerRadius,
-                style: .continuous
-            )
-            .stroke(PulseDesign.separator, lineWidth: PulseDesign.thinLineWidth)
+            PulseQuietSpeechBubbleShape()
+                .stroke(PulseDesign.quietDivider, lineWidth: PulseDesign.thinLineWidth)
         }
     }
 }
@@ -167,7 +168,14 @@ struct JournalDraftComposer: View {
     }
 
     private var draftFont: Font {
-        visualTheme == .editorialJournal ? .system(.body, design: .serif) : .body
+        switch visualTheme {
+        case .editorialJournal:
+            .system(.body, design: .serif)
+        case .quietField:
+            .system(.body, design: .rounded)
+        case .tideArchive:
+            .body
+        }
     }
 
     private var characterCountText: String {
@@ -196,11 +204,8 @@ struct JournalDraftComposer: View {
     private var draftBackground: some View {
         switch visualTheme {
         case .quietField:
-            RoundedRectangle(
-                cornerRadius: PulseDesign.journalCardCornerRadius,
-                style: .continuous
-            )
-            .fill(PulseDesign.surface.opacity(PulseDesign.quietJournalSurfaceOpacity))
+            PulseQuietSpeechBubbleShape()
+                .fill(PulseDesign.quietSurface.opacity(PulseDesign.quietJournalSurfaceOpacity))
         case .editorialJournal:
             Color.clear
         case .tideArchive:
@@ -216,11 +221,8 @@ struct JournalDraftComposer: View {
     private var draftBorder: some View {
         switch visualTheme {
         case .quietField:
-            RoundedRectangle(
-                cornerRadius: PulseDesign.journalCardCornerRadius,
-                style: .continuous
-            )
-            .stroke(PulseDesign.separator, lineWidth: PulseDesign.thinLineWidth)
+            PulseQuietSpeechBubbleShape()
+                .stroke(PulseDesign.quietDivider, lineWidth: PulseDesign.thinLineWidth)
         case .editorialJournal:
             VStack(spacing: 0) {
                 Spacer(minLength: 0)
@@ -262,12 +264,40 @@ struct JournalHistorySection: View {
             .padding(.bottom, PulseDesign.spacing20)
 
             if records.isEmpty {
-                Text("journal.history.empty")
-                    .font(bodyFont)
-                    .foregroundStyle(PulseDesign.appMuted(for: visualTheme))
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.vertical, PulseDesign.spacing16)
+                if visualTheme == .quietField {
+                    VStack(spacing: PulseDesign.spacing16) {
+                        PulseBrandMark(size: 88)
+
+                        Text("journal.history.empty")
+                            .font(.system(.headline, design: .rounded, weight: .bold))
+                            .foregroundStyle(PulseDesign.quietMuted)
+                            .multilineTextAlignment(.center)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                    .padding(.horizontal, PulseDesign.spacing24)
+                    .padding(.top, PulseDesign.spacing20)
+                    .padding(.bottom, PulseDesign.spacing32)
+                    .frame(maxWidth: .infinity)
+                    .background {
+                        PulseQuietSpeechBubbleShape()
+                            .fill(PulseDesign.quietSurface)
+                    }
+                    .overlay {
+                        PulseQuietSpeechBubbleShape()
+                            .stroke(
+                                PulseDesign.quietDivider,
+                                lineWidth: PulseDesign.thinLineWidth
+                            )
+                    }
                     .accessibilityIdentifier("history.journal.empty")
+                } else {
+                    Text("journal.history.empty")
+                        .font(bodyFont)
+                        .foregroundStyle(PulseDesign.appMuted(for: visualTheme))
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.vertical, PulseDesign.spacing16)
+                        .accessibilityIdentifier("history.journal.empty")
+                }
             } else {
                 LazyVStack(spacing: entrySpacing) {
                     ForEach(records) { record in
@@ -304,12 +334,18 @@ struct JournalHistorySection: View {
         case .editorialJournal:
             .system(.title2, design: .serif).weight(.bold)
         case .quietField, .tideArchive:
-            .title3.weight(.semibold)
+            visualTheme == .quietField
+                ? .system(.title3, design: .rounded, weight: .black)
+                : .title3.weight(.semibold)
         }
     }
 
     private var bodyFont: Font {
-        visualTheme == .editorialJournal ? .system(.body, design: .serif) : .body
+        switch visualTheme {
+        case .editorialJournal: .system(.body, design: .serif)
+        case .quietField: .system(.body, design: .rounded)
+        case .tideArchive: .body
+        }
     }
 
     private var entrySpacing: CGFloat {
@@ -357,13 +393,17 @@ private struct JournalHistoryEntryRow: View {
     }
 
     private var noteFont: Font {
-        visualTheme == .editorialJournal ? .system(.body, design: .serif) : .body
+        switch visualTheme {
+        case .editorialJournal: .system(.body, design: .serif)
+        case .quietField: .system(.body, design: .rounded)
+        case .tideArchive: .body
+        }
     }
 
     private var dateForeground: Color {
         switch visualTheme {
         case .quietField:
-            PulseDesign.secondary
+            PulseDesign.quietMuted
         case .editorialJournal:
             PulseDesign.editorialAccent
         case .tideArchive:
@@ -378,22 +418,16 @@ private struct JournalHistoryEntryRow: View {
     @ViewBuilder
     private var entryBackground: some View {
         if visualTheme == .quietField {
-            RoundedRectangle(
-                cornerRadius: PulseDesign.journalHistoryEntryCornerRadius,
-                style: .continuous
-            )
-            .fill(PulseDesign.surface.opacity(PulseDesign.journalHistorySurfaceOpacity))
+            PulseQuietSpeechBubbleShape()
+                .fill(PulseDesign.quietSurface.opacity(PulseDesign.journalHistorySurfaceOpacity))
         }
     }
 
     @ViewBuilder
     private var entryBorder: some View {
         if visualTheme == .quietField {
-            RoundedRectangle(
-                cornerRadius: PulseDesign.journalHistoryEntryCornerRadius,
-                style: .continuous
-            )
-            .stroke(PulseDesign.separator, lineWidth: PulseDesign.thinLineWidth)
+            PulseQuietSpeechBubbleShape()
+                .stroke(PulseDesign.quietDivider, lineWidth: PulseDesign.thinLineWidth)
         } else {
             VStack(spacing: 0) {
                 Spacer(minLength: 0)

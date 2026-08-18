@@ -78,6 +78,43 @@ final class ThemeExperienceContractTests: XCTestCase {
         XCTAssertFalse(historySource.contains("archiveHistoryLedger"))
     }
 
+    func testQuietFieldUsesOneSemanticPaletteAndOneCompanionLanguage() throws {
+        let designSource = try source("pulse/Shared/PulseDesignSystem.swift")
+        let todaySource = try source("pulse/Features/Today/TodayView.swift")
+        let navigationSource = try source("pulse/Shared/PulsePrimaryNavigation.swift")
+        let tokenSource = try source("design/brand-tokens.json")
+        let generatorSource = try source("scripts/build_brand_assets.py")
+
+        let semanticRoles = [
+            "quietCanvas",
+            "quietSurface",
+            "quietInk",
+            "quietMuted",
+            "quietDivider",
+            "quietGreen",
+            "quietGreenDeep",
+            "quietGreenSoft",
+            "quietChrome",
+            "quietChromeForeground",
+            "quietOnGreen",
+            "quietPink",
+            "quietBlue",
+            "quietYellow",
+        ]
+        for role in semanticRoles {
+            XCTAssertTrue(tokenSource.contains("\"\(role)\""), "Missing token role \(role)")
+            XCTAssertTrue(generatorSource.contains("\"\(role)\""), "Missing generated role \(role)")
+            XCTAssertTrue(designSource.contains(role), "Missing design consumer \(role)")
+        }
+
+        XCTAssertTrue(designSource.contains("struct PulseQuietCompanionShape"))
+        XCTAssertTrue(designSource.contains("struct PulseQuietCompanionFace"))
+        XCTAssertTrue(todaySource.contains("quietCheckInStatusContent"))
+        XCTAssertTrue(navigationSource.contains("PulseDesign.quietChrome"))
+        XCTAssertFalse(designSource.contains("PulseFieldFlowBand"))
+        XCTAssertFalse(designSource.contains("PulseFieldContourRing"))
+    }
+
     func testRemovedThemeSpecificContractsDoNotRemain() throws {
         let repositoryRoot = repositoryRoot
         let productionRoots = [

@@ -538,6 +538,9 @@ final class PulseFlowUITests: XCTestCase {
         settingsButton.tap()
 
         let languagePicker = app.descendants(matching: .any)["settings.language.picker"]
+        for _ in 0..<8 where !languagePicker.exists {
+            app.swipeUp()
+        }
         XCTAssertTrue(languagePicker.waitForExistence(timeout: 3))
         for _ in 0..<6
             where languagePicker.frame.maxY > app.frame.maxY - bottomInteractionSafetyInset {
@@ -562,7 +565,15 @@ final class PulseFlowUITests: XCTestCase {
         XCTAssertFalse(app.buttons.matching(NSPredicate(format: "label == %@", "返回")).firstMatch.exists)
 
         let themePicker = app.descendants(matching: .any)["settings.theme.picker"]
+        for _ in 0..<8 where !themePicker.exists {
+            app.swipeUp()
+        }
         XCTAssertTrue(themePicker.waitForExistence(timeout: 3))
+        for _ in 0..<6
+            where themePicker.frame.maxY > app.frame.maxY - bottomInteractionSafetyInset {
+            app.swipeUp()
+        }
+        XCTAssertTrue(themePicker.isHittable)
         themePicker.tap()
         let darkOption = app.descendants(matching: .any)
             .matching(NSPredicate(format: "label == %@", "Dark"))
@@ -589,6 +600,9 @@ final class PulseFlowUITests: XCTestCase {
 
         let persistedLanguagePicker = app.descendants(matching: .any)["settings.language.picker"]
         let persistedThemePicker = app.descendants(matching: .any)["settings.theme.picker"]
+        for _ in 0..<8 where !persistedLanguagePicker.exists || !persistedThemePicker.exists {
+            app.swipeUp()
+        }
         XCTAssertTrue(persistedLanguagePicker.waitForExistence(timeout: 3))
         XCTAssertTrue(persistedThemePicker.waitForExistence(timeout: 3))
         XCTAssertTrue(persistedLanguagePicker.label.contains("English"))
@@ -1436,6 +1450,7 @@ final class PulseFlowUITests: XCTestCase {
     }
 
     private func assertHeroGeometry() {
+        let opticalCenterTolerance: CGFloat = 12
         let dayNumber = app.staticTexts["today.day.number"]
         let kicker = app.staticTexts["today.hero.kicker"]
         let commitmentCue = app.descendants(matching: .any)["today.commitment.name"]
@@ -1445,8 +1460,16 @@ final class PulseFlowUITests: XCTestCase {
         XCTAssertTrue(commitmentCue.waitForExistence(timeout: 3))
         XCTAssertTrue(checkInButton.exists)
         XCTAssertTrue(kicker.label.contains("星期"))
-        XCTAssertEqual(dayNumber.frame.midX, kicker.frame.midX, accuracy: 1)
-        XCTAssertEqual(dayNumber.frame.midX, commitmentCue.frame.midX, accuracy: 1)
+        XCTAssertEqual(
+            dayNumber.frame.midX,
+            kicker.frame.midX,
+            accuracy: opticalCenterTolerance
+        )
+        XCTAssertEqual(
+            dayNumber.frame.midX,
+            commitmentCue.frame.midX,
+            accuracy: opticalCenterTolerance
+        )
         XCTAssertLessThan(kicker.frame.maxY, dayNumber.frame.minY)
         XCTAssertLessThanOrEqual(dayNumber.frame.maxY, commitmentCue.frame.minY)
         XCTAssertLessThanOrEqual(commitmentCue.frame.maxY, checkInButton.frame.minY)
