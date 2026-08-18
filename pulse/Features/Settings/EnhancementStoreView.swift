@@ -43,7 +43,7 @@ struct EnhancementStoreView: View {
                 .accessibilityLabel(visualTheme.localizedName(locale: locale))
                 .accessibilityIdentifier(storeThemeIdentifier)
         }
-        .safeAreaInset(edge: .bottom, spacing: PulseDesign.spacing8) {
+        .safeAreaInset(edge: .bottom, spacing: 0) {
             purchaseAction
         }
     }
@@ -86,12 +86,12 @@ struct EnhancementStoreView: View {
 
                 Text("store.hero.tagline")
                     .font(.title2.weight(.black))
-                    .foregroundStyle(PulseDesign.ink)
+                    .foregroundStyle(PulseDesign.appInk(for: visualTheme))
                     .fixedSize(horizontal: false, vertical: true)
 
                 Text("store.hero.scope")
                     .font(.caption.weight(.semibold))
-                    .foregroundStyle(PulseDesign.secondary)
+                    .foregroundStyle(PulseDesign.appMuted(for: visualTheme))
             }
             .frame(maxWidth: .infinity, alignment: .leading)
 
@@ -123,22 +123,22 @@ struct EnhancementStoreView: View {
             VStack(alignment: .leading, spacing: PulseDesign.spacing12) {
                 Label("store.lifetime_badge", systemImage: "seal.fill")
                     .font(.caption.weight(.semibold))
-                    .foregroundStyle(PulseDesign.archiveNight)
+                    .foregroundStyle(PulseDesign.appAccentForeground(for: visualTheme))
                     .padding(.horizontal, PulseDesign.spacing12)
                     .padding(.vertical, PulseDesign.spacing8)
                     .background(
-                        PulseDesign.archiveCopper,
+                        PulseDesign.archiveAccent,
                         in: Capsule()
                     )
 
                 Text("store.hero.tagline")
                     .font(.title2.weight(.black))
-                    .foregroundStyle(PulseDesign.ink)
+                    .foregroundStyle(PulseDesign.appInk(for: visualTheme))
                     .fixedSize(horizontal: false, vertical: true)
 
                 Text("store.hero.scope")
                     .font(.caption.weight(.semibold))
-                    .foregroundStyle(PulseDesign.secondary)
+                    .foregroundStyle(PulseDesign.appMuted(for: visualTheme))
             }
             .frame(maxWidth: .infinity, alignment: .leading)
 
@@ -146,30 +146,10 @@ struct EnhancementStoreView: View {
                 .accessibilityHidden(true)
         }
         .padding(PulseDesign.spacing20)
-        .background(PulseDesign.archivePaper)
-        .clipShape(
-            RoundedRectangle(
-                cornerRadius: PulseDesign.archiveHistoryPanelCornerRadius,
-                style: .continuous
-            )
-        )
-        .overlay {
-            RoundedRectangle(
-                cornerRadius: PulseDesign.archiveHistoryPanelCornerRadius,
-                style: .continuous
-            )
-            .stroke(
-                PulseDesign.archiveCopper.opacity(
-                    PulseDesign.archiveHistorySurfaceBorderOpacity
-                ),
-                lineWidth: PulseDesign.thinLineWidth
-            )
-        }
-        .overlay(alignment: .leading) {
+        .overlay(alignment: .bottom) {
             Rectangle()
-                .fill(PulseDesign.archiveCopper)
-                .frame(width: PulseDesign.emphasisLineWidth)
-                .padding(.vertical, PulseDesign.spacing16)
+                .fill(PulseDesign.archiveDivider)
+                .frame(height: PulseDesign.thinLineWidth)
         }
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("store.hero")
@@ -179,7 +159,7 @@ struct EnhancementStoreView: View {
         VStack(alignment: .leading, spacing: PulseDesign.spacing12) {
             Text("store.preview.section")
                 .font(.caption.weight(.semibold))
-                .foregroundStyle(PulseDesign.secondary)
+                .foregroundStyle(PulseDesign.appMuted(for: visualTheme))
 
             ScrollView(.horizontal) {
                 HStack(spacing: PulseDesign.spacing12) {
@@ -202,7 +182,7 @@ struct EnhancementStoreView: View {
 
                             Text(style.localizedName(locale: locale))
                                 .font(.caption.weight(.semibold))
-                                .foregroundStyle(PulseDesign.ink)
+                                .foregroundStyle(PulseDesign.appInk(for: visualTheme))
                         }
                         .padding(PulseDesign.spacing8)
                         .background(
@@ -223,7 +203,7 @@ struct EnhancementStoreView: View {
         VStack(alignment: .leading, spacing: PulseDesign.spacing12) {
             Text("store.capabilities.section")
                 .font(.caption.weight(.semibold))
-                .foregroundStyle(PulseDesign.secondary)
+                .foregroundStyle(PulseDesign.appMuted(for: visualTheme))
                 .padding(.bottom, PulseDesign.spacing8)
 
             ForEach(PulseEnhancementContract.currentCapabilities) { capability in
@@ -237,7 +217,7 @@ struct EnhancementStoreView: View {
                         )
                         .background(
                             visualTheme == .tideArchive
-                                ? PulseDesign.archiveMist.opacity(0.24)
+                                ? PulseDesign.archiveAccentSoft
                                 : PulseDesign.field.opacity(0.12),
                             in: Circle()
                         )
@@ -246,10 +226,10 @@ struct EnhancementStoreView: View {
                     VStack(alignment: .leading, spacing: PulseDesign.spacing4) {
                         Text(capability.titleKey)
                             .font(.headline.weight(.semibold))
-                            .foregroundStyle(PulseDesign.ink)
+                            .foregroundStyle(PulseDesign.appInk(for: visualTheme))
                         Text(capability.detailKey)
                             .font(.footnote)
-                            .foregroundStyle(PulseDesign.secondary)
+                            .foregroundStyle(PulseDesign.appMuted(for: visualTheme))
                             .fixedSize(horizontal: false, vertical: true)
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -291,13 +271,12 @@ struct EnhancementStoreView: View {
         .padding(.vertical, PulseDesign.spacing8)
         .frame(maxWidth: .infinity)
         .fixedSize(horizontal: false, vertical: true)
-        .background(
-            visualTheme == .tideArchive
-                ? PulseDesign.archiveNight.opacity(
-                    PulseDesign.archiveNavigationSurfaceOpacity
-                )
-                : PulseDesign.background.opacity(PulseDesign.navigationSurfaceOpacity)
-        )
+        .background(PulseDesign.appSurface(for: visualTheme))
+        .overlay(alignment: .top) {
+            Rectangle()
+                .fill(PulseDesign.appDivider(for: visualTheme))
+                .frame(height: PulseDesign.thinLineWidth)
+        }
     }
 
     @ViewBuilder
@@ -318,7 +297,7 @@ struct EnhancementStoreView: View {
                     .accessibilityIdentifier("store.processing")
             case .pending:
                 Label("store.pending", systemImage: "hourglass")
-                    .foregroundStyle(PulseDesign.secondary)
+                    .foregroundStyle(PulseDesign.appMuted(for: visualTheme))
                     .frame(maxWidth: .infinity, minHeight: PulseDesign.storePurchaseButtonMinimumHeight)
                     .background(storeActionSurface, in: storeActionShape)
                     .accessibilityIdentifier("store.pending")
@@ -340,11 +319,7 @@ struct EnhancementStoreView: View {
                             )
                         )
                         .font(.headline.weight(.semibold))
-                        .foregroundStyle(
-                            visualTheme == .tideArchive
-                                ? PulseDesign.archiveNight
-                                : PulseDesign.actionForeground
-                        )
+                        .foregroundStyle(PulseDesign.appAccentForeground(for: visualTheme))
                         .frame(
                             maxWidth: .infinity,
                             minHeight: PulseDesign.storePurchaseButtonMinimumHeight
@@ -352,12 +327,9 @@ struct EnhancementStoreView: View {
                     }
                     .buttonStyle(.plain)
                     .background(
-                        visualTheme == .tideArchive
-                            ? PulseDesign.archiveForeground
-                            : PulseDesign.action,
+                        PulseDesign.appAccent(for: visualTheme),
                         in: storeActionShape
                     )
-                    .shadow(color: PulseDesign.shadow.opacity(0.12), radius: 16, y: 6)
                     .accessibilityLabel(product.displayName)
                     .accessibilityValue(product.displayPrice)
                     .accessibilityIdentifier("store.buy")
@@ -365,7 +337,7 @@ struct EnhancementStoreView: View {
             case .unavailable:
                 VStack(alignment: .leading, spacing: PulseDesign.spacing12) {
                     Label("store.unavailable", systemImage: "exclamationmark.triangle")
-                        .foregroundStyle(PulseDesign.secondary)
+                        .foregroundStyle(PulseDesign.appMuted(for: visualTheme))
                         .accessibilityIdentifier("store.unavailable")
                     Button("store.retry") {
                         Task { await model.featureAccess.refresh() }
@@ -379,19 +351,11 @@ struct EnhancementStoreView: View {
     }
 
     private var storeActionSurface: Color {
-        visualTheme == .tideArchive ? PulseDesign.archiveForeground : PulseDesign.surface
+        PulseDesign.appSurface(for: visualTheme)
     }
 
     private var storeActionShape: AnyShape {
-        if visualTheme == .tideArchive {
-            return AnyShape(
-                RoundedRectangle(
-                    cornerRadius: PulseDesign.archiveHistoryPanelCornerRadius,
-                    style: .continuous
-                )
-            )
-        }
-        return AnyShape(Capsule())
+        AnyShape(Capsule())
     }
 }
 
@@ -406,11 +370,11 @@ struct PulseReminderActivityStoreCard: View {
             VStack(alignment: .leading, spacing: PulseDesign.spacing4) {
                 Text(verbatim: activityString("store.activity.preview.signature"))
                     .font(.title2.weight(.black))
-                    .foregroundStyle(PulseDesign.ink)
+                    .foregroundStyle(PulseDesign.appInk(for: visualTheme))
 
                 Text(verbatim: activityString("store.activity.preview.section"))
                     .font(.caption.weight(.semibold))
-                    .foregroundStyle(PulseDesign.secondary)
+                    .foregroundStyle(PulseDesign.appMuted(for: visualTheme))
             }
             .accessibilityElement(children: .combine)
             .accessibilityIdentifier("store.activity.preview.signature")
@@ -423,25 +387,19 @@ struct PulseReminderActivityStoreCard: View {
         }
         .padding(PulseDesign.spacing16)
         .background(
-            visualTheme == .tideArchive
-                ? PulseDesign.archivePaper
-                : PulseDesign.surface.opacity(0.90),
+            PulseDesign.appSurface(for: visualTheme).opacity(0.90),
             in: RoundedRectangle(
-                cornerRadius: cardCornerRadius,
+                cornerRadius: PulseDesign.activityStoreCardCornerRadius,
                 style: .continuous
             )
         )
         .overlay {
             RoundedRectangle(
-                cornerRadius: cardCornerRadius,
+                cornerRadius: PulseDesign.activityStoreCardCornerRadius,
                 style: .continuous
             )
             .stroke(
-                visualTheme == .tideArchive
-                    ? PulseDesign.archiveCopper.opacity(
-                        PulseDesign.archiveHistorySurfaceBorderOpacity
-                    )
-                    : PulseDesign.separator.opacity(0.72),
+                PulseDesign.appDivider(for: visualTheme).opacity(0.72),
                 lineWidth: PulseDesign.thinLineWidth
             )
         }
@@ -457,11 +415,6 @@ struct PulseReminderActivityStoreCard: View {
         )
     }
 
-    private var cardCornerRadius: CGFloat {
-        visualTheme == .tideArchive
-            ? PulseDesign.archiveHistoryPanelCornerRadius
-            : PulseDesign.activityStoreCardCornerRadius
-    }
 }
 
 struct PulseReminderActivityStoreShowcase: View {
@@ -527,11 +480,7 @@ struct PulseReminderActivityStoreShowcase: View {
                     style: .continuous
                 )
                 .stroke(
-                    visualTheme == .tideArchive
-                        ? PulseDesign.archiveCopper.opacity(
-                            PulseDesign.archiveNavigationDividerOpacity
-                        )
-                        : PulseDesign.separator.opacity(0.54),
+                    PulseDesign.appDivider(for: visualTheme).opacity(0.72),
                     lineWidth: PulseDesign.thinLineWidth
                 )
             }
@@ -553,7 +502,7 @@ struct PulseReminderActivityStoreShowcase: View {
     private func specimenLabel(_ key: String) -> some View {
         Text(verbatim: activityString(key))
             .font(.caption2.weight(.bold))
-            .foregroundStyle(PulseDesign.secondary)
+            .foregroundStyle(PulseDesign.appMuted(for: visualTheme))
             .lineLimit(1)
     }
 

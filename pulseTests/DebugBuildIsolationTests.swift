@@ -66,7 +66,11 @@ final class DebugBuildIsolationTests: XCTestCase {
         XCTAssertTrue(debugSource.contains("await activity.end"))
         XCTAssertTrue(debugSource.contains("isIsolatedRuntimeIdentity"))
         XCTAssertTrue(debugSource.contains("身份异常，已禁用全部测试操作"))
-        XCTAssertTrue(settingsSource.contains("#if DEBUG\n            developerSection\n#endif"))
+        XCTAssertTrue(
+            settingsSource.contains(
+                "#if DEBUG\n            developerSection.pulseFormRows(for: visualTheme)\n#endif"
+            )
+        )
         XCTAssertTrue(settingsSource.contains("#if DEBUG\n    private var developerSection"))
     }
 

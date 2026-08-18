@@ -33,6 +33,51 @@ final class ThemeExperienceContractTests: XCTestCase {
         XCTAssertTrue(source.contains("archiveMarker"))
     }
 
+    func testTideArchiveUsesOneSemanticPaletteWithoutLegacyDesignAssets() throws {
+        let designSource = try source("pulse/Shared/PulseDesignSystem.swift")
+        let navigationSource = try source("pulse/Shared/PulsePrimaryNavigation.swift")
+        let historySource = try source("pulse/Features/History/HistoryView.swift")
+        let tokenSource = try source("design/brand-tokens.json")
+        let generatorSource = try source("scripts/build_brand_assets.py")
+
+        let semanticRoles = [
+            "archiveCanvas",
+            "archiveCanvasDeep",
+            "archiveSurface",
+            "archiveInk",
+            "archiveMuted",
+            "archiveDivider",
+            "archiveAccent",
+            "archiveAccentSoft",
+            "archiveTide",
+            "archiveTideDeep",
+        ]
+        for role in semanticRoles {
+            XCTAssertTrue(tokenSource.contains("\"\(role)\""), "Missing token role \(role)")
+            XCTAssertTrue(designSource.contains(role), "Missing design consumer \(role)")
+        }
+
+        let removedRoles = [
+            "archiveCopper",
+            "archiveDepth",
+            "archiveForeground",
+            "archiveMist",
+            "archiveNight",
+            "archivePaper",
+            "archiveSky",
+            "archiveSkyDeep",
+        ]
+        for role in removedRoles {
+            XCTAssertFalse(tokenSource.contains("\"\(role)\""), "Legacy token remains: \(role)")
+            XCTAssertFalse(generatorSource.contains("\"\(role)\""), "Legacy asset remains: \(role)")
+            XCTAssertFalse(designSource.contains(role), "Legacy design consumer remains: \(role)")
+        }
+
+        XCTAssertTrue(navigationSource.contains("archiveBarSurfaceOpacity"))
+        XCTAssertFalse(navigationSource.contains("archiveNavigationCornerRadius"))
+        XCTAssertFalse(historySource.contains("archiveHistoryLedger"))
+    }
+
     func testRemovedThemeSpecificContractsDoNotRemain() throws {
         let repositoryRoot = repositoryRoot
         let productionRoots = [

@@ -17,6 +17,7 @@ struct CommitmentIdentityEditor: View {
 
     @Environment(\.dismiss) private var dismiss
     @Environment(\.locale) private var locale
+    @Environment(\.pulseVisualTheme) private var visualTheme
     @State private var name: String
     @State private var purpose: String
     @FocusState private var focusedField: Field?
@@ -35,6 +36,8 @@ struct CommitmentIdentityEditor: View {
             }
 
             identityFields
+                .listRowBackground(PulseDesign.appSurface(for: visualTheme))
+                .listRowSeparatorTint(PulseDesign.appDivider(for: visualTheme))
         }
         .scrollContentBackground(.hidden)
         .background {
@@ -43,8 +46,8 @@ struct CommitmentIdentityEditor: View {
                 PulseFieldBackground()
             }
         }
-        .foregroundStyle(PulseDesign.ink)
-        .tint(PulseDesign.tint)
+        .foregroundStyle(PulseDesign.appInk(for: visualTheme))
+        .tint(PulseDesign.appAccent(for: visualTheme))
         .navigationTitle(navigationTitle)
         .navigationBarTitleDisplayMode(.inline)
         .pulseSecondaryNavigation(isEnabled: mode == .settings)
@@ -109,7 +112,7 @@ struct CommitmentIdentityEditor: View {
 
             Text("commitment.privacy_note")
                 .font(.footnote)
-                .foregroundStyle(PulseDesign.secondary)
+                .foregroundStyle(PulseDesign.appMuted(for: visualTheme))
                 .fixedSize(horizontal: false, vertical: true)
         } header: {
             Text("commitment.section")
@@ -133,7 +136,7 @@ struct CommitmentIdentityEditor: View {
                     Spacer()
                     if model.operation == .updateHabitIdentity {
                         ProgressView()
-                            .tint(PulseDesign.actionForeground)
+                            .tint(PulseDesign.appAccentForeground(for: visualTheme))
                     } else {
                         Text(saveButtonTitle)
                             .font(.headline.weight(.semibold))
@@ -141,17 +144,17 @@ struct CommitmentIdentityEditor: View {
                     Spacer()
                 }
                 .frame(minHeight: PulseDesign.minimumHitTarget)
-                .foregroundStyle(PulseDesign.actionForeground)
+                .foregroundStyle(PulseDesign.appAccentForeground(for: visualTheme))
             }
             .buttonStyle(.borderedProminent)
-            .tint(PulseDesign.action)
+            .tint(PulseDesign.appAccent(for: visualTheme))
             .frame(maxWidth: .infinity)
             .padding(.horizontal, PulseDesign.horizontalPadding)
             .padding(.vertical, PulseDesign.spacing12)
             .disabled(model.operation != nil || !canSubmit)
             .accessibilityIdentifier("commitment.save.button")
         }
-        .background(PulseDesign.background)
+        .background(PulseDesign.appSurface(for: visualTheme))
     }
 
     private func characterCount(
@@ -182,8 +185,8 @@ struct CommitmentIdentityEditor: View {
         }
         .font(.caption)
         .foregroundStyle(isInvalidLength(value, minimum: minimum, maximum: maximum)
-            ? PulseDesign.action
-            : PulseDesign.secondary)
+            ? PulseDesign.systemDestructive
+            : PulseDesign.appMuted(for: visualTheme))
         .accessibilityIdentifier(identifier)
     }
 

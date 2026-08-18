@@ -144,36 +144,7 @@ struct HistoryView: View {
             .id(contentMode)
             .transition(.opacity)
         }
-        .padding(PulseDesign.spacing20)
-        .background {
-            RoundedRectangle(
-                cornerRadius: PulseDesign.archiveHistoryLedgerCornerRadius,
-                style: .continuous
-            )
-            .fill(
-                PulseDesign.archivePaper.opacity(
-                    PulseDesign.archiveHistoryLedgerOpacity
-                )
-            )
-        }
-        .overlay {
-            RoundedRectangle(
-                cornerRadius: PulseDesign.archiveHistoryLedgerCornerRadius,
-                style: .continuous
-            )
-            .stroke(
-                PulseDesign.archiveCopper.opacity(
-                    PulseDesign.archiveHistoryLedgerBorderOpacity
-                ),
-                lineWidth: PulseDesign.thinLineWidth
-            )
-        }
-        .overlay(alignment: .leading) {
-            Rectangle()
-                .fill(PulseDesign.archiveCopper)
-                .frame(width: PulseDesign.emphasisLineWidth)
-                .padding(.vertical, PulseDesign.spacing24)
-        }
+        .padding(.top, PulseDesign.spacing8)
         .padding(.bottom, PulseDesign.spacing24)
     }
 
@@ -196,7 +167,10 @@ struct HistoryView: View {
                 cornerRadius: PulseDesign.historyModePickerCornerRadius,
                 style: .continuous
             )
-            .stroke(PulseDesign.separator, lineWidth: PulseDesign.thinLineWidth)
+            .stroke(
+                PulseDesign.appDivider(for: visualTheme),
+                lineWidth: PulseDesign.thinLineWidth
+            )
         }
     }
 
@@ -218,7 +192,9 @@ struct HistoryView: View {
             Label(mode.titleKey, systemImage: mode.systemImage)
                 .font(.subheadline.weight(isSelected ? .semibold : .regular))
                 .foregroundStyle(
-                    isSelected ? historyModeSelectedForeground : PulseDesign.secondary
+                    isSelected
+                        ? historyModeSelectedForeground
+                        : PulseDesign.appMuted(for: visualTheme)
                 )
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .background {
@@ -254,7 +230,7 @@ struct HistoryView: View {
         case .editorialJournal:
             PulseDesign.background
         case .tideArchive:
-            PulseDesign.archiveNight
+            PulseDesign.archiveInk
         }
     }
 
@@ -302,7 +278,7 @@ struct HistoryView: View {
                         )
                     )
                     .font(.caption.weight(.semibold))
-                    .foregroundStyle(PulseDesign.secondary)
+                    .foregroundStyle(PulseDesign.archiveMuted)
                     .accessibilityHidden(true)
                 }
 
@@ -317,17 +293,17 @@ struct HistoryView: View {
                         .font(.system(size: PulseDesign.archiveHistoryMonthSize, weight: .medium))
                         .monospacedDigit()
                         .tracking(PulseDesign.archiveHistoryMonthTracking)
-                        .foregroundStyle(PulseDesign.ink)
+                        .foregroundStyle(PulseDesign.archiveInk)
 
                     VStack(alignment: .leading, spacing: PulseDesign.spacing4) {
                         Text(PulseFormatting.monthOnly(month, timeZone: timeZone, locale: locale))
                             .font(.title3.weight(.semibold))
-                            .foregroundStyle(PulseDesign.ink)
+                            .foregroundStyle(PulseDesign.archiveInk)
 
                         Rectangle()
-                            .fill(PulseDesign.archiveCopper)
+                            .fill(PulseDesign.archiveAccent)
                             .frame(
-                                width: PulseDesign.archiveHistoryAccentWidth,
+                                width: PulseDesign.archiveAccentRuleWidth,
                                 height: PulseDesign.emphasisLineWidth
                             )
                             .accessibilityHidden(true)
@@ -381,30 +357,18 @@ struct HistoryView: View {
         Button(action: action) {
             Image(systemName: systemName)
                 .font(.subheadline.weight(.semibold))
-                .foregroundStyle(PulseDesign.ink)
+                .foregroundStyle(PulseDesign.archiveInk)
                 .frame(
                     width: PulseDesign.minimumHitTarget,
                     height: PulseDesign.minimumHitTarget
                 )
                 .background(
-                    PulseDesign.archivePaper,
+                    PulseDesign.archiveAccentSoft,
                     in: RoundedRectangle(
-                        cornerRadius: PulseDesign.archiveCalendarDayCornerRadius,
+                        cornerRadius: PulseDesign.historyModePickerCornerRadius,
                         style: .continuous
                     )
                 )
-                .overlay {
-                    RoundedRectangle(
-                        cornerRadius: PulseDesign.archiveCalendarDayCornerRadius,
-                        style: .continuous
-                    )
-                        .stroke(
-                            PulseDesign.archiveCopper.opacity(
-                                PulseDesign.archiveHistorySurfaceBorderOpacity
-                            ),
-                            lineWidth: PulseDesign.thinLineWidth
-                        )
-                }
         }
         .buttonStyle(.plain)
         .disabled(isDisabled)
@@ -439,25 +403,20 @@ struct HistoryView: View {
         }
         .padding(.vertical, PulseDesign.spacing16)
         .overlay(alignment: .top) {
-            HStack(spacing: 0) {
-                Rectangle()
-                    .fill(PulseDesign.archiveCopper)
-                    .frame(width: PulseDesign.archiveHistoryAccentWidth)
-                Rectangle()
-                    .fill(PulseDesign.separator)
-            }
+            Rectangle()
+                .fill(PulseDesign.archiveDivider)
             .frame(height: PulseDesign.thinLineWidth)
         }
         .overlay(alignment: .bottom) {
             Rectangle()
-                .fill(PulseDesign.separator)
+                .fill(PulseDesign.archiveDivider)
                 .frame(height: PulseDesign.thinLineWidth)
         }
     }
 
     private var archiveStatisticDivider: some View {
         Rectangle()
-            .fill(PulseDesign.separator)
+            .fill(PulseDesign.archiveDivider)
             .frame(
                 width: PulseDesign.thinLineWidth,
                 height: PulseDesign.archiveHistoryStatisticDividerHeight
@@ -564,7 +523,7 @@ struct HistoryView: View {
             ) { index, weekday in
                 Text(weekday)
                     .font(.system(.caption2, design: .default, weight: .bold))
-                    .foregroundStyle(PulseDesign.secondary)
+                    .foregroundStyle(PulseDesign.appMuted(for: visualTheme))
                     .frame(maxWidth: .infinity, minHeight: PulseDesign.spacing24)
                     .accessibilityIdentifier("calendar.weekday.\(index)")
             }
@@ -698,11 +657,11 @@ private struct ArchiveStatisticTile: View {
             Text(value, format: .number)
                 .font(.title2.weight(.semibold))
                 .monospacedDigit()
-                .foregroundStyle(PulseDesign.ink)
+                .foregroundStyle(PulseDesign.archiveInk)
 
             Text(labelKey)
                 .font(.caption2.weight(.medium))
-                .foregroundStyle(PulseDesign.secondary)
+                .foregroundStyle(PulseDesign.archiveMuted)
                 .lineLimit(1)
         }
         .frame(maxWidth: .infinity)
@@ -839,7 +798,7 @@ private struct CalendarDayCell: View {
                             )
                         )
                 }
-                .foregroundStyle(PulseDesign.archiveNight)
+                .foregroundStyle(PulseDesign.archiveInk)
             } else if item.status == .missed {
                 VStack(spacing: 0) {
                     Text(item.day.day, format: .number)
@@ -855,7 +814,7 @@ private struct CalendarDayCell: View {
                         )
                         .accessibilityHidden(true)
                 }
-                .foregroundStyle(PulseDesign.secondary)
+                .foregroundStyle(PulseDesign.archiveMuted)
             } else if item.status == .beforeHabit {
                 VStack(spacing: 0) {
                     Text(item.day.day, format: .number)
@@ -888,7 +847,7 @@ private struct CalendarDayCell: View {
                     style: .continuous
                 )
                 .stroke(
-                    PulseDesign.archiveCopper,
+                    PulseDesign.archiveAccent,
                     lineWidth: PulseDesign.emphasisLineWidth
                 )
                 .frame(
@@ -906,7 +865,7 @@ private struct CalendarDayCell: View {
                             weight: .bold
                         )
                     )
-                    .foregroundStyle(PulseDesign.archiveCopper)
+                    .foregroundStyle(PulseDesign.archiveAccent)
                     .padding(PulseDesign.spacing4)
                     .accessibilityHidden(true)
             }
@@ -1033,11 +992,11 @@ private struct CalendarDayCell: View {
     private var archiveCellFill: Color {
         switch item.status {
         case .checked:
-            PulseDesign.archiveCopper
+            PulseDesign.archiveAccent
         case .todayPending:
-            PulseDesign.archiveMist.opacity(PulseDesign.archiveHistoryTodayFillOpacity)
+            PulseDesign.archiveAccentSoft.opacity(PulseDesign.archiveHistoryTodayFillOpacity)
         case .missed:
-            PulseDesign.archiveNight.opacity(PulseDesign.archiveHistoryMissedFillOpacity)
+            PulseDesign.archiveInk.opacity(PulseDesign.archiveHistoryMissedFillOpacity)
         case .future, .beforeHabit:
             .clear
         }
@@ -1048,7 +1007,7 @@ private struct CalendarDayCell: View {
         case .beforeHabit:
             PulseDesign.secondary.opacity(PulseDesign.calendarBeforeHabitOpacity)
         case .todayPending, .future:
-            PulseDesign.secondary
+            PulseDesign.archiveMuted
         case .checked, .missed:
             PulseDesign.ink
         }
@@ -1061,7 +1020,7 @@ private struct CalendarDayCell: View {
         case .future:
             PulseDesign.secondary
         case .beforeHabit:
-            PulseDesign.secondary.opacity(PulseDesign.calendarBeforeHabitOpacity)
+            PulseDesign.archiveMuted.opacity(PulseDesign.calendarBeforeHabitOpacity)
         case .checked, .missed:
             PulseDesign.ink
         }
@@ -1223,12 +1182,12 @@ private struct DayArchiveDetailView: View {
         HStack(alignment: .top, spacing: PulseDesign.spacing16) {
             Image(systemName: record == nil ? "photo.fill" : "checkmark")
                 .font(.headline.weight(.bold))
-                .foregroundStyle(PulseDesign.archiveNight)
+                .foregroundStyle(PulseDesign.archiveInk)
                 .frame(
                     width: PulseDesign.minimumHitTarget,
                     height: PulseDesign.minimumHitTarget
                 )
-                .background(PulseDesign.archiveCopper, in: Circle())
+                .background(PulseDesign.archiveAccentSoft, in: Circle())
                 .accessibilityHidden(true)
 
             VStack(alignment: .leading, spacing: PulseDesign.spacing8) {
@@ -1240,7 +1199,7 @@ private struct DayArchiveDetailView: View {
                     )
                 )
                 .font(.title3.bold())
-                .foregroundStyle(PulseDesign.ink)
+                .foregroundStyle(PulseDesign.archiveInk)
                 .fixedSize(horizontal: false, vertical: true)
 
                 if let record {
@@ -1257,29 +1216,21 @@ private struct DayArchiveDetailView: View {
                             )
                         )
                     )
-                    .foregroundStyle(PulseDesign.secondary)
+                    .foregroundStyle(PulseDesign.archiveMuted)
                     .fixedSize(horizontal: false, vertical: true)
                 } else {
                     Text("history.record_deleted_media_retained")
-                        .foregroundStyle(PulseDesign.secondary)
+                    .foregroundStyle(PulseDesign.archiveMuted)
                         .fixedSize(horizontal: false, vertical: true)
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .padding(PulseDesign.spacing20)
-        .background {
-            RoundedRectangle(
-                cornerRadius: PulseDesign.archiveHistoryPanelCornerRadius,
-                style: .continuous
-            )
-            .fill(PulseDesign.archivePaper)
-        }
-        .overlay(alignment: .leading) {
+        .padding(.vertical, PulseDesign.spacing12)
+        .overlay(alignment: .bottom) {
             Rectangle()
-                .fill(PulseDesign.archiveCopper)
-                .frame(width: PulseDesign.emphasisLineWidth)
-                .padding(.vertical, PulseDesign.spacing16)
+                .fill(PulseDesign.archiveDivider)
+                .frame(height: PulseDesign.thinLineWidth)
         }
         .accessibilityElement(children: .combine)
         .accessibilityIdentifier("history.record.detail.identity")

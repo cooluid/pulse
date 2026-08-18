@@ -16,8 +16,6 @@ struct PulsePrimaryNavigation: View {
     @Environment(\.pulseVisualTheme) private var visualTheme
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @ScaledMetric(relativeTo: .body) private var navigationHeight = PulseDesign.primaryNavigationHeight
-    @ScaledMetric(relativeTo: .body) private var archiveNavigationHeight =
-        PulseDesign.archiveNavigationHeight
     @ScaledMetric(relativeTo: .body) private var glyphSize = PulseDesign.primaryNavigationGlyph
     @Namespace private var selectionNamespace
 
@@ -73,58 +71,90 @@ struct PulsePrimaryNavigation: View {
     }
 
     private var archiveNavigation: some View {
-        sizedNavigation
+        archiveNavigationLayout
+            .frame(maxWidth: PulseDesign.primaryNavigationMaxWidth)
+            .padding(.horizontal, PulseDesign.horizontalPadding)
+            .padding(.top, PulseDesign.spacing4)
+            .padding(.bottom, PulseDesign.spacing4)
+            .frame(maxWidth: .infinity)
             .background {
-                RoundedRectangle(
-                    cornerRadius: PulseDesign.archiveNavigationCornerRadius,
-                    style: .continuous
-                )
-                .fill(
-                    PulseDesign.archiveNight.opacity(
-                        PulseDesign.archiveNavigationSurfaceOpacity
-                    )
-                )
-            }
-            .clipShape(
-                RoundedRectangle(
-                    cornerRadius: PulseDesign.archiveNavigationCornerRadius,
-                    style: .continuous
-                )
-            )
-            .overlay {
-                RoundedRectangle(
-                    cornerRadius: PulseDesign.archiveNavigationCornerRadius,
-                    style: .continuous
-                )
-                .stroke(
-                    PulseDesign.archiveForeground.opacity(
-                        PulseDesign.archiveNavigationBorderOpacity
-                    ),
-                    lineWidth: PulseDesign.thinLineWidth
-                )
+                PulseDesign.archiveSurface
+                    .opacity(PulseDesign.archiveBarSurfaceOpacity)
+                    .ignoresSafeArea(edges: .bottom)
             }
             .overlay(alignment: .top) {
-                HStack(spacing: 0) {
-                    Rectangle()
-                        .fill(PulseDesign.archiveCopper)
-                        .frame(width: PulseDesign.archiveHistoryAccentWidth)
-                    Rectangle()
-                        .fill(
-                            PulseDesign.archiveMist.opacity(
-                                PulseDesign.archiveNavigationDividerOpacity
-                            )
+                Rectangle()
+                    .fill(PulseDesign.archiveDivider)
+                    .frame(height: PulseDesign.thinLineWidth)
+            }
+    }
+
+    @ViewBuilder
+    private var archiveNavigationLayout: some View {
+        HStack(spacing: PulseDesign.spacing32) {
+            archiveNavigationButton(for: .today)
+            archiveNavigationButton(for: .history)
+        }
+        .frame(
+            height: dynamicTypeSize.isAccessibilitySize
+                ? PulseDesign.accessibilityNavigationMinimumHeight
+                : PulseDesign.archiveBarHeight
+        )
+    }
+
+    private func archiveNavigationButton(for section: PulsePrimarySection) -> some View {
+        let isSelected = selection == section
+
+        return Button {
+            select(section)
+        } label: {
+            VStack(spacing: PulseDesign.spacing4) {
+                ZStack {
+                    Circle()
+                        .fill(isSelected ? PulseDesign.archiveAccentSoft : Color.clear)
+                    Circle()
+                        .stroke(
+                            isSelected ? PulseDesign.archiveAccent : PulseDesign.archiveDivider,
+                            lineWidth: isSelected
+                                ? PulseDesign.emphasisLineWidth
+                                : PulseDesign.thinLineWidth
+                        )
+
+                    navigationGlyphContent(for: section)
+                        .foregroundStyle(
+                            isSelected ? PulseDesign.archiveInk : PulseDesign.archiveMuted
                         )
                 }
-                .frame(height: PulseDesign.emphasisLineWidth)
+                .frame(width: resolvedGlyphSize, height: resolvedGlyphSize)
+                .overlay(alignment: .topTrailing) {
+                    if section == .today, isTodayChecked {
+                        Image(systemName: "checkmark")
+                            .font(.system(size: 7, weight: .black))
+                            .foregroundStyle(PulseDesign.archiveCanvas)
+                            .frame(width: 13, height: 13)
+                            .background(PulseDesign.archiveAccent, in: Circle())
+                            .offset(x: 4, y: -3)
+                            .accessibilityHidden(true)
+                    }
+                }
+
+                Text(section == .today ? "tab.today" : "tab.history")
+                    .font(.caption.weight(isSelected ? .semibold : .medium))
+                    .lineLimit(1)
+
+                Capsule()
+                    .fill(isSelected ? PulseDesign.archiveAccent : Color.clear)
+                    .frame(width: PulseDesign.spacing20, height: PulseDesign.emphasisLineWidth)
             }
-            .shadow(
-                color: PulseDesign.shadow.opacity(PulseDesign.navigationShadowOpacity),
-                radius: PulseDesign.navigationShadowRadius,
-                y: PulseDesign.navigationShadowY
-            )
-            .padding(.horizontal, PulseDesign.primaryNavigationHorizontalInset)
-            .padding(.vertical, PulseDesign.spacing8)
-            .frame(maxWidth: .infinity)
+            .foregroundStyle(isSelected ? PulseDesign.archiveInk : PulseDesign.archiveMuted)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .frame(maxWidth: .infinity)
+        .accessibilityIdentifier("primary.navigation.\(section.rawValue)")
+        .accessibilityValue(isSelected ? Text(subtitleKey(for: section)) : Text(verbatim: ""))
+        .accessibilityAddTraits(isSelected ? .isSelected : [])
     }
 
     private var sizedNavigation: some View {
@@ -151,9 +181,7 @@ struct PulsePrimaryNavigation: View {
             }
             .padding(PulseDesign.primaryNavigationPadding)
             .frame(
-                height: visualTheme == .tideArchive
-                    ? archiveNavigationHeight
-                    : navigationHeight
+                height: navigationHeight
             )
         }
     }
@@ -187,9 +215,7 @@ struct PulsePrimaryNavigation: View {
             }
             .clipShape(
                 RoundedRectangle(
-                    cornerRadius: visualTheme == .tideArchive
-                        ? PulseDesign.archiveNavigationItemCornerRadius
-                        : PulseDesign.primaryNavigationItemCornerRadius,
+                    cornerRadius: PulseDesign.primaryNavigationItemCornerRadius,
                     style: .continuous
                 )
             )
@@ -228,9 +254,7 @@ struct PulsePrimaryNavigation: View {
             }
             .clipShape(
                 RoundedRectangle(
-                    cornerRadius: visualTheme == .tideArchive
-                        ? PulseDesign.archiveNavigationItemCornerRadius
-                        : PulseDesign.primaryNavigationItemCornerRadius,
+                    cornerRadius: PulseDesign.primaryNavigationItemCornerRadius,
                     style: .continuous
                 )
             )
@@ -246,30 +270,11 @@ struct PulsePrimaryNavigation: View {
     @ViewBuilder
     private func selectionBackground(isSelected: Bool) -> some View {
         if isSelected {
-            Group {
-                if visualTheme == .tideArchive {
-                    RoundedRectangle(
-                        cornerRadius: PulseDesign.archiveNavigationItemCornerRadius,
-                        style: .continuous
-                    )
-                    .fill(
-                        PulseDesign.archiveForeground.opacity(
-                            PulseDesign.archiveNavigationSelectionOpacity
-                        )
-                    )
-                    .overlay(alignment: .bottom) {
-                        Rectangle()
-                            .fill(PulseDesign.archiveCopper)
-                            .frame(height: PulseDesign.emphasisLineWidth)
-                    }
-                } else {
-                    RoundedRectangle(
-                        cornerRadius: PulseDesign.primaryNavigationItemCornerRadius,
-                        style: .continuous
-                    )
-                    .fill(PulseDesign.grass)
-                }
-            }
+            RoundedRectangle(
+                cornerRadius: PulseDesign.primaryNavigationItemCornerRadius,
+                style: .continuous
+            )
+            .fill(PulseDesign.grass)
             .matchedGeometryEffect(
                 id: "primary.navigation.selection",
                 in: selectionNamespace
@@ -291,35 +296,13 @@ struct PulsePrimaryNavigation: View {
     @ViewBuilder
     private func navigationGlyph(for section: PulsePrimarySection, isSelected: Bool) -> some View {
         ZStack {
-            Group {
-                if visualTheme == .tideArchive {
-                    Circle()
-                        .fill(
-                            isSelected
-                                ? PulseDesign.archiveForeground.opacity(
-                                    PulseDesign.archiveNavigationSelectedGlyphOpacity
-                                )
-                                : Color.clear
-                        )
-                    Circle()
-                        .stroke(
-                            isSelected
-                                ? PulseDesign.archiveCopper
-                                : navigationForeground(isSelected: false),
-                            lineWidth: isSelected
-                                ? PulseDesign.emphasisLineWidth
-                                : PulseDesign.thinLineWidth
-                        )
-                } else {
-                    Circle()
-                        .fill(isSelected ? PulseDesign.navigationGlyphSurface : Color.clear)
-                    Circle()
-                        .stroke(
-                            isSelected ? PulseDesign.navigationGlyphSurface : PulseDesign.secondary,
-                            lineWidth: PulseDesign.thinLineWidth
-                        )
-                }
-            }
+            Circle()
+                .fill(isSelected ? PulseDesign.navigationGlyphSurface : Color.clear)
+            Circle()
+                .stroke(
+                    isSelected ? PulseDesign.navigationGlyphSurface : PulseDesign.secondary,
+                    lineWidth: PulseDesign.thinLineWidth
+                )
 
             navigationGlyphContent(for: section)
         }
@@ -329,14 +312,7 @@ struct PulsePrimaryNavigation: View {
     }
 
     private func navigationForeground(isSelected: Bool) -> Color {
-        if visualTheme == .tideArchive {
-            return isSelected
-                ? PulseDesign.archiveForeground
-                : PulseDesign.archiveMist.opacity(
-                    PulseDesign.archiveNavigationUnselectedOpacity
-                )
-        }
-        return isSelected ? PulseDesign.grassForeground : PulseDesign.secondary
+        isSelected ? PulseDesign.grassForeground : PulseDesign.secondary
     }
 
     private var resolvedGlyphSize: CGFloat {
@@ -351,12 +327,14 @@ struct PulsePrimaryNavigation: View {
         case .today:
             if let todayDayNumber {
                 Text(todayDayNumber, format: .number)
-                    .font(.caption2.bold())
+                    .font(.system(size: 12, weight: .bold))
                     .monospacedDigit()
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.72)
             }
         case .history:
             Image(systemName: "calendar")
-                .font(.caption2.bold())
+                .font(.system(size: 12, weight: .bold))
         }
     }
 

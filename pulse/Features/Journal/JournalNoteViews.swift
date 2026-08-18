@@ -13,7 +13,7 @@ struct JournalNoteSummary: View {
             HStack(alignment: .firstTextBaseline, spacing: PulseDesign.spacing12) {
                 Label("journal.section.title", systemImage: "square.and.pencil")
                     .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(PulseDesign.ink)
+                    .foregroundStyle(PulseDesign.appInk(for: visualTheme))
 
                 Spacer(minLength: PulseDesign.spacing8)
 
@@ -27,7 +27,11 @@ struct JournalNoteSummary: View {
 
             Text(record.journalNote ?? PulseLocalization.string("journal.empty", locale: locale))
                 .font(noteFont)
-                .foregroundStyle(record.journalNote == nil ? PulseDesign.secondary : PulseDesign.ink)
+                .foregroundStyle(
+                    record.journalNote == nil
+                        ? PulseDesign.appMuted(for: visualTheme)
+                        : PulseDesign.appInk(for: visualTheme)
+                )
                 .italic(record.journalNote == nil && visualTheme == .editorialJournal)
                 .fixedSize(horizontal: false, vertical: true)
                 .accessibilityIdentifier("journal.summary.text")
@@ -49,10 +53,10 @@ struct JournalNoteSummary: View {
         switch visualTheme {
         case .tideArchive:
             RoundedRectangle(
-                cornerRadius: PulseDesign.archiveHistoryPanelCornerRadius,
+                cornerRadius: PulseDesign.journalCardCornerRadius,
                 style: .continuous
             )
-            .fill(PulseDesign.archivePaper)
+            .fill(PulseDesign.archiveSurface)
         case .editorialJournal:
             Rectangle().fill(
                 PulseDesign.surface.opacity(PulseDesign.editorialJournalSurfaceOpacity)
@@ -71,11 +75,11 @@ struct JournalNoteSummary: View {
         switch visualTheme {
         case .tideArchive:
             RoundedRectangle(
-                cornerRadius: PulseDesign.archiveHistoryPanelCornerRadius,
+                cornerRadius: PulseDesign.journalCardCornerRadius,
                 style: .continuous
             )
             .stroke(
-                PulseDesign.archiveCopper.opacity(PulseDesign.archiveHistorySurfaceBorderOpacity),
+                PulseDesign.archiveDivider,
                 lineWidth: PulseDesign.thinLineWidth
             )
         case .editorialJournal:
@@ -106,7 +110,7 @@ struct JournalDraftComposer: View {
             if showsHeader {
                 Label("journal.section.title", systemImage: "square.and.pencil")
                     .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(PulseDesign.ink)
+                    .foregroundStyle(PulseDesign.appInk(for: visualTheme))
             }
 
             TextField(
@@ -116,7 +120,7 @@ struct JournalDraftComposer: View {
             )
             .lineLimit(draftLineLimit)
             .font(draftFont)
-            .foregroundStyle(PulseDesign.ink)
+            .foregroundStyle(PulseDesign.appInk(for: visualTheme))
             .disabled(isDisabled)
             .focused($isFocused)
             .accessibilityIdentifier("journal.draft.input")
@@ -132,7 +136,9 @@ struct JournalDraftComposer: View {
 
                 Text(characterCountText)
                     .foregroundStyle(
-                        isValid ? PulseDesign.secondary : PulseDesign.systemDestructive
+                        isValid
+                            ? PulseDesign.appMuted(for: visualTheme)
+                            : PulseDesign.systemDestructive
                     )
                     .accessibilityIdentifier("journal.draft.count")
             }
@@ -199,10 +205,10 @@ struct JournalDraftComposer: View {
             Color.clear
         case .tideArchive:
             RoundedRectangle(
-                cornerRadius: PulseDesign.archiveHistoryPanelCornerRadius,
+                cornerRadius: PulseDesign.journalCardCornerRadius,
                 style: .continuous
             )
-            .fill(PulseDesign.archivePaper)
+            .fill(PulseDesign.archiveSurface)
         }
     }
 
@@ -224,13 +230,11 @@ struct JournalDraftComposer: View {
             }
         case .tideArchive:
             RoundedRectangle(
-                cornerRadius: PulseDesign.archiveHistoryPanelCornerRadius,
+                cornerRadius: PulseDesign.journalCardCornerRadius,
                 style: .continuous
             )
             .stroke(
-                PulseDesign.archiveCopper.opacity(
-                    PulseDesign.archiveHistorySurfaceBorderOpacity
-                ),
+                PulseDesign.archiveDivider,
                 lineWidth: PulseDesign.thinLineWidth
             )
         }
@@ -248,11 +252,11 @@ struct JournalHistorySection: View {
             VStack(alignment: .leading, spacing: PulseDesign.spacing4) {
                 Text("journal.history.title")
                     .font(titleFont)
-                    .foregroundStyle(PulseDesign.ink)
+                    .foregroundStyle(PulseDesign.appInk(for: visualTheme))
 
                 Text("journal.history.subtitle")
                     .font(.caption)
-                    .foregroundStyle(PulseDesign.secondary)
+                    .foregroundStyle(PulseDesign.appMuted(for: visualTheme))
             }
             .padding(.top, PulseDesign.spacing16)
             .padding(.bottom, PulseDesign.spacing20)
@@ -260,7 +264,7 @@ struct JournalHistorySection: View {
             if records.isEmpty {
                 Text("journal.history.empty")
                     .font(bodyFont)
-                    .foregroundStyle(PulseDesign.secondary)
+                    .foregroundStyle(PulseDesign.appMuted(for: visualTheme))
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.vertical, PulseDesign.spacing16)
                     .accessibilityIdentifier("history.journal.empty")
@@ -338,7 +342,7 @@ private struct JournalHistoryEntryRow: View {
 
             Text(record.journalNote ?? "")
                 .font(noteFont)
-                .foregroundStyle(PulseDesign.ink)
+                .foregroundStyle(PulseDesign.appInk(for: visualTheme))
                 .lineLimit(PulseDesign.journalHistoryExcerptLineLimit)
                 .multilineTextAlignment(.leading)
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -363,7 +367,7 @@ private struct JournalHistoryEntryRow: View {
         case .editorialJournal:
             PulseDesign.editorialAccent
         case .tideArchive:
-            PulseDesign.archiveCopper
+            PulseDesign.archiveAccent
         }
     }
 
@@ -396,9 +400,7 @@ private struct JournalHistoryEntryRow: View {
                 Rectangle()
                     .fill(
                         visualTheme == .tideArchive
-                            ? PulseDesign.archiveCopper.opacity(
-                                PulseDesign.archiveHistorySurfaceBorderOpacity
-                            )
+                            ? PulseDesign.archiveDivider
                             : PulseDesign.separator
                     )
                     .frame(height: PulseDesign.thinLineWidth)
@@ -443,7 +445,7 @@ struct JournalNoteEditorSheet: View {
                         Text(characterCountText)
                             .foregroundStyle(
                                 isDraftValid
-                                    ? PulseDesign.secondary
+                                    ? PulseDesign.appMuted(for: visualTheme)
                                     : PulseDesign.systemDestructive
                             )
                             .accessibilityIdentifier("journal.editor.count")
@@ -459,7 +461,7 @@ struct JournalNoteEditorSheet: View {
                 Section {
                     Text("journal.privacy")
                         .font(.footnote)
-                        .foregroundStyle(PulseDesign.secondary)
+                        .foregroundStyle(PulseDesign.appMuted(for: visualTheme))
                         .fixedSize(horizontal: false, vertical: true)
 
                     if originalNote != nil {

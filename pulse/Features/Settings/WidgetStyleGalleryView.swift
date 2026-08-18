@@ -6,6 +6,7 @@ struct WidgetStyleGalleryView: View {
 
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @Environment(\.locale) private var locale
+    @Environment(\.pulseVisualTheme) private var visualTheme
     @State private var showsStore = false
 
     var body: some View {
@@ -55,14 +56,14 @@ struct WidgetStyleGalleryView: View {
         VStack(alignment: .leading, spacing: PulseDesign.spacing8) {
             Text("widget.gallery.introduction.title")
                 .font(.title3.weight(.semibold))
-                .foregroundStyle(PulseDesign.ink)
+                .foregroundStyle(PulseDesign.appInk(for: visualTheme))
             Text("widget.gallery.introduction.message")
                 .font(.footnote)
-                .foregroundStyle(PulseDesign.secondary)
+                .foregroundStyle(PulseDesign.appMuted(for: visualTheme))
                 .fixedSize(horizontal: false, vertical: true)
             Label("widget.gallery.preview.notice", systemImage: "play.circle")
                 .font(.caption)
-                .foregroundStyle(PulseDesign.secondary)
+                .foregroundStyle(PulseDesign.appMuted(for: visualTheme))
                 .fixedSize(horizontal: false, vertical: true)
         }
         .padding(.horizontal, PulseDesign.spacing4)
@@ -83,6 +84,7 @@ private struct PulseWidgetStyleCard: View {
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.locale) private var locale
+    @Environment(\.pulseVisualTheme) private var visualTheme
     @State private var previewState = PreviewState.idle
     @State private var previewSnapshot: PulseWidgetSnapshot?
     @State private var previewTask: Task<Void, Never>?
@@ -120,7 +122,7 @@ private struct PulseWidgetStyleCard: View {
             HStack(alignment: .firstTextBaseline) {
                 Text(style.localizedName(locale: locale))
                     .font(.headline.weight(.semibold))
-                    .foregroundStyle(PulseDesign.ink)
+                    .foregroundStyle(PulseDesign.appInk(for: visualTheme))
                 Spacer()
                 previewControl
                 if isLocked {
@@ -130,7 +132,7 @@ private struct PulseWidgetStyleCard: View {
 
             Text(verbatim: style.localizedDescription(locale: locale))
                 .font(.footnote)
-                .foregroundStyle(PulseDesign.secondary)
+                .foregroundStyle(PulseDesign.appMuted(for: visualTheme))
                 .fixedSize(horizontal: false, vertical: true)
         }
         .padding(PulseDesign.spacing12)
@@ -139,7 +141,7 @@ private struct PulseWidgetStyleCard: View {
                 cornerRadius: PulseDesign.widgetGalleryCardCornerRadius,
                 style: .continuous
             )
-            .fill(PulseDesign.surface.opacity(0.90))
+            .fill(PulseDesign.appSurface(for: visualTheme).opacity(0.90))
         }
         .overlay {
             RoundedRectangle(
@@ -148,8 +150,8 @@ private struct PulseWidgetStyleCard: View {
             )
             .stroke(
                 isLocked
-                    ? PulseDesign.field.opacity(0.32)
-                    : PulseDesign.separator.opacity(0.72),
+                    ? PulseDesign.appAccentSoft(for: visualTheme)
+                    : PulseDesign.appDivider(for: visualTheme).opacity(0.72),
                 lineWidth: PulseDesign.thinLineWidth
             )
         }
@@ -173,16 +175,19 @@ private struct PulseWidgetStyleCard: View {
         Button(action: replayPreview) {
             Image(systemName: previewButtonSystemImage)
                 .font(.caption.weight(.semibold))
-                .foregroundStyle(PulseDesign.action)
+                .foregroundStyle(PulseDesign.appAccent(for: visualTheme))
                 .frame(
                     width: PulseDesign.spacing32,
                     height: PulseDesign.spacing32
                 )
-                .background(PulseDesign.background.opacity(0.86), in: Circle())
+                .background(
+                    PulseDesign.appChromeBackground(for: visualTheme).opacity(0.86),
+                    in: Circle()
+                )
                 .overlay {
                     Circle()
                         .stroke(
-                            PulseDesign.separator.opacity(0.76),
+                            PulseDesign.appDivider(for: visualTheme).opacity(0.76),
                             lineWidth: PulseDesign.thinLineWidth
                         )
                 }
@@ -307,10 +312,10 @@ private struct PulseWidgetStyleCard: View {
         Button(action: onOpenStore) {
             Label("widget.gallery.locked", systemImage: "lock.fill")
                 .font(.caption2.weight(.medium))
-                .foregroundStyle(PulseDesign.action)
+                .foregroundStyle(PulseDesign.appAccent(for: visualTheme))
                 .padding(.horizontal, PulseDesign.spacing8)
                 .padding(.vertical, PulseDesign.spacing4)
-                .background(PulseDesign.field.opacity(0.12), in: Capsule())
+                .background(PulseDesign.appAccentSoft(for: visualTheme), in: Capsule())
                 .frame(minHeight: PulseDesign.minimumHitTarget)
                 .contentShape(Rectangle())
         }

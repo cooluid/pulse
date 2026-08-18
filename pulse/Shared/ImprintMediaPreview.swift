@@ -10,6 +10,7 @@ struct PulseDetailSheetScaffold<Content: View, Actions: View>: View {
     private let actions: Actions
 
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.pulseVisualTheme) private var visualTheme
 
     init(
         title: LocalizedStringKey,
@@ -35,6 +36,8 @@ struct PulseDetailSheetScaffold<Content: View, Actions: View>: View {
             }
             .scrollBounceBehavior(.basedOnSize)
             .background(PulseScreenBackground())
+            .foregroundStyle(PulseDesign.appInk(for: visualTheme))
+            .tint(PulseDesign.appAccent(for: visualTheme))
             .navigationTitle(title)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -64,6 +67,7 @@ struct PulseDetailActionsMenu<Content: View>: View {
     let accessibilityIdentifier: String
     let isBusy: Bool
     private let content: Content
+    @Environment(\.pulseVisualTheme) private var visualTheme
 
     init(
         accessibilityLabel: LocalizedStringKey,
@@ -92,7 +96,7 @@ struct PulseDetailActionsMenu<Content: View>: View {
                         .font(.headline.weight(.semibold))
                 }
             }
-            .foregroundStyle(PulseDesign.ink)
+            .foregroundStyle(PulseDesign.appInk(for: visualTheme))
             .frame(
                 width: PulseDesign.detailActionHitSize,
                 height: PulseDesign.detailActionHitSize
@@ -112,6 +116,7 @@ struct ImprintMediaPreview: View {
     let load: (ImprintMediaSnapshot) async throws -> Data
 
     @State private var state: PreviewLoadState = .loading
+    @Environment(\.pulseVisualTheme) private var visualTheme
 
     private static let logger = Logger(
         subsystem: PulseRuntimeIdentity.bundleIdentifier,
@@ -149,7 +154,7 @@ struct ImprintMediaPreview: View {
                 )
             }
         }
-        .background(PulseDesign.surface)
+        .background(PulseDesign.appSurface(for: visualTheme))
         .clipShape(
             RoundedRectangle(
                 cornerRadius: PulseDesign.mediaCornerRadius,
@@ -161,7 +166,10 @@ struct ImprintMediaPreview: View {
                 cornerRadius: PulseDesign.mediaCornerRadius,
                 style: .continuous
             )
-            .stroke(PulseDesign.separator, lineWidth: PulseDesign.thinLineWidth)
+            .stroke(
+                PulseDesign.appDivider(for: visualTheme),
+                lineWidth: PulseDesign.thinLineWidth
+            )
         }
         .task(id: media.modifiedAt) {
             state = .loading
@@ -202,6 +210,7 @@ struct ImprintMediaThumbnail: View {
     let load: (ImprintMediaSnapshot) async throws -> Data
 
     @State private var image: UIImage?
+    @Environment(\.pulseVisualTheme) private var visualTheme
 
     private static let logger = Logger(
         subsystem: PulseRuntimeIdentity.bundleIdentifier,
@@ -217,9 +226,9 @@ struct ImprintMediaThumbnail: View {
             } else {
                 Image(systemName: "photo.fill")
                     .font(.caption)
-                    .foregroundStyle(PulseDesign.action)
+                    .foregroundStyle(PulseDesign.appAccent(for: visualTheme))
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .background(PulseDesign.background)
+                    .background(PulseDesign.appChromeBackground(for: visualTheme))
             }
         }
         .frame(
@@ -229,7 +238,10 @@ struct ImprintMediaThumbnail: View {
         .clipShape(Circle())
         .overlay {
             Circle()
-                .stroke(PulseDesign.grass, lineWidth: PulseDesign.thinLineWidth)
+                .stroke(
+                    PulseDesign.appAccent(for: visualTheme),
+                    lineWidth: PulseDesign.thinLineWidth
+                )
         }
         .task(id: media.modifiedAt) {
             do {

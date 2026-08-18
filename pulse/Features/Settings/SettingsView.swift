@@ -18,19 +18,19 @@ struct SettingsView: View {
 
     var body: some View {
         Form {
-            commitmentSection
-            dailySection
-            storeSection
-            appearanceSection
-            dataSection
-            aboutSection
+            commitmentSection.pulseFormRows(for: visualTheme)
+            dailySection.pulseFormRows(for: visualTheme)
+            storeSection.pulseFormRows(for: visualTheme)
+            appearanceSection.pulseFormRows(for: visualTheme)
+            dataSection.pulseFormRows(for: visualTheme)
+            aboutSection.pulseFormRows(for: visualTheme)
 #if DEBUG
-            developerSection
+            developerSection.pulseFormRows(for: visualTheme)
 #endif
         }
         .scrollContentBackground(.hidden)
         .background(PulseScreenBackground())
-        .foregroundStyle(PulseDesign.ink)
+        .foregroundStyle(PulseDesign.appInk(for: visualTheme))
         .tint(PulseDesign.appAccent(for: visualTheme))
         .navigationTitle(
             PulseLocalization.string("settings.navigation_title", locale: locale)
@@ -74,13 +74,13 @@ struct SettingsView: View {
             } label: {
                 VStack(alignment: .leading, spacing: PulseDesign.spacing4) {
                     Text(model.habit?.name ?? "")
-                        .foregroundStyle(PulseDesign.ink)
+                        .foregroundStyle(PulseDesign.appInk(for: visualTheme))
                     Text(model.habit?.purpose ?? PulseLocalization.string(
                         "commitment.purpose.not_set",
                         locale: locale
                     ))
                     .font(.footnote)
-                    .foregroundStyle(PulseDesign.secondary)
+                    .foregroundStyle(PulseDesign.appMuted(for: visualTheme))
                     .lineLimit(2)
                 }
             }
@@ -93,7 +93,7 @@ struct SettingsView: View {
             VStack(alignment: .leading, spacing: PulseDesign.spacing12) {
                 Text("settings.visual_theme")
                     .font(.footnote.weight(.medium))
-                    .foregroundStyle(PulseDesign.secondary)
+                    .foregroundStyle(PulseDesign.appMuted(for: visualTheme))
 
                 visualThemeChoiceLayout {
                     ForEach(PulseVisualTheme.allCases) { theme in
@@ -144,7 +144,7 @@ struct SettingsView: View {
             } label: {
                 LabeledContent("settings.widget.style") {
                     Text("settings.widget.style.per_instance")
-                        .foregroundStyle(PulseDesign.secondary)
+                        .foregroundStyle(PulseDesign.appMuted(for: visualTheme))
                 }
             }
             .accessibilityIdentifier("settings.widget.gallery.link")
@@ -191,7 +191,7 @@ struct SettingsView: View {
                 } else {
                     Label(reminderDeliveryDescriptionKey, systemImage: reminderDeliveryIcon)
                         .font(.footnote)
-                        .foregroundStyle(PulseDesign.secondary)
+                        .foregroundStyle(PulseDesign.appMuted(for: visualTheme))
                         .fixedSize(horizontal: false, vertical: true)
                         .accessibilityIdentifier("settings.reminder.delivery")
                 }
@@ -207,7 +207,7 @@ struct SettingsView: View {
 
                 if model.reminderSyncState == .failed {
                     Label("settings.reminder.sync_failed", systemImage: "exclamationmark.triangle")
-                        .foregroundStyle(PulseDesign.action)
+                        .foregroundStyle(PulseDesign.systemDestructive)
                 }
             }
 
@@ -245,7 +245,7 @@ struct SettingsView: View {
             } label: {
                 LabeledContent("settings.timezone") {
                     Text(model.habit?.timeZoneIdentifier ?? "")
-                        .foregroundStyle(PulseDesign.secondary)
+                        .foregroundStyle(PulseDesign.appMuted(for: visualTheme))
                         .lineLimit(1)
                 }
             }
@@ -264,7 +264,7 @@ struct SettingsView: View {
                     VStack(alignment: .leading, spacing: PulseDesign.spacing4) {
                         Text("store.title")
                             .font(.headline.weight(.semibold))
-                            .foregroundStyle(PulseDesign.ink)
+                            .foregroundStyle(PulseDesign.appInk(for: visualTheme))
                         Text(
                             model.featureAccess.hasEnhancement
                                 ? "settings.store.unlocked"
@@ -274,7 +274,7 @@ struct SettingsView: View {
                         .foregroundStyle(
                             model.featureAccess.hasEnhancement
                                 ? PulseDesign.appSuccess(for: visualTheme)
-                                : PulseDesign.secondary
+                                : PulseDesign.appMuted(for: visualTheme)
                         )
                     }
                 }
@@ -519,6 +519,7 @@ private struct BackupPassphraseView: View {
     let onSubmit: @MainActor (String) async throws -> Void
 
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.pulseVisualTheme) private var visualTheme
     @FocusState private var focusedField: Field?
     @State private var passphrase = ""
     @State private var confirmation = ""
@@ -537,7 +538,7 @@ private struct BackupPassphraseView: View {
                 Section {
                     Text(mode.message(locale: locale))
                         .font(.footnote)
-                        .foregroundStyle(PulseDesign.secondary)
+                        .foregroundStyle(PulseDesign.appMuted(for: visualTheme))
                         .fixedSize(horizontal: false, vertical: true)
 
                     passphraseField(
@@ -575,6 +576,10 @@ private struct BackupPassphraseView: View {
                     }
                 }
             }
+            .scrollContentBackground(.hidden)
+            .background(PulseScreenBackground())
+            .foregroundStyle(PulseDesign.appInk(for: visualTheme))
+            .tint(PulseDesign.appAccent(for: visualTheme))
             .navigationTitle(PulseLocalization.string(mode.titleKey, locale: locale))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -650,7 +655,7 @@ private struct BackupPassphraseView: View {
         return VStack(alignment: .leading, spacing: PulseDesign.spacing4) {
             Text(label)
                 .font(.caption)
-                .foregroundStyle(PulseDesign.secondary)
+                .foregroundStyle(PulseDesign.appMuted(for: visualTheme))
                 .accessibilityHidden(true)
             SecureField(label, text: text)
                 .focused($focusedField, equals: field)
@@ -678,6 +683,7 @@ private struct PulseVisualThemeChoice: View {
     let isSelected: Bool
     let locale: Locale
     let action: () -> Void
+    @Environment(\.pulseVisualTheme) private var currentTheme
 
     var body: some View {
         Button(action: action) {
@@ -715,7 +721,7 @@ private struct PulseVisualThemeChoice: View {
                 HStack(spacing: PulseDesign.spacing8) {
                     Text(theme.localizedName(locale: locale))
                         .font(.caption.weight(.semibold))
-                        .foregroundStyle(PulseDesign.ink)
+                        .foregroundStyle(PulseDesign.appInk(for: currentTheme))
                         .lineLimit(2)
 
                     Spacer(minLength: 0)
@@ -740,7 +746,7 @@ private struct PulseVisualThemeChoice: View {
     private var selectionColor: Color {
         switch theme {
         case .tideArchive:
-            PulseDesign.archiveCopper
+            PulseDesign.archiveAccent
         case .editorialJournal:
             PulseDesign.editorialAccent
         case .quietField:
@@ -788,6 +794,7 @@ private struct TimeZonePickerView: View {
     @Bindable var model: PulseAppModel
     @Environment(\.dismiss) private var dismiss
     @Environment(\.locale) private var locale
+    @Environment(\.pulseVisualTheme) private var visualTheme
     @State private var searchText = ""
     @State private var pendingIdentifier: String?
 
@@ -800,22 +807,22 @@ private struct TimeZonePickerView: View {
                 HStack {
                     VStack(alignment: .leading, spacing: PulseDesign.spacing4) {
                         Text(displayName(identifier))
-                            .foregroundStyle(PulseDesign.ink)
+                            .foregroundStyle(PulseDesign.appInk(for: visualTheme))
                         Text(identifier)
                             .font(.caption)
-                            .foregroundStyle(PulseDesign.secondary)
+                            .foregroundStyle(PulseDesign.appMuted(for: visualTheme))
                     }
                     Spacer()
                     if identifier == model.habit?.timeZoneIdentifier {
                         Image(systemName: "checkmark")
-                            .foregroundStyle(PulseDesign.action)
+                            .foregroundStyle(PulseDesign.appAccent(for: visualTheme))
                     }
                 }
             }
         }
         .scrollContentBackground(.hidden)
-        .background(PulseDesign.background)
-        .tint(PulseDesign.tint)
+        .background(PulseScreenBackground())
+        .tint(PulseDesign.appAccent(for: visualTheme))
         .navigationTitle("settings.timezone")
         .navigationBarTitleDisplayMode(.inline)
         .pulseSecondaryNavigation()
@@ -856,5 +863,12 @@ private struct TimeZonePickerView: View {
     private func displayName(_ identifier: String) -> String {
         guard let timeZone = TimeZone(identifier: identifier) else { return identifier }
         return timeZone.localizedName(for: .standard, locale: locale) ?? identifier
+    }
+}
+
+private extension View {
+    func pulseFormRows(for theme: PulseVisualTheme) -> some View {
+        listRowBackground(PulseDesign.appSurface(for: theme))
+            .listRowSeparatorTint(PulseDesign.appDivider(for: theme))
     }
 }

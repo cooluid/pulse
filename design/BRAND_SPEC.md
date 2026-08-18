@@ -31,7 +31,7 @@
 
 新增或改色：先改令牌，再生成并 `--check`。**允许**为新氛围扩展令牌；不是“禁止新画法”。
 
-常见语义角色：`background`、`surface`、`grass` / `grassForeground`、`action` / `actionForeground`、`ink` / `secondary`、`field`、`separator` / `shadow`。纸页手记只使用 `editorialAccent` 标记编辑与完成线索；潮痕档案主题使用 `archiveSky` / `archiveSkyDeep` 作为天空底，`archiveMist` / `archiveTide` / `archiveDepth` / `archiveNight` 表达单一潮位面，`archivePaper` 承担档案纸面，`archiveCopper` 只标记完成痕迹，`archiveForeground` 保证深色表面内容对比；页面不得私写第二套色板。Widget 的纸张、天光与水面分别使用 `widgetPaper`、`widgetSkyGlow`、`widgetWater`，不以局部 RGB 模拟材质。萤火日晕按系统表面拆分为 `activityIslandFirefly`、`activityIslandTime` 与 `activityLockScreenFirefly`：黑底灵动岛使用白色光源，浅底锁屏保留琥珀色对比，不复用一个含义含混的颜色角色。
+常见语义角色：`background`、`surface`、`grass` / `grassForeground`、`action` / `actionForeground`、`ink` / `secondary`、`field`、`separator` / `shadow`。纸页手记只使用 `editorialAccent` 标记编辑与完成线索；潮痕档案统一使用 `archiveCanvas` / `archiveCanvasDeep`、`archiveSurface`、`archiveInk` / `archiveMuted`、`archiveDivider`、`archiveAccent` / `archiveAccentSoft`、`archiveTide` / `archiveTideDeep`。页面不得继续引用旧橙铜 / 蓝黑令牌，也不得私写第二套色板。Widget 的纸张、天光与水面分别使用 `widgetPaper`、`widgetSkyGlow`、`widgetWater`，不以局部 RGB 模拟材质。萤火日晕按系统表面拆分为 `activityIslandFirefly`、`activityIslandTime` 与 `activityLockScreenFirefly`：黑底灵动岛使用白色光源，浅底锁屏保留琥珀色对比，不复用一个含义含混的颜色角色。
 
 完成 / 漏签 / 今天等状态不能**只靠颜色**到不可辨（形状、文案或无障碍标签须有等价）。
 

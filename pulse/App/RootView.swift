@@ -43,7 +43,7 @@ struct RootView: View {
                 .background(PulseScreenBackground())
             }
         }
-        .foregroundStyle(PulseDesign.ink)
+        .foregroundStyle(PulseDesign.appInk(for: visualTheme))
         .tint(PulseDesign.appAccent(for: visualTheme))
         .task {
             if model.loadState == .loading {
