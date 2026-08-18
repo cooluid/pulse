@@ -70,7 +70,7 @@ AppModel 同时建立 `recordsByDay` 与 `mediaByDay`。照片不参与 CheckInS
 
 `PulseSupportContract` 是 App 内支持邮箱、帮助/隐私 URL、反馈最大长度与版本展示的唯一来源；旧 `PulseExternalLinks` 已删除。`PulseFeedbackDraft` 统一规范换行、裁剪首尾空白、拒绝空内容、超过 2000 个 Swift `Character` 和不支持的控制字符；页面不得静默截断。
 
-`FeedbackView` 只建立用户主动填写的邮件草稿。可选 `PulseFeedbackDiagnostics` 从当前只读 AppModel 快照生成，并在发送前逐行展示 App/Bundle、系统与设备型号标识、界面、运行状态、逻辑日/时区、今日是否签到、记录/记事/媒体数量与占用、提醒权限/通道、权益和可用存储；不包含主承诺正文、签到时间/历史明细、记事正文、媒体内容、备份、口令、广告标识符或设备 ID。关闭后主题与正文也不得残留任何诊断字段。
+`FeedbackView` 只建立用户主动填写的邮件草稿：分类、正文、可选截图、可选技术信息。不放介绍段，也不在界面或邮件中列举未附带的数据。`PulseFeedbackDiagnostics` 从当前只读 AppModel 快照生成；开关默认打开、明细默认折叠，用户可展开查看或整组关闭。快照含 App/Bundle、系统与设备型号标识、界面、运行状态、逻辑日/时区、今日是否签到、记录/记事/媒体数量与占用、提醒权限/通道、权益和可用存储；不包含“我的一件事”正文、签到时间/历史明细、记事正文、媒体内容、备份、口令、广告标识符或设备 ID。关闭后主题与正文也不得残留任何诊断字段。
 
 可选截图只通过系统 `PhotosPicker` 读取用户选择的一张图片，不请求整个相册权限。`PulseFeedbackScreenshotProcessor` 在独立任务中把输入限制为 40 MiB，重新渲染到黑色不透明底、最长边 2048 px、JPEG 0.90，并拒绝超过 8 MiB 的输出；重新编码移除来源元数据。页面显示真实缩略图、附件大小与移除动作，邮件只附加处理后的不可变 Data。
 

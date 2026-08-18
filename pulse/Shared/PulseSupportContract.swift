@@ -337,5 +337,4 @@ enum PulseFeedbackMessageBuilder {
             attachment: attachment
         )
     }
-
 }

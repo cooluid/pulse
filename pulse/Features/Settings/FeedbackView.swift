@@ -119,7 +119,7 @@ struct FeedbackView: View {
         if feedbackBody.count > PulseSupportContract.maximumFeedbackLength {
             Label("feedback.message.too_long", systemImage: "exclamationmark.circle")
                 .foregroundStyle(PulseDesign.systemDestructive)
-        } else {
+        } else if (try? PulseFeedbackDraft(category: category, body: feedbackBody)) == nil {
             Text("feedback.message.requirement")
         }
     }
