@@ -47,11 +47,12 @@ struct PulseReminderLiveActivity: Widget {
                 }
 
                 DynamicIslandExpandedRegion(.center) {
-                    PulseReminderDynamicIslandCenterView(
+                    PulseReminderActivityStatusCopy(
                         phase: context.state.phase,
                         reminderDate: context.attributes.reminderDate,
                         timeZoneIdentifier: context.attributes.timeZoneIdentifier,
-                        locale: locale
+                        locale: locale,
+                        surface: .island
                     )
                 }
             } compactLeading: {

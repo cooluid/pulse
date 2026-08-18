@@ -46,10 +46,11 @@ struct PulseReminderActivityMarkGeometry {
     static let arcEndFraction = 0.78
     static let arcRotationDegrees = -84.0
 
-    static let islandFireflyDiameterRatio: CGFloat = 0.34
-    static let islandCompletedCoreRatio: CGFloat = 0.52
-    static let islandFireflyGlowDiameterRatio: CGFloat = 0.78
-    static let islandFireflyGlowMinimumDiameter: CGFloat = 8
+    static let islandFireflyDiameterRatio: CGFloat = 0.48
+    static let islandFireflyDiameterMinimum: CGFloat = 11
+    static let islandCompletedCoreRatio: CGFloat = 0.68
+    static let islandFireflyGlowDiameterRatio: CGFloat = 1.0
+    static let islandFireflyGlowMinimumDiameter: CGFloat = 16
 
     static let haloLineWidthRatio: CGFloat = 0.10
     static let haloLineWidthMinimum: CGFloat = 2.4
@@ -78,11 +79,17 @@ struct PulseReminderActivityMarkGeometry {
     }
 
     private static func islandMetrics(glyphSize: CGFloat) -> Metrics {
-        let fireflyDiameter = glyphSize * islandFireflyDiameterRatio
+        let fireflyDiameter = max(
+            islandFireflyDiameterMinimum,
+            glyphSize * islandFireflyDiameterRatio
+        )
         let completedCoreDiameter = glyphSize * islandCompletedCoreRatio
-        let fireflyGlowDiameter = max(
-            islandFireflyGlowMinimumDiameter,
-            glyphSize * islandFireflyGlowDiameterRatio
+        let fireflyGlowDiameter = min(
+            glyphSize,
+            max(
+                islandFireflyGlowMinimumDiameter,
+                glyphSize * islandFireflyGlowDiameterRatio
+            )
         )
         return Metrics(
             glyphSize: glyphSize,
@@ -389,7 +396,7 @@ struct PulseReminderActivityActionButton: View {
     var body: some View {
         Button(intent: PulseCheckInIntent()) {
             Text(verbatim: actionTitle)
-            .font(.system(.subheadline, weight: .black))
+            .font(.system(.subheadline, weight: actionWeight))
             .lineLimit(1)
             .minimumScaleFactor(0.76)
             .foregroundStyle(actionForeground)
@@ -415,41 +422,54 @@ struct PulseReminderActivityActionButton: View {
         )
     }
 
+    private var actionWeight: Font.Weight {
+        surface == .island ? .semibold : .black
+    }
+
     private var actionSurface: Color {
         surface == .island
-            ? PulseWidgetDesign.activityActionSurface
+            ? PulseWidgetDesign.activityIslandForeground.opacity(
+                PulseWidgetDesign.activityIslandActionFillOpacity
+            )
             : PulseWidgetDesign.action
     }
 
     private var actionForeground: Color {
         surface == .island
-            ? PulseWidgetDesign.activityActionForeground
+            ? PulseWidgetDesign.activityIslandForeground
             : PulseWidgetDesign.actionForeground
     }
 }
 
-struct PulseReminderDynamicIslandCenterView: View {
+struct PulseReminderActivityStatusCopy: View {
     let phase: PulseReminderActivityPhase
     let reminderDate: Date
     let timeZoneIdentifier: String
     let locale: Locale
+    let surface: PulseReminderActivitySurface
 
     var body: some View {
-        VStack(alignment: .leading, spacing: PulseWidgetDesign.activityIslandCenterSpacing) {
+        VStack(alignment: .leading, spacing: copySpacing) {
             PulseReminderActivityHeadline(
                 phase: phase,
                 locale: locale,
-                surface: .island
+                surface: surface
             )
             PulseReminderActivityTimeText(
                 reminderDate: reminderDate,
                 timeZoneIdentifier: timeZoneIdentifier,
                 locale: locale,
-                surface: .island
+                surface: surface
             )
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .accessibilityElement(children: .combine)
+    }
+
+    private var copySpacing: CGFloat {
+        surface == .island
+            ? PulseWidgetDesign.activityIslandCenterSpacing
+            : PulseWidgetDesign.activityLockScreenCopySpacing
     }
 }
 
@@ -470,35 +490,24 @@ struct PulseReminderLockScreenView: View {
     }
 
     private var regularLayout: some View {
-        HStack(spacing: 14) {
+        HStack(alignment: .center, spacing: PulseWidgetDesign.activityLockScreenItemSpacing) {
             mark
+            statusCopy
 
-            VStack(alignment: .leading, spacing: 8) {
-                headlineRow
-
-                if phase == .pending {
-                    PulseReminderActivityActionButton(
-                        locale: locale,
-                        surface: .lockScreen
-                    )
-                    .frame(maxWidth: .infinity, alignment: .trailing)
-                }
+            if phase == .pending {
+                PulseReminderActivityActionButton(
+                    locale: locale,
+                    surface: .lockScreen
+                )
             }
         }
     }
 
     private var accessibilityLayout: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            HStack(spacing: 12) {
+        VStack(alignment: .leading, spacing: PulseWidgetDesign.activityLockScreenStackSpacing) {
+            HStack(alignment: .center, spacing: PulseWidgetDesign.activityLockScreenItemSpacing) {
                 mark
-                VStack(alignment: .leading, spacing: 4) {
-                    PulseReminderActivityHeadline(
-                        phase: phase,
-                        locale: locale,
-                        surface: .lockScreen
-                    )
-                    timeText
-                }
+                statusCopy
             }
 
             if phase == .pending {
@@ -508,28 +517,9 @@ struct PulseReminderLockScreenView: View {
         }
     }
 
-    private var headlineRow: some View {
-        HStack(spacing: 8) {
-            PulseReminderActivityHeadline(
-                phase: phase,
-                locale: locale,
-                surface: .lockScreen
-            )
-
-            Spacer(minLength: 4)
-
-            timeText
-                .padding(.horizontal, 9)
-                .padding(.vertical, 5)
-                .background(
-                    PulseWidgetDesign.activityMark.opacity(0.12),
-                    in: Capsule()
-                )
-        }
-    }
-
-    private var timeText: some View {
-        PulseReminderActivityTimeText(
+    private var statusCopy: some View {
+        PulseReminderActivityStatusCopy(
+            phase: phase,
             reminderDate: reminderDate,
             timeZoneIdentifier: timeZoneIdentifier,
             locale: locale,
@@ -544,7 +534,6 @@ struct PulseReminderLockScreenView: View {
             locale: locale
         )
     }
-
 }
 
 struct PulseReminderActivityPreview: View {
@@ -560,11 +549,12 @@ struct PulseReminderActivityPreview: View {
                 layout: .islandExpanded
             )
 
-            PulseReminderDynamicIslandCenterView(
+            PulseReminderActivityStatusCopy(
                 phase: phase,
                 reminderDate: reminderDate,
                 timeZoneIdentifier: timeZoneIdentifier,
-                locale: locale
+                locale: locale,
+                surface: .island
             )
 
             if phase == .pending {

@@ -248,7 +248,11 @@ final class PulseWidgetSnapshotTests: XCTestCase {
             }
         }
 
-        XCTAssertEqual(Set(renderedImages).count, 4)
+        XCTAssertEqual(
+            PulseReminderActivityMarkLayout.islandCompact.size,
+            PulseReminderActivityMarkLayout.islandMinimal.size
+        )
+        XCTAssertEqual(Set(renderedImages).count, 2)
     }
 
     func testReminderActivityFireflySharesTheArcPathRadius() {
@@ -292,6 +296,11 @@ final class PulseWidgetSnapshotTests: XCTestCase {
             } else {
                 XCTAssertEqual(metrics.ringDiameter, 0, accuracy: 0.0001)
                 XCTAssertEqual(metrics.lineWidth, 0, accuracy: 0.0001)
+                XCTAssertGreaterThanOrEqual(
+                    metrics.fireflyDiameter,
+                    PulseReminderActivityMarkGeometry.islandFireflyDiameterMinimum
+                )
+                XCTAssertGreaterThan(metrics.fireflyGlowDiameter, metrics.fireflyDiameter)
                 XCTAssertLessThanOrEqual(
                     metrics.fireflyGlowDiameter / 2,
                     canvasRadius + 0.0001
@@ -443,16 +452,26 @@ final class PulseWidgetSnapshotTests: XCTestCase {
             encoding: .utf8
         )
 
-        XCTAssertTrue(renderer.contains("var drawsHalo: Bool"))
-        XCTAssertTrue(renderer.contains("struct PulseReminderDynamicIslandCenterView"))
+        XCTAssertTrue(renderer.contains("var drawsHalo: Bool"), "Missing drawsHalo")
+        XCTAssertTrue(
+            renderer.contains("struct PulseReminderActivityStatusCopy"),
+            "Missing status copy"
+        )
+        XCTAssertFalse(renderer.contains("struct PulseReminderDynamicIslandCenterView"))
         XCTAssertFalse(renderer.contains("usesCompactOpticalTreatment"))
         XCTAssertFalse(renderer.contains("compactArcEndFraction"))
         XCTAssertFalse(renderer.contains("struct PulseReminderActivityCompactTrailing"))
         XCTAssertFalse(renderer.contains("PulseReminderDynamicIslandBottomView"))
+        XCTAssertFalse(renderer.contains("headlineRow"))
+        XCTAssertFalse(renderer.contains("activityMark.opacity(0.12)"))
         XCTAssertFalse(renderer.contains("activityIslandTime"))
         XCTAssertFalse(renderer.contains("PulseWidgetDesign.grass"))
+        XCTAssertFalse(renderer.contains("PulseWidgetDesign.activityActionSurface"))
+        XCTAssertFalse(renderer.contains("PulseNavigationGlyphSurface"))
+        XCTAssertFalse(renderer.contains("PulseGrassForeground"))
         XCTAssertFalse(renderer.contains("PulseWidgetDesign.activityIslandFireflyDiameterRatio"))
         XCTAssertTrue(renderer.contains("static let islandFireflyDiameterRatio"))
+        XCTAssertTrue(renderer.contains("activityIslandActionFillOpacity"))
 
         let store = try String(
             contentsOf: projectRoot
