@@ -65,7 +65,9 @@ final class PulseFeedbackContractTests: XCTestCase {
         XCTAssertTrue(message.body.contains("iPhone17,1"))
         XCTAssertTrue(message.body.contains("3 条签到"))
         XCTAssertTrue(message.body.contains("Asia/Shanghai"))
-        XCTAssertTrue(message.body.contains("没有附带“我的一件事”正文"))
+        XCTAssertTrue(message.body.contains("技术信息"))
+        XCTAssertFalse(message.body.contains("没有附带"))
+        XCTAssertFalse(message.body.contains("设备 ID"))
         XCTAssertFalse(message.body.contains("400822@163.com"))
 
         let privateMessage = PulseFeedbackMessageBuilder.makeMessage(
@@ -74,6 +76,7 @@ final class PulseFeedbackContractTests: XCTestCase {
             locale: locale
         )
         XCTAssertEqual(privateMessage.subject, "[一日一印问题反馈]")
+        XCTAssertEqual(privateMessage.body, draft.body)
         XCTAssertFalse(privateMessage.subject.contains("1.1"))
         XCTAssertFalse(privateMessage.body.contains("iPhone17,1"))
         XCTAssertFalse(privateMessage.body.contains("技术信息"))

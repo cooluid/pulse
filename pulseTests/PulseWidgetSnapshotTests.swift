@@ -1506,6 +1506,7 @@ final class PulseWidgetSnapshotTests: XCTestCase {
             "leave mark", "leave one mark", "today is marked", "today awaits its mark",
             "today is still open", "today’s mark", "today's mark", "imprinted today",
             "shared store", "advanced benefits", "main commitment", "widget composition", "seven marks",
+            "不会在后台", "没有附带", "请勿填写或附带", "人脸身份", "健康推断", "never sent in the background",
         ]
 
         for catalogURL in catalogURLs {

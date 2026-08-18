@@ -11,7 +11,7 @@ struct FeedbackView: View {
     @State private var category: PulseFeedbackCategory = .problem
     @State private var feedbackBody = ""
     @State private var includesDiagnostics = true
-    @State private var showsDiagnosticDetails = true
+    @State private var showsDiagnosticDetails = false
     @State private var diagnostics: PulseFeedbackDiagnostics?
     @State private var selectedScreenshotItem: PhotosPickerItem?
     @State private var screenshotAttachment: PulseFeedbackAttachment?
@@ -22,7 +22,6 @@ struct FeedbackView: View {
 
     var body: some View {
         Form {
-            introductionSection.pulseFormRows(for: visualTheme)
             categorySection.pulseFormRows(for: visualTheme)
             messageSection.pulseFormRows(for: visualTheme)
             screenshotSection.pulseFormRows(for: visualTheme)
@@ -63,19 +62,6 @@ struct FeedbackView: View {
         }
         .alert(item: $notice) { notice in
             notice.alert(locale: locale)
-        }
-    }
-
-    private var introductionSection: some View {
-        Section {
-            Label {
-                Text("feedback.introduction")
-                    .fixedSize(horizontal: false, vertical: true)
-            } icon: {
-                Image(systemName: "bubble.left.and.text.bubble.right")
-                    .foregroundStyle(PulseDesign.appAccent(for: visualTheme))
-            }
-            .accessibilityElement(children: .combine)
         }
     }
 
@@ -125,9 +111,6 @@ struct FeedbackView: View {
             )
         } header: {
             Text("feedback.message.section")
-        } footer: {
-            Text("feedback.message.privacy_note")
-                .fixedSize(horizontal: false, vertical: true)
         }
     }
 
@@ -238,9 +221,6 @@ struct FeedbackView: View {
             }
         } header: {
             Text("feedback.screenshot.section")
-        } footer: {
-            Text("feedback.screenshot.explanation")
-                .fixedSize(horizontal: false, vertical: true)
         }
     }
 

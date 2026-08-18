@@ -1445,13 +1445,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "The preview includes app, device, calendar, reminder, entitlement, and local data-scale state that helps reproduce problems. It is added only to this email and is never sent in the background."
+            "value" : "Included with this email. You can turn this off."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "预览包含有助于复现问题的 App、设备、日历、提醒、权益和本地数据规模状态；只会随本次邮件发送，不会在后台收集或上报。"
+            "value" : "随这封邮件发送，可关闭。"
           }
         }
       }
@@ -1462,13 +1462,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Technical details you chose to include"
+            "value" : "Technical details"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "你选择附带的技术信息"
+            "value" : "技术信息"
           }
         }
       }
@@ -1528,13 +1528,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Review Included Details"
+            "value" : "Included Details"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "查看将附带的信息"
+            "value" : "附带内容"
           }
         }
       }
@@ -1673,22 +1673,6 @@
         }
       }
     },
-    "feedback.introduction" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tell us what happened or what would make Pulse better. You will review the complete email before sending it."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "告诉我们遇到的问题，或者你希望一日一印变得更好的地方。发送前，你会看到并确认完整邮件。"
-          }
-        }
-      }
-    },
     "feedback.mail_unavailable.message_format" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -1722,23 +1706,6 @@
         }
       }
     },
-    "feedback.mail.privacy_footer" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Except for the screenshot you explicitly selected, Pulse did not attach your commitment text, check-in timestamps or history details, journal text, captured photos, backups, backup password, or device ID."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "除你明确选择的截图外，一日一印没有附带“我的一件事”正文、签到时间或历史明细、记事正文、今日入镜照片、备份、备份密码或设备 ID。"
-          }
-        }
-      }
-    },
     "feedback.message.label" : {
       "localizations" : {
         "en" : {
@@ -1760,29 +1727,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Describe the problem and how to reproduce it, or explain the idea and why it matters to you."
+            "value" : "What happened, or what you’d like to change."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "请描述问题和复现步骤，或者说明你的想法以及它为什么重要。"
-          }
-        }
-      }
-    },
-    "feedback.message.privacy_note" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Do not include check-in history, journal entries, photos, backup files, or backup passwords."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "请勿填写或附带签到历史、记事、照片、备份文件或备份密码。"
+            "value" : "说说遇到的问题，或你希望改进的地方。"
           }
         }
       }
@@ -1808,13 +1759,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "What would you like us to know?"
+            "value" : "Message"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "你想告诉我们什么？"
+            "value" : "内容"
           }
         }
       }
@@ -1856,13 +1807,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Mail accepted the message for delivery. The Mail app is responsible for completing delivery."
+            "value" : "Mail will finish sending it."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "邮件已接受这封信并等待投递，最终投递由系统“邮件”负责。"
+            "value" : "系统邮件会继续发送。"
           }
         }
       }
@@ -1936,13 +1887,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Choose a Screenshot"
+            "value" : "Add a Screenshot"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "选择一张截图"
+            "value" : "添加截图"
           }
         }
       }
@@ -1991,22 +1942,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "图片过大，无法附加，请选择较小的截图。"
-          }
-        }
-      }
-    },
-    "feedback.screenshot.explanation" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Optional. Pulse can access only the image you choose, resizes it, and removes source metadata before attaching it. Review the visible content before sending."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "可选。一日一印只能读取你选择的图片，并会缩放、移除来源元数据后附加；发送前请检查截图中可见的私人内容。"
           }
         }
       }
@@ -2064,13 +1999,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Review and Send Email"
+            "value" : "Send Email"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "检查并发送邮件"
+            "value" : "发送邮件"
           }
         }
       }
@@ -2918,13 +2853,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Saved on this device and included in encrypted Pulse backups."
+            "value" : "Saved on this device, and included in encrypted backups."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "保存在本机，并包含在 Pulse 加密备份中。"
+            "value" : "保存在这台设备上，加密备份时会一并带上。"
           }
         }
       }

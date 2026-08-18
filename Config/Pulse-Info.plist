@@ -49,7 +49,7 @@
 	<key>LSSupportsOpeningDocumentsInPlace</key>
 	<true/>
 	<key>NSCameraUsageDescription</key>
-	<string>Pulse uses the camera only when you choose to take a photo. Photos stay on this device and are not uploaded.</string>
+	<string>Pulse uses the camera to take today’s photo.</string>
 	<key>NSSupportsLiveActivities</key>
 	<true/>
 	<key>PulseAppGroupIdentifier</key>

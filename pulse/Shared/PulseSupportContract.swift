@@ -324,10 +324,6 @@ enum PulseFeedbackMessageBuilder {
             )
         }
 
-        sections.append(
-            PulseLocalization.string("feedback.mail.privacy_footer", locale: locale)
-        )
-
         let subject = if let diagnostics {
             "\(draft.category.localizedSubject(locale: locale)) · Pulse \(diagnostics.app.displayVersion)"
         } else {

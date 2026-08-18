@@ -41,13 +41,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Pulse uses the camera only when you choose to take a photo. Photos stay on this device and are not uploaded."
+            "value" : "Pulse uses the camera to take today’s photo."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "仅当你主动拍照时，一日一印才会使用相机。照片保存在这台设备上，不会上传。"
+            "value" : "用于拍摄今日照片。"
           }
         }
       }
