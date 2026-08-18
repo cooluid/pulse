@@ -18,6 +18,41 @@ final class PulseAppModelTests: XCTestCase {
         XCTAssertFalse(context.model.habit?.isIdentityConfirmed ?? true)
     }
 
+    func testUnpurchasedUserCanSelectOnlyTheFreeInterfaceTheme() async throws {
+        let context = try makeContext(hasEnhancement: false)
+        await context.model.start()
+
+        XCTAssertEqual(context.model.settings.visualTheme, .editorialJournal)
+        XCTAssertTrue(context.model.requestVisualTheme(.editorialJournal))
+        XCTAssertFalse(context.model.requestVisualTheme(.quietField))
+        XCTAssertFalse(context.model.requestVisualTheme(.sunlitDay))
+        XCTAssertEqual(context.model.resolvedVisualTheme, .editorialJournal)
+    }
+
+    func testPurchasedUserCanSelectEveryInterfaceTheme() async throws {
+        let context = try makeContext(hasEnhancement: true)
+        await context.model.start()
+
+        XCTAssertTrue(context.model.requestVisualTheme(.quietField))
+        XCTAssertEqual(context.model.resolvedVisualTheme, .quietField)
+        XCTAssertTrue(context.model.requestVisualTheme(.sunlitDay))
+        XCTAssertEqual(context.model.resolvedVisualTheme, .sunlitDay)
+    }
+
+    func testUnavailablePersistedPaidThemeIsExplicitlyResetOnStart() async throws {
+        let context = try makeContext(hasEnhancement: false)
+        context.model.settings.visualTheme = .sunlitDay
+
+        XCTAssertEqual(context.model.resolvedVisualTheme, .editorialJournal)
+        await context.model.start()
+
+        XCTAssertEqual(context.model.settings.visualTheme, .editorialJournal)
+        XCTAssertEqual(context.model.resolvedVisualTheme, .editorialJournal)
+        XCTAssertTrue(context.model.themeAccessNoticePresented)
+        context.model.dismissThemeAccessNotice()
+        XCTAssertFalse(context.model.themeAccessNoticePresented)
+    }
+
     func testIdentityUpdateRefreshesSnapshotWithoutChangingFacts() async throws {
         let context = try makeContext()
         await context.model.start()

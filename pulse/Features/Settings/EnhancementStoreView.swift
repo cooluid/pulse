@@ -609,6 +609,8 @@ struct PulseReminderActivityStoreShowcase: View {
 private extension PulseEnhancementCapability {
     var titleKey: LocalizedStringKey {
         switch self {
+        case .interfaceThemes:
+            "store.capability.themes.title"
         case .advancedWidgetCompositions:
             "store.capability.widgets.title"
         case .scheduledLiveActivity:
@@ -618,6 +620,8 @@ private extension PulseEnhancementCapability {
 
     var detailKey: LocalizedStringKey {
         switch self {
+        case .interfaceThemes:
+            "store.capability.themes.detail"
         case .advancedWidgetCompositions:
             "store.capability.widgets.detail"
         case .scheduledLiveActivity:
@@ -627,6 +631,8 @@ private extension PulseEnhancementCapability {
 
     var systemImage: String {
         switch self {
+        case .interfaceThemes:
+            "paintpalette.fill"
         case .advancedWidgetCompositions:
             "square.grid.2x2.fill"
         case .scheduledLiveActivity:

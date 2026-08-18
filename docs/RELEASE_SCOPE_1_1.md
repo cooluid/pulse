@@ -23,13 +23,13 @@ Pulse 1.1 把“每天可靠签到”升级为“每天留下一个可验证事�
 - App Group SwiftData `PulseSchema 1.1.1` + 受 Data Protection 保护的 `Media` 文件目录；启动时执行引用完整性和孤儿文件审计。
 - `.pulsebackup` container v2 / payload v3：项目、签到、记事与全部原图/缩略图逐条 AES-256-GCM 认证加密；不把多年影像归档整体读入内存。
 - 免费基础提醒、一次买断高阶权益、八种逐实例 Home Screen Widget 构图（待落之处免费，星环 / 叠印 / 数影 / 手札 / 静场 / 来路 / 潮痕收费）与 iOS 26 scheduled Live Activity，沿用正式权益合同。八式产品清单见 [widget-ritual-objects](./prototypes/widget-ritual-objects/)（外观可迭代）。
-- English / 简体中文、主题、Dynamic Type、VoiceOver、Reduce Motion、iPhone/iPad 正式布局。
+- English / 简体中文、纸页手记免费默认主题、静野/晴昼付费主题、Dynamic Type、VoiceOver、Reduce Motion、iPhone/iPad 正式布局。
 
 ## 3. 收费边界
 
 以下永久免费，不能进付费墙：签到、拍照、查看/重拍/删除自己的照片、关闭拍照邀请、存储占用、加密备份与完整恢复。
 
-高阶权益当前售卖高级 Widget 构图和支持设备上的 scheduled Live Activity。`PulseEnhancementContract.currentCapabilities` 是权益页唯一已交付能力目录；同一永久权益可以在后续版本增值，但新能力只有真正交付后才能进入目录，不能预售路线图。未来能力不得锁住、删除或降级既有原图，也不得把人脸识别、颜值/年龄推断或远程人脸处理包装为卖点。
+高阶权益当前售卖静野/晴昼界面主题、高级 Widget 构图和支持设备上的 scheduled Live Activity。纸页手记及全部核心签到、历史、记事、照片和备份能力免费。`PulseEnhancementContract.currentCapabilities` 是权益页唯一已交付能力目录；同一永久权益可以在后续版本增值，但新能力只有真正交付后才能进入目录，不能预售路线图。未来能力不得锁住、删除或降级既有原图，也不得把人脸识别、颜值/年龄推断或远程人脸处理包装为卖点。
 
 ## 4. 明确不进入 1.1
 

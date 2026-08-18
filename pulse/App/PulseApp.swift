@@ -270,7 +270,7 @@ private struct ConfiguredRootView: View {
     var body: some View {
         RootView(model: model)
             .environment(\.locale, settings.locale)
-            .environment(\.pulseVisualTheme, settings.visualTheme)
+            .environment(\.pulseVisualTheme, model.resolvedVisualTheme)
             .preferredColorScheme(settings.theme.preferredColorScheme)
     }
 }

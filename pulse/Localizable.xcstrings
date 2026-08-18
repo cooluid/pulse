@@ -1,9 +1,6 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
-    "Aa" : {
-
-    },
     "accessibility.date_status_format" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -713,40 +710,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "用一个词形容现在。"
-          }
-        }
-      }
-    },
-    "editorial.record.cumulative_hint" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Cumulative count"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "累计记录"
-          }
-        }
-      }
-    },
-    "editorial.record.total_format" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Recorded %lld days"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "已记录 %lld 天"
           }
         }
       }
@@ -2853,6 +2816,40 @@
         }
       }
     },
+    "settings.visual_theme.access_changed.message" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The previously selected theme is no longer included with the current entitlement. Pulse has switched to the free Journal Page theme."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "先前选择的主题已不在当前权益中，一日一印已切换为免费的“纸页手记”。"
+          }
+        }
+      }
+    },
+    "settings.visual_theme.access_changed.title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Interface Theme Updated"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "界面主题已更新"
+          }
+        }
+      }
+    },
     "settings.visual_theme.editorial_journal" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -3458,6 +3455,40 @@
         }
       }
     },
+    "store.capability.themes.detail" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unlock Quiet Field and Sunlit Day across Today, History, Settings, and Advanced Features."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "解锁静野与晴昼，并统一应用到今天、记录、设置和高级功能页面。"
+          }
+        }
+      }
+    },
+    "store.capability.themes.title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Two Additional Interface Themes"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "两套额外界面主题"
+          }
+        }
+      }
+    },
     "store.capability.widgets.detail" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -3498,13 +3529,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Seven widget styles and Firefly Halo for Lock Screen and Dynamic Island."
+            "value" : "Quiet Field, Sunlit Day, seven widget styles, and Firefly Halo for Lock Screen and Dynamic Island."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "七种小组件样式，以及用于锁屏与灵动岛的萤火日晕。"
+            "value" : "静野、晴昼、七种小组件样式，以及用于锁屏与灵动岛的萤火日晕。"
           }
         }
       }
@@ -3515,13 +3546,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Widgets · Lock Screen · Dynamic Island"
+            "value" : "Themes · Widgets · System Surfaces"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "小组件 · 锁屏 · 灵动岛"
+            "value" : "界面主题 · 小组件 · 系统表面"
           }
         }
       }
@@ -3532,13 +3563,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Seven compositions. One Firefly Halo."
+            "value" : "Two themes. Seven compositions. One Firefly Halo."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "七种构图。一个萤火日晕。"
+            "value" : "两套主题。七种构图。一个萤火日晕。"
           }
         }
       }

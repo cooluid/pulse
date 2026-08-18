@@ -265,6 +265,7 @@ render       = 实际进度环，用于岁月流影生成
 
 一次买断高阶权益：
 
+- 静野与晴昼两套额外界面主题；纸页手记是唯一免费默认，三套主题的签到、历史、记事、照片、统计和无障碍能力必须等价；
 - iOS 26 本地定时 standard Live Activity，统一使用“萤火日晕”标志性构图并支持从系统表面直接签到；支持设备由系统同时提供 Dynamic Island，其他设备显示 Lock Screen 表面。提醒时间、时区和逻辑日随 Activity attributes 传入，构图不作为用户偏好持久化；
 - 高级功能页使用不可交互的同源预览同时展示 Expanded、Compact、Minimal、完成态与 Lock Screen；预览不得调用签到 Intent，也不得用说明性长文案替代实际形态；
 - Home Screen「星环 / 叠印 / 数影 / 手札 / 静场 / 来路 / 潮痕」七种额外构图；

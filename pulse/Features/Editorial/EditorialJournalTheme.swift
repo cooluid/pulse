@@ -17,7 +17,8 @@ struct EditorialTodayContent: View {
     @Bindable var model: PulseAppModel
     @Binding var draftJournalNote: String
     @FocusState.Binding var isJournalFocused: Bool
-    let onCheckIn: () -> Void
+    let onCheckIn: @MainActor @Sendable () -> Void
+    let onCheckInAndPhoto: @MainActor @Sendable () -> Void
     let onEditJournal: () -> Void
     let onCaptureMedia: () -> Void
     let onShowMedia: () -> Void
@@ -32,6 +33,9 @@ struct EditorialTodayContent: View {
                 .padding(.top, PulseDesign.spacing24)
 
             editorialPromptBlock
+                .padding(.top, PulseDesign.spacing24)
+
+            editorialWeekRail
                 .padding(.top, PulseDesign.spacing24)
 
             Spacer(minLength: PulseDesign.spacing24)
@@ -98,79 +102,90 @@ struct EditorialTodayContent: View {
 
     private var editorialFooter: some View {
         VStack(alignment: .leading, spacing: PulseDesign.spacing12) {
+            Text(
+                PulseTodayPresentation.rhythmStatusText(
+                    currentStreak: model.statistics.currentStreak,
+                    locale: locale
+                )
+            )
+            .font(.subheadline.weight(.semibold))
+            .monospacedDigit()
+            .foregroundStyle(PulseDesign.ink)
+            .multilineTextAlignment(.center)
+            .frame(maxWidth: .infinity, alignment: .center)
+            .contentTransition(
+                .numericText(value: Double(model.statistics.currentStreak))
+            )
+            .accessibilityIdentifier("today.rhythm.status")
+
             HStack(alignment: .center, spacing: PulseDesign.spacing16) {
-                Button {
-                    onCheckIn()
-                } label: {
-                    HStack(spacing: PulseDesign.spacing8) {
-                        ZStack {
+                HStack(spacing: PulseDesign.spacing8) {
+                    ZStack {
+                        Circle()
+                            .stroke(
+                                isChecked
+                                    ? PulseDesign.ink
+                                    : PulseDesign.secondary.opacity(
+                                        PulseDesign.editorialPendingStrokeOpacity
+                                    ),
+                                lineWidth: PulseDesign.emphasisLineWidth
+                            )
+                            .frame(
+                                width: PulseDesign.editorialCheckButtonSize,
+                                height: PulseDesign.editorialCheckButtonSize
+                            )
+
+                        if isChecked {
                             Circle()
-                                .stroke(
-                                    isChecked
-                                        ? PulseDesign.ink
-                                        : PulseDesign.secondary.opacity(
-                                            PulseDesign.editorialPendingStrokeOpacity
-                                        ),
-                                    lineWidth: PulseDesign.emphasisLineWidth
-                                )
+                                .fill(PulseDesign.ink)
                                 .frame(
                                     width: PulseDesign.editorialCheckButtonSize,
                                     height: PulseDesign.editorialCheckButtonSize
                                 )
 
-                            if isChecked {
-                                Circle()
-                                    .fill(PulseDesign.ink)
-                                    .frame(
-                                        width: PulseDesign.editorialCheckButtonSize,
-                                        height: PulseDesign.editorialCheckButtonSize
-                                    )
-
-                                Image(systemName: "checkmark")
-                                    .font(.caption.weight(.bold))
-                                    .foregroundStyle(PulseDesign.background)
-                            } else if model.isSaving {
-                                ProgressView()
-                                    .controlSize(.small)
-                            }
+                            Image(systemName: "checkmark")
+                                .font(.caption.weight(.bold))
+                                .foregroundStyle(PulseDesign.background)
+                        } else if model.isSaving {
+                            ProgressView()
+                                .controlSize(.small)
                         }
-
-                        Text(isChecked ? "today.accessibility.checked" : "today.check_in")
-                            .font(.subheadline.weight(.semibold))
                     }
-                    .frame(minHeight: PulseDesign.minimumHitTarget)
+
+                    Text(isChecked ? "today.accessibility.checked" : "today.check_in")
+                        .font(.subheadline.weight(.semibold))
                 }
-                .buttonStyle(.plain)
-                .disabled(
-                    !model.canCheckInToday
-                        || model.isSaving
-                        || !isDraftValid
-                )
-                .accessibilityLabel(checkInAccessibilityLabel)
-                .accessibilityIdentifier("today.checkin.button")
-
-                Spacer(minLength: PulseDesign.spacing12)
-
-                VStack(alignment: .trailing, spacing: PulseDesign.spacing4) {
-                    Text(
-                        String(
-                            format: PulseLocalization.string(
-                                "editorial.record.total_format",
+                .frame(minHeight: PulseDesign.minimumHitTarget)
+                .overlay {
+                    PulseCombinedPressControl(
+                        isEnabled: model.canCheckInToday
+                            && !model.isSaving
+                            && isDraftValid,
+                        accessibilityLabel: checkInAccessibilityLabel,
+                        accessibilityHint: isChecked
+                            ? ""
+                            : PulseLocalization.string(
+                                "today.accessibility.hint",
                                 locale: locale
                             ),
-                            locale: locale,
-                            arguments: [Int64(displayedTotalCount)]
-                        )
+                        accessibilityLongPressName: PulseLocalization.string(
+                            "today.accessibility.check_in_and_photo",
+                            locale: locale
+                        ),
+                        onPressChanged: { _ in },
+                        onTap: onCheckIn,
+                        onLongPress: onCheckInAndPhoto
                     )
-                    .font(.subheadline.weight(.medium))
-                    .monospacedDigit()
-                    .foregroundStyle(PulseDesign.ink)
-                    .accessibilityIdentifier("today.rhythm.status")
-
-                    Text("editorial.record.cumulative_hint")
-                        .font(.caption2)
-                        .foregroundStyle(PulseDesign.secondary)
                 }
+                .opacity(
+                    model.canCheckInToday
+                        || model.isSaving
+                        || isChecked
+                        ? 1
+                        : PulseDesign.disabledControlOpacity
+                )
+
+                Spacer(minLength: PulseDesign.spacing12)
             }
 
             if isChecked,
@@ -199,8 +214,79 @@ struct EditorialTodayContent: View {
         }
     }
 
-    private var displayedTotalCount: Int {
-        model.statistics.totalCount
+    private var editorialWeekRail: some View {
+        HStack(alignment: .top, spacing: 0) {
+            ForEach(model.recentDays) { item in
+                editorialWeekRailDay(item)
+                    .frame(maxWidth: .infinity)
+            }
+        }
+        .padding(.top, PulseDesign.spacing12)
+        .overlay(alignment: .top) {
+            Rectangle()
+                .fill(PulseDesign.separator)
+                .frame(height: PulseDesign.thinLineWidth)
+        }
+        .accessibilityElement(children: .contain)
+        .accessibilityIdentifier("today.week.rail")
+    }
+
+    private func editorialWeekRailDay(_ item: CalendarDayItem) -> some View {
+        let isChecked = item.status == .checked
+        let isToday = item.day == model.today
+
+        return VStack(spacing: PulseDesign.spacing8) {
+            if let timeZone = model.timeZone {
+                Text(
+                    PulseFormatting.shortWeekday(
+                        item.day,
+                        timeZone: timeZone,
+                        locale: locale
+                    )
+                )
+                .font(.caption2.weight(isToday ? .bold : .regular))
+                .foregroundStyle(isToday ? PulseDesign.ink : PulseDesign.secondary)
+            }
+
+            ZStack {
+                Circle()
+                    .fill(isChecked ? PulseDesign.ink : .clear)
+                Circle()
+                    .stroke(
+                        isToday ? PulseDesign.editorialAccent : PulseDesign.separator,
+                        lineWidth: isToday
+                            ? PulseDesign.emphasisLineWidth
+                            : PulseDesign.thinLineWidth
+                    )
+
+                if isChecked {
+                    Image(systemName: "checkmark")
+                        .font(.system(size: PulseDesign.spacing8, weight: .bold))
+                        .foregroundStyle(PulseDesign.background)
+                } else if isToday {
+                    Text(item.day.day, format: .number)
+                        .font(.caption2.weight(.semibold))
+                        .foregroundStyle(PulseDesign.ink)
+                } else if item.status == .missed {
+                    Image(systemName: "minus")
+                        .font(.system(size: PulseDesign.spacing8, weight: .medium))
+                        .foregroundStyle(PulseDesign.secondary)
+                }
+            }
+            .frame(width: PulseDesign.spacing24, height: PulseDesign.spacing24)
+        }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(editorialWeekDayAccessibilityLabel(item))
+        .accessibilityIdentifier("today.week.day.\(item.day.storageValue)")
+    }
+
+    private func editorialWeekDayAccessibilityLabel(_ item: CalendarDayItem) -> String {
+        guard let timeZone = model.timeZone else { return "" }
+        return PulseTodayPresentation.weekDayAccessibilityLabel(
+            item,
+            timeZone: timeZone,
+            locale: locale
+        )
     }
 
     private var isDraftValid: Bool {
@@ -208,10 +294,14 @@ struct EditorialTodayContent: View {
     }
 
     private var checkInAccessibilityLabel: String {
-        if isChecked {
-            return PulseLocalization.string("today.accessibility.checked", locale: locale)
-        }
-        return PulseLocalization.string("today.accessibility.check_in", locale: locale)
+        let state = isChecked
+            ? PulseLocalization.string("today.accessibility.checked", locale: locale)
+            : PulseLocalization.string("today.accessibility.check_in", locale: locale)
+        return PulseTodayPresentation.checkInAccessibilityLabel(
+            state: state,
+            commitmentName: model.habit?.name,
+            locale: locale
+        )
     }
 
     private func editorialDateKicker(today: LogicalDay, timeZone: TimeZone) -> String {
@@ -323,12 +413,29 @@ struct EditorialPrimaryNavigation: View {
     @Binding var selection: PulsePrimarySection
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     var body: some View {
-        HStack(spacing: 0) {
-            editorialTab(.today, title: "editorial.tab.today")
-            editorialTab(.history, title: "editorial.tab.records")
+        GeometryReader { proxy in
+            let itemWidth = proxy.size.width / CGFloat(PulsePrimarySection.allCases.count)
+            HStack(spacing: 0) {
+                editorialTab(
+                    .today,
+                    title: "editorial.tab.today",
+                    width: itemWidth
+                )
+                editorialTab(
+                    .history,
+                    title: "editorial.tab.records",
+                    width: itemWidth
+                )
+            }
         }
+        .frame(
+            height: dynamicTypeSize.isAccessibilitySize
+                ? PulseDesign.accessibilityNavigationMinimumHeight
+                : PulseDesign.primaryNavigationHeight
+        )
         .padding(.horizontal, PulseDesign.horizontalPadding)
         .padding(.top, PulseDesign.spacing8)
         .padding(.bottom, PulseDesign.spacing24)
@@ -342,7 +449,8 @@ struct EditorialPrimaryNavigation: View {
 
     private func editorialTab(
         _ section: PulsePrimarySection,
-        title: LocalizedStringKey
+        title: LocalizedStringKey,
+        width: CGFloat
     ) -> some View {
         Button {
             guard selection != section else { return }
@@ -362,13 +470,14 @@ struct EditorialPrimaryNavigation: View {
                     )
 
                 Rectangle()
-                    .fill(selection == section ? PulseDesign.ink : Color.clear)
+                    .fill(selection == section ? PulseDesign.ink : PulseDesign.separator)
                     .frame(height: PulseDesign.emphasisLineWidth)
             }
-            .frame(maxWidth: .infinity)
+            .frame(width: width)
             .frame(minHeight: PulseDesign.minimumHitTarget)
         }
         .buttonStyle(.plain)
+        .frame(maxWidth: .infinity)
         .accessibilityIdentifier("primary.navigation.\(section.rawValue)")
     }
 }

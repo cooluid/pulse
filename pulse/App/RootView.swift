@@ -81,6 +81,19 @@ struct RootView: View {
         } message: {
             Text(model.errorMessage ?? "")
         }
+        .alert(
+            "settings.visual_theme.access_changed.title",
+            isPresented: Binding(
+                get: { model.themeAccessNoticePresented },
+                set: { if !$0 { model.dismissThemeAccessNotice() } }
+            )
+        ) {
+            Button("action.ok", role: .cancel) {
+                model.dismissThemeAccessNotice()
+            }
+        } message: {
+            Text("settings.visual_theme.access_changed.message")
+        }
     }
 
     private var primaryInterface: some View {

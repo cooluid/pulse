@@ -66,6 +66,7 @@ final class PulseAppModel {
     private(set) var reminderSyncState: ReminderSyncState = .idle
     private(set) var reminderDeliveryMode: PulseReminderDeliveryMode = .disabled
     private(set) var navigationResetToken = UUID()
+    private(set) var themeAccessNoticePresented = false
     var selectedMonth: LogicalDay?
     var errorMessage: String?
 
@@ -89,8 +90,12 @@ final class PulseAppModel {
         self.clock = clock
         self.hapticFeedback = hapticFeedback
         self.widgetTimelineReloader = widgetTimelineReloader
-        featureAccess.accessDidChange = { [weak self] _ in
+        featureAccess.accessDidChange = { [weak self] hasEnhancement in
             guard let self else { return }
+            self.reconcileVisualThemeAccess(
+                hasEnhancementEntitlement: hasEnhancement,
+                presentsNotice: true
+            )
             self.widgetTimelineReloader.reloadDailyImprint()
             _ = self.enqueueReminderReconciliation()
         }
@@ -98,6 +103,13 @@ final class PulseAppModel {
 
     var isSaving: Bool {
         operation == .checkIn
+    }
+
+    var resolvedVisualTheme: PulseVisualTheme {
+        PulseVisualThemeAccessPolicy.resolvedTheme(
+            requested: settings.visualTheme,
+            hasEnhancementEntitlement: featureAccess.hasEnhancement
+        )
     }
 
     var displayedReminderEnabled: Bool {
@@ -170,6 +182,10 @@ final class PulseAppModel {
             await reload(reconcileReminders: false)
         }
         await featureAccessTask.value
+        reconcileVisualThemeAccess(
+            hasEnhancementEntitlement: featureAccess.hasEnhancement,
+            presentsNotice: true
+        )
         if loadState == .ready {
             await auditMediaStorage()
             await enqueueReminderReconciliation().value
@@ -180,6 +196,10 @@ final class PulseAppModel {
         guard operation == nil else { return }
         await reload(reconcileReminders: false)
         await featureAccess.refresh()
+        reconcileVisualThemeAccess(
+            hasEnhancementEntitlement: featureAccess.hasEnhancement,
+            presentsNotice: true
+        )
         if loadState == .ready {
             await auditMediaStorage()
             await enqueueReminderReconciliation().value
@@ -451,6 +471,22 @@ final class PulseAppModel {
         _ = enqueueReminderReconciliation()
     }
 
+    @discardableResult
+    func requestVisualTheme(_ visualTheme: PulseVisualTheme) -> Bool {
+        guard PulseVisualThemeAccessPolicy.isAvailable(
+            visualTheme,
+            hasEnhancementEntitlement: featureAccess.hasEnhancement
+        ) else {
+            return false
+        }
+        settings.visualTheme = visualTheme
+        return true
+    }
+
+    func dismissThemeAccessNotice() {
+        themeAccessNoticePresented = false
+    }
+
     func notifyPhotoIntentReady() {
         guard settings.hapticsEnabled else { return }
         hapticFeedback.notifyHoldReady()
@@ -719,6 +755,22 @@ final class PulseAppModel {
         reminderIntentRevision += 1
         reminderEnabledIntent = nil
         reminderReconcileRevision += 1
+    }
+
+    private func reconcileVisualThemeAccess(
+        hasEnhancementEntitlement: Bool,
+        presentsNotice: Bool
+    ) {
+        guard !PulseVisualThemeAccessPolicy.isAvailable(
+            settings.visualTheme,
+            hasEnhancementEntitlement: hasEnhancementEntitlement
+        ) else {
+            return
+        }
+        settings.visualTheme = PulseVisualThemeAccessPolicy.freeTheme
+        if presentsNotice {
+            themeAccessNoticePresented = true
+        }
     }
 
     private func scheduleDateBoundaryRefresh() {

@@ -77,6 +77,30 @@ enum PulseVisualTheme: String, CaseIterable, Identifiable, Sendable {
     }
 }
 
+enum PulseVisualThemeAccessPolicy {
+    static let freeTheme = PulseVisualTheme.editorialJournal
+
+    static func requiresEnhancement(_ theme: PulseVisualTheme) -> Bool {
+        theme != freeTheme
+    }
+
+    static func isAvailable(
+        _ theme: PulseVisualTheme,
+        hasEnhancementEntitlement: Bool
+    ) -> Bool {
+        !requiresEnhancement(theme) || hasEnhancementEntitlement
+    }
+
+    static func resolvedTheme(
+        requested theme: PulseVisualTheme,
+        hasEnhancementEntitlement: Bool
+    ) -> PulseVisualTheme {
+        isAvailable(theme, hasEnhancementEntitlement: hasEnhancementEntitlement)
+            ? theme
+            : freeTheme
+    }
+}
+
 extension PulseInterfaceLanguage {
     func localizedName(locale: Locale) -> String {
         switch self {
@@ -227,7 +251,7 @@ final class AppSettings {
             StorageKey.hapticsEnabled: true,
             StorageKey.weekStart: WeekStart.monday.rawValue,
             StorageKey.theme: AppTheme.system.rawValue,
-            StorageKey.visualTheme: PulseVisualTheme.quietField.rawValue,
+            StorageKey.visualTheme: PulseVisualThemeAccessPolicy.freeTheme.rawValue,
             StorageKey.mediaInvitationEnabled: true
         ])
         let sharedSnapshot: PulseSharedSettings.Snapshot
@@ -274,7 +298,7 @@ final class AppSettings {
         reminderTime = .standard
         weekStart = .monday
         theme = .system
-        visualTheme = .quietField
+        visualTheme = PulseVisualThemeAccessPolicy.freeTheme
         mediaInvitationEnabled = true
         language = .system
         isLoading = false

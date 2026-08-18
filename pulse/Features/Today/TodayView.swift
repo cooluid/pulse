@@ -3,6 +3,62 @@ import PulseCore
 import SwiftUI
 import UIKit
 
+enum PulseTodayPresentation {
+    static func rhythmStatusText(currentStreak: Int, locale: Locale) -> String {
+        guard currentStreak > 0 else {
+            return PulseLocalization.string("today.rhythm.start_today", locale: locale)
+        }
+
+        return String(
+            format: PulseLocalization.string("today.rhythm.streak_format", locale: locale),
+            locale: locale,
+            arguments: [Int64(currentStreak)]
+        )
+    }
+
+    static func weekDayAccessibilityLabel(
+        _ item: CalendarDayItem,
+        timeZone: TimeZone,
+        locale: Locale
+    ) -> String {
+        let date = PulseFormatting.fullDate(item.day, timeZone: timeZone, locale: locale)
+        let state: String
+        switch item.status {
+        case .beforeHabit:
+            state = PulseLocalization.string("calendar.status.before_habit", locale: locale)
+        case .checked:
+            state = PulseLocalization.string("calendar.status.checked", locale: locale)
+        case .missed:
+            state = PulseLocalization.string("calendar.status.missed", locale: locale)
+        case .todayPending:
+            state = PulseLocalization.string("calendar.status.pending", locale: locale)
+        case .future:
+            state = PulseLocalization.string("calendar.status.future", locale: locale)
+        }
+        return String(
+            format: PulseLocalization.string("accessibility.date_status_format", locale: locale),
+            date,
+            state
+        )
+    }
+
+    static func checkInAccessibilityLabel(
+        state: String,
+        commitmentName: String?,
+        locale: Locale
+    ) -> String {
+        guard let commitmentName else { return state }
+        return String(
+            format: PulseLocalization.string(
+                "today.accessibility.commitment_state_format",
+                locale: locale
+            ),
+            commitmentName,
+            state
+        )
+    }
+}
+
 struct TodayView: View {
     @Bindable var model: PulseAppModel
     let isActive: Bool
@@ -128,6 +184,10 @@ struct TodayView: View {
                 draftJournalNote: $draftJournalNote,
                 isJournalFocused: $isJournalFocused,
                 onCheckIn: { performCheckIn(thenOpenCamera: false) },
+                onCheckInAndPhoto: {
+                    model.notifyPhotoIntentReady()
+                    performCheckIn(thenOpenCamera: true)
+                },
                 onEditJournal: { showsTodayJournalEditor = true },
                 onCaptureMedia: requestCamera,
                 onShowMedia: { showsTodayMediaDetail = true }
@@ -1091,14 +1151,10 @@ struct TodayView: View {
             state = PulseLocalization.string("today.accessibility.check_in", locale: locale)
         }
 
-        guard let commitmentName = model.habit?.name else { return state }
-        return String(
-            format: PulseLocalization.string(
-                "today.accessibility.commitment_state_format",
-                locale: locale
-            ),
-            commitmentName,
-            state
+        return PulseTodayPresentation.checkInAccessibilityLabel(
+            state: state,
+            commitmentName: model.habit?.name,
+            locale: locale
         )
     }
 
@@ -1293,14 +1349,9 @@ struct TodayView: View {
     }
 
     private var rhythmStatusText: String {
-        guard model.statistics.currentStreak > 0 else {
-            return PulseLocalization.string("today.rhythm.start_today", locale: locale)
-        }
-
-        return String(
-            format: PulseLocalization.string("today.rhythm.streak_format", locale: locale),
-            locale: locale,
-            arguments: [Int64(model.statistics.currentStreak)]
+        PulseTodayPresentation.rhythmStatusText(
+            currentStreak: model.statistics.currentStreak,
+            locale: locale
         )
     }
 
@@ -1392,24 +1443,10 @@ struct TodayView: View {
 
     private func weekDayAccessibilityLabel(_ item: CalendarDayItem) -> String {
         guard let timeZone = model.timeZone else { return "" }
-        let date = PulseFormatting.fullDate(item.day, timeZone: timeZone, locale: locale)
-        let state: String
-        switch item.status {
-        case .beforeHabit:
-            state = PulseLocalization.string("calendar.status.before_habit", locale: locale)
-        case .checked:
-            state = PulseLocalization.string("calendar.status.checked", locale: locale)
-        case .missed:
-            state = PulseLocalization.string("calendar.status.missed", locale: locale)
-        case .todayPending:
-            state = PulseLocalization.string("calendar.status.pending", locale: locale)
-        case .future:
-            state = PulseLocalization.string("calendar.status.future", locale: locale)
-        }
-        return String(
-            format: PulseLocalization.string("accessibility.date_status_format", locale: locale),
-            date,
-            state
+        return PulseTodayPresentation.weekDayAccessibilityLabel(
+            item,
+            timeZone: timeZone,
+            locale: locale
         )
     }
 }
@@ -1594,7 +1631,7 @@ private struct TodayMediaDetailSheet: View {
     }
 }
 
-private struct PulseCombinedPressControl: UIViewRepresentable {
+struct PulseCombinedPressControl: UIViewRepresentable {
     let isEnabled: Bool
     let accessibilityLabel: String
     let accessibilityHint: String

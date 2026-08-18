@@ -140,7 +140,7 @@ flowchart LR
 
 - 一个当前主承诺及每日一次可靠签到；
 - 今日、最近七天、月历、累计、当前连续和最长连续；
-- 时区、一周起始日、主题、双语和完整无障碍；
+- 时区、一周起始日、纸页手记基础主题、双语和完整无障碍；
 - 删除、清除、加密备份导出和恢复；
 - 所有已有数据的阅读和再次导出；
 - 主承诺命名与一句可选备注；
@@ -361,7 +361,7 @@ Widget 扩展需要跨进程读取或写入数据，不能把 `isCheckedToday` �
 ### 10.4 StoreKit 权益
 
 - `FeatureAccessController` 只从 StoreKit 验证交易派生当前权益，不把 `isPro=true` 作为可手工篡改的业务真相持久化。
-- `PulseEnhancementContract` 集中商品 ID，`PulseReminderDeliveryPolicy` 与 `PulseWidgetStyleAccessPolicy` 分别统一决定提醒和样式能力；页面、写入入口和 Widget extension 渲染边界都检查，不能只隐藏按钮。
+- `PulseEnhancementContract` 集中商品 ID和已交付能力目录，`PulseReminderDeliveryPolicy`、`PulseWidgetStyleAccessPolicy` 与 `PulseVisualThemeAccessPolicy` 分别统一决定提醒、Widget 构图和界面主题能力；页面、写入入口和 Widget extension 渲染边界都检查，不能只隐藏按钮。
 - 商品 ID、权益和展示文案集中定义；价格永远来自 StoreKit 本地化商品。
 - 使用 StoreKit Configuration、Sandbox、TestFlight 和生产四层验证购买、取消、退款、续费、过期、家庭共享决策与恢复购买。
 - 初期不需要引入第三方付费墙 SDK；原生 StoreKit 已能满足单一权益，避免增加账号、分析和第二套商品真源。

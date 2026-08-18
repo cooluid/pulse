@@ -111,16 +111,16 @@ final class PulseWidgetSnapshotTests: XCTestCase {
         let source = try String(contentsOf: viewURL, encoding: .utf8)
         let approvedCopy: [String: [String: String]] = [
             "store.hero.tagline": [
-                "en": "Seven compositions. One Firefly Halo.",
-                "zh-Hans": "七种构图。一个萤火日晕。",
+                "en": "Two themes. Seven compositions. One Firefly Halo.",
+                "zh-Hans": "两套主题。七种构图。一个萤火日晕。",
             ],
             "store.hero.scope": [
-                "en": "Widgets · Lock Screen · Dynamic Island",
-                "zh-Hans": "小组件 · 锁屏 · 灵动岛",
+                "en": "Themes · Widgets · System Surfaces",
+                "zh-Hans": "界面主题 · 小组件 · 系统表面",
             ],
             "store.hero.promise": [
-                "en": "Seven widget styles and Firefly Halo for Lock Screen and Dynamic Island.",
-                "zh-Hans": "七种小组件样式，以及用于锁屏与灵动岛的萤火日晕。",
+                "en": "Quiet Field, Sunlit Day, seven widget styles, and Firefly Halo for Lock Screen and Dynamic Island.",
+                "zh-Hans": "静野、晴昼、七种小组件样式，以及用于锁屏与灵动岛的萤火日晕。",
             ],
         ]
 

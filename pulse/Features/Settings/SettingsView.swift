@@ -667,6 +667,7 @@ private struct VisualThemePickerView: View {
 
     @Environment(\.locale) private var locale
     @Environment(\.pulseVisualTheme) private var visualTheme
+    @State private var showsStore = false
 
     var body: some View {
         ScrollView {
@@ -675,9 +676,14 @@ private struct VisualThemePickerView: View {
                     PulseVisualThemeChoice(
                         theme: theme,
                         isSelected: model.settings.visualTheme == theme,
+                        isLocked: PulseVisualThemeAccessPolicy
+                            .requiresEnhancement(theme)
+                            && !model.featureAccess.hasEnhancement,
                         locale: locale
                     ) {
-                        model.settings.visualTheme = theme
+                        if !model.requestVisualTheme(theme) {
+                            showsStore = true
+                        }
                     }
                 }
             }
@@ -703,6 +709,9 @@ private struct VisualThemePickerView: View {
                 )
                 .accessibilityIdentifier("settings.visual-theme.selector")
         }
+        .navigationDestination(isPresented: $showsStore) {
+            EnhancementStoreView(model: model)
+        }
         .id("settings.visual-theme.\(locale.identifier)")
     }
 }
@@ -710,6 +719,7 @@ private struct VisualThemePickerView: View {
 private struct PulseVisualThemeChoice: View {
     let theme: PulseVisualTheme
     let isSelected: Bool
+    let isLocked: Bool
     let locale: Locale
     let action: () -> Void
     @Environment(\.pulseVisualTheme) private var currentTheme
@@ -761,24 +771,34 @@ private struct PulseVisualThemeChoice: View {
 
                     Spacer(minLength: 0)
 
-                    ZStack {
-                        Circle()
-                            .fill(isSelected ? selectionColor : .clear)
-                        Circle()
-                            .stroke(
-                                isSelected
-                                    ? selectionColor
-                                    : PulseDesign.appDivider(for: currentTheme),
-                                lineWidth: PulseDesign.emphasisLineWidth
+                    if isLocked {
+                        Label("widget.gallery.locked", systemImage: "lock.fill")
+                            .font(.caption.weight(.semibold))
+                            .foregroundStyle(PulseDesign.appAccent(for: currentTheme))
+                            .frame(minHeight: PulseDesign.minimumHitTarget)
+                            .accessibilityIdentifier(
+                                "settings.visual-theme.\(theme.rawValue).locked"
                             )
-                        if isSelected {
-                            Image(systemName: "checkmark")
-                                .font(.caption.weight(.black))
-                                .foregroundStyle(PulseDesign.appAccentForeground(for: theme))
+                    } else {
+                        ZStack {
+                            Circle()
+                                .fill(isSelected ? selectionColor : .clear)
+                            Circle()
+                                .stroke(
+                                    isSelected
+                                        ? selectionColor
+                                        : PulseDesign.appDivider(for: currentTheme),
+                                    lineWidth: PulseDesign.emphasisLineWidth
+                                )
+                            if isSelected {
+                                Image(systemName: "checkmark")
+                                    .font(.caption.weight(.black))
+                                    .foregroundStyle(PulseDesign.appAccentForeground(for: theme))
+                            }
                         }
+                        .frame(width: PulseDesign.spacing24, height: PulseDesign.spacing24)
+                        .accessibilityHidden(true)
                     }
-                    .frame(width: PulseDesign.spacing24, height: PulseDesign.spacing24)
-                    .accessibilityHidden(true)
                 }
             }
             .padding(PulseDesign.spacing12)
@@ -809,6 +829,10 @@ private struct PulseVisualThemeChoice: View {
         .buttonStyle(.plain)
         .frame(maxWidth: .infinity)
         .accessibilityLabel(theme.localizedName(locale: locale))
+        .accessibilityValue(isLocked ? Text("widget.gallery.locked") : Text(verbatim: ""))
+        .accessibilityHint(
+            isLocked ? Text("widget.gallery.enhancement.hint") : Text(verbatim: "")
+        )
         .accessibilityAddTraits(isSelected ? .isSelected : [])
         .accessibilityIdentifier("settings.visual-theme.\(theme.rawValue)")
     }
@@ -829,7 +853,7 @@ private struct PulseVisualThemeChoice: View {
         switch theme {
         case .editorialJournal:
             VStack(alignment: .leading, spacing: PulseDesign.spacing8) {
-                Text("Aa")
+                Text(verbatim: "Aa")
                     .font(.system(.title2, design: .serif, weight: .bold))
                     .foregroundStyle(PulseDesign.ink)
 

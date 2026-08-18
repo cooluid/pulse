@@ -20,6 +20,8 @@ final class ThemeExperienceContractTests: XCTestCase {
         XCTAssertFalse(editorialSource.contains("model.checkIn("))
         XCTAssertFalse(editorialSource.contains("@State private var draftJournalNote"))
         XCTAssertFalse(editorialSource.contains("EditorialHistoryContent"))
+        XCTAssertTrue(editorialSource.contains("today.week.rail"))
+        XCTAssertTrue(editorialSource.contains("PulseTodayPresentation.rhythmStatusText"))
     }
 
     func testEveryThemeHasAnExplicitAmbientSignature() throws {
@@ -99,9 +101,34 @@ final class ThemeExperienceContractTests: XCTestCase {
 
         XCTAssertTrue(settingsSource.contains("struct VisualThemePickerView"))
         XCTAssertTrue(settingsSource.contains("settings.visual-theme.link"))
+        XCTAssertTrue(settingsSource.contains("model.requestVisualTheme(theme)"))
+        XCTAssertFalse(settingsSource.contains("model.settings.visualTheme = theme"))
         XCTAssertFalse(settingsSource.contains("visualThemeChoiceLayout"))
         XCTAssertFalse(designSource.contains("themePreviewEditorialPrimaryRuleWidth"))
         XCTAssertFalse(designSource.contains("sunlitAmbientNodeOpacity"))
+    }
+
+    func testJournalPageIsTheOnlyFreeInterfaceTheme() {
+        XCTAssertEqual(PulseVisualThemeAccessPolicy.freeTheme, .editorialJournal)
+        XCTAssertFalse(
+            PulseVisualThemeAccessPolicy.requiresEnhancement(.editorialJournal)
+        )
+        XCTAssertTrue(PulseVisualThemeAccessPolicy.requiresEnhancement(.quietField))
+        XCTAssertTrue(PulseVisualThemeAccessPolicy.requiresEnhancement(.sunlitDay))
+        XCTAssertEqual(
+            PulseVisualThemeAccessPolicy.resolvedTheme(
+                requested: .sunlitDay,
+                hasEnhancementEntitlement: false
+            ),
+            .editorialJournal
+        )
+        XCTAssertEqual(
+            PulseVisualThemeAccessPolicy.resolvedTheme(
+                requested: .sunlitDay,
+                hasEnhancementEntitlement: true
+            ),
+            .sunlitDay
+        )
     }
 
     func testQuietFieldUsesOneSemanticPaletteAndOneCompanionLanguage() throws {

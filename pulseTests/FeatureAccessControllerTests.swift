@@ -7,7 +7,7 @@ final class FeatureAccessControllerTests: XCTestCase {
     func testCurrentCapabilityDirectoryPublishesOnlyDeliveredCapabilities() {
         XCTAssertEqual(
             PulseEnhancementContract.currentCapabilities,
-            [.advancedWidgetCompositions, .scheduledLiveActivity]
+            [.interfaceThemes, .advancedWidgetCompositions, .scheduledLiveActivity]
         )
         XCTAssertEqual(
             Set(PulseEnhancementContract.currentCapabilities).count,
@@ -35,6 +35,19 @@ final class FeatureAccessControllerTests: XCTestCase {
             PulseEnhancementContract.productIdentifier
         )
         XCTAssertEqual(products.first?["type"] as? String, "NonConsumable")
+        let localizations = try XCTUnwrap(
+            products.first?["localizations"] as? [[String: Any]]
+        )
+        XCTAssertTrue(
+            localizations.contains {
+                ($0["description"] as? String)?.contains("Quiet Field") == true
+            }
+        )
+        XCTAssertTrue(
+            localizations.contains {
+                ($0["description"] as? String)?.contains("静野") == true
+            }
+        )
     }
 
     func testPurchaseDerivesEntitlementWithoutPersistingAProFlag() async throws {
