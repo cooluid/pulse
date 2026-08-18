@@ -65,7 +65,7 @@ final class AppSettingsTests: XCTestCase {
         XCTAssertEqual(settings.language, .system)
 
         settings.theme = .dark
-        settings.visualTheme = .tideArchive
+        settings.visualTheme = .sunlitDay
         settings.language = .english
 
         XCTAssertNil(
@@ -83,7 +83,7 @@ final class AppSettingsTests: XCTestCase {
             defaults: defaults
         )
         XCTAssertEqual(reloaded.theme, .dark)
-        XCTAssertEqual(reloaded.visualTheme, .tideArchive)
+        XCTAssertEqual(reloaded.visualTheme, .sunlitDay)
         XCTAssertEqual(reloaded.language, .english)
         XCTAssertEqual(reloaded.locale.identifier, "en")
     }
@@ -122,7 +122,7 @@ final class AppSettingsTests: XCTestCase {
         defer { defaults.removePersistentDomain(forName: suiteName) }
         let settings = try makeSettings(defaults: defaults)
         settings.theme = .light
-        settings.visualTheme = .tideArchive
+        settings.visualTheme = .sunlitDay
         settings.language = .simplifiedChinese
 
         settings.reset()

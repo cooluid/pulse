@@ -50,20 +50,20 @@ struct JournalNoteSummary: View {
             .system(.body, design: .serif)
         case .quietField:
             .system(.body, design: .rounded)
-        case .tideArchive:
-            .body
+        case .sunlitDay:
+            .system(.body, design: .rounded)
         }
     }
 
     @ViewBuilder
     private var noteBackground: some View {
         switch visualTheme {
-        case .tideArchive:
+        case .sunlitDay:
             RoundedRectangle(
-                cornerRadius: PulseDesign.journalCardCornerRadius,
+                cornerRadius: PulseDesign.sunlitCardCornerRadius,
                 style: .continuous
             )
-            .fill(PulseDesign.archiveSurface)
+            .fill(PulseDesign.sunlitSurface)
         case .editorialJournal:
             Rectangle().fill(
                 PulseDesign.surface.opacity(PulseDesign.editorialJournalSurfaceOpacity)
@@ -77,15 +77,8 @@ struct JournalNoteSummary: View {
     @ViewBuilder
     private var noteBorder: some View {
         switch visualTheme {
-        case .tideArchive:
-            RoundedRectangle(
-                cornerRadius: PulseDesign.journalCardCornerRadius,
-                style: .continuous
-            )
-            .stroke(
-                PulseDesign.archiveDivider,
-                lineWidth: PulseDesign.thinLineWidth
-            )
+        case .sunlitDay:
+            Color.clear
         case .editorialJournal:
             Rectangle()
                 .stroke(PulseDesign.editorialAccent, lineWidth: PulseDesign.thinLineWidth)
@@ -173,8 +166,8 @@ struct JournalDraftComposer: View {
             .system(.body, design: .serif)
         case .quietField:
             .system(.body, design: .rounded)
-        case .tideArchive:
-            .body
+        case .sunlitDay:
+            .system(.body, design: .rounded)
         }
     }
 
@@ -208,12 +201,12 @@ struct JournalDraftComposer: View {
                 .fill(PulseDesign.quietSurface.opacity(PulseDesign.quietJournalSurfaceOpacity))
         case .editorialJournal:
             Color.clear
-        case .tideArchive:
+        case .sunlitDay:
             RoundedRectangle(
-                cornerRadius: PulseDesign.journalCardCornerRadius,
+                cornerRadius: PulseDesign.sunlitCardCornerRadius,
                 style: .continuous
             )
-            .fill(PulseDesign.archiveSurface)
+            .fill(PulseDesign.sunlitSurface)
         }
     }
 
@@ -230,15 +223,8 @@ struct JournalDraftComposer: View {
                     .fill(PulseDesign.separator)
                     .frame(height: PulseDesign.thinLineWidth)
             }
-        case .tideArchive:
-            RoundedRectangle(
-                cornerRadius: PulseDesign.journalCardCornerRadius,
-                style: .continuous
-            )
-            .stroke(
-                PulseDesign.archiveDivider,
-                lineWidth: PulseDesign.thinLineWidth
-            )
+        case .sunlitDay:
+            Color.clear
         }
     }
 }
@@ -290,6 +276,35 @@ struct JournalHistorySection: View {
                             )
                     }
                     .accessibilityIdentifier("history.journal.empty")
+                } else if visualTheme == .sunlitDay {
+                    VStack(spacing: PulseDesign.spacing16) {
+                        PulseBrandMark(size: 76)
+
+                        Text("journal.history.empty")
+                            .font(.system(.headline, design: .rounded, weight: .black))
+                            .foregroundStyle(PulseDesign.sunlitMuted)
+                            .multilineTextAlignment(.center)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                    .padding(PulseDesign.spacing24)
+                    .frame(maxWidth: .infinity)
+                    .background {
+                        ZStack {
+                            RoundedRectangle(
+                                cornerRadius: PulseDesign.sunlitCardCornerRadius,
+                                style: .continuous
+                            )
+                            .fill(PulseDesign.sunlitSurface)
+
+                            PulseSunlitMapTexture(opacity: 0.18)
+                                .padding(PulseDesign.spacing16)
+                        }
+                        .clipShape(RoundedRectangle(
+                            cornerRadius: PulseDesign.sunlitCardCornerRadius,
+                            style: .continuous
+                        ))
+                    }
+                    .accessibilityIdentifier("history.journal.empty")
                 } else {
                     Text("journal.history.empty")
                         .font(bodyFont)
@@ -333,10 +348,10 @@ struct JournalHistorySection: View {
         switch visualTheme {
         case .editorialJournal:
             .system(.title2, design: .serif).weight(.bold)
-        case .quietField, .tideArchive:
+        case .quietField, .sunlitDay:
             visualTheme == .quietField
                 ? .system(.title3, design: .rounded, weight: .black)
-                : .title3.weight(.semibold)
+                : .system(.title3, design: .rounded, weight: .black)
         }
     }
 
@@ -344,12 +359,12 @@ struct JournalHistorySection: View {
         switch visualTheme {
         case .editorialJournal: .system(.body, design: .serif)
         case .quietField: .system(.body, design: .rounded)
-        case .tideArchive: .body
+        case .sunlitDay: .system(.body, design: .rounded)
         }
     }
 
     private var entrySpacing: CGFloat {
-        visualTheme == .quietField ? PulseDesign.spacing12 : 0
+        visualTheme == .editorialJournal ? 0 : PulseDesign.spacing12
     }
 }
 
@@ -396,7 +411,7 @@ private struct JournalHistoryEntryRow: View {
         switch visualTheme {
         case .editorialJournal: .system(.body, design: .serif)
         case .quietField: .system(.body, design: .rounded)
-        case .tideArchive: .body
+        case .sunlitDay: .system(.body, design: .rounded)
         }
     }
 
@@ -406,13 +421,13 @@ private struct JournalHistoryEntryRow: View {
             PulseDesign.quietMuted
         case .editorialJournal:
             PulseDesign.editorialAccent
-        case .tideArchive:
-            PulseDesign.archiveAccent
+        case .sunlitDay:
+            PulseDesign.sunlitMuted
         }
     }
 
     private var horizontalPadding: CGFloat {
-        visualTheme == .quietField ? PulseDesign.spacing16 : 0
+        visualTheme == .editorialJournal ? 0 : PulseDesign.spacing16
     }
 
     @ViewBuilder
@@ -420,6 +435,12 @@ private struct JournalHistoryEntryRow: View {
         if visualTheme == .quietField {
             PulseQuietSpeechBubbleShape()
                 .fill(PulseDesign.quietSurface.opacity(PulseDesign.journalHistorySurfaceOpacity))
+        } else if visualTheme == .sunlitDay {
+            RoundedRectangle(
+                cornerRadius: PulseDesign.spacing20,
+                style: .continuous
+            )
+            .fill(PulseDesign.sunlitSurface)
         }
     }
 
@@ -428,14 +449,14 @@ private struct JournalHistoryEntryRow: View {
         if visualTheme == .quietField {
             PulseQuietSpeechBubbleShape()
                 .stroke(PulseDesign.quietDivider, lineWidth: PulseDesign.thinLineWidth)
+        } else if visualTheme == .sunlitDay {
+            Color.clear
         } else {
             VStack(spacing: 0) {
                 Spacer(minLength: 0)
                 Rectangle()
                     .fill(
-                        visualTheme == .tideArchive
-                            ? PulseDesign.archiveDivider
-                            : PulseDesign.separator
+                        PulseDesign.separator
                     )
                     .frame(height: PulseDesign.thinLineWidth)
             }

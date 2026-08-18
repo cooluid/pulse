@@ -40,7 +40,7 @@ enum AppTheme: String, CaseIterable, Identifiable, Sendable {
 enum PulseVisualTheme: String, CaseIterable, Identifiable, Sendable {
     case editorialJournal
     case quietField
-    case tideArchive
+    case sunlitDay
 
     var id: String { rawValue }
 
@@ -50,8 +50,8 @@ enum PulseVisualTheme: String, CaseIterable, Identifiable, Sendable {
             PulseLocalization.string("settings.visual_theme.editorial_journal", locale: locale)
         case .quietField:
             PulseLocalization.string("settings.visual_theme.quiet_field", locale: locale)
-        case .tideArchive:
-            PulseLocalization.string("settings.visual_theme.tide_archive", locale: locale)
+        case .sunlitDay:
+            PulseLocalization.string("settings.visual_theme.sunlit_day", locale: locale)
         }
     }
 }

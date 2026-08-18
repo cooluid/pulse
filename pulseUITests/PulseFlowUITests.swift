@@ -660,26 +660,26 @@ final class PulseFlowUITests: XCTestCase {
         settingsButton.tap()
 
         let quietThemeChoice = app.buttons["settings.visual-theme.quietField"]
-        let archiveThemeChoice = app.buttons["settings.visual-theme.tideArchive"]
+        let sunlitThemeChoice = app.buttons["settings.visual-theme.sunlitDay"]
         XCTAssertTrue(quietThemeChoice.waitForExistence(timeout: 3))
-        XCTAssertTrue(archiveThemeChoice.exists)
-        archiveThemeChoice.tap()
+        XCTAssertTrue(sunlitThemeChoice.exists)
+        sunlitThemeChoice.tap()
 
         let settingsAttachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
-        settingsAttachment.name = "Tide Archive visual selector"
+        settingsAttachment.name = "Sunlit Day visual selector"
         settingsAttachment.lifetime = .keepAlways
         add(settingsAttachment)
 
         app.buttons["navigation.back"].tap()
-        let archiveTheme = app.descendants(matching: .any)["today.theme.tide-archive"]
-        XCTAssertTrue(archiveTheme.waitForExistence(timeout: 3))
+        let sunlitTheme = app.descendants(matching: .any)["today.theme.sunlit-day"]
+        XCTAssertTrue(sunlitTheme.waitForExistence(timeout: 3))
         XCTAssertTrue(
             app.descendants(matching: .any)["journal.draft.input"]
                 .waitForExistence(timeout: 3)
         )
 
         let pendingAttachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
-        pendingAttachment.name = "Tide Archive before check-in"
+        pendingAttachment.name = "Sunlit Day before check-in"
         pendingAttachment.lifetime = .keepAlways
         add(pendingAttachment)
 
@@ -694,13 +694,13 @@ final class PulseFlowUITests: XCTestCase {
         )
 
         let completedAttachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
-        completedAttachment.name = "Tide Archive after check-in"
+        completedAttachment.name = "Sunlit Day after check-in"
         completedAttachment.lifetime = .keepAlways
         add(completedAttachment)
 
         app.buttons["primary.navigation.history"].tap()
         XCTAssertTrue(
-            app.descendants(matching: .any)["history.theme.tide-archive"]
+            app.descendants(matching: .any)["history.theme.sunlit-day"]
                 .waitForExistence(timeout: 3)
         )
         let checkedCalendarDay = app.descendants(matching: .any)["calendar.day.2026-08-10"]
@@ -716,7 +716,7 @@ final class PulseFlowUITests: XCTestCase {
         )
 
         let journalHistoryAttachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
-        journalHistoryAttachment.name = "Tide Archive journal records"
+        journalHistoryAttachment.name = "Sunlit Day journal records"
         journalHistoryAttachment.lifetime = .keepAlways
         add(journalHistoryAttachment)
 
@@ -724,7 +724,7 @@ final class PulseFlowUITests: XCTestCase {
         assertHistorySurfaceClearsPrimaryNavigation()
 
         let historyAttachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
-        historyAttachment.name = "Tide Archive redesigned history"
+        historyAttachment.name = "Sunlit Day redesigned history"
         historyAttachment.lifetime = .keepAlways
         add(historyAttachment)
 
@@ -734,7 +734,7 @@ final class PulseFlowUITests: XCTestCase {
                 .waitForExistence(timeout: 3)
         )
         let detailAttachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
-        detailAttachment.name = "Tide Archive record detail"
+        detailAttachment.name = "Sunlit Day record detail"
         detailAttachment.lifetime = .keepAlways
         add(detailAttachment)
         app.buttons["detail.sheet.close"].tap()
@@ -745,13 +745,13 @@ final class PulseFlowUITests: XCTestCase {
         XCTAssertTrue(storeLink.waitForExistence(timeout: 3))
         storeLink.tap()
         XCTAssertTrue(
-            app.descendants(matching: .any)["store.theme.tide-archive"]
+            app.descendants(matching: .any)["store.theme.sunlit-day"]
                 .waitForExistence(timeout: 3)
         )
         XCTAssertTrue(app.buttons["store.buy"].waitForExistence(timeout: 3))
 
         let storeAttachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
-        storeAttachment.name = "Tide Archive advanced features"
+        storeAttachment.name = "Sunlit Day advanced features"
         storeAttachment.lifetime = .keepAlways
         add(storeAttachment)
 
@@ -760,7 +760,7 @@ final class PulseFlowUITests: XCTestCase {
         app.launch()
 
         XCTAssertTrue(
-            app.descendants(matching: .any)["today.theme.tide-archive"]
+            app.descendants(matching: .any)["today.theme.sunlit-day"]
                 .waitForExistence(timeout: 5)
         )
         XCTAssertFalse(app.buttons["today.checkin.button"].isEnabled)
@@ -865,15 +865,15 @@ final class PulseFlowUITests: XCTestCase {
         XCTAssertEqual(clearedNote.label, "这一天还没有记事")
     }
 
-    func testTideArchiveHistoryRemainsStructuredInDarkAppearance() throws {
+    func testSunlitDayHistoryRemainsStructuredInDarkAppearance() throws {
         configureApp()
         launchAndConfirmDefaultCommitment()
 
         app.buttons["settings.navigation.open.today"].tap()
 
-        let archiveThemeChoice = app.buttons["settings.visual-theme.tideArchive"]
-        XCTAssertTrue(archiveThemeChoice.waitForExistence(timeout: 3))
-        archiveThemeChoice.tap()
+        let sunlitThemeChoice = app.buttons["settings.visual-theme.sunlitDay"]
+        XCTAssertTrue(sunlitThemeChoice.waitForExistence(timeout: 3))
+        sunlitThemeChoice.tap()
 
         let appearancePicker = app.descendants(matching: .any)["settings.theme.picker"]
         for _ in 0..<4 where !appearancePicker.exists {
@@ -888,7 +888,7 @@ final class PulseFlowUITests: XCTestCase {
 
         app.buttons["navigation.back"].tap()
         XCTAssertTrue(
-            app.descendants(matching: .any)["today.theme.tide-archive"]
+            app.descendants(matching: .any)["today.theme.sunlit-day"]
                 .waitForExistence(timeout: 3)
         )
 
@@ -902,7 +902,7 @@ final class PulseFlowUITests: XCTestCase {
         historyNavigation.tap()
 
         XCTAssertTrue(
-            app.descendants(matching: .any)["history.theme.tide-archive"]
+            app.descendants(matching: .any)["history.theme.sunlit-day"]
                 .waitForExistence(timeout: 3)
         )
         XCTAssertTrue(
@@ -912,12 +912,12 @@ final class PulseFlowUITests: XCTestCase {
         assertHistorySurfaceClearsPrimaryNavigation()
 
         let attachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
-        attachment.name = "Tide Archive history in dark appearance"
+        attachment.name = "Sunlit Day history in dark appearance"
         attachment.lifetime = .keepAlways
         add(attachment)
     }
 
-    func testTideArchiveAccessibilityXXXLKeepsItsOwnOperableComposition() throws {
+    func testSunlitDayAccessibilityXXXLKeepsItsOwnOperableComposition() throws {
         configureApp()
         app.launchArguments += [
             "-UIPreferredContentSizeCategoryName",
@@ -926,16 +926,16 @@ final class PulseFlowUITests: XCTestCase {
         launchAndConfirmDefaultCommitment()
 
         app.buttons["settings.navigation.open.today"].tap()
-        let archiveThemeChoice = app.buttons["settings.visual-theme.tideArchive"]
-        for _ in 0..<6 where !archiveThemeChoice.exists {
+        let sunlitThemeChoice = app.buttons["settings.visual-theme.sunlitDay"]
+        for _ in 0..<6 where !sunlitThemeChoice.exists {
             app.swipeUp()
         }
-        XCTAssertTrue(archiveThemeChoice.waitForExistence(timeout: 3))
-        archiveThemeChoice.tap()
+        XCTAssertTrue(sunlitThemeChoice.waitForExistence(timeout: 3))
+        sunlitThemeChoice.tap()
         app.buttons["navigation.back"].tap()
 
         XCTAssertTrue(
-            app.descendants(matching: .any)["today.theme.tide-archive"]
+            app.descendants(matching: .any)["today.theme.sunlit-day"]
                 .waitForExistence(timeout: 3)
         )
         let checkInButton = app.buttons["today.checkin.button"]
@@ -944,10 +944,19 @@ final class PulseFlowUITests: XCTestCase {
         XCTAssertGreaterThanOrEqual(checkInButton.frame.minX, app.frame.minX)
         XCTAssertLessThanOrEqual(checkInButton.frame.maxX, app.frame.maxX)
 
+        let todayNavigation = app.buttons["primary.navigation.today"]
+        XCTAssertTrue(todayNavigation.waitForExistence(timeout: 3))
+        for _ in 0..<6 where checkInButton.frame.maxY > todayNavigation.frame.minY {
+            app.swipeUp()
+        }
+
         let attachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
-        attachment.name = "Tide Archive accessibility XXXL"
+        attachment.name = "Sunlit Day accessibility XXXL"
         attachment.lifetime = .keepAlways
         add(attachment)
+
+        XCTAssertTrue(checkInButton.isHittable)
+        XCTAssertLessThanOrEqual(checkInButton.frame.maxY, todayNavigation.frame.minY)
     }
 
     func testChineseHistoryUsesLocalizedArchiveHeading() throws {

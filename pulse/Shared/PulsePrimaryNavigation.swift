@@ -22,8 +22,8 @@ struct PulsePrimaryNavigation: View {
     @ViewBuilder
     var body: some View {
         switch visualTheme {
-        case .tideArchive:
-            archiveNavigation
+        case .sunlitDay:
+            sunlitNavigation
         case .editorialJournal:
             EditorialPrimaryNavigation(selection: $selection)
         case .quietField:
@@ -66,39 +66,117 @@ struct PulsePrimaryNavigation: View {
             .frame(maxWidth: .infinity)
     }
 
-    private var archiveNavigation: some View {
-        archiveNavigationLayout
+    private var sunlitNavigation: some View {
+        sunlitNavigationLayout
             .frame(maxWidth: PulseDesign.primaryNavigationMaxWidth)
-            .padding(.horizontal, PulseDesign.horizontalPadding)
-            .padding(.top, PulseDesign.spacing4)
-            .padding(.bottom, PulseDesign.spacing4)
+            .padding(.horizontal, PulseDesign.primaryNavigationHorizontalInset)
+            .padding(.vertical, PulseDesign.spacing8)
             .frame(maxWidth: .infinity)
-            .background {
-                PulseDesign.archiveSurface
-                    .opacity(PulseDesign.archiveBarSurfaceOpacity)
-                    .ignoresSafeArea(edges: .bottom)
-            }
-            .overlay(alignment: .top) {
-                Rectangle()
-                    .fill(PulseDesign.archiveDivider)
-                    .frame(height: PulseDesign.thinLineWidth)
-            }
     }
 
     @ViewBuilder
-    private var archiveNavigationLayout: some View {
-        HStack(spacing: PulseDesign.spacing32) {
-            archiveNavigationButton(for: .today)
-            archiveNavigationButton(for: .history)
+    private var sunlitNavigationLayout: some View {
+        if dynamicTypeSize.isAccessibilitySize {
+            HStack(spacing: PulseDesign.primaryNavigationGap) {
+                sunlitAccessibilityNavigationButton(for: .today)
+                sunlitAccessibilityNavigationButton(for: .history)
+            }
+            .padding(PulseDesign.primaryNavigationPadding)
+            .frame(height: 104)
+        } else {
+            HStack(spacing: PulseDesign.primaryNavigationGap) {
+                sunlitNavigationButton(for: .today)
+                sunlitNavigationButton(for: .history)
+            }
+            .padding(PulseDesign.primaryNavigationPadding)
+            .frame(height: PulseDesign.sunlitBarHeight)
         }
-        .frame(
-            height: dynamicTypeSize.isAccessibilitySize
-                ? PulseDesign.accessibilityNavigationMinimumHeight
-                : PulseDesign.archiveBarHeight
-        )
     }
 
-    private func archiveNavigationButton(for section: PulsePrimarySection) -> some View {
+    private func sunlitNavigationButton(for section: PulsePrimarySection) -> some View {
+        let isSelected = selection == section
+
+        return Button {
+            select(section)
+        } label: {
+            HStack(spacing: PulseDesign.spacing12) {
+                ZStack {
+                    Circle()
+                        .fill(
+                            isSelected
+                                ? PulseDesign.sunlitAccent
+                                : PulseDesign.sunlitAccentSoft
+                        )
+                    Circle()
+                        .stroke(
+                            PulseDesign.sunlitOnAccent.opacity(0.24),
+                            lineWidth: PulseDesign.thinLineWidth
+                        )
+
+                    navigationGlyphContent(for: section)
+                        .foregroundStyle(PulseDesign.sunlitOnAccent)
+                }
+                .frame(width: resolvedGlyphSize, height: resolvedGlyphSize)
+                .overlay(alignment: .topTrailing) {
+                    if section == .today, isTodayChecked {
+                        Image(systemName: "checkmark")
+                            .font(.system(size: 7, weight: .black))
+                            .foregroundStyle(PulseDesign.sunlitChromeForeground)
+                            .frame(width: 13, height: 13)
+                            .background(PulseDesign.sunlitChrome, in: Circle())
+                            .offset(x: 4, y: -3)
+                            .accessibilityHidden(true)
+                    }
+                }
+
+                VStack(alignment: .leading, spacing: PulseDesign.spacing4) {
+                    Text(section == .today ? "tab.today" : "tab.history")
+                        .font(.caption.bold())
+                        .lineLimit(1)
+
+                    Text(subtitleKey(for: section))
+                        .font(.caption2)
+                        .opacity(PulseDesign.navigationSubtitleOpacity)
+                        .lineLimit(1)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            .padding(.horizontal, PulseDesign.spacing12)
+            .foregroundStyle(
+                isSelected
+                    ? PulseDesign.sunlitChromeForeground
+                    : PulseDesign.sunlitInk
+            )
+            .background {
+                RoundedRectangle(
+                    cornerRadius: PulseDesign.primaryNavigationItemCornerRadius,
+                    style: .continuous
+                )
+                .fill(
+                    isSelected
+                        ? PulseDesign.sunlitChrome
+                        : PulseDesign.sunlitSurface
+                )
+            }
+            .clipShape(
+                RoundedRectangle(
+                    cornerRadius: PulseDesign.primaryNavigationItemCornerRadius,
+                    style: .continuous
+                )
+            )
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .frame(maxWidth: .infinity)
+        .accessibilityIdentifier("primary.navigation.\(section.rawValue)")
+        .accessibilityValue(isSelected ? Text(subtitleKey(for: section)) : Text(verbatim: ""))
+        .accessibilityAddTraits(isSelected ? .isSelected : [])
+    }
+
+    private func sunlitAccessibilityNavigationButton(
+        for section: PulsePrimarySection
+    ) -> some View {
         let isSelected = selection == section
 
         return Button {
@@ -107,43 +185,36 @@ struct PulsePrimaryNavigation: View {
             VStack(spacing: PulseDesign.spacing4) {
                 ZStack {
                     Circle()
-                        .fill(isSelected ? PulseDesign.archiveAccentSoft : Color.clear)
-                    Circle()
-                        .stroke(
-                            isSelected ? PulseDesign.archiveAccent : PulseDesign.archiveDivider,
-                            lineWidth: isSelected
-                                ? PulseDesign.emphasisLineWidth
-                                : PulseDesign.thinLineWidth
-                        )
+                        .fill(PulseDesign.sunlitAccent)
 
                     navigationGlyphContent(for: section)
-                        .foregroundStyle(
-                            isSelected ? PulseDesign.archiveInk : PulseDesign.archiveMuted
-                        )
+                        .foregroundStyle(PulseDesign.sunlitOnAccent)
                 }
                 .frame(width: resolvedGlyphSize, height: resolvedGlyphSize)
-                .overlay(alignment: .topTrailing) {
-                    if section == .today, isTodayChecked {
-                        Image(systemName: "checkmark")
-                            .font(.system(size: 7, weight: .black))
-                            .foregroundStyle(PulseDesign.archiveCanvas)
-                            .frame(width: 13, height: 13)
-                            .background(PulseDesign.archiveAccent, in: Circle())
-                            .offset(x: 4, y: -3)
-                            .accessibilityHidden(true)
-                    }
-                }
 
                 Text(section == .today ? "tab.today" : "tab.history")
-                    .font(.caption.weight(isSelected ? .semibold : .medium))
+                    .font(.caption.bold())
                     .lineLimit(1)
-
-                Capsule()
-                    .fill(isSelected ? PulseDesign.archiveAccent : Color.clear)
-                    .frame(width: PulseDesign.spacing20, height: PulseDesign.emphasisLineWidth)
+                    .minimumScaleFactor(0.72)
             }
-            .foregroundStyle(isSelected ? PulseDesign.archiveInk : PulseDesign.archiveMuted)
+            .padding(.horizontal, PulseDesign.spacing8)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .foregroundStyle(
+                isSelected
+                    ? PulseDesign.sunlitChromeForeground
+                    : PulseDesign.sunlitInk
+            )
+            .background {
+                RoundedRectangle(
+                    cornerRadius: PulseDesign.primaryNavigationItemCornerRadius,
+                    style: .continuous
+                )
+                .fill(
+                    isSelected
+                        ? PulseDesign.sunlitChrome
+                        : PulseDesign.sunlitSurface
+                )
+            }
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)

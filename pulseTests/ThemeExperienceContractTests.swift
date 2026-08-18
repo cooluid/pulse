@@ -27,13 +27,13 @@ final class ThemeExperienceContractTests: XCTestCase {
 
         XCTAssertTrue(source.contains("case .quietField:\n            quietField"))
         XCTAssertTrue(source.contains("case .editorialJournal:\n            editorialField"))
-        XCTAssertTrue(source.contains("case .tideArchive:\n            archiveField"))
+        XCTAssertTrue(source.contains("case .sunlitDay:\n            sunlitField"))
         XCTAssertTrue(source.contains("quietFieldSprig"))
         XCTAssertTrue(source.contains("PulseEditorialFieldCanvas("))
-        XCTAssertTrue(source.contains("archiveMarker"))
+        XCTAssertTrue(source.contains("PulseSunlitRouteMap"))
     }
 
-    func testTideArchiveUsesOneSemanticPaletteWithoutLegacyDesignAssets() throws {
+    func testSunlitDayUsesOneSemanticPaletteWithoutLegacyDesignAssets() throws {
         let designSource = try source("pulse/Shared/PulseDesignSystem.swift")
         let navigationSource = try source("pulse/Shared/PulsePrimaryNavigation.swift")
         let historySource = try source("pulse/Features/History/HistoryView.swift")
@@ -41,16 +41,19 @@ final class ThemeExperienceContractTests: XCTestCase {
         let generatorSource = try source("scripts/build_brand_assets.py")
 
         let semanticRoles = [
-            "archiveCanvas",
-            "archiveCanvasDeep",
-            "archiveSurface",
-            "archiveInk",
-            "archiveMuted",
-            "archiveDivider",
-            "archiveAccent",
-            "archiveAccentSoft",
-            "archiveTide",
-            "archiveTideDeep",
+            "sunlitCanvas",
+            "sunlitCanvasDeep",
+            "sunlitSurface",
+            "sunlitInk",
+            "sunlitMuted",
+            "sunlitDivider",
+            "sunlitAccent",
+            "sunlitAccentSoft",
+            "sunlitMap",
+            "sunlitMapDeep",
+            "sunlitChrome",
+            "sunlitChromeForeground",
+            "sunlitOnAccent",
         ]
         for role in semanticRoles {
             XCTAssertTrue(tokenSource.contains("\"\(role)\""), "Missing token role \(role)")
@@ -73,9 +76,13 @@ final class ThemeExperienceContractTests: XCTestCase {
             XCTAssertFalse(designSource.contains(role), "Legacy design consumer remains: \(role)")
         }
 
-        XCTAssertTrue(navigationSource.contains("archiveBarSurfaceOpacity"))
-        XCTAssertFalse(navigationSource.contains("archiveNavigationCornerRadius"))
-        XCTAssertFalse(historySource.contains("archiveHistoryLedger"))
+        XCTAssertFalse(navigationSource.contains("sunlitBarSurfaceOpacity"))
+        XCTAssertTrue(navigationSource.contains(": PulseDesign.sunlitSurface"))
+        XCTAssertFalse(navigationSource.contains("sunlitNavigationCornerRadius"))
+        XCTAssertFalse(historySource.contains("sunlitHistoryLedger"))
+        XCTAssertFalse(tokenSource.contains("archiveCanvas"))
+        XCTAssertFalse(designSource.contains("PulseArchive"))
+        XCTAssertFalse(designSource.contains("tideArchive"))
     }
 
     func testQuietFieldUsesOneSemanticPaletteAndOneCompanionLanguage() throws {

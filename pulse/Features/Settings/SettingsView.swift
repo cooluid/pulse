@@ -745,8 +745,8 @@ private struct PulseVisualThemeChoice: View {
 
     private var selectionColor: Color {
         switch theme {
-        case .tideArchive:
-            PulseDesign.archiveAccent
+        case .sunlitDay:
+            PulseDesign.sunlitChrome
         case .editorialJournal:
             PulseDesign.editorialAccent
         case .quietField:
@@ -802,8 +802,34 @@ private struct PulseVisualThemeChoice: View {
                     .foregroundStyle(PulseDesign.quietPink)
             }
             .accessibilityHidden(true)
-        case .tideArchive:
-            PulseBrandMark(size: PulseDesign.minimumHitTarget)
+        case .sunlitDay:
+            HStack(spacing: PulseDesign.spacing8) {
+                RoundedRectangle(cornerRadius: PulseDesign.spacing8, style: .continuous)
+                    .fill(PulseDesign.sunlitSurface)
+                    .frame(width: 56, height: 40)
+                    .overlay(alignment: .topLeading) {
+                        Capsule()
+                            .fill(PulseDesign.sunlitChrome)
+                            .frame(width: 28, height: PulseDesign.spacing4)
+                            .padding(PulseDesign.spacing8)
+                    }
+                    .overlay {
+                        RoundedRectangle(
+                            cornerRadius: PulseDesign.spacing8,
+                            style: .continuous
+                        )
+                        .stroke(PulseDesign.sunlitChrome, lineWidth: PulseDesign.thinLineWidth)
+                    }
+
+                PulseBrandMark(size: PulseDesign.minimumHitTarget)
+
+                Image(systemName: "arrow.up.right")
+                    .font(.system(size: PulseDesign.spacing12, weight: .black))
+                    .foregroundStyle(PulseDesign.sunlitOnAccent)
+                    .frame(width: PulseDesign.spacing24, height: PulseDesign.spacing24)
+                    .background(PulseDesign.sunlitAccent, in: Circle())
+            }
+            .accessibilityHidden(true)
         }
     }
 }

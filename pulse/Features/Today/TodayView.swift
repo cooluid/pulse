@@ -14,8 +14,8 @@ struct TodayView: View {
     @Environment(\.openURL) private var openURL
     @Environment(\.pulseVisualTheme) private var visualTheme
     @ScaledMetric(relativeTo: .largeTitle) private var dayNumberSize = PulseDesign.dayNumberBaseSize
-    @ScaledMetric(relativeTo: .largeTitle) private var archiveDayNumberSize =
-        PulseDesign.archiveDayNumberBaseSize
+    @ScaledMetric(relativeTo: .largeTitle) private var sunlitDayNumberSize =
+        PulseDesign.sunlitDayNumberBaseSize
     @State private var showsSavingIndicator = false
     @State private var imprintRitualPhase: ImprintRitualPhase = .ready
     @State private var completionAnimationSequence = 0
@@ -123,8 +123,8 @@ struct TodayView: View {
     @ViewBuilder
     private var todayContent: some View {
         switch visualTheme {
-        case .tideArchive:
-            archiveContent
+        case .sunlitDay:
+            sunlitContent
         case .editorialJournal:
             EditorialTodayContent(
                 model: model,
@@ -168,8 +168,8 @@ struct TodayView: View {
             "today.theme.quiet-field"
         case .editorialJournal:
             "today.theme.editorial-journal"
-        case .tideArchive:
-            "today.theme.tide-archive"
+        case .sunlitDay:
+            "today.theme.sunlit-day"
         }
     }
 
@@ -210,11 +210,11 @@ struct TodayView: View {
     }
 
     @ViewBuilder
-    private var archiveContent: some View {
+    private var sunlitContent: some View {
         if usesRegularWidthLayout {
             HStack(alignment: .center, spacing: PulseDesign.regularWidthColumnGap) {
                 VStack(spacing: 0) {
-                    archiveDayHero
+                    sunlitDayHero
                     checkInControl
                         .padding(.top, PulseDesign.checkInHeroSpacing)
                 }
@@ -222,7 +222,7 @@ struct TodayView: View {
 
                 VStack(spacing: 0) {
                     weekRail
-                    archiveRhythmStatus
+                    sunlitRhythmStatus
                         .padding(.top, PulseDesign.spacing24)
                     todayJournalSection
                         .padding(.top, PulseDesign.spacing20)
@@ -231,14 +231,18 @@ struct TodayView: View {
             }
         } else {
             VStack(spacing: 0) {
-                archiveDayHero
+                sunlitDayHero
                 checkInControl
                     .padding(.top, PulseDesign.spacing20)
+                if dynamicTypeSize.isAccessibilitySize {
+                    sunlitAccessibilityCommitmentCue
+                        .padding(.top, PulseDesign.spacing20)
+                }
                 todayJournalSection
                     .padding(.top, PulseDesign.spacing24)
                 weekRail
                     .padding(.top, PulseDesign.spacing24)
-                archiveRhythmStatus
+                sunlitRhythmStatus
                     .padding(.top, PulseDesign.spacing16)
             }
             .padding(.bottom, PulseDesign.spacing24)
@@ -302,8 +306,8 @@ struct TodayView: View {
         .accessibilityElement(children: .contain)
     }
 
-    private var archiveDayHero: some View {
-        VStack(spacing: 0) {
+    private var sunlitDayHero: some View {
+        VStack(alignment: .leading, spacing: PulseDesign.spacing16) {
             if let today = model.today, let timeZone = model.timeZone {
                 let weekday = PulseFormatting.fullWeekday(
                     today,
@@ -311,104 +315,121 @@ struct TodayView: View {
                     locale: locale
                 )
 
-                Group {
-                    if dynamicTypeSize.isAccessibilitySize {
-                        VStack(alignment: .leading, spacing: PulseDesign.spacing8) {
-                            Text(today.day, format: .number)
-                                .font(
-                                    .system(
-                                        size: resolvedArchiveDayNumberSize,
-                                        weight: .light
-                                    )
+                if dynamicTypeSize.isAccessibilitySize {
+                    VStack(alignment: .leading, spacing: PulseDesign.spacing8) {
+                        Text(today.day, format: .number)
+                            .font(
+                                .system(
+                                    size: min(resolvedSunlitDayNumberSize, 112),
+                                    weight: .black,
+                                    design: .rounded
                                 )
-                                .monospacedDigit()
-                                .tracking(PulseDesign.archiveDayNumberTracking)
-                                .fixedSize(horizontal: true, vertical: false)
-                                .foregroundStyle(PulseDesign.archiveInk)
-                                .accessibilityIdentifier("today.day.number")
+                            )
+                            .monospacedDigit()
+                            .tracking(PulseDesign.sunlitDayNumberTracking)
+                            .fixedSize(horizontal: true, vertical: false)
+                            .foregroundStyle(PulseDesign.sunlitInk)
+                            .accessibilityIdentifier("today.day.number")
 
+                        Text(weekday)
+                            .font(.system(.title3, design: .rounded, weight: .black))
+                            .foregroundStyle(PulseDesign.sunlitInk)
+
+                        Text(PulseFormatting.numericYearAndMonth(today, timeZone: timeZone))
+                            .font(.body.bold())
+                            .monospacedDigit()
+                            .foregroundStyle(PulseDesign.sunlitMuted)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .accessibilityElement(children: .contain)
+                    .accessibilityIdentifier("today.hero.kicker")
+                } else {
+                    HStack(alignment: .bottom, spacing: PulseDesign.spacing20) {
+                        Text(today.day, format: .number)
+                            .font(
+                                .system(
+                                    size: resolvedSunlitDayNumberSize,
+                                    weight: .black,
+                                    design: .rounded
+                                )
+                            )
+                            .monospacedDigit()
+                            .tracking(PulseDesign.sunlitDayNumberTracking)
+                            .fixedSize(horizontal: true, vertical: false)
+                            .foregroundStyle(PulseDesign.sunlitInk)
+                            .accessibilityIdentifier("today.day.number")
+
+                        VStack(alignment: .leading, spacing: PulseDesign.spacing4) {
                             Text(weekday)
-                                .font(.title3.weight(.semibold))
-                                .foregroundStyle(PulseDesign.archiveInk)
+                                .font(.system(.title3, design: .rounded, weight: .black))
 
-                            Text(PulseFormatting.numericYearAndMonth(today, timeZone: timeZone))
-                                .font(.body)
-                                .monospacedDigit()
-                                .foregroundStyle(PulseDesign.archiveMuted)
+                            Text(
+                                PulseFormatting.numericYearAndMonth(
+                                    today,
+                                    timeZone: timeZone
+                                )
+                            )
+                            .font(.caption.bold())
+                            .monospacedDigit()
+                            .foregroundStyle(PulseDesign.sunlitMuted)
                         }
-                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .foregroundStyle(PulseDesign.sunlitInk)
+                        .padding(.bottom, PulseDesign.spacing12)
                         .accessibilityElement(children: .combine)
                         .accessibilityIdentifier("today.hero.kicker")
-                    } else {
-                        HStack(alignment: .bottom, spacing: PulseDesign.spacing20) {
-                            Text(today.day, format: .number)
-                                .font(
-                                    .system(
-                                        size: resolvedArchiveDayNumberSize,
-                                        weight: .light
-                                    )
-                                )
-                                .monospacedDigit()
-                                .tracking(PulseDesign.archiveDayNumberTracking)
-                                .fixedSize(horizontal: true, vertical: false)
-                                .foregroundStyle(PulseDesign.archiveInk)
-                                .accessibilityIdentifier("today.day.number")
 
-                            Spacer(minLength: PulseDesign.spacing16)
+                        Spacer(minLength: 0)
 
-                            VStack(alignment: .trailing, spacing: PulseDesign.spacing4) {
-                                Text(weekday)
-                                    .font(.subheadline.weight(.medium))
-
-                                Text(
-                                    PulseFormatting.numericYearAndMonth(
-                                        today,
-                                        timeZone: timeZone
-                                    )
-                                )
-                                .font(.caption)
-                                .monospacedDigit()
-                                .foregroundStyle(PulseDesign.archiveMuted)
-                            }
-                            .foregroundStyle(PulseDesign.archiveInk)
-                            .padding(.bottom, PulseDesign.spacing8)
-                            .accessibilityElement(children: .combine)
-                            .accessibilityIdentifier("today.hero.kicker")
-                        }
-                    }
-                }
-                .padding(.vertical, dynamicTypeSize.isAccessibilitySize ? PulseDesign.spacing8 : 0)
-                .padding(.bottom, PulseDesign.spacing16)
-                .overlay(alignment: .bottom) {
-                    HStack(spacing: 0) {
-                        Rectangle()
-                            .fill(PulseDesign.archiveAccent)
-                            .frame(width: PulseDesign.archiveAccentRuleWidth)
-                        Rectangle()
-                            .fill(
-                                PulseDesign.archiveDivider
+                        Image(systemName: "arrow.down.right")
+                            .font(.title2.weight(.black))
+                            .foregroundStyle(PulseDesign.sunlitOnAccent)
+                            .frame(
+                                width: PulseDesign.minimumHitTarget,
+                                height: PulseDesign.minimumHitTarget
                             )
+                            .background(PulseDesign.sunlitAccent, in: RoundedRectangle(
+                                cornerRadius: PulseDesign.spacing12,
+                                style: .continuous
+                            ))
+                            .overlay {
+                                RoundedRectangle(
+                                    cornerRadius: PulseDesign.spacing12,
+                                    style: .continuous
+                                )
+                                .stroke(
+                                    PulseDesign.sunlitOnAccent,
+                                    lineWidth: PulseDesign.emphasisLineWidth
+                                )
+                            }
+                            .accessibilityHidden(true)
                     }
-                    .frame(height: PulseDesign.thinLineWidth)
-                    .accessibilityHidden(true)
                 }
 
-                if let commitmentName = model.habit?.name {
+                if let commitmentName = model.habit?.name,
+                   !dynamicTypeSize.isAccessibilitySize {
                     VStack(alignment: .leading, spacing: PulseDesign.spacing4) {
                         Text("today.commitment.cue")
-                            .font(.caption.weight(.medium))
-                            .foregroundStyle(PulseDesign.archiveMuted)
+                            .font(.caption.bold())
+                            .foregroundStyle(PulseDesign.sunlitChromeForeground)
+                            .padding(.horizontal, PulseDesign.spacing12)
+                            .frame(minHeight: PulseDesign.spacing24)
+                            .background(PulseDesign.sunlitChrome, in: Capsule())
 
                         Text(commitmentName)
-                            .font(.headline.weight(.semibold))
-                            .foregroundStyle(PulseDesign.archiveInk)
-                            .lineLimit(dynamicTypeSize.isAccessibilitySize ? nil : 2)
+                            .font(
+                                .system(
+                                    .title2,
+                                    design: .rounded,
+                                    weight: .black
+                                )
+                            )
+                            .foregroundStyle(PulseDesign.sunlitInk)
+                            .lineLimit(2)
                             .multilineTextAlignment(.leading)
                             .fixedSize(horizontal: false, vertical: true)
                     }
+                    .padding(PulseDesign.spacing20)
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.vertical, dynamicTypeSize.isAccessibilitySize ? PulseDesign.spacing8 : 0)
-                    .padding(.top, PulseDesign.spacing16)
                     .accessibilityElement(children: .ignore)
                     .accessibilityLabel(
                         String(
@@ -424,11 +445,42 @@ struct TodayView: View {
             }
         }
         .frame(maxWidth: .infinity)
-        .padding(.horizontal, PulseDesign.spacing20)
-        .padding(.top, PulseDesign.spacing24)
-        .padding(.bottom, PulseDesign.spacing16)
-        .frame(minHeight: PulseDesign.archiveTodayHeroMinimumHeight, alignment: .top)
+        .padding(.horizontal, PulseDesign.spacing8)
+        .padding(.top, PulseDesign.spacing16)
+        .padding(.bottom, PulseDesign.spacing8)
+        .frame(minHeight: PulseDesign.sunlitTodayHeroMinimumHeight, alignment: .top)
         .accessibilityElement(children: .contain)
+    }
+
+    @ViewBuilder
+    private var sunlitAccessibilityCommitmentCue: some View {
+        if let commitmentName = model.habit?.name {
+            VStack(alignment: .leading, spacing: PulseDesign.spacing8) {
+                Text("today.commitment.cue")
+                    .font(.caption.bold())
+                    .foregroundStyle(PulseDesign.sunlitMuted)
+
+                Text(commitmentName)
+                    .font(.system(.headline, design: .rounded, weight: .black))
+                    .foregroundStyle(PulseDesign.sunlitInk)
+                    .lineLimit(3)
+                    .multilineTextAlignment(.leading)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            .padding(PulseDesign.spacing16)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel(
+                String(
+                    format: PulseLocalization.string(
+                        "today.commitment.accessibility_format",
+                        locale: locale
+                    ),
+                    commitmentName
+                )
+            )
+            .accessibilityIdentifier("today.commitment.name")
+        }
     }
 
     private func dayNumber(_ today: LogicalDay) -> some View {
@@ -491,16 +543,16 @@ struct TodayView: View {
             : dayNumberSize
     }
 
-    private var resolvedArchiveDayNumberSize: CGFloat {
+    private var resolvedSunlitDayNumberSize: CGFloat {
         dynamicTypeSize.isAccessibilitySize
-            ? min(archiveDayNumberSize, PulseDesign.dayNumberAccessibilityMaximumSize)
-            : archiveDayNumberSize
+            ? min(sunlitDayNumberSize, PulseDesign.dayNumberAccessibilityMaximumSize)
+            : sunlitDayNumberSize
     }
 
     @ViewBuilder
     private var weekRail: some View {
-        if visualTheme == .tideArchive {
-            archiveWeekRail
+        if visualTheme == .sunlitDay {
+            sunlitWeekRail
         } else {
             quietWeekRail
         }
@@ -527,11 +579,18 @@ struct TodayView: View {
         .accessibilityIdentifier("today.week.rail")
     }
 
-    private var archiveWeekRail: some View {
-        VStack(spacing: PulseDesign.spacing12) {
+    private var sunlitWeekRail: some View {
+        ZStack(alignment: .bottom) {
+            Rectangle()
+                .fill(PulseDesign.sunlitMapDeep.opacity(0.42))
+                .frame(height: PulseDesign.thinLineWidth)
+                .padding(.horizontal, PulseDesign.sunlitWeekMarkSize / 2)
+                .padding(.bottom, PulseDesign.sunlitWeekMarkSize / 2)
+                .accessibilityHidden(true)
+
             HStack(alignment: .top, spacing: 0) {
                 ForEach(model.recentDays) { item in
-                    archiveWeekRailDay(item)
+                    sunlitWeekRailDay(item)
                         .frame(maxWidth: .infinity)
                 }
             }
@@ -587,7 +646,7 @@ struct TodayView: View {
         .accessibilityIdentifier("today.week.day.\(item.day.storageValue)")
     }
 
-    private func archiveWeekRailDay(_ item: CalendarDayItem) -> some View {
+    private func sunlitWeekRailDay(_ item: CalendarDayItem) -> some View {
         let isChecked = item.status == .checked
         let isToday = item.day == model.today
 
@@ -601,25 +660,23 @@ struct TodayView: View {
                     )
                 )
                 .font(.system(.caption2, design: .default, weight: isToday ? .bold : .regular))
-                .foregroundStyle(isToday ? PulseDesign.archiveInk : PulseDesign.archiveMuted)
+                .foregroundStyle(isToday ? PulseDesign.sunlitInk : PulseDesign.sunlitMuted)
             }
 
             ZStack {
-                RoundedRectangle(
-                    cornerRadius: PulseDesign.archiveWeekMarkCornerRadius,
-                    style: .continuous
-                )
-                    .fill(isChecked ? PulseDesign.archiveAccent : Color.clear)
+                Circle()
+                    .fill(
+                        isChecked
+                            ? PulseDesign.sunlitChrome
+                            : PulseDesign.sunlitSurface
+                    )
                     .overlay {
-                        RoundedRectangle(
-                            cornerRadius: PulseDesign.archiveWeekMarkCornerRadius,
-                            style: .continuous
-                        )
+                        Circle()
                             .stroke(
                                 isToday
-                                    ? PulseDesign.archiveAccent
-                                    : PulseDesign.archiveDivider.opacity(
-                                        PulseDesign.archiveWeekInactiveStrokeOpacity
+                                    ? PulseDesign.sunlitChrome
+                                    : PulseDesign.sunlitMapDeep.opacity(
+                                        PulseDesign.sunlitWeekInactiveStrokeOpacity
                                     ),
                                 lineWidth: isToday
                                     ? PulseDesign.emphasisLineWidth
@@ -630,24 +687,24 @@ struct TodayView: View {
                 if isChecked {
                     Image(systemName: "checkmark")
                         .font(.system(size: 8, weight: .bold))
-                        .foregroundStyle(PulseDesign.archiveInk)
+                        .foregroundStyle(PulseDesign.sunlitChromeForeground)
                 } else if isToday {
                     Text(item.day.day, format: .number)
                         .font(.system(size: 8, weight: .medium))
-                        .foregroundStyle(PulseDesign.archiveInk)
+                        .foregroundStyle(PulseDesign.sunlitOnAccent)
                 } else {
                     Image(systemName: "minus")
                         .font(.system(size: 8, weight: .medium))
                         .foregroundStyle(
-                            PulseDesign.archiveMuted.opacity(
-                                PulseDesign.archiveWeekInactiveForegroundOpacity
+                            PulseDesign.sunlitMuted.opacity(
+                                PulseDesign.sunlitWeekInactiveForegroundOpacity
                             )
                         )
                 }
             }
             .frame(
-                width: PulseDesign.archiveWeekMarkSize,
-                height: PulseDesign.archiveWeekMarkSize
+                width: PulseDesign.sunlitWeekMarkSize + PulseDesign.spacing4,
+                height: PulseDesign.sunlitWeekMarkSize + PulseDesign.spacing4
             )
         }
         .animation(completionSecondaryAnimation, value: item.status)
@@ -659,16 +716,16 @@ struct TodayView: View {
     private var checkInControl: some View {
         let isChecked = model.todayRecord != nil
         let controlFill = switch visualTheme {
-        case .tideArchive:
-            isChecked ? PulseDesign.archiveAccent : PulseDesign.archiveSurface
+        case .sunlitDay:
+            PulseDesign.sunlitChrome
         case .editorialJournal:
             isChecked ? PulseDesign.grass : PulseDesign.action
         case .quietField:
             PulseDesign.quietGreen
         }
         let controlForeground = switch visualTheme {
-        case .tideArchive:
-            PulseDesign.archiveInk
+        case .sunlitDay:
+            PulseDesign.sunlitChromeForeground
         case .editorialJournal:
             isChecked ? PulseDesign.grassForeground : PulseDesign.actionForeground
         case .quietField:
@@ -729,12 +786,12 @@ struct TodayView: View {
                 mediaCompanionAction
             }
 
-            if !isChecked {
+            if !isChecked, !dynamicTypeSize.isAccessibilitySize {
                 Text("today.check_in_hint_visible")
                     .font(.system(.caption, design: .rounded, weight: .semibold))
                     .foregroundStyle(
-                        visualTheme == .tideArchive
-                            ? PulseDesign.archiveMuted
+                        visualTheme == .sunlitDay
+                            ? PulseDesign.sunlitMuted
                             : (visualTheme == .quietField
                                 ? PulseDesign.quietMuted
                                 : PulseDesign.secondary)
@@ -858,61 +915,77 @@ struct TodayView: View {
                 .accessibilityHidden(true)
             }
             .contentShape(PulseQuietCompanionShape())
-        } else if visualTheme == .tideArchive {
-            ZStack {
-                Circle()
-                    .fill(fill)
-                    .overlay {
-                        Circle()
-                            .stroke(
-                                PulseDesign.archiveAccent.opacity(
-                                    isChecked ? 0.62 : 1
-                                ),
-                                lineWidth: PulseDesign.emphasisLineWidth
-                            )
-                    }
+        } else if visualTheme == .sunlitDay {
+            HStack(spacing: PulseDesign.spacing16) {
+                ZStack {
+                    RoundedRectangle(
+                        cornerRadius: PulseDesign.spacing16,
+                        style: .continuous
+                    )
+                    .fill(PulseDesign.sunlitAccent)
 
-                checkInStatusContent(foreground: foreground)
+                    PulseImprintGlyph(
+                        isSolid: model.todayRecord != nil,
+                        foreground: PulseDesign.sunlitOnAccent
+                    )
+                    .scaleEffect(imprintGlyphScale)
+                }
+                .frame(width: 56, height: 56)
+
+                sunlitCheckInStatusContent
+
+                Spacer(minLength: 0)
+
+                Image(systemName: isChecked ? "checkmark" : "arrow.up.right")
+                    .font(.headline.weight(.black))
+                    .foregroundStyle(PulseDesign.sunlitOnAccent)
+                    .frame(
+                        width: PulseDesign.minimumHitTarget,
+                        height: PulseDesign.minimumHitTarget
+                    )
+                    .background(PulseDesign.sunlitAccent, in: Circle())
+                    .accessibilityHidden(true)
             }
+            .padding(.horizontal, PulseDesign.spacing16)
             .frame(
-                width: PulseDesign.archiveCheckInDiameter,
-                height: PulseDesign.archiveCheckInDiameter
+                width: PulseDesign.sunlitCheckInWidth,
+                height: PulseDesign.sunlitCheckInHeight
+            )
+            .background(
+                fill,
+                in: RoundedRectangle(
+                    cornerRadius: PulseDesign.primaryNavigationCornerRadius,
+                    style: .continuous
+                )
             )
             .background {
-                ZStack {
-                    Rectangle()
-                        .fill(
-                            PulseDesign.archiveAccentSoft.opacity(
-                                PulseDesign.archiveHorizonGuideOpacity
-                            )
-                        )
-                        .frame(
-                            width: PulseDesign.archiveHorizonMarkerWidth,
-                            height: PulseDesign.thinLineWidth
-                        )
-
-                    Circle()
-                        .stroke(
-                            PulseDesign.archiveAccent.opacity(
-                                PulseDesign.completionRippleOpacity
-                            ),
-                            lineWidth: PulseDesign.emphasisLineWidth
-                        )
-                        .frame(
-                            width: PulseDesign.archiveCheckInDiameter,
-                            height: PulseDesign.archiveCheckInDiameter
-                        )
-                        .scaleEffect(
-                            completionRippleExpanded
-                                ? PulseDesign.completionRippleEndScale
-                                : PulseDesign.completionRippleStartScale
-                        )
-                        .opacity(completionRippleVisible ? 1 : 0)
-                }
+                RoundedRectangle(
+                    cornerRadius: PulseDesign.primaryNavigationCornerRadius,
+                    style: .continuous
+                )
+                .stroke(
+                    PulseDesign.sunlitAccent.opacity(PulseDesign.completionRippleOpacity),
+                    lineWidth: PulseDesign.emphasisLineWidth
+                )
+                .frame(
+                    width: PulseDesign.sunlitCheckInWidth,
+                    height: PulseDesign.sunlitCheckInHeight
+                )
+                .scaleEffect(
+                    completionRippleExpanded
+                        ? PulseDesign.completionRippleEndScale
+                        : PulseDesign.completionRippleStartScale
+                )
+                .opacity(completionRippleVisible ? 1 : 0)
                 .allowsHitTesting(false)
                 .accessibilityHidden(true)
             }
-            .contentShape(Circle())
+            .contentShape(
+                RoundedRectangle(
+                    cornerRadius: PulseDesign.primaryNavigationCornerRadius,
+                    style: .continuous
+                )
+            )
             .animation(completionSecondaryAnimation, value: isChecked)
         } else {
             ZStack {
@@ -992,6 +1065,32 @@ struct TodayView: View {
             .transition(.opacity)
         } else {
             pendingCheckInStatusContent(foreground: foreground)
+        }
+    }
+
+    @ViewBuilder
+    private var sunlitCheckInStatusContent: some View {
+        if imprintRitualPhase == .saving, model.isSaving && showsSavingIndicator {
+            ProgressView()
+                .controlSize(.large)
+                .tint(PulseDesign.sunlitInk)
+        } else {
+            VStack(alignment: .leading, spacing: PulseDesign.spacing4) {
+                Text("tab.today")
+                    .font(.caption.bold())
+                    .foregroundStyle(PulseDesign.sunlitChromeForeground.opacity(0.66))
+
+                Text(
+                    completedCheckInText
+                        ?? PulseLocalization.string("today.check_in", locale: locale)
+                )
+                .font(.system(.headline, design: .rounded, weight: .black))
+                .foregroundStyle(PulseDesign.sunlitChromeForeground)
+                .lineLimit(2)
+                .minimumScaleFactor(0.78)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .transition(.opacity)
         }
     }
 
@@ -1080,13 +1179,14 @@ struct TodayView: View {
             .accessibilityIdentifier("today.rhythm.status")
     }
 
-    private var archiveRhythmStatus: some View {
+    private var sunlitRhythmStatus: some View {
         Text(rhythmStatusText)
-            .font(.footnote.weight(.medium))
+            .font(.system(.footnote, design: .rounded, weight: .black))
             .monospacedDigit()
-            .foregroundStyle(
-                PulseDesign.archiveMuted.opacity(PulseDesign.archiveRhythmOpacity)
-            )
+            .foregroundStyle(PulseDesign.sunlitInk)
+            .padding(.horizontal, PulseDesign.spacing16)
+            .frame(minHeight: PulseDesign.spacing32)
+            .background(PulseDesign.sunlitSurface, in: Capsule())
             .fixedSize(horizontal: false, vertical: true)
             .frame(maxWidth: .infinity, alignment: .center)
             .multilineTextAlignment(.center)
@@ -1171,7 +1271,7 @@ struct TodayView: View {
 
     private var mediaActionForeground: Color {
         switch visualTheme {
-        case .tideArchive: PulseDesign.archiveInk
+        case .sunlitDay: PulseDesign.sunlitInk
         case .editorialJournal: PulseDesign.action
         case .quietField: PulseDesign.quietInk
         }
@@ -1179,7 +1279,7 @@ struct TodayView: View {
 
     private var mediaActionSurface: Color {
         switch visualTheme {
-        case .tideArchive: PulseDesign.archiveSurface
+        case .sunlitDay: PulseDesign.sunlitSurface
         case .editorialJournal: PulseDesign.surface
         case .quietField: PulseDesign.quietSurface
         }
@@ -1187,7 +1287,7 @@ struct TodayView: View {
 
     private var mediaActionBorder: Color {
         switch visualTheme {
-        case .tideArchive: PulseDesign.archiveAccent
+        case .sunlitDay: PulseDesign.sunlitAccent
         case .editorialJournal: PulseDesign.grass
         case .quietField: PulseDesign.quietGreen
         }

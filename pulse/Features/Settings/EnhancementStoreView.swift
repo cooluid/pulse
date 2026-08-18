@@ -59,8 +59,8 @@ struct EnhancementStoreView: View {
     @ViewBuilder
     private var hero: some View {
         switch visualTheme {
-        case .tideArchive:
-            archiveHero
+        case .sunlitDay:
+            sunlitHero
         case .editorialJournal:
             quietHero
         case .quietField:
@@ -72,7 +72,7 @@ struct EnhancementStoreView: View {
         switch visualTheme {
         case .editorialJournal: "store.theme.editorial-journal"
         case .quietField: "store.theme.quiet-field"
-        case .tideArchive: "store.theme.tide-archive"
+        case .sunlitDay: "store.theme.sunlit-day"
         }
     }
 
@@ -164,21 +164,21 @@ struct EnhancementStoreView: View {
         .accessibilityIdentifier("store.hero")
     }
 
-    private var archiveHero: some View {
+    private var sunlitHero: some View {
         HStack(alignment: .center, spacing: PulseDesign.spacing16) {
             VStack(alignment: .leading, spacing: PulseDesign.spacing12) {
-                Label("store.lifetime_badge", systemImage: "seal.fill")
-                    .font(.caption.weight(.semibold))
-                    .foregroundStyle(PulseDesign.appAccentForeground(for: visualTheme))
+                Label("store.lifetime_badge", systemImage: "arrow.up.right")
+                    .font(.caption.weight(.black))
+                    .foregroundStyle(PulseDesign.sunlitChromeForeground)
                     .padding(.horizontal, PulseDesign.spacing12)
                     .padding(.vertical, PulseDesign.spacing8)
                     .background(
-                        PulseDesign.archiveAccent,
+                        PulseDesign.sunlitChrome,
                         in: Capsule()
                     )
 
                 Text("store.hero.tagline")
-                    .font(.title2.weight(.black))
+                    .font(.system(.title2, design: .rounded, weight: .black))
                     .foregroundStyle(PulseDesign.appInk(for: visualTheme))
                     .fixedSize(horizontal: false, vertical: true)
 
@@ -188,15 +188,22 @@ struct EnhancementStoreView: View {
             }
             .frame(maxWidth: .infinity, alignment: .leading)
 
-            PulseBrandMark(size: PulseDesign.brandMarkSize)
-                .accessibilityHidden(true)
+            ZStack {
+                PulseSunlitMapTexture(opacity: 0.34)
+                    .frame(width: 84, height: 84)
+
+                PulseBrandMark(size: PulseDesign.storeBrandMarkSize)
+            }
+            .accessibilityHidden(true)
         }
         .padding(PulseDesign.spacing20)
-        .overlay(alignment: .bottom) {
-            Rectangle()
-                .fill(PulseDesign.archiveDivider)
-                .frame(height: PulseDesign.thinLineWidth)
-        }
+        .background(
+            PulseDesign.sunlitSurface,
+            in: RoundedRectangle(
+                cornerRadius: PulseDesign.sunlitCardCornerRadius,
+                style: .continuous
+            )
+        )
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("store.hero")
     }
@@ -262,8 +269,8 @@ struct EnhancementStoreView: View {
                             height: PulseDesign.storeCapabilityIconSize
                         )
                         .background(
-                            visualTheme == .tideArchive
-                                ? PulseDesign.archiveAccentSoft
+                            visualTheme == .sunlitDay
+                                ? PulseDesign.sunlitAccentSoft
                                 : PulseDesign.field.opacity(0.12),
                             in: Circle()
                         )

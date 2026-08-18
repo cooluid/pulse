@@ -2884,19 +2884,19 @@
         }
       }
     },
-    "settings.visual_theme.tide_archive" : {
+    "settings.visual_theme.sunlit_day" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Tide Archive"
+            "value" : "Sunlit Day"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "潮痕档案"
+            "value" : "晴昼"
           }
         }
       }
