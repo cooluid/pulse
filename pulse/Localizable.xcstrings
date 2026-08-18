@@ -2510,13 +2510,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "All check-ins, preferences, and pending Pulse reminders will be removed. This cannot be undone."
+            "value" : "All check-ins, daily notes, photos, preferences, and Pulse reminder plans will be removed. This cannot be undone."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "所有签到、偏好设置和待发送提醒都会被删除，且无法恢复。"
+            "value" : "所有签到、每日记事、照片、偏好设置和一日一印创建的提醒计划都会被删除，且无法恢复。"
           }
         }
       }
