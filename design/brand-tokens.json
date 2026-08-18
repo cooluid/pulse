@@ -2,8 +2,7 @@
   "light" : {
     "action" : "#1F5E34",
     "actionForeground" : "#FFFFFF",
-    "activityIslandFirefly" : "#FFFFFF",
-    "activityIslandTime" : "#B86A00",
+    "activityIslandFirefly" : "#F5C84B",
     "activityLockScreenFirefly" : "#B86A00",
     "activityMark" : "#1F5E34",
     "background" : "#EDF5E7",
@@ -52,8 +51,7 @@
   "dark" : {
     "action" : "#276D3D",
     "actionForeground" : "#F7FBF2",
-    "activityIslandFirefly" : "#FFFFFF",
-    "activityIslandTime" : "#F5C84B",
+    "activityIslandFirefly" : "#F5C84B",
     "activityLockScreenFirefly" : "#F5C84B",
     "activityMark" : "#91D55B",
     "background" : "#07120A",

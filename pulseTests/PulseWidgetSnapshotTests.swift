@@ -265,79 +265,71 @@ final class PulseWidgetSnapshotTests: XCTestCase {
     func testReminderActivityFireflyFitsInsideEveryRenderedMarkCanvas() {
         for layout in PulseReminderActivityMarkLayout.allCases {
             let metrics = PulseReminderActivityMarkGeometry.metrics(layout: layout)
-            let offset = PulseReminderActivityMarkGeometry.fireflyOffset(
-                ringDiameter: metrics.ringDiameter
-            )
-            let fireflyOuterRadius = max(
-                metrics.fireflyGlowDiameter / 2,
-                (metrics.fireflyDiameter + metrics.fireflyOutlineWidth) / 2
-            )
             let canvasRadius = metrics.glyphSize / 2
 
-            XCTAssertLessThanOrEqual(
-                abs(offset.width) + fireflyOuterRadius,
-                canvasRadius + 0.0001
-            )
-            XCTAssertLessThanOrEqual(
-                abs(offset.height) + fireflyOuterRadius,
-                canvasRadius + 0.0001
-            )
-            XCTAssertLessThan(metrics.fireflyDiameter, metrics.ringDiameter)
-            switch layout.surface {
-            case .island:
-                XCTAssertGreaterThan(
-                    metrics.fireflyGlowDiameter,
-                    metrics.fireflyDiameter
+            if layout.drawsHalo {
+                let offset = PulseReminderActivityMarkGeometry.fireflyOffset(
+                    ringDiameter: metrics.ringDiameter
                 )
-            case .lockScreen:
+                let fireflyOuterRadius =
+                    (metrics.fireflyDiameter + metrics.fireflyOutlineWidth) / 2
+                XCTAssertLessThanOrEqual(
+                    abs(offset.width) + fireflyOuterRadius,
+                    canvasRadius + 0.0001
+                )
+                XCTAssertLessThanOrEqual(
+                    abs(offset.height) + fireflyOuterRadius,
+                    canvasRadius + 0.0001
+                )
+                XCTAssertLessThan(metrics.fireflyDiameter, metrics.ringDiameter)
                 XCTAssertEqual(
                     metrics.fireflyGlowDiameter,
                     metrics.fireflyDiameter,
                     accuracy: 0.0001
                 )
+                let ringOuterRadius = metrics.ringDiameter / 2 + metrics.lineWidth / 2
+                XCTAssertLessThanOrEqual(ringOuterRadius, canvasRadius + 0.0001)
+            } else {
+                XCTAssertEqual(metrics.ringDiameter, 0, accuracy: 0.0001)
+                XCTAssertEqual(metrics.lineWidth, 0, accuracy: 0.0001)
+                XCTAssertLessThanOrEqual(
+                    metrics.fireflyGlowDiameter / 2,
+                    canvasRadius + 0.0001
+                )
+                XCTAssertLessThan(
+                    metrics.fireflyDiameter,
+                    metrics.completedCoreDiameter
+                )
+                XCTAssertLessThanOrEqual(
+                    metrics.completedCoreDiameter / 2,
+                    canvasRadius + 0.0001
+                )
             }
-
-            let ringOuterRadius = metrics.ringDiameter / 2
-                + metrics.lineWidth / 2
-                + metrics.ringGlowRadius
-            XCTAssertLessThanOrEqual(
-                ringOuterRadius,
-                canvasRadius + 0.0001
-            )
         }
     }
 
-    func testReminderActivityCompactOpticalTreatmentRestoresHaloMass() {
+    func testIslandMarksKeepTheHaloOnLockScreenOnly() {
         for layout in [
-            PulseReminderActivityMarkLayout.islandCompact,
+            PulseReminderActivityMarkLayout.islandExpanded,
+            .islandCompact,
             .islandMinimal,
         ] {
-            let metrics = PulseReminderActivityMarkGeometry.metrics(layout: layout)
-            let arcCoverage = PulseReminderActivityMarkGeometry.arcEndFraction(for: layout)
-                - PulseReminderActivityMarkGeometry.arcStartFraction
-
-            XCTAssertGreaterThanOrEqual(metrics.ringDiameter, 14)
-            XCTAssertGreaterThanOrEqual(arcCoverage, 0.82)
-            XCTAssertGreaterThanOrEqual(metrics.fireflyGlowDiameter, 10)
-            XCTAssertGreaterThan(metrics.ringGlowRadius, 0)
-            XCTAssertLessThanOrEqual(metrics.fireflyDiameter, 3.84)
+            XCTAssertFalse(layout.drawsHalo)
+            XCTAssertEqual(
+                PulseReminderActivityMarkGeometry.metrics(layout: layout).ringDiameter,
+                0,
+                accuracy: 0.0001
+            )
         }
 
-        XCTAssertEqual(
-            PulseReminderActivityMarkGeometry.metrics(layout: .islandExpanded)
-                .ringGlowRadius,
-            0,
-            accuracy: 0.0001
-        )
-        XCTAssertEqual(
-            PulseReminderActivityMarkGeometry.metrics(layout: .lockScreen)
-                .ringGlowRadius,
-            0,
-            accuracy: 0.0001
+        XCTAssertTrue(PulseReminderActivityMarkLayout.lockScreen.drawsHalo)
+        XCTAssertGreaterThan(
+            PulseReminderActivityMarkGeometry.metrics(layout: .lockScreen).ringDiameter,
+            0
         )
     }
 
-    func testActivityColorsSeparateIslandLightFromTimeAndLockScreenContrast() throws {
+    func testActivityColorsKeepIslandFireflySeparateFromLockScreenContrast() throws {
         let projectRoot = URL(fileURLWithPath: #filePath)
             .deletingLastPathComponent()
             .deletingLastPathComponent()
@@ -354,21 +346,35 @@ final class PulseWidgetSnapshotTests: XCTestCase {
 
         for appearance in ["light", "dark"] {
             let colors = try XCTUnwrap(root[appearance] as? [String: String])
-            XCTAssertEqual(colors["activityIslandFirefly"], "#FFFFFF")
-            XCTAssertNotEqual(
-                colors["activityIslandFirefly"],
-                colors["activityIslandTime"]
-            )
-            XCTAssertNotEqual(
-                colors["activityIslandFirefly"],
-                colors["activityLockScreenFirefly"]
-            )
+            XCTAssertEqual(colors["activityIslandFirefly"], "#F5C84B")
+            XCTAssertNil(colors["activityIslandTime"])
             XCTAssertNil(colors["activityFirefly"])
         }
 
+        let lightColors = try XCTUnwrap(root["light"] as? [String: String])
+        let darkColors = try XCTUnwrap(root["dark"] as? [String: String])
+        XCTAssertEqual(lightColors["activityLockScreenFirefly"], "#B86A00")
+        XCTAssertEqual(darkColors["activityLockScreenFirefly"], "#F5C84B")
+        XCTAssertNotEqual(
+            lightColors["activityIslandFirefly"],
+            lightColors["activityLockScreenFirefly"]
+        )
+
+        try assertActivityColorset(
+            named: "PulseActivityIslandFirefly",
+            in: assetRoot,
+            light: "#F5C84B",
+            dark: "#F5C84B"
+        )
+        try assertActivityColorset(
+            named: "PulseActivityLockScreenFirefly",
+            in: assetRoot,
+            light: "#B86A00",
+            dark: "#F5C84B"
+        )
+
         for assetName in [
             "PulseActivityIslandFirefly",
-            "PulseActivityIslandTime",
             "PulseActivityLockScreenFirefly",
         ] {
             XCTAssertTrue(
@@ -380,6 +386,17 @@ final class PulseWidgetSnapshotTests: XCTestCase {
                 )
             )
         }
+        XCTAssertFalse(
+            FileManager.default.fileExists(
+                atPath: assetRoot
+                    .appendingPathComponent(
+                        "PulseActivityIslandTime.colorset",
+                        isDirectory: true
+                    )
+                    .appendingPathComponent("Contents.json", isDirectory: false)
+                    .path
+            )
+        )
         XCTAssertFalse(
             FileManager.default.fileExists(
                 atPath: assetRoot
@@ -403,9 +420,49 @@ final class PulseWidgetSnapshotTests: XCTestCase {
 
         XCTAssertTrue(source.contains(".activityBackgroundTint(nil)"))
         XCTAssertTrue(source.contains(".activitySystemActionForegroundColor(nil)"))
+        XCTAssertTrue(source.contains(".keylineTint(PulseWidgetDesign.activityIslandFirefly)"))
+        XCTAssertTrue(source.contains("compactTrailing: {\n                EmptyView()"))
+        XCTAssertFalse(source.contains("PulseReminderActivityCompactTrailing"))
+        XCTAssertFalse(source.contains("keylineTint(PulseWidgetDesign.grass)"))
         XCTAssertFalse(
             source.contains(".activityBackgroundTint(PulseWidgetDesign.background)")
         )
+    }
+
+    func testReminderActivityIslandRendererDropsCompactHaloAndClock() throws {
+        let projectRoot = URL(fileURLWithPath: #filePath)
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+        let renderer = try String(
+            contentsOf: projectRoot
+                .appendingPathComponent("PulseWidgetUI", isDirectory: true)
+                .appendingPathComponent(
+                    "PulseReminderActivityRenderer.swift",
+                    isDirectory: false
+                ),
+            encoding: .utf8
+        )
+
+        XCTAssertTrue(renderer.contains("var drawsHalo: Bool"))
+        XCTAssertTrue(renderer.contains("struct PulseReminderDynamicIslandCenterView"))
+        XCTAssertFalse(renderer.contains("usesCompactOpticalTreatment"))
+        XCTAssertFalse(renderer.contains("compactArcEndFraction"))
+        XCTAssertFalse(renderer.contains("struct PulseReminderActivityCompactTrailing"))
+        XCTAssertFalse(renderer.contains("PulseReminderDynamicIslandBottomView"))
+        XCTAssertFalse(renderer.contains("activityIslandTime"))
+        XCTAssertFalse(renderer.contains("PulseWidgetDesign.grass"))
+        XCTAssertFalse(renderer.contains("PulseWidgetDesign.activityIslandFireflyDiameterRatio"))
+        XCTAssertTrue(renderer.contains("static let islandFireflyDiameterRatio"))
+
+        let store = try String(
+            contentsOf: projectRoot
+                .appendingPathComponent("pulse", isDirectory: true)
+                .appendingPathComponent("Features", isDirectory: true)
+                .appendingPathComponent("Settings", isDirectory: true)
+                .appendingPathComponent("EnhancementStoreView.swift", isDirectory: false),
+            encoding: .utf8
+        )
+        XCTAssertFalse(store.contains("PulseReminderActivityCompactTrailing"))
     }
 
     func testReminderActivityTimeUsesTheAttributeTimeZone() {
@@ -1443,10 +1500,6 @@ final class PulseWidgetSnapshotTests: XCTestCase {
                 "en": "Checked in today",
                 "zh-Hans": "今日已签到",
             ],
-            "activity.reminder.completed.compact": [
-                "en": "Checked in",
-                "zh-Hans": "已签到",
-            ],
             "store.activity.preview.section": [
                 "en": "Lock Screen & Dynamic Island",
                 "zh-Hans": "锁屏与灵动岛",
@@ -1486,6 +1539,7 @@ final class PulseWidgetSnapshotTests: XCTestCase {
 
         XCTAssertNil(catalog.strings["activity.reminder.body"])
         XCTAssertNil(catalog.strings["activity.reminder.completed.body"])
+        XCTAssertNil(catalog.strings["activity.reminder.completed.compact"])
         XCTAssertNil(catalog.strings["store.activity.preview.detail"])
     }
 
@@ -2030,6 +2084,60 @@ final class PulseWidgetSnapshotTests: XCTestCase {
             from: DateComponents(year: year, month: month, day: day, hour: hour)
         )!
     }
+}
+
+private func assertActivityColorset(
+    named name: String,
+    in assetRoot: URL,
+    light: String,
+    dark: String,
+    file: StaticString = #filePath,
+    line: UInt = #line
+) throws {
+    let url = assetRoot
+        .appendingPathComponent("\(name).colorset", isDirectory: true)
+        .appendingPathComponent("Contents.json", isDirectory: false)
+    let root = try XCTUnwrap(
+        JSONSerialization.jsonObject(with: Data(contentsOf: url)) as? [String: Any],
+        file: file,
+        line: line
+    )
+    let colors = try XCTUnwrap(root["colors"] as? [[String: Any]], file: file, line: line)
+    XCTAssertEqual(colors.count, 2, file: file, line: line)
+
+    func components(at index: Int) throws -> [String: String] {
+        let color = try XCTUnwrap(
+            colors[index]["color"] as? [String: Any],
+            file: file,
+            line: line
+        )
+        return try XCTUnwrap(
+            color["components"] as? [String: String],
+            file: file,
+            line: line
+        )
+    }
+
+    func expected(_ hex: String) -> (red: String, green: String, blue: String) {
+        let channels = [1, 3, 5].map { offset -> String in
+            let start = hex.index(hex.startIndex, offsetBy: offset)
+            let end = hex.index(start, offsetBy: 2)
+            let value = Int(hex[start..<end], radix: 16)!
+            return String(format: "%.3f", Double(value) / 255.0)
+        }
+        return (channels[0], channels[1], channels[2])
+    }
+
+    let lightComponents = try components(at: 0)
+    let darkComponents = try components(at: 1)
+    let expectedLight = expected(light)
+    let expectedDark = expected(dark)
+    XCTAssertEqual(lightComponents["red"], expectedLight.red, file: file, line: line)
+    XCTAssertEqual(lightComponents["green"], expectedLight.green, file: file, line: line)
+    XCTAssertEqual(lightComponents["blue"], expectedLight.blue, file: file, line: line)
+    XCTAssertEqual(darkComponents["red"], expectedDark.red, file: file, line: line)
+    XCTAssertEqual(darkComponents["green"], expectedDark.green, file: file, line: line)
+    XCTAssertEqual(darkComponents["blue"], expectedDark.blue, file: file, line: line)
 }
 
 private struct WidgetStringCatalog: Decodable {

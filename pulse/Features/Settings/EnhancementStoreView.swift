@@ -583,22 +583,10 @@ struct PulseReminderActivityStoreShowcase: View {
     }
 
     private func compactPreview(phase: PulseReminderActivityPhase) -> some View {
-        HStack(spacing: PulseDesign.spacing8) {
-            PulseReminderActivityMark(
-                phase: phase,
-                layout: .islandCompact
-            )
-
-            Spacer(minLength: PulseDesign.activityStoreCompactMinimumSpacing)
-
-            PulseReminderActivityCompactTrailing(
-                phase: phase,
-                reminderDate: reminderDate,
-                timeZoneIdentifier: timeZoneIdentifier,
-                locale: locale
-            )
-        }
-        .padding(.horizontal, PulseDesign.activityStoreCompactHorizontalInset)
+        PulseReminderActivityMark(
+            phase: phase,
+            layout: .islandCompact
+        )
         .frame(maxWidth: .infinity)
         .frame(height: PulseDesign.activityStoreCompactHeight)
         .background(PulseWidgetDesign.activityIslandBackground, in: Capsule())

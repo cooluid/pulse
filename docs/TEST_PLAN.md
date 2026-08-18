@@ -112,7 +112,7 @@ iPad 需覆盖无后置能力差异、横竖屏、分屏和文件导入/导出�
 ## 7. 既有系统能力回归
 
 - 免费本地通知：授权、拒绝、外部撤权、实际到达、改时、签到后取消、跨日。
-- iOS 26 scheduled Live Activity：唯一“萤火日晕”在 Lock Screen、Dynamic Island 的 expanded / compact / minimal 形态；圆弧与萤火点共享极坐标路径，灵动岛使用白色热芯与有边界的光晕，锁屏保留琥珀色萤火点，萤火点与光晕均不得越出系统分配的紧凑画布；降低亮度时移除光晕但保留等价白色终态；compact / expanded 显示 Activity attributes 中的真实提醒时间；系统表面只出现事实标题、时间和“签到”动作，不出现陪伴式说教文案；系统表面直接签到、锁定认证、App / Widget 签到后的完成态与结束；完整接受、部分接受、首个拒绝、容量竞争、撤权，以及剩余日期由免费通知接续且同日不重复。
+- iOS 26 scheduled Live Activity：唯一“萤火日晕”在 Lock Screen、Dynamic Island 的 expanded / compact / minimal 形态；开口弧与萤火点只在锁屏共享极坐标路径，灵动岛 compact / minimal / expanded 印记只使用琥珀色光源、不画开口环；降低亮度时移除光晕但保留等价静态终态；提醒时间只出现在 expanded 与锁屏，compact 不得复述系统时钟；系统表面只出现事实标题、时间和“签到”动作，不出现陪伴式说教文案；系统表面直接签到、锁定认证、App / Widget 签到后的完成态与结束；完整接受、部分接受、首个拒绝、容量竞争、撤权，以及剩余日期由免费通知接续且同日不重复。
 - 高级功能页的“萤火日晕”卡必须同时显示 expanded、compact、minimal、完成态和 Lock Screen，并与正式渲染器共用印记、时间及状态组件。全部预览禁用命中与无障碍交互，点击或 VoiceOver 激活不得写入签到事实；中英文、默认与 Accessibility Dynamic Type 下分别截图验收。
 - 高级功能页按 `currentCapabilities` 展示静野/晴昼同源标本，与设置主题预览共用 `PulseVisualThemeSpecimen`；标本不可点选、不写入当前主题；纸页手记不作为商品预览。中英文与 Accessibility Dynamic Type 下截图验收。
 - 界面主题权益验证：纸页手记是未购买、清洁安装与完整重置后的唯一默认；静野/晴昼在未购买时保留真实预览并显示“锁 + 高级功能”，点击进入唯一购买页且不得改变当前主题。购买或恢复后两者立即可选并跨重启保持；退款/撤销/未验证权益时统一回到纸页手记并明确提示。三套主题分别验证签到、长按拍照、最近七日、当前连续、记事、历史、照片与 Accessibility 能力等价。
@@ -125,7 +125,7 @@ iPad 需覆盖无后置能力差异、横竖屏、分屏和文件导入/导出�
 
 1. 先核对首页名称为“一日一印 Dev”，测试台中的 App、App Group 与 URL Scheme 全部为 Dev 身份；任何生产标识出现时测试台必须标红并禁用操作。Debug Widget 的 `co.fanr.pulse.dev.widgets` 身份由构建产物门禁核对，不由 App 界面猜测。
 2. 打开系统“设置 > 一日一印 Dev”，确认实时活动已允许；返回测试台确认能力状态。
-3. 点击“立即启动真实活动”；分别检查“萤火日晕”在 Lock Screen，以及 Dynamic Island 的 compact、minimal、expanded。确认锁屏小圆点落在圆弧路径端点、提醒时间与测试台 attributes 一致。系统决定当前出现哪种形态，不能把 App 内预览当成系统证据。
+3. 点击“立即启动真实活动”；分别检查“萤火日晕”在 Lock Screen，以及 Dynamic Island 的 compact、minimal、expanded。确认锁屏小圆点落在圆弧路径端点；expanded 与锁屏的提醒时间与测试台 attributes 一致；compact 不显示该时间。系统决定当前出现哪种形态，不能把 App 内预览当成系统证据。
 4. 使用“仅切换为完成态”检查完成构图，再恢复待签到；这一步只验证 Activity content state，不得记录成业务签到通过。
 5. 在未签到的 Dev 数据上重新启动活动，分别从 App 测试台和真实灵动岛操作“签到”；确认只生成一条签到事实、Widget 更新、活动先短暂显示“已签到”后结束。锁屏操作必须单独验证认证行为。
 6. iOS 26 选择“30 秒后由系统启动”，立刻退出 App 并锁屏；记录系统是否在目标时间后交付。请求成功不等于系统准点展示。

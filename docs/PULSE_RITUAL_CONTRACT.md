@@ -97,7 +97,7 @@ Plus Widget 只展示真正属于 Plus 的信息，如 28/90/365 日节律、回
 
 ### 3.2 灵动岛与 Live Activity：短期事件和任务
 
-Compact、Minimal、Expanded 和 Lock Screen 必须都能独立理解；有灵动岛的 iPhone 不是唯一验收设备。Compact / Minimal 只显示印记、提醒时间或完成状态。Expanded / Lock Screen 只显示状态标题、提醒时间与唯一主要操作，不加入陪伴式解释或动机文案。
+Compact、Minimal、Expanded 和 Lock Screen 必须都能独立理解；有灵动岛的 iPhone 不是唯一验收设备。Compact / Minimal 的印记就是日晕本身：待签为萤火点，已签为实心印，不画开口环，也不显示提醒时间。Expanded 为印记、状态标题、提醒时间与唯一签到动作。Lock Screen 才使用开口弧与端点萤火，并同时给出标题、时间与签到。不加入陪伴式解释或动机文案。
 
 灵动岛不是任意动画画布：单次 Widget / Live Activity 动画最长两秒，Always-On 降低亮度时系统不播放动画。App 内不能用箭头或文案强迫用户看向灵动岛；主签到反馈仍由 App 页面完成，系统表面只是附加的品牌回声。
 
@@ -130,7 +130,7 @@ deliveryMode = disabled | localNotification | scheduledLiveActivity
 - Always-On 直接显示最终静态状态；
 - 单击只签到；长按 0.45 秒表示“签到并拍照”，在权威提交成功后才请求相机；相机失败不回滚签到。
 
-首个公开版本当前只实现 App 内基础签到反馈，不创建 ActivityKit 实例：
+App 内落印仪式独立于 Live Activity（后者见 4.2），当前规则如下：
 
 - 待签到：深草绿色行动印内保留空心内核；页面进入时外部低强调光环最多完成一次有限呼吸，不持续循环；
 - `saving`：只显示中性写入反馈，不能出现实心印记、成功触觉或完成时间；
@@ -144,18 +144,16 @@ App 内页面只保存短暂的呈现阶段和动画进度，不持久化 `activ
 
 只有 StoreKit 已验证高阶权益且用户主动开启提醒后，才允许在提醒时间自动启动 Live Activity；未购买用户在同一提醒时间使用免费本地通知。首版使用 standard Live Activity，每个逻辑日最多自动启动一次，保留到用户直接签到、从 App/Widget 签到或由系统结束；Pulse 不用 `staleDate` 伪造定时结束。设置页不能把 Live Activity 写成“仅灵动岛”，因为无灵动岛设备仍使用 Lock Screen 表面。
 
-Compact 示例：
+Compact / Minimal：待签为萤火点，已签为实心印；不显示提醒时间。
+
+Expanded：
 
 ```text
-○        18:42
+[印]  今日未签到     [签到]
+      18:42
 ```
 
-Expanded 示例：
-
-```text
-今日未签到
-[ 签到 ]
-```
+Lock Screen：开口弧与端点萤火，加上标题、提醒时间和签到。
 
 正式系统表面只使用“今日未签到”“签到”“今日已签到”等事实与动作词；禁止“准备好时”“你随时可以回来”等陪伴式引导，也禁止“即将断签”“赶快完成”“连续记录要失败了”、红色警告、抖动和惩罚性倒计时。
 
@@ -242,8 +240,8 @@ Pulse 最低版本为 iOS / iPadOS 18.0，因此只保留两条正式版本分�
 动效参数在设计实现前集中定义，不散落硬编码：
 
 ```text
-breath       = 空心印记轻微变化，用于提醒出现
-imprint      = 空心到实心，用于保存成功
+breath       = 提醒出现：灵动岛萤火点，锁屏开口弧
+imprint      = 签到成功：灵动岛实心印，锁屏闭合弧
 return       = 开口圆弧闭合，用于中断后回归
 yearRing     = 一至两圈扩散，用于事实里程碑
 memory       = 印记旁出现相机轮廓，用于可选留影

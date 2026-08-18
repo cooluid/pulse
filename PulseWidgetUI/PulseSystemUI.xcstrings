@@ -18,23 +18,6 @@
         }
       }
     },
-    "activity.reminder.completed.compact" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Checked in"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "已签到"
-          }
-        }
-      }
-    },
     "activity.reminder.completed.title" : {
       "extractionState" : "manual",
       "localizations" : {

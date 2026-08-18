@@ -28,7 +28,6 @@ COLOR_ASSETS = {
     "PulseAction": "action",
     "PulseActionForeground": "actionForeground",
     "PulseActivityIslandFirefly": "activityIslandFirefly",
-    "PulseActivityIslandTime": "activityIslandTime",
     "PulseActivityLockScreenFirefly": "activityLockScreenFirefly",
     "PulseActivityMark": "activityMark",
     "PulseBackground": "background",

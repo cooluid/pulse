@@ -58,11 +58,11 @@
 
 验证环境：macOS 26.6、Xcode 26.4（17E192）、iPhone 16 Pro / iOS 18.6 Simulator（arm64）。
 
-- 八式 Home Screen Widget 共享渲染器与唯一“萤火日晕”Live Activity 共享渲染器已落地；锁屏圆弧端点与萤火点由同一极坐标几何计算，compact / expanded 显示 attributes 中的真实提醒时间。2026-08-18 当前 checkout 的 191 项单元/集成测试全部通过；既有 26 项 UI 全量基线之外，本轮单独重跑了改动后的反馈流程，验证设置入口、正文校验、键盘完成、截图入口、诊断预览和 Mail 未配置状态。未签名 Release generic-iOS Build 与 Analyze 通过；权威站点 production build 与 lint 通过，但本轮隐私/支持正文尚未部署。真实 Mail 已配置发送/草稿/失败、截图选择器、VoiceOver/最大字号和 App Store Connect 隐私答案仍需真机或后台取证。在这些证据完成前保持 **ENGINEERING CANDIDATE / INTERFACE CANDIDATE**。
+- 八式 Home Screen Widget 共享渲染器与唯一“萤火日晕”Live Activity 共享渲染器已落地；锁屏圆弧端点与萤火点由同一极坐标几何计算，灵动岛印记不再复用开口环；提醒时间只出现在 expanded 与锁屏。2026-08-18 当前 checkout 的 191 项单元/集成测试全部通过；既有 26 项 UI 全量基线之外，本轮单独重跑了改动后的反馈流程，验证设置入口、正文校验、键盘完成、截图入口、诊断预览和 Mail 未配置状态。未签名 Release generic-iOS Build 与 Analyze 通过；权威站点 production build 与 lint 通过，但本轮隐私/支持正文尚未部署。真实 Mail 已配置发送/草稿/失败、截图选择器、VoiceOver/最大字号和 App Store Connect 隐私答案仍需真机或后台取证。在这些证据完成前保持 **ENGINEERING CANDIDATE / INTERFACE CANDIDATE**。
 - 媒体自动化覆盖独立删除/重新关联、同日替换、文件安装/读取/审计、缩略图损坏、无相册回退、v2 归档往返、随机性、错误口令、篡改、v1 拒绝、缺条目与缩略图身份不匹配。
 - 本轮有八式画廊待办/完成共 16 张原始截图及部分 ImageRenderer 附件；单卡变化预览约 5 秒（早/日/晚/完成串联），各段 ≤ 两秒。这只证明 App 内共享 Renderer 预览，仍为 **INTERFACE CANDIDATE**；不能代替真实 Widget host、系统 reload、Lock Screen kind、Clear/vibrant、Reduce Motion 或真机体验 GO。
 - 本轮未签名 Release `generic/platform=iOS` Build 与 Analyze 通过；Swift 警告按错误处理。
-- 54 项品牌生成输出检查通过（含 AppIcon 三外观、小尺寸评审图、纸页手记强调色与 Live Activity 语义色）。App、InfoPlist 与 Widget String Catalog / plist 可解析。
+- 53 项品牌生成输出检查通过（含 AppIcon 三外观、小尺寸评审图、纸页手记强调色与 Live Activity 语义色；灵动岛萤火与锁屏萤火分色，已删除旧的时间色）。App、InfoPlist 与 Widget String Catalog / plist 可解析。
 - `git diff --check` 通过；生产 Swift 源码没有 TODO/FIXME/HACK、相册回退、样例照片或演示数据路径。
 - 公开产品、隐私与支持正文已在唯一权威 `/Users/fanr/Documents/work/coco-web` 提交 `861bae3838127f6cd4d80a8ab4cfceacaf2dea10` 并发布到 `/var/www/fanr.co.releases/861bae383812-20260818T100709Z`；三个正式 HTTPS 页面均返回 200，线上与本地 HTML SHA-256 一致。网站品牌标不再用 CSS 拼画，改为 App 正式 `PulseMark.png` 的逐字节投影，并以 CSS mask 消费语义颜色；线上资产 SHA-256 为 `31502002bffcd5495c3a2f9f570fb2ef991423e3f6e843c078ce10d6c58b5c42`。正文已覆盖本地记事/照片、相机权限、独立删除、完整加密备份、当前密码下限与安全提示、免费通知/高级 Live Activity 和 StoreKit 边界，不再保留旧 JSON、12 字符或“提醒增强”描述。`site` submodule 只保留正式 URL 跳转，三条跳转测试与 0 漏洞依赖审计通过，不再维护第二套正文。
 
