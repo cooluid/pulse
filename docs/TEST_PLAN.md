@@ -1,8 +1,8 @@
 # Pulse 1.1 测试与验收计划
 
-文档版本：2.2
+文档版本：2.3
 状态：Canonical Acceptance Plan
-更新时间：2026-08-17
+更新时间：2026-08-18
 
 ## 1. 证据边界
 
@@ -39,6 +39,8 @@
 - History 可打开“仅签到 / 签到+影像 / 仅影像”详情；两种删除确认独立。
 - 静野、纸页手记、晴昼均可查看和编辑记事；纸页手记签到前输入可原子保存，签到后可再编辑；Widget 先签到后仍可补写；三主题都保留照片、月历、漏签和统计。
 - Settings 显示媒体空间、完整加密备份与照片数量恢复确认；高阶权益购买和 Widget 构图选择使用各自独立页面。
+- Settings 使用“反馈与建议 / 帮助中心 / 隐私政策”三个明确入口，不保留旧“产品支持”混合入口。反馈验证问题/建议分类、空内容、2000/2001 字、换行与 Emoji、诊断快照逐项可见/关闭后完全移除、邮件未配置、取消、保存草稿、进入系统发送队列和失败。诊断可含逻辑日、今日布尔状态与数量规模，但不得包含主承诺正文、签到时间/历史明细、记事正文、媒体内容、备份、口令或设备 ID。
+- 可选截图覆盖选择、取消、替换、移除、损坏、40 MiB 输入上限、2048 px 缩放、8 MiB 输出上限、方向、透明图黑底合成和来源元数据移除；App 只能接触用户选中的单张图片，邮件只能附加处理后 JPEG。
 - English / 简体中文、深浅色、最大可自动化字号、Reduce Motion 下结构稳定。
 - 既有提醒、StoreKit、Widget 样式、App/Widget 同日竞争和清除流程无回归。
 
@@ -68,6 +70,8 @@ git diff --check
 同时确认：
 
 - App / Widget 版本、deployment target、App Group、Data Protection 和 Privacy manifest 一致；
+- `PulseSupportContract` 是 App 内支持邮箱、帮助/隐私 URL、反馈长度和版本展示的唯一来源；生产源码不得保留 `PulseExternalLinks`、第二支持邮箱、隐藏反馈上传或第三方反馈 SDK。公开隐私正文必须说明用户主动邮件与可选技术信息；App Store Connect 隐私答案按最终行为复核；
+- App Store Connect 按支持邮件的实际行为复核 Customer Support / Other User Content、Photos or Videos、Other Diagnostic Data 与 Product Interaction；不得因提交频率低或用户主动就自动继续回答“未收集”。用途只允许 App Functionality / Customer Support，不跟踪；是否与用户关联按发件地址与实际留存方式保守回答。
 - Debug App 必须显示“一日一印 Dev”并使用 `co.fanr.pulse.dev`、Debug Widget 使用 `co.fanr.pulse.dev.widgets`、Debug App Group 使用 `group.co.fanr.pulse.dev`、URL Scheme 使用 `pulse-dev`；Debug 不加载生产 `InfoPlist.xcstrings`，防止本地化名称重新覆盖 Dev 标识。Release 继续且只使用对应生产身份。Debug 灵动岛测试台源码与 Settings 入口必须由 `#if DEBUG` 关闭，Release 产物不得包含 `ReminderActivityDebugView` 或“灵动岛测试台”；
 - `NSCameraUsageDescription` 简中/英文均存在；
 - 生产源码没有 schema v1、archive v1 decoder、旧 Repository、旧 FileDocument、绝对媒体路径或第二个媒体目录；
@@ -103,6 +107,7 @@ iPad 需覆盖无后置能力差异、横竖屏、分屏和文件导入/导出�
 - History 的相机标记与签到状态可同时辨认；仅影像不能被误读为完成。
 - 简中/英文、iPhone/iPad、深浅、提高对比度、降低透明度、最大 Dynamic Type、VoiceOver、Switch Control、Reduce Motion 分别验收。
 - 相机、保存、重拍、删除、恢复的焦点顺序与提示可理解；触觉和动效不作为唯一反馈。
+- 反馈页在 iPhone/iPad、简中/英文、最大 Dynamic Type 与 VoiceOver 下保持正文编辑、分类、截图选择/预览/移除、诊断明细和发送动作可达；真机 Mail 已配置/未配置分别取证，系统返回 `.sent` 只表述为“已交给邮件”，不声称送达。
 
 ## 7. 既有系统能力回归
 

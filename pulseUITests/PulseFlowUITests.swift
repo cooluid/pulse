@@ -476,7 +476,7 @@ final class PulseFlowUITests: XCTestCase {
         ).pngData()
     }
 
-    func testSettingsExposesPrivacyAndSupportLinks() throws {
+    func testSettingsExposesFormalFeedbackHelpAndPrivacyFlow() throws {
         configureApp()
         launchAndConfirmDefaultCommitment()
 
@@ -484,13 +484,54 @@ final class PulseFlowUITests: XCTestCase {
         XCTAssertTrue(settingsButton.waitForExistence(timeout: 5))
         settingsButton.tap()
 
-        let privacyLink = app.descendants(matching: .any)["settings.privacy_policy.link"]
-        for _ in 0..<4 where !privacyLink.exists {
+        let feedbackLink = app.buttons["settings.feedback.link"]
+        for _ in 0..<8 where !feedbackLink.isHittable {
             app.swipeUp()
         }
 
+        XCTAssertTrue(feedbackLink.waitForExistence(timeout: 3))
+        XCTAssertTrue(feedbackLink.isHittable)
+        XCTAssertTrue(app.descendants(matching: .any)["settings.help-center.link"].exists)
+        let privacyLink = app.descendants(matching: .any)["settings.privacy_policy.link"]
         XCTAssertTrue(privacyLink.waitForExistence(timeout: 3))
-        XCTAssertTrue(app.descendants(matching: .any)["settings.support.link"].exists)
+
+        feedbackLink.tap()
+        XCTAssertTrue(app.navigationBars["反馈与建议"].waitForExistence(timeout: 3))
+
+        let editor = app.textViews["feedback.message.editor"]
+        XCTAssertTrue(editor.waitForExistence(timeout: 3))
+        let sendButton = app.buttons["feedback.send.button"]
+        XCTAssertTrue(sendButton.waitForExistence(timeout: 3))
+        XCTAssertFalse(sendButton.isEnabled)
+
+        editor.tap()
+        editor.typeText("希望月历切换月份时保留当前的查看模式。")
+        XCTAssertTrue(sendButton.isEnabled)
+        let keyboardDone = app.buttons["feedback.keyboard.done"]
+        XCTAssertTrue(keyboardDone.waitForExistence(timeout: 3))
+        keyboardDone.tap()
+        XCTAssertFalse(app.keyboards.firstMatch.exists)
+
+        let screenshotChooser = app.buttons["feedback.screenshot.choose"]
+        let diagnosticsPreview = app.descendants(matching: .any)[
+            "feedback.diagnostics.preview"
+        ]
+        for _ in 0..<8 where !diagnosticsPreview.exists {
+            app.swipeUp()
+        }
+        XCTAssertTrue(screenshotChooser.waitForExistence(timeout: 3))
+        XCTAssertTrue(diagnosticsPreview.waitForExistence(timeout: 3))
+        app.swipeUp()
+        app.swipeUp()
+
+        let attachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
+        attachment.name = "Formal feedback composer"
+        attachment.lifetime = .keepAlways
+        add(attachment)
+
+        sendButton.tap()
+        XCTAssertTrue(app.alerts["邮件尚未配置"].waitForExistence(timeout: 3))
+        XCTAssertTrue(app.buttons["复制邮箱"].exists)
     }
 
     func testResetConfirmationIsPresentedFromTheResetRow() throws {

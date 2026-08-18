@@ -1145,4 +1145,9 @@ extension View {
     func pulseSecondaryNavigation(isEnabled: Bool = true) -> some View {
         modifier(PulseSecondaryNavigationModifier(isEnabled: isEnabled))
     }
+
+    func pulseFormRows(for theme: PulseVisualTheme) -> some View {
+        listRowBackground(PulseDesign.appSurface(for: theme))
+            .listRowSeparatorTint(PulseDesign.appDivider(for: theme))
+    }
 }

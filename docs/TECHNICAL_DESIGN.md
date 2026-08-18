@@ -1,8 +1,8 @@
 # Pulse 1.1 技术设计
 
-文档版本：3.1
+文档版本：3.2
 状态：Canonical Implemented Contract
-更新时间：2026-08-17
+更新时间：2026-08-18
 
 ## 1. 基线
 
@@ -66,10 +66,22 @@ AppModel 同时建立 `recordsByDay` 与 `mediaByDay`。照片不参与 CheckInS
 
 提醒、语言与 Widget 共享事实沿用正式合同。App Group UserDefaults 只允许 `interface.language`；Home Screen 构图由 WidgetKit 逐实例配置持有，不存在全局 `widget.style`。`mediaInvitationEnabled` 是 App 本机设置，不进入共享事实或备份。
 
-## 8. 视觉与可访问性
+## 8. 帮助与反馈
+
+`PulseSupportContract` 是 App 内支持邮箱、帮助/隐私 URL、反馈最大长度与版本展示的唯一来源；旧 `PulseExternalLinks` 已删除。`PulseFeedbackDraft` 统一规范换行、裁剪首尾空白、拒绝空内容、超过 2000 个 Swift `Character` 和不支持的控制字符；页面不得静默截断。
+
+`FeedbackView` 只建立用户主动填写的邮件草稿。可选 `PulseFeedbackDiagnostics` 从当前只读 AppModel 快照生成，并在发送前逐行展示 App/Bundle、系统与设备型号标识、界面、运行状态、逻辑日/时区、今日是否签到、记录/记事/媒体数量与占用、提醒权限/通道、权益和可用存储；不包含主承诺正文、签到时间/历史明细、记事正文、媒体内容、备份、口令、广告标识符或设备 ID。关闭后主题与正文也不得残留任何诊断字段。
+
+可选截图只通过系统 `PhotosPicker` 读取用户选择的一张图片，不请求整个相册权限。`PulseFeedbackScreenshotProcessor` 在独立任务中把输入限制为 40 MiB，重新渲染到黑色不透明底、最长边 2048 px、JPEG 0.90，并拒绝超过 8 MiB 的输出；重新编码移除来源元数据。页面显示真实缩略图、附件大小与移除动作，邮件只附加处理后的不可变 Data。
+
+只有 `MFMailComposeViewController.canSendMail()` 成立才呈现系统编辑器；取消、保存草稿、进入系统发送队列和失败分别处理，不能把“已交给 Mail”写成已经送达。设备未配置 Mail 时明确说明并只允许复制同一权威支持邮箱，不建立第二提交后端。
+
+公开隐私和支持正文只由 `/Users/fanr/Documents/work/coco-web` 持有；`site` submodule 继续只做正式 URL 跳转。反馈能力合入候选时必须同步权威隐私正文，但部署是独立发布门禁。
+
+## 9. 视觉与可访问性
 
 影像与记事作为内容层进入 App；不另造第二套签到事实。Today 保留签到主动作；History 保留月历、漏签和统计。三套界面主题共享记事查看/编辑与照片能力，只重画构图。操作使用系统 Button/确认、44pt 命中、Dynamic Type、VoiceOver、Reduce Motion 等价。外观以实现与人工截图为准。
 
-## 9. 证据边界
+## 10. 证据边界
 
 Build/test/analyze 只能证明工程候选；Simulator 不能证明真实相机、文件保护、系统相册权限面板、Widget/Live Activity 系统表面和真机性能。发布结论必须分别记录自动化、模拟器界面、真机、人工视觉、TestFlight/StoreKit 和签名分发证据。

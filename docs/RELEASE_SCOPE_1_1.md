@@ -1,8 +1,8 @@
 # 一日一印（Pulse）1.1 发布范围合同
 
-文档版本：2.0  
-状态：Canonical Release Contract  
-更新时间：2026-08-12
+文档版本：2.1
+状态：Canonical Release Contract
+更新时间：2026-08-18
 
 ## 1. 发布目标
 
@@ -24,6 +24,7 @@ Pulse 1.1 把“每天可靠签到”升级为“每天留下一个可验证事�
 - `.pulsebackup` container v2 / payload v3：项目、签到、记事与全部原图/缩略图逐条 AES-256-GCM 认证加密；不把多年影像归档整体读入内存。
 - 免费基础提醒、一次买断高阶权益、八种逐实例 Home Screen Widget 构图（待落之处免费，星环 / 叠印 / 数影 / 手札 / 静场 / 来路 / 潮痕收费）与 iOS 26 scheduled Live Activity，沿用正式权益合同。八式产品清单见 [widget-ritual-objects](./prototypes/widget-ritual-objects/)（外观可迭代）。
 - English / 简体中文、纸页手记免费默认主题、静野/晴昼付费主题、Dynamic Type、VoiceOver、Reduce Motion、iPhone/iPad 正式布局。
+- 设置中的正式“帮助与反馈”信息架构：原生反馈与建议页、独立帮助中心和隐私政策入口；用户在系统邮件编辑器中检查并主动发送，App 不建立账号、反馈数据库、第三方 SDK 或后台上报。
 
 ## 3. 收费边界
 
@@ -44,6 +45,7 @@ Pulse 1.1 把“每天可靠签到”升级为“每天留下一个可验证事�
 - 相机权限只在用户主动拍摄时请求；拒绝后签到、历史、备份仍完整可用。
 - JPEG 规范化移除来源元数据；照片文件名使用随机 UUID，不携带姓名、日期或地点。
 - 卸载会删除沙盒内数据；用户应通过独立口令的 v2 加密备份保管副本。Pulse 不保存或找回口令。
+- 用户主动发送支持邮件时，邮件正文、用户主动选择并经去元数据/限尺寸处理的一张截图，以及其选择附带的可见诊断快照会交给系统 Mail 与支持邮箱。诊断快照可以包含逻辑日、时区、今日是否签到、记录/记事/媒体数量、提醒权限/通道、权益与存储规模，但不能包含主承诺正文、签到时间或历史明细、记事正文、今日入镜媒体、备份、口令或设备 ID。公开隐私政策、App Store Connect 隐私答案和实际邮件内容必须一致。
 
 ## 6. 版本与断代
 
@@ -66,8 +68,10 @@ Pulse 1.1 把“每天可靠签到”升级为“每天留下一个可验证事�
 2. 真实 iPhone 验证相机授权、前后镜头、取消、重拍、后台/重启、低存储和照片保护；模拟器不能替代真实相机。
 3. 真实 iPad 验证布局、权限、旋转/分屏、历史详情与大字号。
 4. 清洁 TestFlight 安装验证签到/照片/Widget 一致性、导出、清除、完整恢复；1.0 内部开发数据不承担迁移门禁。
-5. 中英文、深浅色、VoiceOver、最大字号、Reduce Motion 与隐私文案验收。
+5. 中英文、深浅色、VoiceOver、最大字号、Reduce Motion、反馈邮件各状态与隐私文案验收。
 6. StoreKit/Sandbox、Widget、通知/Live Activity、签名 Archive 与 App Store 隐私申报分别通过其既有门禁。
+
+App Store Connect 隐私答案不能继续沿用纯本地版本的“未收集”结论。按当前支持邮件行为，发布候选应保守申报用于 App Functionality / Customer Support、可能通过发件地址与用户关联、且不用于跟踪的 Other User Content、Photos or Videos、Other Diagnostic Data 与 Product Interaction；最终答案必须在提交前按 Apple 当时的字段和实际 Mail 行为逐项复核。
 
 小规模内测人数由风险和招募能力决定；它用于发现使用问题，不是替代确定性工程测试的数字仪式。高级“岁月流影”是否值得收费需要真实长期素材与用户价值证据，但这不阻挡 1.1 影像基础上线。
 

@@ -22,6 +22,7 @@ struct SettingsView: View {
             storeSection.pulseFormRows(for: visualTheme)
             appearanceSection.pulseFormRows(for: visualTheme)
             dataSection.pulseFormRows(for: visualTheme)
+            helpSection.pulseFormRows(for: visualTheme)
             aboutSection.pulseFormRows(for: visualTheme)
 #if DEBUG
             developerSection.pulseFormRows(for: visualTheme)
@@ -395,20 +396,35 @@ struct SettingsView: View {
 
     private var aboutSection: some View {
         Section("settings.about.section") {
-            LabeledContent("settings.version", value: appVersion)
+            LabeledContent(
+                "settings.version",
+                value: PulseAppMetadata.current.displayVersion
+            )
             LabeledContent(
                 "settings.storage",
                 value: PulseLocalization.string("settings.storage.local", locale: locale)
             )
-            Link(destination: PulseExternalLinks.privacyPolicy) {
+        }
+    }
+
+    private var helpSection: some View {
+        Section("settings.help.section") {
+            NavigationLink {
+                FeedbackView(model: model)
+            } label: {
+                Label("settings.feedback", systemImage: "bubble.left.and.text.bubble.right")
+            }
+            .accessibilityIdentifier("settings.feedback.link")
+
+            Link(destination: PulseSupportContract.helpCenterURL) {
+                Label("settings.help_center", systemImage: "questionmark.circle")
+            }
+            .accessibilityIdentifier("settings.help-center.link")
+
+            Link(destination: PulseSupportContract.privacyPolicyURL) {
                 Label("settings.privacy_policy", systemImage: "hand.raised")
             }
             .accessibilityIdentifier("settings.privacy_policy.link")
-
-            Link(destination: PulseExternalLinks.support) {
-                Label("settings.support", systemImage: "questionmark.circle")
-            }
-            .accessibilityIdentifier("settings.support.link")
         }
     }
 
@@ -449,13 +465,6 @@ struct SettingsView: View {
         }
     }
 
-    private var appVersion: String {
-        let shortVersion = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String
-        let buildVersion = Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String
-        return [shortVersion, buildVersion.map { "(\($0))" }]
-            .compactMap { $0 }
-            .joined(separator: " ")
-    }
 }
 
 private enum BackupPassphraseMode: Identifiable {
@@ -1000,12 +1009,5 @@ private struct TimeZonePickerView: View {
     private func displayName(_ identifier: String) -> String {
         guard let timeZone = TimeZone(identifier: identifier) else { return identifier }
         return timeZone.localizedName(for: .standard, locale: locale) ?? identifier
-    }
-}
-
-private extension View {
-    func pulseFormRows(for theme: PulseVisualTheme) -> some View {
-        listRowBackground(PulseDesign.appSurface(for: theme))
-            .listRowSeparatorTint(PulseDesign.appDivider(for: theme))
     }
 }
