@@ -2296,6 +2296,24 @@
         }
       }
     },
+    "feedback.value.runtime.failed" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Failed" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "失败" } }
+      }
+    },
+    "feedback.value.runtime.loading" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Loading" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "载入中" } }
+      }
+    },
+    "feedback.value.runtime.ready" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Ready" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "就绪" } }
+      }
+    },
     "feedback.value.unavailable" : {
       "extractionState" : "stale",
       "localizations" : {

@@ -58,7 +58,7 @@
 
 验证环境：macOS 26.6、Xcode 26.4（17E192）、iPhone 16 Pro / iOS 18.6 Simulator（arm64）。
 
-- 八式 Home Screen Widget 共享渲染器与唯一“萤火日晕”Live Activity 共享渲染器已落地；锁屏圆弧端点与萤火点由同一极坐标几何计算，compact / expanded 显示 attributes 中的真实提醒时间。本轮 185 项单元/集成测试与 26 项 UI 测试全部通过；新增覆盖记事校验/编辑/清空/并发、schema marker、payload v3 必需字段、三主题能力等价和清除全部数据的完整披露。未签名 Release generic-iOS Build 与 Analyze 通过，品牌资产、JSON 和 diff 静态门禁通过。真实 Lock Screen / Dynamic Island、最大 Dynamic Type、通知到达、设备锁定 Intent 认证、记事真机输入和 StoreKit Sandbox 仍需取证。在这些证据完成前保持 **ENGINEERING CANDIDATE / INTERFACE CANDIDATE**。
+- 八式 Home Screen Widget 共享渲染器与唯一“萤火日晕”Live Activity 共享渲染器已落地；锁屏圆弧端点与萤火点由同一极坐标几何计算，compact / expanded 显示 attributes 中的真实提醒时间。2026-08-18 当前 checkout 的 191 项单元/集成测试全部通过；既有 26 项 UI 全量基线之外，本轮单独重跑了改动后的反馈流程，验证设置入口、正文校验、键盘完成、截图入口、诊断预览和 Mail 未配置状态。未签名 Release generic-iOS Build 与 Analyze 通过；权威站点 production build 与 lint 通过，但本轮隐私/支持正文尚未部署。真实 Mail 已配置发送/草稿/失败、截图选择器、VoiceOver/最大字号和 App Store Connect 隐私答案仍需真机或后台取证。在这些证据完成前保持 **ENGINEERING CANDIDATE / INTERFACE CANDIDATE**。
 - 媒体自动化覆盖独立删除/重新关联、同日替换、文件安装/读取/审计、缩略图损坏、无相册回退、v2 归档往返、随机性、错误口令、篡改、v1 拒绝、缺条目与缩略图身份不匹配。
 - 本轮有八式画廊待办/完成共 16 张原始截图及部分 ImageRenderer 附件；单卡变化预览约 5 秒（早/日/晚/完成串联），各段 ≤ 两秒。这只证明 App 内共享 Renderer 预览，仍为 **INTERFACE CANDIDATE**；不能代替真实 Widget host、系统 reload、Lock Screen kind、Clear/vibrant、Reduce Motion 或真机体验 GO。
 - 本轮未签名 Release `generic/platform=iOS` Build 与 Analyze 通过；Swift 警告按错误处理。

@@ -70,9 +70,12 @@ struct PulseFeedbackDiagnostics: Equatable, Sendable {
             systemVersion: device.systemVersion,
             deviceModelIdentifier: currentDeviceModelIdentifier(),
             interfaceLanguageIdentifier: locale.identifier,
-            appearance: model.settings.theme.rawValue,
-            visualTheme: model.resolvedVisualTheme.rawValue,
-            loadState: model.loadState.feedbackValue,
+            appearance: model.settings.theme.localizedName(locale: locale),
+            visualTheme: model.resolvedVisualTheme.localizedName(locale: locale),
+            loadState: PulseLocalization.string(
+                "feedback.value.runtime.\(model.loadState.feedbackValue)",
+                locale: locale
+            ),
             logicalDay: model.today?.storageValue ?? "unavailable",
             timeZoneIdentifier: model.habit?.timeZoneIdentifier ?? "unavailable",
             todayState: model.today == nil
