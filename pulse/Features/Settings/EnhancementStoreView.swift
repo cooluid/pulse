@@ -4,6 +4,7 @@ import SwiftUI
 struct EnhancementStoreView: View {
     @Bindable var model: PulseAppModel
 
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @Environment(\.locale) private var locale
     @Environment(\.pulseVisualTheme) private var visualTheme
 
@@ -15,9 +16,9 @@ struct EnhancementStoreView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: PulseDesign.spacing32) {
                     hero
-                    activityPreviews
-                    stylePreviews
-                    capabilityList
+                    ForEach(PulseEnhancementContract.currentCapabilities) { capability in
+                        capabilityCard(capability)
+                    }
                     restoreSection
                 }
                 .frame(maxWidth: PulseDesign.screenMaxWidth, alignment: .leading)
@@ -48,12 +49,146 @@ struct EnhancementStoreView: View {
         }
     }
 
-    private var activityPreviews: some View {
-        PulseReminderActivityStoreCard(
-            reminderDate: model.settings.reminderTime.pickerDate,
-            timeZoneIdentifier: TimeZone.gmt.identifier,
-            locale: locale
+    private func capabilityCard(_ capability: PulseEnhancementCapability) -> some View {
+        VStack(alignment: .leading, spacing: PulseDesign.spacing16) {
+            capabilityHeader(capability)
+            capabilitySpecimen(capability)
+        }
+        .frame(
+            maxWidth: .infinity,
+            minHeight: PulseDesign.storeCapabilityMinimumHeight,
+            alignment: .topLeading
         )
+        .padding(PulseDesign.spacing16)
+        .background(
+            PulseDesign.appSurface(for: visualTheme).opacity(0.82),
+            in: RoundedRectangle(
+                cornerRadius: PulseDesign.storeCapabilityCornerRadius,
+                style: .continuous
+            )
+        )
+        .accessibilityElement(children: .contain)
+        .accessibilityIdentifier("store.capability.\(capability.rawValue)")
+    }
+
+    private func capabilityHeader(_ capability: PulseEnhancementCapability) -> some View {
+        HStack(alignment: .top, spacing: PulseDesign.spacing16) {
+            Image(systemName: capability.systemImage)
+                .font(.headline.weight(.semibold))
+                .foregroundStyle(PulseDesign.appAccent(for: visualTheme))
+                .frame(
+                    width: PulseDesign.storeCapabilityIconSize,
+                    height: PulseDesign.storeCapabilityIconSize
+                )
+                .background(
+                    PulseDesign.appAccentSoft(for: visualTheme),
+                    in: Circle()
+                )
+                .accessibilityHidden(true)
+
+            VStack(alignment: .leading, spacing: PulseDesign.spacing4) {
+                Text(capability.titleKey)
+                    .font(.headline.weight(.semibold))
+                    .foregroundStyle(PulseDesign.appInk(for: visualTheme))
+                Text(capability.detailKey)
+                    .font(.footnote)
+                    .foregroundStyle(PulseDesign.appMuted(for: visualTheme))
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+    }
+
+    @ViewBuilder
+    private func capabilitySpecimen(_ capability: PulseEnhancementCapability) -> some View {
+        switch capability {
+        case .interfaceThemes:
+            themeSpecimens
+        case .advancedWidgetCompositions:
+            widgetSpecimens
+        case .scheduledLiveActivity:
+            PulseReminderActivityStoreCard(
+                reminderDate: model.settings.reminderTime.pickerDate,
+                timeZoneIdentifier: TimeZone.gmt.identifier,
+                locale: locale
+            )
+        }
+    }
+
+    private var themeSpecimens: some View {
+        Group {
+            if dynamicTypeSize.isAccessibilitySize {
+                VStack(alignment: .leading, spacing: PulseDesign.spacing12) {
+                    themeSpecimenCards
+                }
+            } else {
+                HStack(alignment: .top, spacing: PulseDesign.spacing12) {
+                    themeSpecimenCards
+                }
+            }
+        }
+        .allowsHitTesting(false)
+    }
+
+    private var themeSpecimenCards: some View {
+        ForEach(PulseVisualThemeAccessPolicy.enhancementThemes) { theme in
+            storeThemeSpecimen(theme)
+                .frame(maxWidth: .infinity)
+        }
+    }
+
+    private func storeThemeSpecimen(_ theme: PulseVisualTheme) -> some View {
+        VStack(alignment: .leading, spacing: PulseDesign.spacing8) {
+            PulseVisualThemeSpecimen(theme: theme)
+                .overlay {
+                    RoundedRectangle(
+                        cornerRadius: PulseDesign.themePreviewCornerRadius,
+                        style: .continuous
+                    )
+                    .stroke(
+                        PulseDesign.appDivider(for: theme).opacity(0.72),
+                        lineWidth: PulseDesign.thinLineWidth
+                    )
+                }
+
+            Text(theme.localizedName(locale: locale))
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(PulseDesign.appInk(for: visualTheme))
+        }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel(theme.localizedName(locale: locale))
+        .accessibilityAddTraits(.isStaticText)
+        .accessibilityIdentifier(
+            "store.capability.interfaceThemes.preview.\(theme.rawValue)"
+        )
+    }
+
+    @ViewBuilder
+    private var widgetSpecimens: some View {
+        if let snapshot = model.widgetPresentationSnapshot {
+            ScrollView(.horizontal) {
+                HStack(spacing: PulseDesign.spacing12) {
+                    ForEach(PulseWidgetStyleAccessPolicy.enhancementStyles) { style in
+                        VStack(alignment: .leading, spacing: PulseDesign.spacing8) {
+                            PulseWidgetStylePreview(
+                                style: style,
+                                snapshot: snapshot
+                            )
+                            .frame(
+                                width: PulseDesign.storePreviewWidth,
+                                height: PulseDesign.storePreviewHeight
+                            )
+                            .allowsHitTesting(false)
+
+                            Text(style.localizedName(locale: locale))
+                                .font(.caption.weight(.semibold))
+                                .foregroundStyle(PulseDesign.appInk(for: visualTheme))
+                        }
+                    }
+                }
+            }
+            .scrollIndicators(.hidden)
+        }
     }
 
     @ViewBuilder
@@ -208,101 +343,6 @@ struct EnhancementStoreView: View {
         .accessibilityIdentifier("store.hero")
     }
 
-    private var stylePreviews: some View {
-        VStack(alignment: .leading, spacing: PulseDesign.spacing12) {
-            Text("store.preview.section")
-                .font(.caption.weight(.semibold))
-                .foregroundStyle(PulseDesign.appMuted(for: visualTheme))
-
-            ScrollView(.horizontal) {
-                HStack(spacing: PulseDesign.spacing12) {
-                    ForEach(
-                        PulseWidgetStyle.allCases.filter(
-                            PulseWidgetStyleAccessPolicy.requiresEnhancement
-                        )
-                    ) { style in
-                        VStack(alignment: .leading, spacing: PulseDesign.spacing8) {
-                            if let snapshot = model.widgetPresentationSnapshot {
-                                PulseWidgetStylePreview(
-                                    style: style,
-                                    snapshot: snapshot
-                                )
-                                .frame(
-                                    width: PulseDesign.storePreviewWidth,
-                                    height: PulseDesign.storePreviewHeight
-                                )
-                            }
-
-                            Text(style.localizedName(locale: locale))
-                                .font(.caption.weight(.semibold))
-                                .foregroundStyle(PulseDesign.appInk(for: visualTheme))
-                        }
-                        .padding(PulseDesign.spacing8)
-                        .background(
-                            PulseDesign.appSurface(for: visualTheme).opacity(0.84),
-                            in: RoundedRectangle(
-                                cornerRadius: PulseDesign.widgetPreviewCornerRadius,
-                                style: .continuous
-                            )
-                        )
-                    }
-                }
-            }
-            .scrollIndicators(.hidden)
-        }
-    }
-
-    private var capabilityList: some View {
-        VStack(alignment: .leading, spacing: PulseDesign.spacing12) {
-            Text("store.capabilities.section")
-                .font(.caption.weight(.semibold))
-                .foregroundStyle(PulseDesign.appMuted(for: visualTheme))
-                .padding(.bottom, PulseDesign.spacing8)
-
-            ForEach(PulseEnhancementContract.currentCapabilities) { capability in
-                HStack(alignment: .top, spacing: PulseDesign.spacing16) {
-                    Image(systemName: capability.systemImage)
-                        .font(.headline.weight(.semibold))
-                        .foregroundStyle(PulseDesign.appAccent(for: visualTheme))
-                        .frame(
-                            width: PulseDesign.storeCapabilityIconSize,
-                            height: PulseDesign.storeCapabilityIconSize
-                        )
-                        .background(
-                            visualTheme == .sunlitDay
-                                ? PulseDesign.sunlitAccentSoft
-                                : PulseDesign.field.opacity(0.12),
-                            in: Circle()
-                        )
-                        .accessibilityHidden(true)
-
-                    VStack(alignment: .leading, spacing: PulseDesign.spacing4) {
-                        Text(capability.titleKey)
-                            .font(.headline.weight(.semibold))
-                            .foregroundStyle(PulseDesign.appInk(for: visualTheme))
-                        Text(capability.detailKey)
-                            .font(.footnote)
-                            .foregroundStyle(PulseDesign.appMuted(for: visualTheme))
-                            .fixedSize(horizontal: false, vertical: true)
-                    }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                }
-                .frame(
-                    maxWidth: .infinity,
-                    minHeight: PulseDesign.storeCapabilityMinimumHeight,
-                    alignment: .topLeading
-                )
-                .padding(PulseDesign.spacing16)
-                .background(PulseDesign.appSurface(for: visualTheme).opacity(0.82), in: RoundedRectangle(
-                    cornerRadius: PulseDesign.storeCapabilityCornerRadius,
-                    style: .continuous
-                ))
-                .accessibilityElement(children: .combine)
-                .accessibilityIdentifier("store.capability.\(capability.rawValue)")
-            }
-        }
-    }
-
     @ViewBuilder
     private var restoreSection: some View {
         if !model.featureAccess.hasEnhancement {
@@ -438,24 +478,7 @@ struct PulseReminderActivityStoreCard: View {
                 locale: locale
             )
         }
-        .padding(PulseDesign.spacing16)
-        .background(
-            PulseDesign.appSurface(for: visualTheme).opacity(0.90),
-            in: RoundedRectangle(
-                cornerRadius: PulseDesign.activityStoreCardCornerRadius,
-                style: .continuous
-            )
-        )
-        .overlay {
-            RoundedRectangle(
-                cornerRadius: PulseDesign.activityStoreCardCornerRadius,
-                style: .continuous
-            )
-            .stroke(
-                PulseDesign.appDivider(for: visualTheme).opacity(0.72),
-                lineWidth: PulseDesign.thinLineWidth
-            )
-        }
+        .allowsHitTesting(false)
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("store.activity.preview.section")
     }

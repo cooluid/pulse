@@ -80,6 +80,10 @@ enum PulseVisualTheme: String, CaseIterable, Identifiable, Sendable {
 enum PulseVisualThemeAccessPolicy {
     static let freeTheme = PulseVisualTheme.editorialJournal
 
+    static var enhancementThemes: [PulseVisualTheme] {
+        PulseVisualTheme.allCases.filter(requiresEnhancement)
+    }
+
     static func requiresEnhancement(_ theme: PulseVisualTheme) -> Bool {
         theme != freeTheme
     }

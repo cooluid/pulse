@@ -137,6 +137,12 @@ final class PulseWidgetSnapshotTests: XCTestCase {
 
         XCTAssertFalse(source.contains("Text(\"store.title\")"))
         XCTAssertFalse(source.contains("Text(\"store.hero.promise\")"))
+        XCTAssertFalse(source.contains("store.preview.section"))
+        XCTAssertFalse(source.contains("store.capabilities.section"))
+        XCTAssertTrue(source.contains("ForEach(PulseEnhancementContract.currentCapabilities)"))
+        XCTAssertTrue(source.contains("PulseVisualThemeAccessPolicy.enhancementThemes"))
+        XCTAssertNil(catalog.strings["store.preview.section"])
+        XCTAssertNil(catalog.strings["store.capabilities.section"])
     }
 
     func testReminderActivityLockScreenRendersTheSignatureHierarchy() throws {

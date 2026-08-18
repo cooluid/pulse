@@ -75,10 +75,17 @@ final class PulseWidgetStyleAccessPolicyTests: XCTestCase {
         XCTAssertFalse(PulseWidgetStyleAccessPolicy.requiresEnhancement(.place))
         XCTAssertTrue(PulseWidgetStyleAccessPolicy.requiresEnhancement(.orbit))
         XCTAssertEqual(
+            PulseWidgetStyleAccessPolicy.enhancementStyles.count,
+            7
+        )
+        XCTAssertEqual(
+            PulseWidgetStyleAccessPolicy.enhancementStyles,
             PulseWidgetStyle.allCases.filter {
                 PulseWidgetStyleAccessPolicy.requiresEnhancement($0)
-            }.count,
-            7
+            }
+        )
+        XCTAssertFalse(
+            PulseWidgetStyleAccessPolicy.enhancementStyles.contains(.place)
         )
     }
 

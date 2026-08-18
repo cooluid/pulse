@@ -92,6 +92,9 @@ final class ThemeExperienceContractTests: XCTestCase {
     func testSunlitTodayAndThemePickerUseOnlyTheFormalInteractionHierarchy() throws {
         let todaySource = try source("pulse/Features/Today/TodayView.swift")
         let settingsSource = try source("pulse/Features/Settings/SettingsView.swift")
+        let pickerSource = try source(
+            "pulse/Features/Settings/VisualThemePickerView.swift"
+        )
         let designSource = try source("pulse/Shared/PulseDesignSystem.swift")
 
         XCTAssertTrue(todaySource.contains("today.check_in_action"))
@@ -99,17 +102,53 @@ final class ThemeExperienceContractTests: XCTestCase {
         XCTAssertFalse(todaySource.contains("arrow.up.right"))
         XCTAssertFalse(todaySource.contains("sunlitAccessibilityCommitmentCue"))
 
-        XCTAssertTrue(settingsSource.contains("struct VisualThemePickerView"))
+        XCTAssertTrue(pickerSource.contains("struct VisualThemePickerView"))
         XCTAssertTrue(settingsSource.contains("settings.visual-theme.link"))
-        XCTAssertTrue(settingsSource.contains("model.requestVisualTheme(theme)"))
-        XCTAssertFalse(settingsSource.contains("model.settings.visualTheme = theme"))
-        XCTAssertFalse(settingsSource.contains("visualThemeChoiceLayout"))
+        XCTAssertTrue(pickerSource.contains("model.requestVisualTheme(theme)"))
+        XCTAssertFalse(pickerSource.contains("model.settings.visualTheme = theme"))
+        XCTAssertFalse(pickerSource.contains("visualThemeChoiceLayout"))
+        XCTAssertFalse(pickerSource.contains("themePreviewMark"))
         XCTAssertFalse(designSource.contains("themePreviewEditorialPrimaryRuleWidth"))
         XCTAssertFalse(designSource.contains("sunlitAmbientNodeOpacity"))
     }
 
+    func testEnhancementStorePresentsCatalogDrivenSpecimens() throws {
+        let storeSource = try source("pulse/Features/Settings/EnhancementStoreView.swift")
+        let pickerSource = try source(
+            "pulse/Features/Settings/VisualThemePickerView.swift"
+        )
+        let specimenSource = try source("pulse/Shared/PulseVisualThemeSpecimen.swift")
+        let settingsSource = try source("pulse/Features/Settings/SettingsView.swift")
+
+        XCTAssertTrue(
+            storeSource.contains("ForEach(PulseEnhancementContract.currentCapabilities)")
+        )
+        XCTAssertTrue(storeSource.contains("PulseVisualThemeAccessPolicy.enhancementThemes"))
+        XCTAssertTrue(storeSource.contains("PulseWidgetStyleAccessPolicy.enhancementStyles"))
+        XCTAssertTrue(storeSource.contains("PulseVisualThemeSpecimen("))
+        XCTAssertTrue(storeSource.contains("store.capability.interfaceThemes.preview."))
+        XCTAssertTrue(storeSource.contains(".allowsHitTesting(false)"))
+        XCTAssertFalse(storeSource.contains("requestVisualTheme"))
+        XCTAssertFalse(storeSource.contains("store.preview.section"))
+        XCTAssertFalse(storeSource.contains("store.capabilities.section"))
+        XCTAssertFalse(storeSource.contains("themePreviewMark"))
+
+        XCTAssertTrue(pickerSource.contains("PulseVisualThemeSpecimen("))
+        XCTAssertTrue(specimenSource.contains("struct PulseVisualThemeSpecimen"))
+        XCTAssertFalse(settingsSource.contains("struct VisualThemePickerView"))
+        XCTAssertFalse(settingsSource.contains("themePreviewMark"))
+        XCTAssertFalse(specimenSource.contains("requestVisualTheme"))
+    }
+
     func testJournalPageIsTheOnlyFreeInterfaceTheme() {
         XCTAssertEqual(PulseVisualThemeAccessPolicy.freeTheme, .editorialJournal)
+        XCTAssertEqual(
+            PulseVisualThemeAccessPolicy.enhancementThemes,
+            [.quietField, .sunlitDay]
+        )
+        XCTAssertFalse(
+            PulseVisualThemeAccessPolicy.enhancementThemes.contains(.editorialJournal)
+        )
         XCTAssertFalse(
             PulseVisualThemeAccessPolicy.requiresEnhancement(.editorialJournal)
         )

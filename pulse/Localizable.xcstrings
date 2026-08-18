@@ -4529,23 +4529,6 @@
         }
       }
     },
-    "store.capabilities.section" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Included with Advanced Features"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "高级功能包括"
-          }
-        }
-      }
-    },
     "store.capability.live_activity.detail" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -4763,23 +4746,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "等待批准"
-          }
-        }
-      }
-    },
-    "store.preview.section" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Widget Styles"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "小组件样式"
           }
         }
       }

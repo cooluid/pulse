@@ -18,6 +18,10 @@ enum PulseWidgetStyle: String, CaseIterable, Codable, Identifiable, Sendable {
 enum PulseWidgetStyleAccessPolicy {
     static let freeStyle = PulseWidgetStyle.place
 
+    static var enhancementStyles: [PulseWidgetStyle] {
+        PulseWidgetStyle.allCases.filter(requiresEnhancement)
+    }
+
     static func requiresEnhancement(_ style: PulseWidgetStyle) -> Bool {
         style != freeStyle
     }

@@ -26,7 +26,7 @@
 ## 产品与收费边界
 
 - 永久免费：签到、拍摄、查看、重拍、删除、关闭邀请、原图单独导出、照片空间查看，以及包含全部原图/缩略图的加密备份与完整恢复。
-- 当前一次买断高阶权益授予类型化能力目录中的高级 Widget 构图和支持设备上的 scheduled Live Activity，不把用户自己的照片或数据主权重新收费。未来能力只有实际发布后才加入同一目录和权益页。
+- 当前一次买断高阶权益授予类型化能力目录中的静野/晴昼界面主题、高级 Widget 构图和支持设备上的 scheduled Live Activity，不把用户自己的照片或数据主权重新收费。未来能力只有实际发布后才加入同一目录和权益页。
 - 未来可收费：本地智能对齐、长区间岁月流影、年度影片、4K、跨阶段比较与高级档案排版；权益结束不能锁住、删除或降质既有原图和已导出成果。
 - 不做考勤证明、补签照片、位置水印、年龄/颜值/身份/健康推断，也不静默上传面貌照片。
 
@@ -38,7 +38,7 @@
 - 删除签到会同时删除其记事并在确认中明确后果；当天照片仍作为独立事实保留。三个无引用的手记探索 HTML 已删除，有效结论只存在于正式合同、代码和 String Catalog。
 - 品牌颜色由 `design/brand-tokens.json` 生成；主导航为状态式悬浮底栏等现行结构。全 App 外观可持续改画，以代码与人工截图为准。
 - 今日主动作支持单击签到与 0.45 秒长按“签到并拍照”；长按先权威签到再请求相机，VoiceOver 提供独立动作。待签到进入时最多一次有限呼吸；权威提交后才播放成功反馈；Reduce Motion 使用静态等价。
-- 高阶权益在独立权益页；价格只读 StoreKit，已交付能力只读 `PulseEnhancementContract.currentCapabilities`。Widget 画廊收费卡以标题行“锁 + 高级功能”徽标作为唯一购买页入口，不再保留卡片底部的重复查看按钮。末项权益与恢复购买须能完整滚到购买条上方。
+- 高阶权益在独立权益页；价格只读 StoreKit，已交付能力只读 `PulseEnhancementContract.currentCapabilities`，并按该目录顺序展示不可交互同源标本（静野/晴昼、收费小组件样式、萤火日晕）。Widget 画廊收费卡以标题行“锁 + 高级功能”徽标作为唯一购买页入口，不再保留卡片底部的重复查看按钮。末项权益与恢复购买须能完整滚到购买条上方。
 - Home Screen 八式产品枚举与共享渲染源 `PulseWidgetHomeRenderer` 已落地（待落之处免费，其余收费）。事实边界：纸层不映射历史、画廊预览不写权威 store、未解锁明确拒绝。
 - scheduled Live Activity 已 clean-break 为 standard 生命周期与唯一“萤火日晕”共享构图；Activity attributes 明确携带逻辑日、提醒日期、时区与语言，不再包含或持久化样式。Lock Screen / Dynamic Island 直接调用同一个幂等签到 Intent。App、Home Screen Widget 或 Live Activity 签到后都会结束当天 Activity 并重建提醒计划。ActivityKit 只接受部分计划时保留已接受日期，以免费本地通知补齐其余 60 日窗口且同日不双发。
 - Debug 构建保留真实 ActivityKit 工程测试台，支持唯一正式构图的立即请求、30 秒 scheduled 请求、视觉状态切换、权威签到和结束全部活动；它使用独立 App、Widget、App Group 与 URL Scheme 身份，不读写正式数据，且整页与设置入口均由编译条件排除于 Release。

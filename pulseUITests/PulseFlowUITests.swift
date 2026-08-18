@@ -281,6 +281,32 @@ final class PulseFlowUITests: XCTestCase {
             app.descendants(matching: .any)["store.capability.interfaceThemes"]
                 .waitForExistence(timeout: 3)
         )
+        XCTAssertTrue(
+            app.descendants(matching: .any)[
+                "store.capability.interfaceThemes.preview.quietField"
+            ].exists
+        )
+        XCTAssertTrue(
+            app.descendants(matching: .any)[
+                "store.capability.interfaceThemes.preview.sunlitDay"
+            ].exists
+        )
+        XCTAssertEqual(
+            app.buttons.matching(
+                identifier: "store.capability.interfaceThemes.preview.quietField"
+            ).count,
+            0
+        )
+        XCTAssertEqual(
+            app.buttons.matching(
+                identifier: "store.capability.interfaceThemes.preview.sunlitDay"
+            ).count,
+            0
+        )
+        XCTAssertTrue(
+            app.descendants(matching: .any)["store.theme.editorial-journal"].exists,
+            "Theme specimens must not apply a paid theme before purchase."
+        )
 
         let storeAttachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
         storeAttachment.name = "Advanced benefits before purchase"
@@ -291,7 +317,7 @@ final class PulseFlowUITests: XCTestCase {
             "store.capability.scheduledLiveActivity"
         ]
         let restoreButton = app.buttons["store.restore"]
-        for _ in 0..<4 where !restoreButton.isHittable
+        for _ in 0..<8 where !restoreButton.isHittable
             || restoreButton.frame.maxY > purchaseButton.frame.minY {
             app.swipeUp()
         }
@@ -758,6 +784,15 @@ final class PulseFlowUITests: XCTestCase {
         XCTAssertTrue(
             app.descendants(matching: .any)["store.capability.interfaceThemes"]
                 .waitForExistence(timeout: 3)
+        )
+        XCTAssertTrue(
+            app.descendants(matching: .any)[
+                "store.capability.interfaceThemes.preview.sunlitDay"
+            ].exists
+        )
+        XCTAssertTrue(
+            app.descendants(matching: .any)["store.theme.editorial-journal"].exists,
+            "Opening Advanced Features from a locked theme must not enable that theme."
         )
         purchaseButton.tap()
         XCTAssertTrue(
