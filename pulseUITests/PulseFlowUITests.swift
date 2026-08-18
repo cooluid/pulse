@@ -36,6 +36,36 @@ final class PulseFlowUITests: XCTestCase {
         option.tap()
     }
 
+    private func openVisualThemePicker() {
+        let link = app.buttons["settings.visual-theme.link"]
+        for _ in 0..<6 where !link.isHittable {
+            app.swipeUp()
+        }
+        XCTAssertTrue(link.waitForExistence(timeout: 3))
+        XCTAssertTrue(link.isHittable)
+        link.tap()
+        XCTAssertTrue(
+            app.descendants(matching: .any)["settings.visual-theme.selector"]
+                .waitForExistence(timeout: 3)
+        )
+    }
+
+    private func assertVisualThemeCardsStayWithinWindow() {
+        let identifiers = [
+            "settings.visual-theme.editorialJournal",
+            "settings.visual-theme.quietField",
+            "settings.visual-theme.sunlitDay",
+        ]
+        let cards = identifiers.map { app.buttons[$0] }
+        for card in cards {
+            XCTAssertTrue(card.waitForExistence(timeout: 3))
+            XCTAssertGreaterThanOrEqual(card.frame.minX, app.frame.minX)
+            XCTAssertLessThanOrEqual(card.frame.maxX, app.frame.maxX)
+        }
+        XCTAssertLessThan(cards[0].frame.maxY, cards[1].frame.minY)
+        XCTAssertLessThan(cards[1].frame.maxY, cards[2].frame.minY)
+    }
+
     func testCheckInPersistsAcrossRelaunchAndAppearsInHistory() throws {
         configureApp()
         launchAndConfirmDefaultCommitment()
@@ -658,6 +688,8 @@ final class PulseFlowUITests: XCTestCase {
         let settingsButton = app.buttons["settings.navigation.open.today"]
         XCTAssertTrue(settingsButton.waitForExistence(timeout: 3))
         settingsButton.tap()
+        openVisualThemePicker()
+        assertVisualThemeCardsStayWithinWindow()
 
         let quietThemeChoice = app.buttons["settings.visual-theme.quietField"]
         let sunlitThemeChoice = app.buttons["settings.visual-theme.sunlitDay"]
@@ -670,6 +702,7 @@ final class PulseFlowUITests: XCTestCase {
         settingsAttachment.lifetime = .keepAlways
         add(settingsAttachment)
 
+        app.buttons["navigation.back"].tap()
         app.buttons["navigation.back"].tap()
         let sunlitTheme = app.descendants(matching: .any)["today.theme.sunlit-day"]
         XCTAssertTrue(sunlitTheme.waitForExistence(timeout: 3))
@@ -771,9 +804,11 @@ final class PulseFlowUITests: XCTestCase {
         launchAndConfirmDefaultCommitment()
 
         app.buttons["settings.navigation.open.today"].tap()
+        openVisualThemePicker()
         let journalTheme = app.buttons["settings.visual-theme.editorialJournal"]
         XCTAssertTrue(journalTheme.waitForExistence(timeout: 3))
         journalTheme.tap()
+        app.buttons["navigation.back"].tap()
         app.buttons["navigation.back"].tap()
 
         XCTAssertTrue(
@@ -870,10 +905,12 @@ final class PulseFlowUITests: XCTestCase {
         launchAndConfirmDefaultCommitment()
 
         app.buttons["settings.navigation.open.today"].tap()
+        openVisualThemePicker()
 
         let sunlitThemeChoice = app.buttons["settings.visual-theme.sunlitDay"]
         XCTAssertTrue(sunlitThemeChoice.waitForExistence(timeout: 3))
         sunlitThemeChoice.tap()
+        app.buttons["navigation.back"].tap()
 
         let appearancePicker = app.descendants(matching: .any)["settings.theme.picker"]
         for _ in 0..<4 where !appearancePicker.exists {
@@ -926,12 +963,15 @@ final class PulseFlowUITests: XCTestCase {
         launchAndConfirmDefaultCommitment()
 
         app.buttons["settings.navigation.open.today"].tap()
+        openVisualThemePicker()
         let sunlitThemeChoice = app.buttons["settings.visual-theme.sunlitDay"]
-        for _ in 0..<6 where !sunlitThemeChoice.exists {
+        for _ in 0..<8 where !sunlitThemeChoice.isHittable {
             app.swipeUp()
         }
         XCTAssertTrue(sunlitThemeChoice.waitForExistence(timeout: 3))
+        XCTAssertTrue(sunlitThemeChoice.isHittable)
         sunlitThemeChoice.tap()
+        app.buttons["navigation.back"].tap()
         app.buttons["navigation.back"].tap()
 
         XCTAssertTrue(

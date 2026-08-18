@@ -59,11 +59,7 @@ struct JournalNoteSummary: View {
     private var noteBackground: some View {
         switch visualTheme {
         case .sunlitDay:
-            RoundedRectangle(
-                cornerRadius: PulseDesign.sunlitCardCornerRadius,
-                style: .continuous
-            )
-            .fill(PulseDesign.sunlitSurface)
+            PulseSunlitSurfaceFill()
         case .editorialJournal:
             Rectangle().fill(
                 PulseDesign.surface.opacity(PulseDesign.editorialJournalSurfaceOpacity)
@@ -141,9 +137,9 @@ struct JournalDraftComposer: View {
         .padding(visualTheme == .editorialJournal ? 0 : PulseDesign.spacing16)
         .frame(
             maxWidth: .infinity,
-            minHeight: visualTheme == .editorialJournal
-                ? nil
-                : PulseDesign.journalDraftMinimumHeight,
+            minHeight: visualTheme == .quietField
+                ? PulseDesign.journalDraftMinimumHeight
+                : nil,
             alignment: .leading
         )
         .background(draftBackground)
@@ -202,11 +198,7 @@ struct JournalDraftComposer: View {
         case .editorialJournal:
             Color.clear
         case .sunlitDay:
-            RoundedRectangle(
-                cornerRadius: PulseDesign.sunlitCardCornerRadius,
-                style: .continuous
-            )
-            .fill(PulseDesign.sunlitSurface)
+            PulseSunlitSurfaceFill()
         }
     }
 
@@ -289,20 +281,7 @@ struct JournalHistorySection: View {
                     .padding(PulseDesign.spacing24)
                     .frame(maxWidth: .infinity)
                     .background {
-                        ZStack {
-                            RoundedRectangle(
-                                cornerRadius: PulseDesign.sunlitCardCornerRadius,
-                                style: .continuous
-                            )
-                            .fill(PulseDesign.sunlitSurface)
-
-                            PulseSunlitMapTexture(opacity: 0.18)
-                                .padding(PulseDesign.spacing16)
-                        }
-                        .clipShape(RoundedRectangle(
-                            cornerRadius: PulseDesign.sunlitCardCornerRadius,
-                            style: .continuous
-                        ))
+                        PulseSunlitSurfaceFill()
                     }
                     .accessibilityIdentifier("history.journal.empty")
                 } else {
@@ -436,11 +415,7 @@ private struct JournalHistoryEntryRow: View {
             PulseQuietSpeechBubbleShape()
                 .fill(PulseDesign.quietSurface.opacity(PulseDesign.journalHistorySurfaceOpacity))
         } else if visualTheme == .sunlitDay {
-            RoundedRectangle(
-                cornerRadius: PulseDesign.spacing20,
-                style: .continuous
-            )
-            .fill(PulseDesign.sunlitSurface)
+            PulseSunlitSurfaceFill(cornerRadius: PulseDesign.spacing20)
         }
     }
 

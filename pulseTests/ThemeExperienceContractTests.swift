@@ -77,12 +77,31 @@ final class ThemeExperienceContractTests: XCTestCase {
         }
 
         XCTAssertFalse(navigationSource.contains("sunlitBarSurfaceOpacity"))
-        XCTAssertTrue(navigationSource.contains(": PulseDesign.sunlitSurface"))
+        XCTAssertTrue(navigationSource.contains(".fill(PulseDesign.sunlitSurface)"))
         XCTAssertFalse(navigationSource.contains("sunlitNavigationCornerRadius"))
+        XCTAssertFalse(navigationSource.contains("sunlitBarHeight"))
+        XCTAssertTrue(navigationSource.contains("sunlitNavigationGlyph"))
         XCTAssertFalse(historySource.contains("sunlitHistoryLedger"))
         XCTAssertFalse(tokenSource.contains("archiveCanvas"))
         XCTAssertFalse(designSource.contains("PulseArchive"))
         XCTAssertFalse(designSource.contains("tideArchive"))
+    }
+
+    func testSunlitTodayAndThemePickerUseOnlyTheFormalInteractionHierarchy() throws {
+        let todaySource = try source("pulse/Features/Today/TodayView.swift")
+        let settingsSource = try source("pulse/Features/Settings/SettingsView.swift")
+        let designSource = try source("pulse/Shared/PulseDesignSystem.swift")
+
+        XCTAssertTrue(todaySource.contains("today.check_in_action"))
+        XCTAssertFalse(todaySource.contains("arrow.down.right"))
+        XCTAssertFalse(todaySource.contains("arrow.up.right"))
+        XCTAssertFalse(todaySource.contains("sunlitAccessibilityCommitmentCue"))
+
+        XCTAssertTrue(settingsSource.contains("struct VisualThemePickerView"))
+        XCTAssertTrue(settingsSource.contains("settings.visual-theme.link"))
+        XCTAssertFalse(settingsSource.contains("visualThemeChoiceLayout"))
+        XCTAssertFalse(designSource.contains("themePreviewEditorialPrimaryRuleWidth"))
+        XCTAssertFalse(designSource.contains("sunlitAmbientNodeOpacity"))
     }
 
     func testQuietFieldUsesOneSemanticPaletteAndOneCompanionLanguage() throws {
@@ -130,10 +149,19 @@ final class ThemeExperienceContractTests: XCTestCase {
         let standardStart = try XCTUnwrap(
             historySource.range(of: "private var standardHistoryContent: some View")
         )
+        let sunlitStart = try XCTUnwrap(
+            historySource.range(of: "private var sunlitHistoryContent: some View")
+        )
+        let headingStart = try XCTUnwrap(
+            historySource.range(of: "private var quietHistoryHeading: some View")
+        )
         let quietContent = historySource[quietStart.lowerBound..<standardStart.lowerBound]
+        let sunlitContent = historySource[sunlitStart.lowerBound..<headingStart.lowerBound]
 
         XCTAssertFalse(quietContent.contains(".background("))
         XCTAssertFalse(quietContent.contains(".overlay"))
+        XCTAssertFalse(sunlitContent.contains(".background {"))
+        XCTAssertFalse(sunlitContent.contains("PulseSunlitMapTexture"))
         XCTAssertFalse(historySource.contains(".id(contentMode)"))
         XCTAssertFalse(historySource.contains(".transition(.opacity)"))
         XCTAssertTrue(

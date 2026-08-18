@@ -4,7 +4,6 @@ import PulseCore
 
 struct SettingsView: View {
     @Bindable var model: PulseAppModel
-    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @Environment(\.openURL) private var openURL
     @Environment(\.locale) private var locale
     @Environment(\.pulseVisualTheme) private var visualTheme
@@ -90,26 +89,22 @@ struct SettingsView: View {
 
     private var appearanceSection: some View {
         Section("settings.personalization.section") {
-            VStack(alignment: .leading, spacing: PulseDesign.spacing12) {
-                Text("settings.visual_theme")
-                    .font(.footnote.weight(.medium))
-                    .foregroundStyle(PulseDesign.appMuted(for: visualTheme))
+            NavigationLink {
+                VisualThemePickerView(model: model)
+            } label: {
+                LabeledContent("settings.visual_theme") {
+                    HStack(spacing: PulseDesign.spacing8) {
+                        Circle()
+                            .fill(PulseDesign.appAccent(for: visualTheme))
+                            .frame(width: PulseDesign.spacing12, height: PulseDesign.spacing12)
+                            .accessibilityHidden(true)
 
-                visualThemeChoiceLayout {
-                    ForEach(PulseVisualTheme.allCases) { theme in
-                        PulseVisualThemeChoice(
-                            theme: theme,
-                            isSelected: model.settings.visualTheme == theme,
-                            locale: locale
-                        ) {
-                            model.settings.visualTheme = theme
-                        }
+                        Text(model.settings.visualTheme.localizedName(locale: locale))
+                            .foregroundStyle(PulseDesign.appMuted(for: visualTheme))
                     }
                 }
             }
-            .accessibilityElement(children: .contain)
-            .accessibilityIdentifier("settings.visual-theme.selector")
-            .id("settings.visual-theme.\(locale.identifier)")
+            .accessibilityIdentifier("settings.visual-theme.link")
 
             Picker(
                 "settings.theme",
@@ -149,17 +144,6 @@ struct SettingsView: View {
             }
             .accessibilityIdentifier("settings.widget.gallery.link")
         }
-    }
-
-    private var visualThemeChoiceLayout: AnyLayout {
-        if dynamicTypeSize.isAccessibilitySize {
-            return AnyLayout(
-                VStackLayout(alignment: .leading, spacing: PulseDesign.spacing12)
-            )
-        }
-        return AnyLayout(
-            HStackLayout(alignment: .top, spacing: PulseDesign.spacing12)
-        )
     }
 
     private var dailySection: some View {
@@ -678,6 +662,51 @@ private struct BackupPassphraseView: View {
     }
 }
 
+private struct VisualThemePickerView: View {
+    @Bindable var model: PulseAppModel
+
+    @Environment(\.locale) private var locale
+    @Environment(\.pulseVisualTheme) private var visualTheme
+
+    var body: some View {
+        ScrollView {
+            LazyVStack(spacing: PulseDesign.spacing16) {
+                ForEach(PulseVisualTheme.allCases) { theme in
+                    PulseVisualThemeChoice(
+                        theme: theme,
+                        isSelected: model.settings.visualTheme == theme,
+                        locale: locale
+                    ) {
+                        model.settings.visualTheme = theme
+                    }
+                }
+            }
+            .padding(.horizontal, PulseDesign.horizontalPadding)
+            .padding(.top, PulseDesign.spacing16)
+            .padding(.bottom, PulseDesign.spacing32)
+            .frame(maxWidth: PulseDesign.screenMaxWidth)
+            .frame(maxWidth: .infinity)
+        }
+        .scrollIndicators(.hidden)
+        .background(PulseScreenBackground())
+        .foregroundStyle(PulseDesign.appInk(for: visualTheme))
+        .tint(PulseDesign.appAccent(for: visualTheme))
+        .navigationTitle(PulseLocalization.string("settings.visual_theme", locale: locale))
+        .navigationBarTitleDisplayMode(.inline)
+        .pulseSecondaryNavigation()
+        .overlay(alignment: .topLeading) {
+            Color.clear
+                .frame(width: 1, height: 1)
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel(
+                    PulseLocalization.string("settings.visual_theme", locale: locale)
+                )
+                .accessibilityIdentifier("settings.visual-theme.selector")
+        }
+        .id("settings.visual-theme.\(locale.identifier)")
+    }
+}
+
 private struct PulseVisualThemeChoice: View {
     let theme: PulseVisualTheme
     let isSelected: Bool
@@ -687,7 +716,7 @@ private struct PulseVisualThemeChoice: View {
 
     var body: some View {
         Button(action: action) {
-            VStack(alignment: .leading, spacing: PulseDesign.spacing8) {
+            VStack(alignment: .leading, spacing: PulseDesign.spacing12) {
                 ZStack {
                     PulseScreenBackground()
                     PulseFieldBackground(presentation: .today, allowsMotion: false)
@@ -718,22 +747,63 @@ private struct PulseVisualThemeChoice: View {
                 }
                 .environment(\.pulseVisualTheme, theme)
 
-                HStack(spacing: PulseDesign.spacing8) {
-                    Text(theme.localizedName(locale: locale))
-                        .font(.caption.weight(.semibold))
-                        .foregroundStyle(PulseDesign.appInk(for: currentTheme))
-                        .lineLimit(2)
+                HStack(alignment: .top, spacing: PulseDesign.spacing12) {
+                    VStack(alignment: .leading, spacing: PulseDesign.spacing4) {
+                        Text(theme.localizedName(locale: locale))
+                            .font(.headline.weight(.bold))
+                            .foregroundStyle(PulseDesign.appInk(for: currentTheme))
+
+                        Text(theme.localizedDescription(locale: locale))
+                            .font(.footnote)
+                            .foregroundStyle(PulseDesign.appMuted(for: currentTheme))
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
 
                     Spacer(minLength: 0)
 
-                    if isSelected {
-                        Image(systemName: "checkmark.circle.fill")
-                            .foregroundStyle(selectionColor)
-                            .accessibilityHidden(true)
+                    ZStack {
+                        Circle()
+                            .fill(isSelected ? selectionColor : .clear)
+                        Circle()
+                            .stroke(
+                                isSelected
+                                    ? selectionColor
+                                    : PulseDesign.appDivider(for: currentTheme),
+                                lineWidth: PulseDesign.emphasisLineWidth
+                            )
+                        if isSelected {
+                            Image(systemName: "checkmark")
+                                .font(.caption.weight(.black))
+                                .foregroundStyle(PulseDesign.appAccentForeground(for: theme))
+                        }
                     }
+                    .frame(width: PulseDesign.spacing24, height: PulseDesign.spacing24)
+                    .accessibilityHidden(true)
                 }
             }
+            .padding(PulseDesign.spacing12)
             .frame(maxWidth: .infinity, alignment: .leading)
+            .background(
+                PulseDesign.appSurface(for: currentTheme),
+                in: RoundedRectangle(
+                    cornerRadius: PulseDesign.spacing20,
+                    style: .continuous
+                )
+            )
+            .overlay {
+                RoundedRectangle(
+                    cornerRadius: PulseDesign.spacing20,
+                    style: .continuous
+                )
+                .stroke(
+                    selectionColor.opacity(
+                        isSelected ? 1 : PulseDesign.themePreviewUnselectedBorderOpacity
+                    ),
+                    lineWidth: isSelected
+                        ? PulseDesign.emphasisLineWidth
+                        : PulseDesign.thinLineWidth
+                )
+            }
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
@@ -746,7 +816,7 @@ private struct PulseVisualThemeChoice: View {
     private var selectionColor: Color {
         switch theme {
         case .sunlitDay:
-            PulseDesign.sunlitChrome
+            PulseDesign.sunlitAccent
         case .editorialJournal:
             PulseDesign.editorialAccent
         case .quietField:
@@ -758,31 +828,30 @@ private struct PulseVisualThemeChoice: View {
     private var themePreviewMark: some View {
         switch theme {
         case .editorialJournal:
-            HStack(spacing: PulseDesign.spacing8) {
+            VStack(alignment: .leading, spacing: PulseDesign.spacing8) {
+                Text("Aa")
+                    .font(.system(.title2, design: .serif, weight: .bold))
+                    .foregroundStyle(PulseDesign.ink)
+
                 VStack(alignment: .leading, spacing: PulseDesign.spacing4) {
                     Rectangle()
                         .fill(PulseDesign.ink)
-                        .frame(
-                            width: PulseDesign.themePreviewEditorialPrimaryRuleWidth,
-                            height: PulseDesign.emphasisLineWidth
-                        )
+                        .frame(maxWidth: .infinity)
+                        .frame(height: PulseDesign.emphasisLineWidth)
                     Rectangle()
                         .fill(PulseDesign.secondary)
-                        .frame(
-                            width: PulseDesign.themePreviewEditorialSecondaryRuleWidth,
-                            height: PulseDesign.thinLineWidth
-                        )
+                        .frame(maxWidth: .infinity)
+                        .frame(height: PulseDesign.thinLineWidth)
+                        .padding(.trailing, PulseDesign.spacing32)
                     Rectangle()
                         .fill(PulseDesign.editorialAccent)
-                        .frame(
-                            width: PulseDesign.themePreviewEditorialAccentRuleWidth,
-                            height: PulseDesign.thinLineWidth
-                        )
+                        .frame(maxWidth: .infinity)
+                        .frame(height: PulseDesign.thinLineWidth)
+                        .padding(.trailing, PulseDesign.spacing32 + PulseDesign.spacing24)
                 }
-
-                Image(systemName: "checkmark.circle")
-                    .foregroundStyle(PulseDesign.editorialAccent)
             }
+            .padding(PulseDesign.spacing16)
+            .frame(maxWidth: .infinity, alignment: .leading)
             .accessibilityHidden(true)
         case .quietField:
             HStack(spacing: PulseDesign.spacing12) {
@@ -791,44 +860,44 @@ private struct PulseVisualThemeChoice: View {
                 VStack(alignment: .leading, spacing: PulseDesign.spacing4) {
                     Capsule()
                         .fill(PulseDesign.quietChrome)
-                        .frame(width: 48, height: PulseDesign.spacing8)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: PulseDesign.spacing8)
+                        .padding(.trailing, PulseDesign.spacing32)
                     Capsule()
                         .fill(PulseDesign.quietGreen)
-                        .frame(width: 64, height: PulseDesign.spacing8)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: PulseDesign.spacing8)
                 }
-
-                Image(systemName: "sparkle")
-                    .font(.system(size: PulseDesign.spacing16, weight: .black))
-                    .foregroundStyle(PulseDesign.quietPink)
             }
+            .padding(PulseDesign.spacing16)
+            .frame(maxWidth: .infinity)
             .accessibilityHidden(true)
         case .sunlitDay:
-            HStack(spacing: PulseDesign.spacing8) {
-                RoundedRectangle(cornerRadius: PulseDesign.spacing8, style: .continuous)
-                    .fill(PulseDesign.sunlitSurface)
-                    .frame(width: 56, height: 40)
-                    .overlay(alignment: .topLeading) {
-                        Capsule()
-                            .fill(PulseDesign.sunlitChrome)
-                            .frame(width: 28, height: PulseDesign.spacing4)
-                            .padding(PulseDesign.spacing8)
-                    }
-                    .overlay {
-                        RoundedRectangle(
-                            cornerRadius: PulseDesign.spacing8,
-                            style: .continuous
-                        )
-                        .stroke(PulseDesign.sunlitChrome, lineWidth: PulseDesign.thinLineWidth)
-                    }
+            VStack(alignment: .leading, spacing: PulseDesign.spacing12) {
+                HStack(alignment: .firstTextBaseline) {
+                    Image(systemName: "sun.max.fill")
+                        .font(.headline.weight(.bold))
+                    Spacer(minLength: 0)
+                    Circle()
+                        .fill(PulseDesign.sunlitSurface)
+                        .frame(width: PulseDesign.spacing16, height: PulseDesign.spacing16)
+                }
 
-                PulseBrandMark(size: PulseDesign.minimumHitTarget)
-
-                Image(systemName: "arrow.up.right")
-                    .font(.system(size: PulseDesign.spacing12, weight: .black))
-                    .foregroundStyle(PulseDesign.sunlitOnAccent)
-                    .frame(width: PulseDesign.spacing24, height: PulseDesign.spacing24)
-                    .background(PulseDesign.sunlitAccent, in: Circle())
+                RoundedRectangle(
+                    cornerRadius: PulseDesign.spacing12,
+                    style: .continuous
+                )
+                .fill(PulseDesign.sunlitChrome)
+                .frame(height: PulseDesign.spacing32)
+                .overlay(alignment: .trailing) {
+                    Circle()
+                        .fill(PulseDesign.sunlitAccent)
+                        .padding(PulseDesign.spacing4)
+                }
             }
+            .padding(PulseDesign.spacing16)
+            .foregroundStyle(PulseDesign.sunlitInk)
+            .frame(maxWidth: .infinity)
             .accessibilityHidden(true)
         }
     }

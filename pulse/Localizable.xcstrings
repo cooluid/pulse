@@ -1,6 +1,9 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "Aa" : {
+
+    },
     "accessibility.date_status_format" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -2867,6 +2870,23 @@
         }
       }
     },
+    "settings.visual_theme.editorial_journal.detail" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Editorial type, ruled structure, and a focused writing rhythm."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "编辑排版、纸面分隔与专注书写节奏。"
+          }
+        }
+      }
+    },
     "settings.visual_theme.quiet_field" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -2884,6 +2904,23 @@
         }
       }
     },
+    "settings.visual_theme.quiet_field.detail" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Warm paper, a gentle field companion, and rounded forms."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "暖纸底色、静野伙伴与柔和圆润的构图。"
+          }
+        }
+      }
+    },
     "settings.visual_theme.sunlit_day" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -2897,6 +2934,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "晴昼"
+          }
+        }
+      }
+    },
+    "settings.visual_theme.sunlit_day.detail" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Layered daylight, crisp contrast, and one decisive action."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "分层日光、清晰对比与唯一突出的主动作。"
           }
         }
       }
@@ -3804,6 +3858,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "今日待签到"
+          }
+        }
+      }
+    },
+    "today.check_in_action" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Complete Today’s Check-in"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "完成今日签到"
           }
         }
       }

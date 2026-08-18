@@ -29,11 +29,9 @@ final class ImprintRitualContractTests: XCTestCase {
         XCTAssertGreaterThan(PulseDesign.editorialAmbientBookmarkOpacity, 0)
         XCTAssertLessThanOrEqual(PulseDesign.editorialAmbientBookmarkOpacity, 0.3)
         XCTAssertGreaterThan(PulseDesign.sunlitAmbientBandOpacity, 0)
-        XCTAssertLessThanOrEqual(PulseDesign.sunlitAmbientBandOpacity, 0.3)
+        XCTAssertLessThanOrEqual(PulseDesign.sunlitAmbientBandOpacity, 0.7)
         XCTAssertGreaterThan(PulseDesign.sunlitAmbientRouteOpacity, 0)
-        XCTAssertLessThanOrEqual(PulseDesign.sunlitAmbientRouteOpacity, 0.4)
-        XCTAssertGreaterThan(PulseDesign.sunlitAmbientNodeOpacity, 0)
-        XCTAssertLessThanOrEqual(PulseDesign.sunlitAmbientNodeOpacity, 1)
+        XCTAssertLessThanOrEqual(PulseDesign.sunlitAmbientRouteOpacity, 0.2)
         XCTAssertGreaterThan(PulseDesign.sunlitAmbientTravel, 0)
         XCTAssertLessThanOrEqual(PulseDesign.sunlitAmbientTravel, 8)
     }
@@ -53,7 +51,9 @@ final class ImprintRitualContractTests: XCTestCase {
 
         XCTAssertTrue(designSource.contains("case .sunlitDay:\n            sunlitField"))
         XCTAssertTrue(designSource.contains("PulseSunlitFieldCanvas("))
-        XCTAssertTrue(todaySource.contains("isCompleted: model.todayRecord != nil"))
+        XCTAssertTrue(todaySource.contains("let isChecked = model.todayRecord != nil"))
+        XCTAssertFalse(designSource.contains("routeNodes"))
+        XCTAssertFalse(todaySource.contains("isCompleted: model.todayRecord != nil"))
     }
 
     func testAmbientFieldMotionHonorsLifecycleAndReduceMotion() throws {

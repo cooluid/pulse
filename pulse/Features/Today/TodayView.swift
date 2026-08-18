@@ -33,10 +33,7 @@ struct TodayView: View {
     var body: some View {
         ZStack {
             PulseScreenBackground()
-            PulseFieldBackground(
-                presentation: .today,
-                isCompleted: model.todayRecord != nil
-            )
+            PulseFieldBackground(presentation: .today)
 
             VStack(spacing: 0) {
                 PulseAppHeader(source: .today)
@@ -233,13 +230,9 @@ struct TodayView: View {
             VStack(spacing: 0) {
                 sunlitDayHero
                 checkInControl
-                    .padding(.top, PulseDesign.spacing20)
-                if dynamicTypeSize.isAccessibilitySize {
-                    sunlitAccessibilityCommitmentCue
-                        .padding(.top, PulseDesign.spacing20)
-                }
+                    .padding(.top, PulseDesign.spacing8)
                 todayJournalSection
-                    .padding(.top, PulseDesign.spacing24)
+                    .padding(.top, PulseDesign.spacing20)
                 weekRail
                     .padding(.top, PulseDesign.spacing24)
                 sunlitRhythmStatus
@@ -307,7 +300,7 @@ struct TodayView: View {
     }
 
     private var sunlitDayHero: some View {
-        VStack(alignment: .leading, spacing: PulseDesign.spacing16) {
+        VStack(alignment: .leading, spacing: PulseDesign.spacing12) {
             if let today = model.today, let timeZone = model.timeZone {
                 let weekday = PulseFormatting.fullWeekday(
                     today,
@@ -344,7 +337,7 @@ struct TodayView: View {
                     .accessibilityElement(children: .contain)
                     .accessibilityIdentifier("today.hero.kicker")
                 } else {
-                    HStack(alignment: .bottom, spacing: PulseDesign.spacing20) {
+                    HStack(alignment: .lastTextBaseline, spacing: PulseDesign.spacing20) {
                         Text(today.day, format: .number)
                             .font(
                                 .system(
@@ -374,61 +367,33 @@ struct TodayView: View {
                             .foregroundStyle(PulseDesign.sunlitMuted)
                         }
                         .foregroundStyle(PulseDesign.sunlitInk)
-                        .padding(.bottom, PulseDesign.spacing12)
+                        .padding(.bottom, PulseDesign.spacing8)
                         .accessibilityElement(children: .combine)
                         .accessibilityIdentifier("today.hero.kicker")
 
                         Spacer(minLength: 0)
-
-                        Image(systemName: "arrow.down.right")
-                            .font(.title2.weight(.black))
-                            .foregroundStyle(PulseDesign.sunlitOnAccent)
-                            .frame(
-                                width: PulseDesign.minimumHitTarget,
-                                height: PulseDesign.minimumHitTarget
-                            )
-                            .background(PulseDesign.sunlitAccent, in: RoundedRectangle(
-                                cornerRadius: PulseDesign.spacing12,
-                                style: .continuous
-                            ))
-                            .overlay {
-                                RoundedRectangle(
-                                    cornerRadius: PulseDesign.spacing12,
-                                    style: .continuous
-                                )
-                                .stroke(
-                                    PulseDesign.sunlitOnAccent,
-                                    lineWidth: PulseDesign.emphasisLineWidth
-                                )
-                            }
-                            .accessibilityHidden(true)
                     }
                 }
 
-                if let commitmentName = model.habit?.name,
-                   !dynamicTypeSize.isAccessibilitySize {
+                if let commitmentName = model.habit?.name {
                     VStack(alignment: .leading, spacing: PulseDesign.spacing4) {
                         Text("today.commitment.cue")
-                            .font(.caption.bold())
-                            .foregroundStyle(PulseDesign.sunlitChromeForeground)
-                            .padding(.horizontal, PulseDesign.spacing12)
-                            .frame(minHeight: PulseDesign.spacing24)
-                            .background(PulseDesign.sunlitChrome, in: Capsule())
+                            .font(.caption.weight(.semibold))
+                            .foregroundStyle(PulseDesign.sunlitMuted)
 
                         Text(commitmentName)
                             .font(
                                 .system(
-                                    .title2,
+                                    dynamicTypeSize.isAccessibilitySize ? .title3 : .headline,
                                     design: .rounded,
-                                    weight: .black
+                                    weight: .bold
                                 )
                             )
                             .foregroundStyle(PulseDesign.sunlitInk)
-                            .lineLimit(2)
+                            .lineLimit(dynamicTypeSize.isAccessibilitySize ? 3 : 2)
                             .multilineTextAlignment(.leading)
                             .fixedSize(horizontal: false, vertical: true)
                     }
-                    .padding(PulseDesign.spacing20)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .accessibilityElement(children: .ignore)
                     .accessibilityLabel(
@@ -450,37 +415,6 @@ struct TodayView: View {
         .padding(.bottom, PulseDesign.spacing8)
         .frame(minHeight: PulseDesign.sunlitTodayHeroMinimumHeight, alignment: .top)
         .accessibilityElement(children: .contain)
-    }
-
-    @ViewBuilder
-    private var sunlitAccessibilityCommitmentCue: some View {
-        if let commitmentName = model.habit?.name {
-            VStack(alignment: .leading, spacing: PulseDesign.spacing8) {
-                Text("today.commitment.cue")
-                    .font(.caption.bold())
-                    .foregroundStyle(PulseDesign.sunlitMuted)
-
-                Text(commitmentName)
-                    .font(.system(.headline, design: .rounded, weight: .black))
-                    .foregroundStyle(PulseDesign.sunlitInk)
-                    .lineLimit(3)
-                    .multilineTextAlignment(.leading)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
-            .padding(PulseDesign.spacing16)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .accessibilityElement(children: .ignore)
-            .accessibilityLabel(
-                String(
-                    format: PulseLocalization.string(
-                        "today.commitment.accessibility_format",
-                        locale: locale
-                    ),
-                    commitmentName
-                )
-            )
-            .accessibilityIdentifier("today.commitment.name")
-        }
     }
 
     private func dayNumber(_ today: LogicalDay) -> some View {
@@ -762,7 +696,9 @@ struct TodayView: View {
                 )
             }
             .overlay(alignment: .bottomTrailing) {
-                if isChecked, !dynamicTypeSize.isAccessibilitySize {
+                if isChecked,
+                   !dynamicTypeSize.isAccessibilitySize,
+                   visualTheme != .sunlitDay {
                     mediaCompanionAction
                         .offset(
                             x: PulseDesign.mediaCompanionOffsetX,
@@ -782,11 +718,19 @@ struct TodayView: View {
                 value: model.isSaving
             )
 
-            if isChecked, dynamicTypeSize.isAccessibilitySize {
+            if isChecked, visualTheme == .sunlitDay {
+                HStack {
+                    Spacer(minLength: 0)
+                    mediaCompanionAction
+                }
+                .frame(maxWidth: PulseDesign.sunlitCheckInMaximumWidth)
+            } else if isChecked, dynamicTypeSize.isAccessibilitySize {
                 mediaCompanionAction
             }
 
-            if !isChecked, !dynamicTypeSize.isAccessibilitySize {
+            if !isChecked,
+               !dynamicTypeSize.isAccessibilitySize,
+               visualTheme != .sunlitDay {
                 Text("today.check_in_hint_visible")
                     .font(.system(.caption, design: .rounded, weight: .semibold))
                     .foregroundStyle(
@@ -917,39 +861,37 @@ struct TodayView: View {
             .contentShape(PulseQuietCompanionShape())
         } else if visualTheme == .sunlitDay {
             HStack(spacing: PulseDesign.spacing16) {
-                ZStack {
-                    RoundedRectangle(
-                        cornerRadius: PulseDesign.spacing16,
-                        style: .continuous
-                    )
-                    .fill(PulseDesign.sunlitAccent)
-
-                    PulseImprintGlyph(
-                        isSolid: model.todayRecord != nil,
-                        foreground: PulseDesign.sunlitOnAccent
-                    )
-                    .scaleEffect(imprintGlyphScale)
-                }
-                .frame(width: 56, height: 56)
-
                 sunlitCheckInStatusContent
 
                 Spacer(minLength: 0)
 
-                Image(systemName: isChecked ? "checkmark" : "arrow.up.right")
-                    .font(.headline.weight(.black))
-                    .foregroundStyle(PulseDesign.sunlitOnAccent)
+                ZStack {
+                    Circle()
+                        .fill(PulseDesign.sunlitAccent)
+
+                    if isChecked {
+                        Image(systemName: "checkmark")
+                            .font(.headline.weight(.black))
+                            .foregroundStyle(PulseDesign.sunlitOnAccent)
+                    } else {
+                        PulseImprintGlyph(
+                            isSolid: false,
+                            foreground: PulseDesign.sunlitOnAccent
+                        )
+                        .padding(PulseDesign.spacing12)
+                        .scaleEffect(imprintGlyphScale)
+                    }
+                }
                     .frame(
-                        width: PulseDesign.minimumHitTarget,
-                        height: PulseDesign.minimumHitTarget
+                        width: PulseDesign.sunlitCheckInGlyphDiameter,
+                        height: PulseDesign.sunlitCheckInGlyphDiameter
                     )
-                    .background(PulseDesign.sunlitAccent, in: Circle())
                     .accessibilityHidden(true)
             }
-            .padding(.horizontal, PulseDesign.spacing16)
+            .padding(.horizontal, PulseDesign.spacing20)
             .frame(
-                width: PulseDesign.sunlitCheckInWidth,
-                height: PulseDesign.sunlitCheckInHeight
+                maxWidth: PulseDesign.sunlitCheckInMaximumWidth,
+                minHeight: PulseDesign.sunlitCheckInMinimumHeight
             )
             .background(
                 fill,
@@ -968,8 +910,8 @@ struct TodayView: View {
                     lineWidth: PulseDesign.emphasisLineWidth
                 )
                 .frame(
-                    width: PulseDesign.sunlitCheckInWidth,
-                    height: PulseDesign.sunlitCheckInHeight
+                    maxWidth: PulseDesign.sunlitCheckInMaximumWidth,
+                    minHeight: PulseDesign.sunlitCheckInMinimumHeight
                 )
                 .scaleEffect(
                     completionRippleExpanded
@@ -1073,16 +1015,16 @@ struct TodayView: View {
         if imprintRitualPhase == .saving, model.isSaving && showsSavingIndicator {
             ProgressView()
                 .controlSize(.large)
-                .tint(PulseDesign.sunlitInk)
+                .tint(PulseDesign.sunlitChromeForeground)
         } else {
             VStack(alignment: .leading, spacing: PulseDesign.spacing4) {
-                Text("tab.today")
+                Text(model.todayRecord == nil ? "today.check_in_hint_visible" : "tab.today")
                     .font(.caption.bold())
                     .foregroundStyle(PulseDesign.sunlitChromeForeground.opacity(0.66))
 
                 Text(
                     completedCheckInText
-                        ?? PulseLocalization.string("today.check_in", locale: locale)
+                        ?? PulseLocalization.string("today.check_in_action", locale: locale)
                 )
                 .font(.system(.headline, design: .rounded, weight: .black))
                 .foregroundStyle(PulseDesign.sunlitChromeForeground)
@@ -1208,7 +1150,8 @@ struct TodayView: View {
             JournalDraftComposer(
                 text: $draftJournalNote,
                 isFocused: $isJournalFocused,
-                isDisabled: model.isSaving
+                isDisabled: model.isSaving,
+                showsHeader: visualTheme != .sunlitDay
             )
         }
     }

@@ -148,36 +148,38 @@ struct HistoryView: View {
     }
 
     private var sunlitHistoryContent: some View {
-        VStack(spacing: 0) {
-            sunlitMonthHero
-            sunlitStatisticsBand
-            historyModePicker
-                .padding(.top, PulseDesign.spacing16)
-            Group {
-                switch contentMode {
-                case .calendar:
-                    animatedCalendar
-                        .padding(.horizontal, PulseDesign.spacing12)
-                        .padding(.bottom, PulseDesign.spacing16)
-                        .background {
-                            ZStack {
-                                RoundedRectangle(
-                                    cornerRadius: PulseDesign.sunlitCardCornerRadius,
-                                    style: .continuous
-                                )
-                                .fill(PulseDesign.sunlitSurface)
-
-                                PulseSunlitMapTexture(opacity: 0.20)
-                                    .padding(PulseDesign.spacing16)
-                            }
-                            .clipShape(RoundedRectangle(
-                                cornerRadius: PulseDesign.sunlitCardCornerRadius,
-                                style: .continuous
-                            ))
-                        }
-                case .journal:
-                    JournalHistorySection(model: model, selectedDay: $selectedDay)
+        ZStack(alignment: .topTrailing) {
+            VStack(spacing: 0) {
+                sunlitMonthHero
+                sunlitStatisticsBand
+                    .padding(.top, PulseDesign.spacing12)
+                historyModePicker
+                    .padding(.top, PulseDesign.spacing16)
+                Group {
+                    switch contentMode {
+                    case .calendar:
+                        animatedCalendar
+                    case .journal:
+                        JournalHistorySection(model: model, selectedDay: $selectedDay)
+                    }
                 }
+            }
+
+            if let month = selectedMonth {
+                Text(String(format: "%02d", month.month))
+                    .font(
+                        .system(
+                            size: PulseDesign.sunlitWatermarkSize,
+                            weight: .black,
+                            design: .rounded
+                        )
+                    )
+                    .foregroundStyle(
+                        PulseDesign.sunlitInk.opacity(PulseDesign.sunlitWatermarkOpacity)
+                    )
+                    .offset(x: PulseDesign.sunlitWatermarkOffsetX, y: 8)
+                    .allowsHitTesting(false)
+                    .accessibilityHidden(true)
             }
         }
         .padding(.top, PulseDesign.spacing8)
@@ -303,11 +305,13 @@ struct HistoryView: View {
         .padding(PulseDesign.historyModePickerInset)
         .frame(height: PulseDesign.historyModePickerHeight)
         .background {
-            RoundedRectangle(
-                cornerRadius: PulseDesign.historyModePickerCornerRadius,
-                style: .continuous
-            )
-            .fill(historyModePickerSurface)
+            if visualTheme != .sunlitDay {
+                RoundedRectangle(
+                    cornerRadius: PulseDesign.historyModePickerCornerRadius,
+                    style: .continuous
+                )
+                .fill(historyModePickerSurface)
+            }
         }
         .overlay {
             RoundedRectangle(
@@ -362,6 +366,12 @@ struct HistoryView: View {
                             id: "history.mode.selection",
                             in: contentModeNamespace
                         )
+                    } else if visualTheme == .sunlitDay {
+                        RoundedRectangle(
+                            cornerRadius: PulseDesign.historyModePickerItemCornerRadius,
+                            style: .continuous
+                        )
+                        .fill(PulseDesign.sunlitSurface)
                     }
                 }
                 .contentShape(Rectangle())
@@ -454,14 +464,6 @@ struct HistoryView: View {
                 Text(PulseFormatting.monthOnly(month, timeZone: timeZone, locale: locale))
                     .font(.system(.largeTitle, design: .rounded, weight: .black))
                     .foregroundStyle(PulseDesign.sunlitInk)
-
-                Text(String(format: "%02d", month.month))
-                    .font(.system(.caption, design: .rounded, weight: .black))
-                    .monospacedDigit()
-                    .foregroundStyle(PulseDesign.sunlitInk)
-                    .padding(.horizontal, PulseDesign.spacing12)
-                    .frame(minHeight: PulseDesign.spacing24)
-                    .background(PulseDesign.sunlitSurface, in: Capsule())
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -516,10 +518,12 @@ struct HistoryView: View {
                 )
                 .background(
                     PulseDesign.sunlitSurface,
-                    in: RoundedRectangle(
-                        cornerRadius: PulseDesign.historyModePickerCornerRadius,
-                        style: .continuous
-                    )
+                    in: Circle()
+                )
+                .shadow(
+                    color: PulseDesign.shadow.opacity(PulseDesign.sunlitSurfaceShadowOpacity),
+                    radius: PulseDesign.sunlitSurfaceShadowRadius / 2,
+                    y: PulseDesign.sunlitSurfaceShadowY / 2
                 )
         }
         .buttonStyle(.plain)
@@ -851,13 +855,18 @@ private struct SunlitStatisticTile: View {
         .padding(.horizontal, PulseDesign.spacing8)
         .padding(.vertical, PulseDesign.spacing12)
         .frame(maxWidth: .infinity, minHeight: 78)
-        .background(
-            fill,
-            in: RoundedRectangle(
+        .background {
+            RoundedRectangle(
                 cornerRadius: PulseDesign.spacing20,
                 style: .continuous
             )
-        )
+            .fill(fill)
+            .shadow(
+                color: PulseDesign.shadow.opacity(PulseDesign.sunlitSurfaceShadowOpacity),
+                radius: PulseDesign.sunlitSurfaceShadowRadius,
+                y: PulseDesign.sunlitSurfaceShadowY
+            )
+        }
         .accessibilityElement(children: .combine)
         .accessibilityIdentifier(accessibilityIdentifier)
     }
@@ -991,7 +1000,7 @@ private struct CalendarDayCell: View {
                             )
                         )
                 }
-                .foregroundStyle(PulseDesign.sunlitOnAccent)
+                .foregroundStyle(PulseDesign.sunlitAccent)
             } else if item.status == .missed {
                 VStack(spacing: 0) {
                     Text(item.day.day, format: .number)
@@ -1058,7 +1067,11 @@ private struct CalendarDayCell: View {
                             weight: .bold
                         )
                     )
-                    .foregroundStyle(PulseDesign.sunlitChrome)
+                    .foregroundStyle(
+                        item.status == .checked
+                            ? PulseDesign.sunlitAccent
+                            : PulseDesign.sunlitChrome
+                    )
                     .padding(PulseDesign.spacing4)
                     .accessibilityHidden(true)
             }
@@ -1185,11 +1198,11 @@ private struct CalendarDayCell: View {
     private var sunlitCellFill: Color {
         switch item.status {
         case .checked:
-            PulseDesign.sunlitAccent
+            PulseDesign.sunlitChrome
         case .todayPending:
-            PulseDesign.sunlitAccentSoft.opacity(PulseDesign.sunlitHistoryTodayFillOpacity)
+            PulseDesign.sunlitSurface
         case .missed:
-            PulseDesign.sunlitInk.opacity(PulseDesign.sunlitHistoryMissedFillOpacity)
+            PulseDesign.sunlitSurface.opacity(0.62)
         case .future, .beforeHabit:
             .clear
         }

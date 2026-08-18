@@ -94,10 +94,10 @@ enum PulseDesign {
     static let brandMarkCornerRadius: CGFloat = 8
 
     static let todayHeroMinimumHeight: CGFloat = 270
-    static let sunlitTodayHeroMinimumHeight: CGFloat = 248
+    static let sunlitTodayHeroMinimumHeight: CGFloat = 208
     static let dayNumberBaseSize: CGFloat = 104
-    static let sunlitDayNumberBaseSize: CGFloat = 112
-    static let sunlitDayNumberTracking: CGFloat = -6
+    static let sunlitDayNumberBaseSize: CGFloat = 96
+    static let sunlitDayNumberTracking: CGFloat = -5
     static let dayNumberAccessibilityMaximumSize: CGFloat = 144
     static let todayCommitmentMaximumWidth: CGFloat = 360
     static let checkInHeroSpacing: CGFloat = spacing12
@@ -105,8 +105,9 @@ enum PulseDesign {
     static let weekRailWidth: CGFloat = 244
     static let weekRailDotDiameter: CGFloat = 13
     static let checkInDiameter: CGFloat = 152
-    static let sunlitCheckInWidth: CGFloat = 324
-    static let sunlitCheckInHeight: CGFloat = 88
+    static let sunlitCheckInMaximumWidth: CGFloat = 360
+    static let sunlitCheckInMinimumHeight: CGFloat = 82
+    static let sunlitCheckInGlyphDiameter: CGFloat = 48
     static let sunlitCardCornerRadius: CGFloat = 30
     static let sunlitWeekMarkSize: CGFloat = spacing20
     static let sunlitWeekMarkCornerRadius: CGFloat = 3
@@ -114,7 +115,13 @@ enum PulseDesign {
     static let sunlitHistoryMonthTracking: CGFloat = -2
     static let sunlitAccentRuleWidth: CGFloat = 44
     static let sunlitHistoryStatisticDividerHeight: CGFloat = 30
-    static let sunlitCalendarDayCornerRadius: CGFloat = 6
+    static let sunlitCalendarDayCornerRadius: CGFloat = 12
+    static let sunlitWatermarkSize: CGFloat = 168
+    static let sunlitWatermarkOpacity = 0.07
+    static let sunlitWatermarkOffsetX: CGFloat = 28
+    static let sunlitSurfaceShadowOpacity = 0.10
+    static let sunlitSurfaceShadowRadius: CGFloat = 20
+    static let sunlitSurfaceShadowY: CGFloat = 8
     static let editorialCalendarDayCornerRadius: CGFloat = 4
     static let editorialCalendarCheckedOpacity = 0.14
     static let checkInInnerHalo: CGFloat = 18
@@ -125,13 +132,18 @@ enum PulseDesign {
 
     static let primaryNavigationMaxWidth: CGFloat = 440
     static let primaryNavigationHeight: CGFloat = 72
-    static let sunlitBarHeight: CGFloat = 68
     static let primaryNavigationCornerRadius: CGFloat = 24
     static let primaryNavigationItemCornerRadius: CGFloat = 18
     static let primaryNavigationGap: CGFloat = spacing8
     static let primaryNavigationPadding: CGFloat = spacing8
     static let primaryNavigationGlyph: CGFloat = 30
     static let primaryNavigationHorizontalInset: CGFloat = spacing16
+    static let sunlitNavigationGlyph: CGFloat = 52
+    static let sunlitNavigationGlyphAccessibilityMaximum: CGFloat = 64
+    static let sunlitNavigationClusterGap: CGFloat = spacing24
+    static let sunlitNavigationShadowOpacity = 0.08
+    static let sunlitNavigationShadowRadius: CGFloat = 12
+    static let sunlitNavigationShadowY: CGFloat = 4
     static let accessibilityNavigationMinimumHeight: CGFloat = 88
     static let accessibilityNavigationGlyphMaximum: CGFloat = 48
 
@@ -164,9 +176,11 @@ enum PulseDesign {
     static let sunlitWeekInactiveStrokeOpacity = 0.34
     static let sunlitWeekInactiveForegroundOpacity = 0.78
     static let sunlitRhythmOpacity = 0.84
-    static let sunlitAmbientBandOpacity = 0.22
-    static let sunlitAmbientRouteOpacity = 0.30
-    static let sunlitAmbientNodeOpacity = 0.82
+    static let sunlitAmbientBandOpacity = 0.68
+    static let sunlitAmbientRouteOpacity = 0.16
+    static let sunlitTodayHeroFieldHeightRatio = 0.43
+    static let sunlitStandardHeroFieldHeightRatio = 0.24
+    static let sunlitLowerFieldHeightRatio = 0.30
     static let sunlitHistoryTodayFillOpacity = 0.22
     static let sunlitHistoryMissedFillOpacity = 0.10
     static let calendarBeforeHabitOpacity = 0.62
@@ -210,11 +224,8 @@ enum PulseDesign {
     static let widgetPreviewCornerRadius: CGFloat = 20
     static let storeHeroCornerRadius: CGFloat = 32
     static let storeCapabilityCornerRadius: CGFloat = 22
-    static let themePreviewHeight: CGFloat = 72
-    static let themePreviewCornerRadius: CGFloat = 12
-    static let themePreviewEditorialPrimaryRuleWidth: CGFloat = 36
-    static let themePreviewEditorialSecondaryRuleWidth: CGFloat = 52
-    static let themePreviewEditorialAccentRuleWidth: CGFloat = 44
+    static let themePreviewHeight: CGFloat = 116
+    static let themePreviewCornerRadius: CGFloat = 18
     static let themePreviewUnselectedBorderOpacity = 0.28
     static let journalCardCornerRadius: CGFloat = 16
     static let journalDraftMinimumHeight: CGFloat = 76
@@ -254,9 +265,7 @@ enum PulseDesign {
     static let editorialAmbientBookmarkSwayDegrees = 1.4
     static let editorialAmbientCounterPhaseOffset = 0.33
     static let sunlitAmbientTravel: CGFloat = 5
-    static let sunlitAmbientNodeDiameter: CGFloat = 11
     static let sunlitRouteLineWidth: CGFloat = 1
-    static let sunlitRiseDuration = 0.42
     static let savingAnimationDuration = 0.18
     static let savingIndicatorDelay = 0.25
     static let checkInLongPressDuration = 0.45
@@ -381,12 +390,8 @@ struct PulseScreenBackground: View {
     var body: some View {
         switch visualTheme {
         case .sunlitDay:
-            LinearGradient(
-                colors: [PulseDesign.sunlitCanvas, PulseDesign.sunlitCanvasDeep],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-            .ignoresSafeArea()
+            PulseDesign.sunlitCanvas
+                .ignoresSafeArea()
         case .editorialJournal:
             PulseDesign.background
                 .ignoresSafeArea()
@@ -404,7 +409,6 @@ enum PulseFieldPresentation {
 
 struct PulseFieldBackground: View {
     var presentation: PulseFieldPresentation = .standard
-    var isCompleted = false
     var allowsMotion = true
 
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
@@ -466,14 +470,7 @@ struct PulseFieldBackground: View {
                     size: proxy.size,
                     phase: phase,
                     counterPhase: counterPhase,
-                    presentation: presentation,
-                    isCompleted: isCompleted
-                )
-                .animation(
-                    allowsAmbientMotion
-                        ? .smooth(duration: PulseDesign.sunlitRiseDuration)
-                        : nil,
-                    value: isCompleted
+                    presentation: presentation
                 )
             }
         }
@@ -526,22 +523,39 @@ private struct PulseSunlitFieldCanvas: View {
     let phase: Double
     let counterPhase: Double
     let presentation: PulseFieldPresentation
-    let isCompleted: Bool
 
     var body: some View {
-        ZStack {
+        ZStack(alignment: .top) {
+            Rectangle()
+                .fill(PulseDesign.sunlitCanvasDeep)
+                .frame(height: size.height * heroFieldHeightRatio)
+                .frame(maxHeight: .infinity, alignment: .top)
+
             PulseSunlitSweepShape()
                 .fill(
                     PulseDesign.sunlitAccentSoft.opacity(
                         PulseDesign.sunlitAmbientBandOpacity
                     )
                 )
-                .frame(width: size.width * 1.18, height: size.height * 0.42)
-                .rotationEffect(.degrees(-11 + sin(counterPhase) * 0.8))
+                .frame(width: size.width * 1.20, height: size.height * 0.24)
+                .rotationEffect(.degrees(-8 + sin(counterPhase) * 0.6))
                 .position(
-                    x: size.width * 0.58,
-                    y: size.height * (presentation == .today ? 0.18 : 0.13)
+                    x: size.width * 0.60,
+                    y: size.height * (presentation == .today ? 0.16 : 0.10)
                         + CGFloat(sin(phase)) * PulseDesign.sunlitAmbientTravel
+                )
+
+            PulseSunlitLowerFieldShape()
+                .fill(PulseDesign.sunlitAccentSoft.opacity(0.58))
+                .frame(
+                    width: size.width * 1.12,
+                    height: size.height * PulseDesign.sunlitLowerFieldHeightRatio
+                )
+                .rotationEffect(.degrees(5 - sin(phase) * 0.5))
+                .position(
+                    x: size.width * 0.48,
+                    y: size.height * (presentation == .today ? 0.50 : 0.38)
+                        + CGFloat(cos(counterPhase)) * PulseDesign.sunlitAmbientTravel
                 )
 
             PulseSunlitRouteMap()
@@ -553,65 +567,21 @@ private struct PulseSunlitFieldCanvas: View {
                         lineJoin: .round
                     )
                 )
-                .frame(width: size.width * 1.08, height: size.height * 0.58)
-                .rotationEffect(.degrees(-5))
+                .frame(width: size.width * 1.08, height: size.height * 0.42)
+                .rotationEffect(.degrees(-3))
                 .offset(
                     x: CGFloat(cos(counterPhase)) * PulseDesign.sunlitAmbientTravel,
-                    y: size.height * (presentation == .today ? 0.34 : 0.28)
+                    y: size.height * (presentation == .today ? 0.54 : 0.43)
                         + CGFloat(sin(phase)) * PulseDesign.sunlitAmbientTravel
                 )
-
-            routeNodes
         }
         .frame(width: size.width, height: size.height)
     }
 
-    private var routeNodes: some View {
-        ZStack {
-            routeNode(x: 0.14, y: 0.62, isPrimary: false)
-            routeNode(x: 0.92, y: presentation == .today ? 0.72 : 0.67, isPrimary: true)
-            routeNode(x: 0.82, y: 0.52, isPrimary: false)
-        }
-    }
-
-    private func routeNode(x: CGFloat, y: CGFloat, isPrimary: Bool) -> some View {
-        ZStack {
-            Circle()
-                .fill(
-                    isPrimary && isCompleted
-                        ? PulseDesign.sunlitChrome
-                        : PulseDesign.sunlitSurface
-                )
-            Circle()
-                .stroke(
-                    isPrimary ? PulseDesign.sunlitChrome : PulseDesign.sunlitMapDeep,
-                    lineWidth: isPrimary
-                        ? PulseDesign.emphasisLineWidth
-                        : PulseDesign.thinLineWidth
-                )
-            if isPrimary {
-                Circle()
-                    .fill(
-                        isCompleted
-                            ? PulseDesign.sunlitAccent
-                            : PulseDesign.sunlitChrome
-                    )
-                    .frame(width: PulseDesign.spacing4, height: PulseDesign.spacing4)
-            }
-        }
-        .frame(
-            width: isPrimary
-                ? PulseDesign.sunlitAmbientNodeDiameter + PulseDesign.spacing8
-                : PulseDesign.sunlitAmbientNodeDiameter,
-            height: isPrimary
-                ? PulseDesign.sunlitAmbientNodeDiameter + PulseDesign.spacing8
-                : PulseDesign.sunlitAmbientNodeDiameter
-        )
-        .opacity(PulseDesign.sunlitAmbientNodeOpacity)
-        .position(
-            x: size.width * x + CGFloat(cos(phase + Double(x))) * 3,
-            y: size.height * y + CGFloat(sin(counterPhase + Double(y))) * 3
-        )
+    private var heroFieldHeightRatio: CGFloat {
+        presentation == .today
+            ? PulseDesign.sunlitTodayHeroFieldHeightRatio
+            : PulseDesign.sunlitStandardHeroFieldHeightRatio
     }
 }
 
@@ -626,6 +596,26 @@ private struct PulseSunlitSweepShape: Shape {
             control2: CGPoint(x: rect.width * 0.96, y: rect.height * 0.44)
         )
         path.addLine(to: CGPoint(x: rect.width * 0.28, y: rect.maxY))
+        path.closeSubpath()
+        return path
+    }
+}
+
+private struct PulseSunlitLowerFieldShape: Shape {
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        path.move(to: CGPoint(x: rect.minX, y: rect.height * 0.28))
+        path.addCurve(
+            to: CGPoint(x: rect.maxX, y: rect.height * 0.08),
+            control1: CGPoint(x: rect.width * 0.28, y: rect.minY),
+            control2: CGPoint(x: rect.width * 0.72, y: rect.height * 0.26)
+        )
+        path.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY))
+        path.addCurve(
+            to: CGPoint(x: rect.minX, y: rect.height * 0.76),
+            control1: CGPoint(x: rect.width * 0.66, y: rect.height * 0.82),
+            control2: CGPoint(x: rect.width * 0.24, y: rect.maxY)
+        )
         path.closeSubpath()
         return path
     }
@@ -684,6 +674,20 @@ struct PulseSunlitMapTexture: View {
                 )
             )
             .accessibilityHidden(true)
+    }
+}
+
+struct PulseSunlitSurfaceFill: View {
+    var cornerRadius: CGFloat = PulseDesign.sunlitCardCornerRadius
+
+    var body: some View {
+        RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+            .fill(PulseDesign.sunlitSurface)
+            .shadow(
+                color: PulseDesign.shadow.opacity(PulseDesign.sunlitSurfaceShadowOpacity),
+                radius: PulseDesign.sunlitSurfaceShadowRadius,
+                y: PulseDesign.sunlitSurfaceShadowY
+            )
     }
 }
 
@@ -1044,7 +1048,11 @@ struct PulseAppHeader: View {
                 NavigationLink(value: PulseNavigationDestination.settings) {
                     Image(systemName: "gearshape")
                         .font(.title2.weight(.semibold))
-                        .foregroundStyle(PulseDesign.appInk(for: visualTheme))
+                        .foregroundStyle(
+                            visualTheme == .sunlitDay
+                                ? PulseDesign.sunlitMuted
+                                : PulseDesign.appInk(for: visualTheme)
+                        )
                         .frame(
                             minWidth: PulseDesign.minimumHitTarget,
                             minHeight: PulseDesign.minimumHitTarget
@@ -1054,14 +1062,6 @@ struct PulseAppHeader: View {
                                 Circle().fill(PulseDesign.quietGreenSoft)
                             } else if visualTheme == .sunlitDay {
                                 Circle().fill(PulseDesign.sunlitSurface)
-                            }
-                        }
-                        .overlay {
-                            if visualTheme == .sunlitDay {
-                                Circle().stroke(
-                                    PulseDesign.sunlitChrome,
-                                    lineWidth: PulseDesign.thinLineWidth
-                                )
                             }
                         }
                 }
@@ -1078,7 +1078,11 @@ struct PulseAppHeader: View {
                                 .font(.subheadline.weight(.semibold))
                         }
                     }
-                    .foregroundStyle(PulseDesign.appInk(for: visualTheme))
+                    .foregroundStyle(
+                        visualTheme == .sunlitDay
+                            ? PulseDesign.sunlitMuted
+                            : PulseDesign.appInk(for: visualTheme)
+                    )
                     .frame(
                         minWidth: PulseDesign.minimumHitTarget,
                         minHeight: PulseDesign.minimumHitTarget
@@ -1088,14 +1092,6 @@ struct PulseAppHeader: View {
                             Circle().fill(PulseDesign.quietGreenSoft)
                         } else if visualTheme == .sunlitDay {
                             Circle().fill(PulseDesign.sunlitSurface)
-                        }
-                    }
-                    .overlay {
-                        if visualTheme == .sunlitDay {
-                            Circle().stroke(
-                                PulseDesign.sunlitChrome,
-                                lineWidth: PulseDesign.thinLineWidth
-                            )
                         }
                     }
                 }

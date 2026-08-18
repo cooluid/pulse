@@ -16,6 +16,7 @@ enum WeekStart: Int, CaseIterable, Identifiable, Sendable {
             PulseLocalization.string("settings.week_start.monday", locale: locale)
         }
     }
+
 }
 
 enum AppTheme: String, CaseIterable, Identifiable, Sendable {
@@ -52,6 +53,26 @@ enum PulseVisualTheme: String, CaseIterable, Identifiable, Sendable {
             PulseLocalization.string("settings.visual_theme.quiet_field", locale: locale)
         case .sunlitDay:
             PulseLocalization.string("settings.visual_theme.sunlit_day", locale: locale)
+        }
+    }
+
+    func localizedDescription(locale: Locale) -> String {
+        switch self {
+        case .editorialJournal:
+            PulseLocalization.string(
+                "settings.visual_theme.editorial_journal.detail",
+                locale: locale
+            )
+        case .quietField:
+            PulseLocalization.string(
+                "settings.visual_theme.quiet_field.detail",
+                locale: locale
+            )
+        case .sunlitDay:
+            PulseLocalization.string(
+                "settings.visual_theme.sunlit_day.detail",
+                locale: locale
+            )
         }
     }
 }
