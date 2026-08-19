@@ -170,16 +170,11 @@ struct SettingsView: View {
                 )
                 .environment(\.timeZone, TimeZone.gmt)
 
-                if model.reminderSyncState == .syncing {
-                    ProgressView("settings.reminder.syncing")
-                        .accessibilityIdentifier("settings.reminder.syncing")
-                } else {
-                    Label(reminderDeliveryDescriptionKey, systemImage: reminderDeliveryIcon)
-                        .font(.footnote)
-                        .foregroundStyle(PulseDesign.appMuted(for: visualTheme))
-                        .fixedSize(horizontal: false, vertical: true)
-                        .accessibilityIdentifier("settings.reminder.delivery")
-                }
+                Label(reminderDeliveryDescriptionKey, systemImage: reminderDeliveryIcon)
+                    .font(.footnote)
+                    .foregroundStyle(PulseDesign.appMuted(for: visualTheme))
+                    .fixedSize(horizontal: false, vertical: true)
+                    .accessibilityIdentifier("settings.reminder.delivery")
 
                 if model.notificationPermission == .denied {
                     Button("settings.notification.open_system_settings") {

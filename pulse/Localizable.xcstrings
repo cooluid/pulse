@@ -3565,23 +3565,6 @@
         }
       }
     },
-    "settings.reminder.syncing" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Updating reminder…"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "正在更新提醒…"
-          }
-        }
-      }
-    },
     "settings.reminder.time" : {
       "localizations" : {
         "en" : {
