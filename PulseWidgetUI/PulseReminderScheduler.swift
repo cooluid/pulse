@@ -105,6 +105,7 @@ protocol ReminderScheduling: AnyObject {
 @MainActor
 protocol ReminderLiveActivityScheduling: AnyObject {
     var capabilities: PulseReminderDeliveryCapabilities { get }
+    var activeLogicalDays: Set<LogicalDay> { get }
     func schedule(_ reminder: PlannedReminder, locale: Locale) async throws
     func complete(logicalDay: LogicalDay) async
     func removeAll(preservingActiveLogicalDay: LogicalDay?) async
@@ -206,6 +207,15 @@ final class ActivityKitReminderLiveActivityScheduler: ReminderLiveActivitySchedu
         )
     }
 
+    var activeLogicalDays: Set<LogicalDay> {
+        Set(
+            Activity<PulseReminderActivityAttributes>.activities.compactMap { activity in
+                guard activity.activityState == .active else { return nil }
+                return LogicalDay(storageValue: activity.attributes.logicalDay)
+            }
+        )
+    }
+
     func schedule(_ reminder: PlannedReminder, locale: Locale) async throws {
         guard #available(iOS 26.0, *), capabilities.liveActivitiesEnabled else {
             throw PulseReminderSchedulingError.liveActivitiesUnavailable
@@ -255,11 +265,12 @@ final class ActivityKitReminderLiveActivityScheduler: ReminderLiveActivitySchedu
         for activity in Activity<PulseReminderActivityAttributes>.activities where
             activity.attributes.logicalDay == logicalDay.storageValue {
             await activity.update(completedContent)
-        }
-        try? await Task.sleep(for: PulseReminderActivityContract.completionEchoDuration)
-        for activity in Activity<PulseReminderActivityAttributes>.activities where
-            activity.attributes.logicalDay == logicalDay.storageValue {
-            await activity.end(completedContent, dismissalPolicy: .immediate)
+            await activity.end(
+                completedContent,
+                dismissalPolicy: .after(
+                    PulseReminderActivityContract.completionEchoDismissalDate()
+                )
+            )
         }
     }
 
@@ -312,7 +323,9 @@ final class ReminderScheduler: ReminderScheduling {
         guard snapshot.enabled, snapshot.deliveryMode != .disabled else { return .disabled }
 
         let locale = Locale(identifier: snapshot.localeIdentifier)
-        let plan = try ReminderSchedulePlanner.makePlan(for: snapshot)
+        let plan = try ReminderSchedulePlanner.makePlan(for: snapshot).filter { reminder in
+            reminder.day != activeLogicalDayToPreserve
+        }
 
         do {
             switch snapshot.deliveryMode {
@@ -425,7 +438,11 @@ final class ReminderScheduler: ReminderScheduling {
             return nil
         }
         let today = LogicalDay.resolve(at: snapshot.now, timeZone: timeZone)
-        return snapshot.checkedDays.contains(today) ? nil : today
+        guard !snapshot.checkedDays.contains(today),
+              liveActivityScheduler.activeLogicalDays.contains(today) else {
+            return nil
+        }
+        return today
     }
 
     private func removePulseLiveActivities(

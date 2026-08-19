@@ -2,7 +2,7 @@
   "sourceLanguage" : "en",
   "strings" : {
     "accessibility.date_status_format" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -120,13 +120,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "You have not checked in today. Come back when you are ready."
+            "value" : "Open Pulse to check in."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "今天还未签到，准备好时再回来。"
+            "value" : "打开一日一印签到。"
           }
         }
       }
@@ -165,7 +165,7 @@
       }
     },
     "backup.passphrase.confirmation" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -182,7 +182,7 @@
       }
     },
     "backup.passphrase.export.action" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -199,7 +199,7 @@
       }
     },
     "backup.passphrase.export.message_format" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -216,7 +216,7 @@
       }
     },
     "backup.passphrase.export.title" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -233,7 +233,7 @@
       }
     },
     "backup.passphrase.field" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -250,7 +250,7 @@
       }
     },
     "backup.passphrase.processing" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -267,7 +267,7 @@
       }
     },
     "backup.passphrase.restore.action" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -284,7 +284,7 @@
       }
     },
     "backup.passphrase.restore.message" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -301,7 +301,7 @@
       }
     },
     "backup.passphrase.restore.title" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -318,7 +318,7 @@
       }
     },
     "calendar.status.before_habit" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -335,7 +335,7 @@
       }
     },
     "calendar.status.checked" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -352,7 +352,7 @@
       }
     },
     "calendar.status.future" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -369,7 +369,7 @@
       }
     },
     "calendar.status.missed" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -386,7 +386,7 @@
       }
     },
     "calendar.status.pending" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -403,7 +403,7 @@
       }
     },
     "calendar.status.with_media_format" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -581,7 +581,7 @@
       }
     },
     "commitment.purpose.not_set" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -765,7 +765,7 @@
       }
     },
     "error.backup_authentication" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -782,7 +782,7 @@
       }
     },
     "error.backup_invalid" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -799,7 +799,7 @@
       }
     },
     "error.backup_passphrase_format" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -816,7 +816,7 @@
       }
     },
     "error.backup_passphrase_mismatch" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -833,7 +833,7 @@
       }
     },
     "error.backup_unavailable" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -850,7 +850,7 @@
       }
     },
     "error.backup_version" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -867,7 +867,7 @@
       }
     },
     "error.camera_unavailable" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -884,7 +884,7 @@
       }
     },
     "error.check_in_invalid" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -918,7 +918,7 @@
       }
     },
     "error.generic" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -935,7 +935,7 @@
       }
     },
     "error.habit_identity_format" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1003,7 +1003,7 @@
       }
     },
     "error.media_file_unavailable" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1020,7 +1020,7 @@
       }
     },
     "error.media_invalid" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1037,7 +1037,7 @@
       }
     },
     "error.media_storage_unavailable" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1054,7 +1054,7 @@
       }
     },
     "error.notification_denied" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1071,7 +1071,7 @@
       }
     },
     "error.primary_habit_unavailable" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1139,7 +1139,7 @@
       }
     },
     "error.record_date" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1173,7 +1173,7 @@
       }
     },
     "error.settings" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1190,7 +1190,7 @@
       }
     },
     "error.timezone" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1207,7 +1207,7 @@
       }
     },
     "error.timezone_transition" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1256,7 +1256,7 @@
       }
     },
     "feedback.category.problem" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1289,7 +1289,7 @@
       }
     },
     "feedback.category.suggestion" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1322,7 +1322,7 @@
       }
     },
     "feedback.diagnostics.app" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1339,7 +1339,7 @@
       }
     },
     "feedback.diagnostics.available_storage" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1356,7 +1356,7 @@
       }
     },
     "feedback.diagnostics.calendar" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1373,7 +1373,7 @@
       }
     },
     "feedback.diagnostics.data_scale" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1390,7 +1390,7 @@
       }
     },
     "feedback.diagnostics.data_scale_format" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1407,7 +1407,7 @@
       }
     },
     "feedback.diagnostics.device" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1424,7 +1424,7 @@
       }
     },
     "feedback.diagnostics.enhancement" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1457,7 +1457,7 @@
       }
     },
     "feedback.diagnostics.heading" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1490,7 +1490,7 @@
       }
     },
     "feedback.diagnostics.interface" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1507,7 +1507,7 @@
       }
     },
     "feedback.diagnostics.line_format" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1540,7 +1540,7 @@
       }
     },
     "feedback.diagnostics.reminders" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1557,7 +1557,7 @@
       }
     },
     "feedback.diagnostics.reminders_format" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1574,7 +1574,7 @@
       }
     },
     "feedback.diagnostics.runtime" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1607,7 +1607,7 @@
       }
     },
     "feedback.diagnostics.system" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1624,7 +1624,7 @@
       }
     },
     "feedback.diagnostics.today" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1641,7 +1641,7 @@
       }
     },
     "feedback.failed.message" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1674,7 +1674,7 @@
       }
     },
     "feedback.mail_unavailable.message_format" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2011,7 +2011,7 @@
       }
     },
     "feedback.subject.problem" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2028,7 +2028,7 @@
       }
     },
     "feedback.subject.suggestion" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2045,7 +2045,7 @@
       }
     },
     "feedback.value.checked" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2062,7 +2062,7 @@
       }
     },
     "feedback.value.delivery.disabled" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2079,7 +2079,7 @@
       }
     },
     "feedback.value.delivery.local_notification" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2096,7 +2096,7 @@
       }
     },
     "feedback.value.delivery.scheduled_live_activity" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2113,7 +2113,7 @@
       }
     },
     "feedback.value.disabled" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2130,7 +2130,7 @@
       }
     },
     "feedback.value.enabled" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2147,7 +2147,7 @@
       }
     },
     "feedback.value.not_unlocked" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2164,7 +2164,7 @@
       }
     },
     "feedback.value.pending" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2181,7 +2181,7 @@
       }
     },
     "feedback.value.permission.authorized" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2198,7 +2198,7 @@
       }
     },
     "feedback.value.permission.denied" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2215,7 +2215,7 @@
       }
     },
     "feedback.value.permission.not_determined" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2232,7 +2232,7 @@
       }
     },
     "feedback.value.runtime.failed" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2249,7 +2249,7 @@
       }
     },
     "feedback.value.runtime.loading" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2266,7 +2266,7 @@
       }
     },
     "feedback.value.runtime.ready" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2283,7 +2283,7 @@
       }
     },
     "feedback.value.unavailable" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2300,7 +2300,7 @@
       }
     },
     "feedback.value.unlocked" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2334,7 +2334,7 @@
       }
     },
     "history.archive_format" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2351,7 +2351,7 @@
       }
     },
     "history.checked_at" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2773,7 +2773,7 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "写下一句，或留空直接打卡"
+            "value" : "写下一句，或留空直接签到"
           }
         }
       }
@@ -3108,24 +3108,24 @@
       }
     },
     "notification.body" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "You have not checked in today. Come back when you are ready."
+            "value" : "Open Pulse to check in."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "今天还未签到，准备好时回来即可。"
+            "value" : "打开一日一印签到。"
           }
         }
       }
     },
     "notification.title" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -3206,7 +3206,7 @@
       }
     },
     "settings.backup.restore_confirmation.message" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -3352,7 +3352,7 @@
       }
     },
     "settings.language.english" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -3369,7 +3369,7 @@
       }
     },
     "settings.language.simplified_chinese" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -3386,7 +3386,7 @@
       }
     },
     "settings.language.system" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -3695,7 +3695,7 @@
       }
     },
     "settings.storage.local" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -3779,7 +3779,7 @@
       }
     },
     "settings.theme.dark" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -3796,7 +3796,7 @@
       }
     },
     "settings.theme.light" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -3813,7 +3813,7 @@
       }
     },
     "settings.theme.system" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -4094,7 +4094,7 @@
       }
     },
     "settings.week_start.monday" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -4111,7 +4111,7 @@
       }
     },
     "settings.week_start.sunday" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -4885,7 +4885,7 @@
       }
     },
     "today.accessibility.check_in" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -4935,7 +4935,7 @@
       }
     },
     "today.accessibility.commitment_state_format" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -4952,7 +4952,7 @@
       }
     },
     "today.accessibility.hint" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -5019,7 +5019,7 @@
       }
     },
     "today.checked_with_time" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -5036,7 +5036,7 @@
       }
     },
     "today.commitment.accessibility_format" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -5069,7 +5069,7 @@
       }
     },
     "today.kicker_with_weekday_format" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -5753,6 +5753,40 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "今日待签到"
+          }
+        }
+      }
+    },
+    "widget.state.checked" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Checked in today"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "今天已签到"
+          }
+        }
+      }
+    },
+    "widget.state.pending" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not checked in"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "今天还未签到"
           }
         }
       }

@@ -20,11 +20,11 @@
 | Habit / 逻辑日 | 名称/说明规范化；Gregorian、时区、DST、稳定起始日；时区变更不改历史 |
 | Repository | 唯一主承诺、同日幂等、rollback、跨容器并发；记事签到时写入、外部先签到后补写、编辑、清空、非法输入不变更；签到/媒体独立删除和重新关联 |
 | Schema 1.1.1 | Habit / CheckInRecord / ImprintMedia 真实磁盘读写；精确 marker；实验性 1.1.0 与更旧 marker 失败关闭；无迁移分支 |
-| 媒体文件 | 安装前 staging、不可变 UUID 路径、路径穿越/符号链接拒绝、24 MiB/2 MiB 上限、原图和缩略图 byteCount + SHA-256、孤儿审计、清除 |
+| 媒体文件 | 安装前 staging、不可变小写 UUID 路径、路径穿越、文件及 `originals` / `thumbnails` / `staging` 中间目录符号链接拒绝、24 MiB/2 MiB 上限、原图和缩略图 byteCount + SHA-256、孤儿审计、清除 |
 | 图片处理 | 方向归一、最大 4096、缩略图最大 720、JPEG 输出、元数据剥离、无效图片拒绝 |
 | 归档 payload v3 | 唯一 UTType；container v2；PBKDF2 600k；随机 salt/nonce；分条目 AES-256-GCM；签到+记事+媒体 round-trip；显式记事空字段；原/缩略图身份；缺字段/缺失/额外/重复、篡改、截断、尾随、错误口令、未知版本、超限失败关闭；payload v1/v2 与 container v1 不读取 |
 | 恢复事务 | 全部解密/认证后才确认；文件先安装、数据库单次 replace；提交前失败回收新文件；提交后清理失败不得误删新文件；取消清理解密 staging |
-| AppModel | 操作互斥；单击签到；记事更新不改签到/统计；长按先提交签到再请求相机；相机/媒体失败不撤销签到；跨日/前台审计；重置日志；完整备份 |
+| AppModel | 操作互斥；单击签到；系统表面只消费提交回执的逻辑日；记事更新不改签到/统计；长按先提交签到再请求相机；相机/媒体失败不撤销签到；跨日事件与激活事件在长操作结束后必须补执行；重置日志；完整备份 |
 | Settings / Store | 今日入镜邀请、空间、主题、语言、提醒；独立高阶权益页；StoreKit 动态价格；类型化能力目录；独立 Widget 画廊；重置后清理；损坏偏好失败关闭 |
 | Widget / 系统表面 | 只读 Habit + CheckInRecord；不查询或暴露 ImprintMedia；AppIntent 幂等签到；语言/样式/权益双边检查 |
 | 本地化/无障碍 | 简中/英文完整字符串；格式参数；日期 Locale；照片/按钮/进度有 VoiceOver 语义；状态不只靠颜色 |
@@ -70,8 +70,10 @@ git diff --check
 同时确认：
 
 - App / Widget 版本、deployment target、App Group、Data Protection 和 Privacy manifest 一致；
+- 1.1 的 Info.plist 明确关闭多 Scene；在建立正式进程级协调合同前不得开启 iPad 多窗口模板能力；
 - `PulseSupportContract` 是 App 内支持邮箱、帮助/隐私 URL、反馈长度和版本展示的唯一来源；生产源码不得保留 `PulseExternalLinks`、第二支持邮箱、隐藏反馈上传或第三方反馈 SDK。公开隐私正文必须说明用户主动邮件与可选技术信息；App Store Connect 隐私答案按最终行为复核。界面和邮件不靠否定清单证明未收集。
 - App Store Connect 按支持邮件的实际行为复核 Customer Support / Other User Content、Photos or Videos、Other Diagnostic Data 与 Product Interaction；不得因提交频率低或用户主动就自动继续回答“未收集”。用途只允许 App Functionality / Customer Support，不跟踪；是否与用户关联按发件地址与实际留存方式保守回答。
+- App Store Connect 按 container v2 / payload v3 的实际 PBKDF2 + AES-GCM 用途完成加密出口判断；分类冻结前 App / Widget Info.plist 均不预填 `ITSAppUsesNonExemptEncryption`，不得把历史 Build 2 的豁免答案外推到 1.1。
 - Debug App 必须显示“一日一印 Dev”并使用 `co.fanr.pulse.dev`、Debug Widget 使用 `co.fanr.pulse.dev.widgets`、Debug App Group 使用 `group.co.fanr.pulse.dev`、URL Scheme 使用 `pulse-dev`；Debug 不加载生产 `InfoPlist.xcstrings`，防止本地化名称重新覆盖 Dev 标识。Release 继续且只使用对应生产身份。Debug 灵动岛测试台源码与 Settings 入口必须由 `#if DEBUG` 关闭，Release 产物不得包含 `ReminderActivityDebugView` 或“灵动岛测试台”；
 - `NSCameraUsageDescription` 简中/英文均存在；
 - 生产源码没有 schema v1、archive v1 decoder、旧 Repository、旧 FileDocument、绝对媒体路径或第二个媒体目录；

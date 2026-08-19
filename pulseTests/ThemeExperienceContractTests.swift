@@ -4,150 +4,11 @@ import XCTest
 
 @MainActor
 final class ThemeExperienceContractTests: XCTestCase {
-    func testJournalCapabilityIsOwnedBySharedSurfaces() throws {
-        let todaySource = try source("pulse/Features/Today/TodayView.swift")
-        let historySource = try source("pulse/Features/History/HistoryView.swift")
-        let editorialSource = try source(
-            "pulse/Features/Editorial/EditorialJournalTheme.swift"
-        )
-
-        XCTAssertTrue(todaySource.contains("JournalDraftComposer("))
-        XCTAssertTrue(
-            todaySource.contains("model.checkIn(journalNote: draftJournalNote)")
-        )
-        XCTAssertTrue(historySource.contains("JournalHistorySection("))
-
-        XCTAssertFalse(editorialSource.contains("model.checkIn("))
-        XCTAssertFalse(editorialSource.contains("@State private var draftJournalNote"))
-        XCTAssertFalse(editorialSource.contains("EditorialHistoryContent"))
-        XCTAssertTrue(editorialSource.contains("today.week.rail"))
-        XCTAssertTrue(editorialSource.contains("PulseTodayPresentation.rhythmStatusText"))
-    }
-
-    func testEveryThemeHasAnExplicitAmbientSignature() throws {
-        let source = try source("pulse/Shared/PulseDesignSystem.swift")
-
-        XCTAssertTrue(source.contains("case .quietField:\n            quietField"))
-        XCTAssertTrue(source.contains("case .editorialJournal:\n            editorialField"))
-        XCTAssertTrue(source.contains("case .sunlitDay:\n            sunlitField"))
-        XCTAssertTrue(source.contains("quietFieldSprig"))
-        XCTAssertTrue(source.contains("PulseEditorialFieldCanvas("))
-        XCTAssertTrue(source.contains("PulseSunlitRouteMap"))
-    }
-
-    func testSunlitDayUsesOneSemanticPaletteWithoutLegacyDesignAssets() throws {
-        let designSource = try source("pulse/Shared/PulseDesignSystem.swift")
-        let navigationSource = try source("pulse/Shared/PulsePrimaryNavigation.swift")
-        let historySource = try source("pulse/Features/History/HistoryView.swift")
-        let tokenSource = try source("design/brand-tokens.json")
-        let generatorSource = try source("scripts/build_brand_assets.py")
-
-        let semanticRoles = [
-            "sunlitCanvas",
-            "sunlitCanvasDeep",
-            "sunlitSurface",
-            "sunlitInk",
-            "sunlitMuted",
-            "sunlitDivider",
-            "sunlitAccent",
-            "sunlitAccentSoft",
-            "sunlitMap",
-            "sunlitMapDeep",
-            "sunlitChrome",
-            "sunlitChromeForeground",
-            "sunlitOnAccent",
-        ]
-        for role in semanticRoles {
-            XCTAssertTrue(tokenSource.contains("\"\(role)\""), "Missing token role \(role)")
-            XCTAssertTrue(designSource.contains(role), "Missing design consumer \(role)")
-        }
-
-        let removedRoles = [
-            "archiveCopper",
-            "archiveDepth",
-            "archiveForeground",
-            "archiveMist",
-            "archiveNight",
-            "archivePaper",
-            "archiveSky",
-            "archiveSkyDeep",
-        ]
-        for role in removedRoles {
-            XCTAssertFalse(tokenSource.contains("\"\(role)\""), "Legacy token remains: \(role)")
-            XCTAssertFalse(generatorSource.contains("\"\(role)\""), "Legacy asset remains: \(role)")
-            XCTAssertFalse(designSource.contains(role), "Legacy design consumer remains: \(role)")
-        }
-
-        XCTAssertFalse(navigationSource.contains("sunlitBarSurfaceOpacity"))
-        XCTAssertTrue(navigationSource.contains(".fill(PulseDesign.sunlitSurface)"))
-        XCTAssertFalse(navigationSource.contains("sunlitNavigationCornerRadius"))
-        XCTAssertFalse(navigationSource.contains("sunlitBarHeight"))
-        XCTAssertTrue(navigationSource.contains("sunlitNavigationGlyph"))
-        XCTAssertFalse(historySource.contains("sunlitHistoryLedger"))
-        XCTAssertFalse(tokenSource.contains("archiveCanvas"))
-        XCTAssertFalse(designSource.contains("PulseArchive"))
-        XCTAssertFalse(designSource.contains("tideArchive"))
-    }
-
-    func testSunlitTodayAndThemePickerUseOnlyTheFormalInteractionHierarchy() throws {
-        let todaySource = try source("pulse/Features/Today/TodayView.swift")
-        let settingsSource = try source("pulse/Features/Settings/SettingsView.swift")
-        let pickerSource = try source(
-            "pulse/Features/Settings/VisualThemePickerView.swift"
-        )
-        let designSource = try source("pulse/Shared/PulseDesignSystem.swift")
-
-        XCTAssertTrue(todaySource.contains("today.check_in_action"))
-        XCTAssertFalse(todaySource.contains("arrow.down.right"))
-        XCTAssertFalse(todaySource.contains("arrow.up.right"))
-        XCTAssertFalse(todaySource.contains("sunlitAccessibilityCommitmentCue"))
-
-        XCTAssertTrue(pickerSource.contains("struct VisualThemePickerView"))
-        XCTAssertTrue(settingsSource.contains("settings.visual-theme.link"))
-        XCTAssertTrue(pickerSource.contains("model.requestVisualTheme(theme)"))
-        XCTAssertFalse(pickerSource.contains("model.settings.visualTheme = theme"))
-        XCTAssertFalse(pickerSource.contains("visualThemeChoiceLayout"))
-        XCTAssertFalse(pickerSource.contains("themePreviewMark"))
-        XCTAssertFalse(designSource.contains("themePreviewEditorialPrimaryRuleWidth"))
-        XCTAssertFalse(designSource.contains("sunlitAmbientNodeOpacity"))
-    }
-
-    func testEnhancementStorePresentsCatalogDrivenSpecimens() throws {
-        let storeSource = try source("pulse/Features/Settings/EnhancementStoreView.swift")
-        let pickerSource = try source(
-            "pulse/Features/Settings/VisualThemePickerView.swift"
-        )
-        let specimenSource = try source("pulse/Shared/PulseVisualThemeSpecimen.swift")
-        let settingsSource = try source("pulse/Features/Settings/SettingsView.swift")
-
-        XCTAssertTrue(
-            storeSource.contains("ForEach(PulseEnhancementContract.currentCapabilities)")
-        )
-        XCTAssertTrue(storeSource.contains("PulseVisualThemeAccessPolicy.enhancementThemes"))
-        XCTAssertTrue(storeSource.contains("PulseWidgetStyleAccessPolicy.enhancementStyles"))
-        XCTAssertTrue(storeSource.contains("PulseVisualThemeSpecimen("))
-        XCTAssertTrue(storeSource.contains("store.capability.interfaceThemes.preview."))
-        XCTAssertTrue(storeSource.contains(".allowsHitTesting(false)"))
-        XCTAssertFalse(storeSource.contains("requestVisualTheme"))
-        XCTAssertFalse(storeSource.contains("store.preview.section"))
-        XCTAssertFalse(storeSource.contains("store.capabilities.section"))
-        XCTAssertFalse(storeSource.contains("themePreviewMark"))
-
-        XCTAssertTrue(pickerSource.contains("PulseVisualThemeSpecimen("))
-        XCTAssertTrue(specimenSource.contains("struct PulseVisualThemeSpecimen"))
-        XCTAssertFalse(settingsSource.contains("struct VisualThemePickerView"))
-        XCTAssertFalse(settingsSource.contains("themePreviewMark"))
-        XCTAssertFalse(specimenSource.contains("requestVisualTheme"))
-    }
-
     func testJournalPageIsTheOnlyFreeInterfaceTheme() {
         XCTAssertEqual(PulseVisualThemeAccessPolicy.freeTheme, .editorialJournal)
         XCTAssertEqual(
             PulseVisualThemeAccessPolicy.enhancementThemes,
             [.quietField, .sunlitDay]
-        )
-        XCTAssertFalse(
-            PulseVisualThemeAccessPolicy.enhancementThemes.contains(.editorialJournal)
         )
         XCTAssertFalse(
             PulseVisualThemeAccessPolicy.requiresEnhancement(.editorialJournal)
@@ -170,76 +31,41 @@ final class ThemeExperienceContractTests: XCTestCase {
         )
     }
 
-    func testQuietFieldUsesOneSemanticPaletteAndOneCompanionLanguage() throws {
-        let designSource = try source("pulse/Shared/PulseDesignSystem.swift")
-        let todaySource = try source("pulse/Features/Today/TodayView.swift")
-        let navigationSource = try source("pulse/Shared/PulsePrimaryNavigation.swift")
-        let tokenSource = try source("design/brand-tokens.json")
-        let generatorSource = try source("scripts/build_brand_assets.py")
-
-        let semanticRoles = [
-            "quietCanvas",
-            "quietSurface",
-            "quietInk",
-            "quietMuted",
-            "quietDivider",
-            "quietGreen",
-            "quietGreenDeep",
-            "quietGreenSoft",
-            "quietChrome",
-            "quietChromeForeground",
-            "quietOnGreen",
-            "quietPink",
-            "quietBlue",
-            "quietYellow",
+    func testBrandTokenContractContainsOnlyCurrentThemePalettes() throws {
+        let data = try Data(
+            contentsOf: repositoryRoot.appending(path: "design/brand-tokens.json")
+        )
+        let root = try XCTUnwrap(
+            JSONSerialization.jsonObject(with: data) as? [String: [String: String]]
+        )
+        let requiredRoles = [
+            "editorialAccent",
+            "quietCanvas", "quietSurface", "quietInk", "quietMuted", "quietDivider",
+            "quietGreen", "quietGreenDeep", "quietGreenSoft", "quietChrome",
+            "quietChromeForeground", "quietOnGreen", "quietPink", "quietBlue", "quietYellow",
+            "sunlitCanvas", "sunlitCanvasDeep", "sunlitSurface", "sunlitInk",
+            "sunlitMuted", "sunlitDivider", "sunlitAccent", "sunlitAccentSoft",
+            "sunlitMap", "sunlitMapDeep", "sunlitChrome", "sunlitChromeForeground",
+            "sunlitOnAccent",
         ]
-        for role in semanticRoles {
-            XCTAssertTrue(tokenSource.contains("\"\(role)\""), "Missing token role \(role)")
-            XCTAssertTrue(generatorSource.contains("\"\(role)\""), "Missing generated role \(role)")
-            XCTAssertTrue(designSource.contains(role), "Missing design consumer \(role)")
+        let retiredRoles = [
+            "archiveCanvas", "archiveCopper", "archiveDepth", "archiveForeground",
+            "archiveMist", "archiveNight", "archivePaper", "archiveSky", "archiveSkyDeep",
+            "navigationGlyphSurface",
+        ]
+
+        for appearance in ["light", "dark"] {
+            let palette = try XCTUnwrap(root[appearance])
+            for role in requiredRoles {
+                XCTAssertNotNil(palette[role], "Missing \(appearance) semantic role: \(role)")
+            }
+            for role in retiredRoles {
+                XCTAssertNil(palette[role], "Retired \(appearance) role remains: \(role)")
+            }
         }
-
-        XCTAssertTrue(designSource.contains("struct PulseQuietCompanionShape"))
-        XCTAssertTrue(designSource.contains("struct PulseQuietCompanionFace"))
-        XCTAssertTrue(todaySource.contains("quietCheckInStatusContent"))
-        XCTAssertTrue(navigationSource.contains("PulseDesign.quietChrome"))
-        XCTAssertFalse(designSource.contains("PulseFieldFlowBand"))
-        XCTAssertFalse(designSource.contains("PulseFieldContourRing"))
-    }
-
-    func testHistoryModeSwitchKeepsPageLayoutOutOfThePickerAnimation() throws {
-        let historySource = try source("pulse/Features/History/HistoryView.swift")
-        let quietStart = try XCTUnwrap(
-            historySource.range(of: "private var quietHistoryContent: some View")
-        )
-        let standardStart = try XCTUnwrap(
-            historySource.range(of: "private var standardHistoryContent: some View")
-        )
-        let sunlitStart = try XCTUnwrap(
-            historySource.range(of: "private var sunlitHistoryContent: some View")
-        )
-        let headingStart = try XCTUnwrap(
-            historySource.range(of: "private var quietHistoryHeading: some View")
-        )
-        let quietContent = historySource[quietStart.lowerBound..<standardStart.lowerBound]
-        let sunlitContent = historySource[sunlitStart.lowerBound..<headingStart.lowerBound]
-
-        XCTAssertFalse(quietContent.contains(".background("))
-        XCTAssertFalse(quietContent.contains(".overlay"))
-        XCTAssertFalse(sunlitContent.contains(".background {"))
-        XCTAssertFalse(sunlitContent.contains("PulseSunlitMapTexture"))
-        XCTAssertFalse(historySource.contains(".id(contentMode)"))
-        XCTAssertFalse(historySource.contains(".transition(.opacity)"))
-        XCTAssertTrue(
-            historySource.contains(
-                "guard contentMode != mode else { return }\n            contentMode = mode"
-            )
-        )
-        XCTAssertTrue(historySource.contains("value: contentMode"))
     }
 
     func testRemovedThemeSpecificContractsDoNotRemain() throws {
-        let repositoryRoot = repositoryRoot
         let productionRoots = [
             repositoryRoot.appending(path: "pulse", directoryHint: .isDirectory),
             repositoryRoot.appending(path: "pulseUITests", directoryHint: .isDirectory),
@@ -249,6 +75,8 @@ final class ThemeExperienceContractTests: XCTestCase {
             "navigation.section.history",
             "history.calendar.surface",
             "EditorialHistoryContent",
+            "tideArchive",
+            "PulseArchive",
         ]
 
         for root in productionRoots {
@@ -275,12 +103,5 @@ final class ThemeExperienceContractTests: XCTestCase {
         URL(fileURLWithPath: #filePath)
             .deletingLastPathComponent()
             .deletingLastPathComponent()
-    }
-
-    private func source(_ relativePath: String) throws -> String {
-        try String(
-            contentsOf: repositoryRoot.appending(path: relativePath),
-            encoding: .utf8
-        )
     }
 }

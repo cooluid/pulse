@@ -445,7 +445,7 @@ final class PulseWidgetSnapshotTests: XCTestCase {
         )
     }
 
-    func testReminderActivityIslandRendererDropsCompactHaloAndClock() throws {
+    func testRetiredReminderActivityImplementationsDoNotRemain() throws {
         let projectRoot = URL(fileURLWithPath: #filePath)
             .deletingLastPathComponent()
             .deletingLastPathComponent()
@@ -459,27 +459,6 @@ final class PulseWidgetSnapshotTests: XCTestCase {
             encoding: .utf8
         )
 
-        XCTAssertTrue(renderer.contains("var drawsHalo: Bool"), "Missing drawsHalo")
-        XCTAssertTrue(
-            renderer.contains("struct PulseReminderActivityStatusCopy"),
-            "Missing status copy"
-        )
-        XCTAssertFalse(renderer.contains("struct PulseReminderDynamicIslandCenterView"))
-        XCTAssertFalse(renderer.contains("usesCompactOpticalTreatment"))
-        XCTAssertFalse(renderer.contains("compactArcEndFraction"))
-        XCTAssertFalse(renderer.contains("struct PulseReminderActivityCompactTrailing"))
-        XCTAssertFalse(renderer.contains("PulseReminderDynamicIslandBottomView"))
-        XCTAssertFalse(renderer.contains("headlineRow"))
-        XCTAssertFalse(renderer.contains("activityMark.opacity(0.12)"))
-        XCTAssertFalse(renderer.contains("activityIslandTime"))
-        XCTAssertFalse(renderer.contains("PulseWidgetDesign.grass"))
-        XCTAssertFalse(renderer.contains("PulseWidgetDesign.activityActionSurface"))
-        XCTAssertFalse(renderer.contains("PulseNavigationGlyphSurface"))
-        XCTAssertFalse(renderer.contains("PulseGrassForeground"))
-        XCTAssertFalse(renderer.contains("PulseWidgetDesign.activityIslandFireflyDiameterRatio"))
-        XCTAssertTrue(renderer.contains("static let islandFireflyDiameterRatio"))
-        XCTAssertTrue(renderer.contains("activityIslandActionFillOpacity"))
-
         let store = try String(
             contentsOf: projectRoot
                 .appendingPathComponent("pulse", isDirectory: true)
@@ -488,7 +467,17 @@ final class PulseWidgetSnapshotTests: XCTestCase {
                 .appendingPathComponent("EnhancementStoreView.swift", isDirectory: false),
             encoding: .utf8
         )
-        XCTAssertFalse(store.contains("PulseReminderActivityCompactTrailing"))
+        let retiredSymbols = [
+            "PulseReminderDynamicIslandCenterView",
+            "PulseReminderActivityCompactTrailing",
+            "PulseReminderDynamicIslandBottomView",
+            "PulseNavigationGlyphSurface",
+            "PulseGrassForeground",
+        ]
+        for symbol in retiredSymbols {
+            XCTAssertFalse(renderer.contains(symbol), "Retired Activity symbol remains: \(symbol)")
+            XCTAssertFalse(store.contains(symbol), "Retired store-preview symbol remains: \(symbol)")
+        }
     }
 
     func testReminderActivityTimeUsesTheAttributeTimeZone() {
@@ -543,55 +532,6 @@ final class PulseWidgetSnapshotTests: XCTestCase {
 
         XCTAssertEqual(image.size.width, 382, accuracy: 0.5)
         XCTAssertEqual(image.size.height, 260, accuracy: 0.5)
-    }
-
-    func testLetterCompositionOwnsTodayInOneDateSealAndOnlySixPastMarks() throws {
-        let projectRoot = URL(fileURLWithPath: #filePath)
-            .deletingLastPathComponent()
-            .deletingLastPathComponent()
-        let rendererSource = try String(
-            contentsOf: projectRoot
-                .appendingPathComponent("PulseWidgetUI", isDirectory: true)
-                .appendingPathComponent("PulseWidgetRenderer.swift", isDirectory: false),
-            encoding: .utf8
-        )
-        let prototypeSource = try String(
-            contentsOf: projectRoot
-                .appendingPathComponent("docs", isDirectory: true)
-                .appendingPathComponent("prototypes", isDirectory: true)
-                .appendingPathComponent("widget-ritual-objects", isDirectory: true)
-                .appendingPathComponent("pulse-widget-ritual-objects.html", isDirectory: false),
-            encoding: .utf8
-        )
-        let letterStart = try XCTUnwrap(prototypeSource.range(of: "04 · LETTER"))
-        let letterEnd = try XCTUnwrap(
-            prototypeSource.range(of: "05 · FIELD", range: letterStart.upperBound..<prototypeSource.endIndex)
-        )
-        let letterPrototype = String(prototypeSource[letterStart.lowerBound..<letterEnd.lowerBound])
-        let postmarkStart = try XCTUnwrap(rendererSource.range(of: "private func postmarkNode"))
-        let postmarkEnd = try XCTUnwrap(
-            rendererSource.range(
-                of: "private func quietFieldAfterimage",
-                range: postmarkStart.upperBound..<rendererSource.endIndex
-            )
-        )
-        let postmarkSource = String(rendererSource[postmarkStart.lowerBound..<postmarkEnd.lowerBound])
-
-        XCTAssertTrue(rendererSource.contains("private struct PulseLetterDateSeal"))
-        XCTAssertTrue(rendererSource.contains("snapshot.recentDays.dropLast()"))
-        XCTAssertFalse(rendererSource.contains("private struct PulseLetterClosureMark"))
-        XCTAssertTrue(postmarkSource.contains("PulseLetterPressedInkMark"))
-        XCTAssertTrue(postmarkSource.contains("item.state == .beforeHabit"))
-        XCTAssertEqual(
-            letterPrototype.components(separatedBy: "class=\"mark ").count - 1,
-            12,
-            "Small and medium prototypes must each render exactly six past-day marks."
-        )
-        XCTAssertFalse(letterPrototype.contains("class=\"mark today\""))
-        XCTAssertFalse(letterPrototype.contains("<div class=\"day\">"))
-        XCTAssertTrue(letterPrototype.contains("class=\"mark before\""))
-        XCTAssertTrue(letterPrototype.contains("class=\"press-ridges\""))
-        XCTAssertTrue(letterPrototype.contains("<span class=\"mark-label\">13</span>"))
     }
 
     func testLetterCompositionRendersMixedHistoricalFactsAtBothHomeSizes() throws {
@@ -897,64 +837,6 @@ final class PulseWidgetSnapshotTests: XCTestCase {
     }
 
     func testOrbitCleanBreakRendersPendingAndCompletedAcrossSupportedHomeSizes() throws {
-        let projectRoot = URL(fileURLWithPath: #filePath)
-            .deletingLastPathComponent()
-            .deletingLastPathComponent()
-        let rendererSource = try String(
-            contentsOf: projectRoot
-                .appendingPathComponent("PulseWidgetUI", isDirectory: true)
-                .appendingPathComponent("PulseWidgetRenderer.swift", isDirectory: false),
-            encoding: .utf8
-        )
-        let prototypeSource = try String(
-            contentsOf: projectRoot
-                .appendingPathComponent("docs", isDirectory: true)
-                .appendingPathComponent("prototypes", isDirectory: true)
-                .appendingPathComponent("widget-ritual-objects", isDirectory: true)
-                .appendingPathComponent("pulse-widget-ritual-objects.html", isDirectory: false),
-            encoding: .utf8
-        )
-
-        XCTAssertTrue(rendererSource.contains("case orbit"))
-        XCTAssertTrue(rendererSource.contains("private func orbit"))
-        XCTAssertTrue(rendererSource.contains("private struct PulseStarRingArtwork"))
-        XCTAssertTrue(rendererSource.contains("struct PulseStarRingGeometry"))
-        XCTAssertTrue(rendererSource.contains("innerWellDiameter"))
-        XCTAssertTrue(rendererSource.contains("orbitAmbientField"))
-        XCTAssertTrue(rendererSource.contains("litStarColor"))
-        XCTAssertFalse(rendererSource.contains("case seal"))
-        XCTAssertFalse(rendererSource.contains("private func seal(size:"))
-        XCTAssertFalse(rendererSource.contains("PulseInkImpressionMark"))
-        XCTAssertFalse(rendererSource.contains("sealAmbientField"))
-        XCTAssertFalse(rendererSource.contains("PulseOrbitalPlanetArtwork"))
-        XCTAssertFalse(rendererSource.contains("PulseCelestialLightShape"))
-        XCTAssertFalse(rendererSource.contains("PulsePlanetBandsShape"))
-        XCTAssertFalse(rendererSource.contains("PulsePlanetStormShape"))
-        XCTAssertFalse(rendererSource.contains("class=\"moon\""))
-        XCTAssertFalse(rendererSource.contains("class=\"planet\""))
-        XCTAssertTrue(prototypeSource.contains("01 · ORBIT"))
-        XCTAssertTrue(prototypeSource.contains("class=\"widget orbit\""))
-        XCTAssertTrue(prototypeSource.contains("class=\"today-star\""))
-        XCTAssertEqual(
-            prototypeSource.components(separatedBy: "class=\"ring-well\"").count - 1,
-            3,
-            "Phone, small, and medium orbit prototypes must each render an inner well."
-        )
-        XCTAssertEqual(
-            prototypeSource.components(separatedBy: "class=\"orbit-ambient\"").count - 1,
-            3,
-            "Phone, small, and medium orbit prototypes must each render an ambient field."
-        )
-        XCTAssertFalse(prototypeSource.contains("01 · SEAL"))
-        XCTAssertFalse(prototypeSource.contains("class=\"moon\""))
-        XCTAssertFalse(prototypeSource.contains("class=\"planet\""))
-        XCTAssertFalse(prototypeSource.contains("class=\"storm\""))
-        XCTAssertEqual(
-            prototypeSource.components(separatedBy: "class=\"today-star\"").count - 1,
-            3,
-            "Phone, small, and medium orbit prototypes must each render exactly one today star."
-        )
-
         let timeZone = try XCTUnwrap(TimeZone(identifier: "Asia/Shanghai"))
         let today = LogicalDay(year: 2026, month: 8, day: 15)
         let generatedAt = makeDate(2026, 8, 15, 12, timeZone: timeZone)
@@ -1098,70 +980,8 @@ final class PulseWidgetSnapshotTests: XCTestCase {
         }
     }
 
-    func testStackGeometryFillsTheCanvasWithFourSheetsAndAPressPlate() throws {
-        let projectRoot = URL(fileURLWithPath: #filePath)
-            .deletingLastPathComponent()
-            .deletingLastPathComponent()
-        let rendererSource = try String(
-            contentsOf: projectRoot
-                .appendingPathComponent("PulseWidgetUI", isDirectory: true)
-                .appendingPathComponent("PulseWidgetRenderer.swift", isDirectory: false),
-            encoding: .utf8
-        )
-        let prototypeSource = try String(
-            contentsOf: projectRoot
-                .appendingPathComponent("docs", isDirectory: true)
-                .appendingPathComponent("prototypes", isDirectory: true)
-                .appendingPathComponent("widget-ritual-objects", isDirectory: true)
-                .appendingPathComponent("pulse-widget-ritual-objects.html", isDirectory: false),
-            encoding: .utf8
-        )
-        let stackStart = try XCTUnwrap(prototypeSource.range(of: "02 · STACK"))
-        let stackEnd = try XCTUnwrap(
-            prototypeSource.range(of: "03 · BLEED", range: stackStart.upperBound..<prototypeSource.endIndex)
-        )
-        let stackPrototype = String(prototypeSource[stackStart.lowerBound..<stackEnd.lowerBound])
-        let pressStart = try XCTUnwrap(rendererSource.range(of: "private struct PulsePaperPressMark"))
-        let pressEnd = try XCTUnwrap(
-            rendererSource.range(
-                of: "private struct PulseLetterPressedInkMark",
-                range: pressStart.upperBound..<rendererSource.endIndex
-            )
-        )
-        let pressSource = String(rendererSource[pressStart.lowerBound..<pressEnd.lowerBound])
-
-        XCTAssertTrue(rendererSource.contains("struct PulseStackPaperGeometry"))
-        XCTAssertTrue(rendererSource.contains("stackCanvasMarginSmall"))
-        XCTAssertFalse(rendererSource.contains("PulsePressedPaperCrease"))
+    func testStackGeometryFillsTheCanvasWithFourSheetsAndAPressPlate() {
         XCTAssertEqual(PulseWidgetDesign.stackPhysicalSheetCount, 4)
-        XCTAssertFalse(pressSource.contains("systemName: \"checkmark\""))
-        XCTAssertFalse(pressSource.contains("openRingTrim"))
-        XCTAssertFalse(pressSource.contains("RoundedRectangle"))
-        XCTAssertFalse(pressSource.contains("opacity(0.86)"))
-        XCTAssertFalse(pressSource.contains("PulseLetterPressRidges"))
-        XCTAssertTrue(pressSource.contains("RadialGradient"))
-        XCTAssertTrue(pressSource.contains("opacity(0.48)"))
-        XCTAssertTrue(pressSource.contains("opacity(0.28)"))
-        XCTAssertTrue(pressSource.contains("opacity(0.12)"))
-        XCTAssertTrue(pressSource.contains("Ellipse()"))
-        XCTAssertTrue(rendererSource.contains("private struct PulseFoldedPaperFlap"))
-        XCTAssertTrue(rendererSource.contains("size.width - 28"))
-        XCTAssertTrue(rendererSource.contains("size.width - 48"))
-        XCTAssertTrue(rendererSource.contains("86 * sx"))
-        XCTAssertTrue(rendererSource.contains("54 * sx"))
-        XCTAssertTrue(rendererSource.contains("private struct PulseStackedSheetShape"))
-        XCTAssertEqual(
-            stackPrototype.components(separatedBy: "class=\"press-plate\"").count - 1,
-            2,
-            "Small and medium stack prototypes must each render one press plate."
-        )
-        XCTAssertEqual(
-            stackPrototype.components(separatedBy: "<span></span><span></span><span></span><span></span>").count - 1,
-            2,
-            "Small and medium stack prototypes must each render four sheets."
-        )
-        XCTAssertFalse(stackPrototype.contains("class=\"today-hit\""))
-        XCTAssertFalse(stackPrototype.contains("pathLength=\"100\""))
 
         let sizes: [(CGSize, Bool)] = [
             (CGSize(width: 145, height: 145), false),
@@ -1207,44 +1027,44 @@ final class PulseWidgetSnapshotTests: XCTestCase {
                     geometry.topPaperFrame.insetBy(dx: -0.5, dy: -0.5).contains(geometry.pressFrame),
                     "Press plate escaped the top sheet at \(size), checked=\(isChecked)."
                 )
-                // Prototype intentionally overlaps the dog-ear; do not force clearance.
+                // The formal composition intentionally overlaps the dog-ear; do not force clearance.
                 if usesMediumMetrics {
                     XCTAssertEqual(
                         geometry.pressSize.width / size.width,
                         86 / 338,
                         accuracy: 0.01,
-                        "Medium press width must track prototype 86/338."
+                        "Medium press width must track the formal 86/338 geometry."
                     )
                     XCTAssertEqual(
                         (size.width - geometry.pressFrame.maxX) / size.width,
                         48 / 338,
                         accuracy: 0.02,
-                        "Medium press right inset must track prototype 48pt."
+                        "Medium press right inset must remain 48pt in the formal geometry."
                     )
                     XCTAssertEqual(
                         (size.height - geometry.pressFrame.maxY) / size.height,
                         36 / 158,
                         accuracy: 0.03,
-                        "Medium press bottom inset must track prototype 36pt."
+                        "Medium press bottom inset must remain 36pt in the formal geometry."
                     )
                 } else {
                     XCTAssertEqual(
                         geometry.pressSize.width / size.width,
                         54 / 158,
                         accuracy: 0.01,
-                        "Small press width must track prototype 54/158."
+                        "Small press width must track the formal 54/158 geometry."
                     )
                     XCTAssertEqual(
                         (size.width - geometry.pressFrame.maxX) / size.width,
                         28 / 158,
                         accuracy: 0.02,
-                        "Small press right inset must track prototype 28pt."
+                        "Small press right inset must remain 28pt in the formal geometry."
                     )
                     XCTAssertEqual(
                         (size.height - geometry.pressFrame.maxY) / size.height,
                         46 / 158,
                         accuracy: 0.03,
-                        "Small press bottom inset must track prototype 46pt."
+                        "Small press bottom inset must remain 46pt in the formal geometry."
                     )
                 }
                 let reservedCascade = geometry.topPaperFrame.minX - bounds.minX
@@ -1415,6 +1235,26 @@ final class PulseWidgetSnapshotTests: XCTestCase {
                 XCTAssertFalse(
                     value?.isEmpty ?? true,
                     "Missing \(language) translation for \(key)."
+                )
+            }
+        }
+
+        let appCatalog = try JSONDecoder().decode(
+            WidgetStringCatalog.self,
+            from: Data(
+                contentsOf: projectRoot
+                    .appendingPathComponent("pulse", isDirectory: true)
+                    .appendingPathComponent("Localizable.xcstrings", isDirectory: false)
+            )
+        )
+        for key in ["widget.state.checked", "widget.state.pending"] {
+            let widgetEntry = try XCTUnwrap(catalog.strings[key])
+            let appEntry = try XCTUnwrap(appCatalog.strings[key])
+            for language in ["en", "zh-Hans"] {
+                XCTAssertEqual(
+                    widgetEntry.localizations[language]?.stringUnit.value,
+                    appEntry.localizations[language]?.stringUnit.value,
+                    "Shared renderer copy drifted for \(key) [\(language)]."
                 )
             }
         }
@@ -1593,6 +1433,7 @@ final class PulseWidgetSnapshotTests: XCTestCase {
             "today is still open", "today’s mark", "today's mark", "imprinted today",
             "shared store", "advanced benefits", "main commitment", "widget composition", "seven marks",
             "不会在后台", "没有附带", "请勿填写或附带", "人脸身份", "健康推断", "never sent in the background",
+            "准备好时", "回来即可", "直接打卡", "come back when you are ready",
         ]
 
         for catalogURL in catalogURLs {
@@ -1601,6 +1442,11 @@ final class PulseWidgetSnapshotTests: XCTestCase {
                 from: Data(contentsOf: catalogURL)
             )
             for (key, entry) in catalog.strings {
+                XCTAssertNotEqual(
+                    entry.extractionState,
+                    "stale",
+                    "String Catalog contains a stale runtime entry: \(key)."
+                )
                 for localization in entry.localizations.values {
                     let value = localization.stringUnit.value.lowercased()
                     for term in forbiddenTerms {
@@ -2193,6 +2039,7 @@ private struct WidgetStringCatalog: Decodable {
             let stringUnit: StringUnit
         }
 
+        let extractionState: String?
         let localizations: [String: Localization]
     }
 

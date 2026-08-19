@@ -128,6 +128,112 @@ final class ImprintMediaRepositoryTests: XCTestCase {
         }
     }
 
+    func testFileStoreRejectsSymbolicLinkedMediaFiles() async throws {
+        let testRoot = FileManager.default.temporaryDirectory
+            .appendingPathComponent("PulseMediaFileSymlinkTests-\(UUID().uuidString)")
+        let mediaRoot = testRoot.appendingPathComponent("Media", isDirectory: true)
+        let externalFile = testRoot.appendingPathComponent("external.jpg")
+        addTeardownBlock { try? FileManager.default.removeItem(at: testRoot) }
+        let store = try PulseMediaFileStore(rootURL: mediaRoot)
+        let original = Data([0xff, 0xd8, 1, 2, 3, 0xff, 0xd9])
+        let thumbnail = Data([0xff, 0xd8, 4, 0xff, 0xd9])
+        let files = try await store.install(
+            originalData: original,
+            thumbnailData: thumbnail
+        )
+        let item = snapshot(files: files, original: original, now: date(hour: 9))
+        let thumbnailURL = mediaRoot.appendingPathComponent(files.thumbnailRelativePath)
+        try FileManager.default.removeItem(at: thumbnailURL)
+        try thumbnail.write(to: externalFile, options: [.atomic])
+        try FileManager.default.createSymbolicLink(
+            at: thumbnailURL,
+            withDestinationURL: externalFile
+        )
+
+        do {
+            _ = try await store.readThumbnail(for: item)
+            XCTFail("Expected a symbolic-linked media file to be rejected.")
+        } catch {
+            XCTAssertEqual(error as? PulseCoreError, .mediaFileUnavailable)
+        }
+        XCTAssertEqual(try Data(contentsOf: externalFile), thumbnail)
+    }
+
+    func testFileStoreRejectsManagedDirectorySymbolicLinksAtInitialization() throws {
+        let testRoot = FileManager.default.temporaryDirectory
+            .appendingPathComponent("PulseMediaSymlinkInitTests-\(UUID().uuidString)")
+        let mediaRoot = testRoot.appendingPathComponent("Media", isDirectory: true)
+        let externalOriginals = testRoot.appendingPathComponent(
+            "ExternalOriginals",
+            isDirectory: true
+        )
+        addTeardownBlock { try? FileManager.default.removeItem(at: testRoot) }
+        try FileManager.default.createDirectory(
+            at: mediaRoot,
+            withIntermediateDirectories: true
+        )
+        try FileManager.default.createDirectory(
+            at: externalOriginals,
+            withIntermediateDirectories: true
+        )
+        try FileManager.default.createSymbolicLink(
+            at: mediaRoot.appendingPathComponent("originals", isDirectory: true),
+            withDestinationURL: externalOriginals
+        )
+
+        XCTAssertThrowsError(try PulseMediaFileStore(rootURL: mediaRoot)) { error in
+            XCTAssertEqual(error as? PulseCoreError, .mediaStorageUnavailable)
+        }
+    }
+
+    func testFileStoreRejectsManagedDirectoryReplacedBySymbolicLink() async throws {
+        let testRoot = FileManager.default.temporaryDirectory
+            .appendingPathComponent("PulseMediaSymlinkRuntimeTests-\(UUID().uuidString)")
+        let mediaRoot = testRoot.appendingPathComponent("Media", isDirectory: true)
+        let externalOriginals = testRoot.appendingPathComponent(
+            "ExternalOriginals",
+            isDirectory: true
+        )
+        addTeardownBlock { try? FileManager.default.removeItem(at: testRoot) }
+        let store = try PulseMediaFileStore(rootURL: mediaRoot)
+        let originals = mediaRoot.appendingPathComponent("originals", isDirectory: true)
+        try FileManager.default.removeItem(at: originals)
+        try FileManager.default.createDirectory(
+            at: externalOriginals,
+            withIntermediateDirectories: true
+        )
+        try FileManager.default.createSymbolicLink(
+            at: originals,
+            withDestinationURL: externalOriginals
+        )
+
+        do {
+            _ = try await store.install(
+                originalData: Data([0xff, 0xd8, 1, 0xff, 0xd9]),
+                thumbnailData: Data([0xff, 0xd8, 2, 0xff, 0xd9])
+            )
+            XCTFail("Expected the replaced managed directory to be rejected.")
+        } catch {
+            XCTAssertEqual(error as? PulseCoreError, .mediaStorageUnavailable)
+        }
+        XCTAssertTrue(try FileManager.default.contentsOfDirectory(atPath: externalOriginals.path).isEmpty)
+    }
+
+    func testPersistedMediaPathsRequireCanonicalUUIDFilenames() {
+        let storageID = UUID()
+        let canonical = PulseMediaPath.make(directory: .originals, storageID: storageID)
+
+        XCTAssertTrue(PulseMediaPath.isValid(canonical, directory: .originals))
+        XCTAssertFalse(PulseMediaPath.isValid("originals/photo.jpg", directory: .originals))
+        XCTAssertFalse(
+            PulseMediaPath.isValid(
+                "originals/\(storageID.uuidString).jpg",
+                directory: .originals
+            )
+        )
+        XCTAssertFalse(PulseMediaPath.isValidStoredPath("other/\(storageID).jpg"))
+    }
+
     private func makeRepository(clock: MutableMediaClock) throws -> SwiftDataPulseRepository {
         SwiftDataPulseRepository(
             container: try PersistenceController.makeInMemoryContainer(

@@ -23,6 +23,7 @@ private enum HistoryContentMode: String {
 
 struct HistoryView: View {
     @Bindable var model: PulseAppModel
+    let isActive: Bool
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
@@ -42,7 +43,7 @@ struct HistoryView: View {
     var body: some View {
         ZStack {
             PulseScreenBackground()
-            PulseFieldBackground()
+            PulseFieldBackground(allowsMotion: isActive)
 
             VStack(spacing: 0) {
                 PulseAppHeader(source: .history)
@@ -148,38 +149,19 @@ struct HistoryView: View {
     }
 
     private var sunlitHistoryContent: some View {
-        ZStack(alignment: .topTrailing) {
-            VStack(spacing: 0) {
-                sunlitMonthHero
-                sunlitStatisticsBand
-                    .padding(.top, PulseDesign.spacing12)
-                historyModePicker
-                    .padding(.top, PulseDesign.spacing16)
-                Group {
-                    switch contentMode {
-                    case .calendar:
-                        animatedCalendar
-                    case .journal:
-                        JournalHistorySection(model: model, selectedDay: $selectedDay)
-                    }
+        VStack(spacing: 0) {
+            sunlitMonthHero
+            sunlitStatisticsBand
+                .padding(.top, PulseDesign.spacing12)
+            historyModePicker
+                .padding(.top, PulseDesign.spacing16)
+            Group {
+                switch contentMode {
+                case .calendar:
+                    animatedCalendar
+                case .journal:
+                    JournalHistorySection(model: model, selectedDay: $selectedDay)
                 }
-            }
-
-            if let month = selectedMonth {
-                Text(String(format: "%02d", month.month))
-                    .font(
-                        .system(
-                            size: PulseDesign.sunlitWatermarkSize,
-                            weight: .black,
-                            design: .rounded
-                        )
-                    )
-                    .foregroundStyle(
-                        PulseDesign.sunlitInk.opacity(PulseDesign.sunlitWatermarkOpacity)
-                    )
-                    .offset(x: PulseDesign.sunlitWatermarkOffsetX, y: 8)
-                    .allowsHitTesting(false)
-                    .accessibilityHidden(true)
             }
         }
         .padding(.top, PulseDesign.spacing8)

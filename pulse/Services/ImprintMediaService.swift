@@ -238,10 +238,7 @@ final class ImprintMediaService {
     }
 
     private func stagingURL(root: URL, relativePath: String) throws -> URL {
-        guard !relativePath.hasPrefix("/"),
-              !relativePath.contains(".."),
-              !relativePath.contains("\\"),
-              relativePath.split(separator: "/").count == 2 else {
+        guard PulseMediaPath.isValidStoredPath(relativePath) else {
             throw PulseCoreError.invalidBackup
         }
         let url = root.appendingPathComponent(relativePath).standardizedFileURL

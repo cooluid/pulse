@@ -241,7 +241,7 @@ private enum PulseWidgetRuntime {
                 at: date,
                 state: .unavailable,
                 language: .system,
-                retryAfter: 15 * 60
+                retryAfter: PulseWidgetContract.runtimeRetryInterval
             ).timeline
         }
 
@@ -282,21 +282,21 @@ private enum PulseWidgetRuntime {
                 at: date,
                 state: .needsOpenApp,
                 language: language,
-                retryAfter: 15 * 60
+                retryAfter: PulseWidgetContract.runtimeRetryInterval
             ).timeline
         } catch PulseWidgetProjectionError.identityNotConfirmed {
             return failureTimeline(
                 at: date,
                 state: .needsOpenApp,
                 language: language,
-                retryAfter: 15 * 60
+                retryAfter: PulseWidgetContract.runtimeRetryInterval
             ).timeline
         } catch {
             return failureTimeline(
                 at: date,
                 state: .unavailable,
                 language: language,
-                retryAfter: 15 * 60
+                retryAfter: PulseWidgetContract.runtimeRetryInterval
             ).timeline
         }
     }
@@ -401,8 +401,8 @@ private struct PulseLocalizedWidgetView: View {
             allowsMotion: !reduceMotion && !isLuminanceReduced,
             statusText: String(
                 localized: snapshot.isCheckedToday
-                    ? "widget.state.checked.editorial"
-                    : "widget.state.pending.short",
+                    ? "widget.state.checked"
+                    : "widget.state.pending",
                 locale: locale
             ),
             pathSummaryFormat: String(
@@ -785,7 +785,7 @@ private struct PulseAccessoryRhythmMetrics {
         let visibleRingInset = imprintSide * (
             PulseWidgetDesign.imprintRingInsetRatio
                 + (1 - 2 * PulseWidgetDesign.imprintRingInsetRatio)
-                * PulseWidgetDesign.prototypeRingInsetRatio
+                * PulseWidgetDesign.ringLayerInsetRatio
         )
         let imprintLeadingAnchor = CGPoint(
             x: size.width - imprintSide + visibleRingInset,

@@ -6,7 +6,7 @@
 
 ## 1. 基线
 
-SwiftUI + SwiftData + Observation + Swift Concurrency，Swift 6 严格并发，iOS/iPadOS 18+，警告即错误。正式 target 为 `PulseCore`、`pulse`、`PulseWidgetsExtension`、`pulseTests`、`pulseUITests`，无第三方运行时依赖。
+SwiftUI + SwiftData + Observation + Swift Concurrency，Swift 6 严格并发，iOS/iPadOS 18+，警告即错误。1.1 只支持单 Scene，`UIApplicationSupportsMultipleScenes == false`；未来若引入 iPad 多窗口，必须先建立进程级操作、生命周期与共享资源协调合同。正式 target 为 `PulseCore`、`pulse`、`PulseWidgetsExtension`、`pulseTests`、`pulseUITests`，无第三方运行时依赖。
 
 ## 2. 所有权图
 
@@ -64,7 +64,7 @@ AppModel 同时建立 `recordsByDay` 与 `mediaByDay`。照片不参与 CheckInS
 
 `PulseEnhancementContract` 与 StoreKit 已验证 entitlement 是购买唯一来源；不保存 `isPro`。拍照、媒体和备份不读取权益。增强只控制静野/晴昼界面主题、额外 Widget 构图与可用设备的 scheduled Live Activity。`PulseVisualThemeAccessPolicy` 规定纸页手记为唯一免费默认，`enhancementThemes` 是收费主题的唯一枚举；主题写入只经 `PulseAppModel.requestVisualTheme`，权益未验证或撤销时失败关闭并统一回到纸页手记，不保留第二套购买状态。高级功能页按 `currentCapabilities` 展示不可交互同源标本，主题标本与设置预览共用 `PulseVisualThemeSpecimen`，购买页不得写入当前主题。
 
-提醒、语言与 Widget 共享事实沿用正式合同。App Group UserDefaults 只允许 `interface.language`；Home Screen 构图由 WidgetKit 逐实例配置持有，不存在全局 `widget.style`。`mediaInvitationEnabled` 是 App 本机设置，不进入共享事实或备份。
+提醒、语言与 Widget 共享事实沿用正式合同。App Group UserDefaults 只允许 `PulseSharedSettings` 管理 `interface.language`、`reminder.enabled` 与 `reminder.timeMinutes`，用于 Widget Intent 提交签到后重建同一提醒计划；不得保存签到、构图或权益副本。Home Screen 构图由 WidgetKit 逐实例配置持有，不存在全局 `widget.style`。`mediaInvitationEnabled` 是 App 本机设置，不进入共享事实或备份。
 
 ## 8. 帮助与反馈
 

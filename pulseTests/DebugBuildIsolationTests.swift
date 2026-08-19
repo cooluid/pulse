@@ -48,6 +48,19 @@ final class DebugBuildIsolationTests: XCTestCase {
         XCTAssertFalse(activityContract.contains("static let deepLink"))
     }
 
+    func testProductDeclaresTheSingleSceneRuntimeItActuallySupports() throws {
+        let infoURL = projectRoot.appendingPathComponent("Config/Pulse-Info.plist")
+        let data = try Data(contentsOf: infoURL)
+        let plist = try XCTUnwrap(
+            PropertyListSerialization.propertyList(from: data, format: nil) as? [String: Any]
+        )
+        let sceneManifest = try XCTUnwrap(
+            plist["UIApplicationSceneManifest"] as? [String: Any]
+        )
+
+        XCTAssertEqual(sceneManifest["UIApplicationSupportsMultipleScenes"] as? Bool, false)
+    }
+
     func testActivityLabIsCompiledOnlyForDebugAndUsesRealActivityKit() throws {
         let root = projectRoot
         let debugSource = try source(

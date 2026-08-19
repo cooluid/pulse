@@ -402,10 +402,7 @@ public enum PulseEncryptedBackupCodec {
     }
 
     private static func secureDestination(relativePath: String, rootURL: URL) throws -> URL {
-        guard !relativePath.hasPrefix("/"),
-              !relativePath.contains(".."),
-              !relativePath.contains("\\"),
-              relativePath.split(separator: "/").count == 2 else {
+        guard PulseMediaPath.isValidStoredPath(relativePath) else {
             throw PulseCoreError.invalidBackup
         }
         let destination = rootURL.appendingPathComponent(relativePath).standardizedFileURL

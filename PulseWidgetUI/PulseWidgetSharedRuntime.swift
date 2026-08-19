@@ -109,11 +109,7 @@ enum PulseWidgetSharedRuntime {
         }
 
         let receipt = try repository.checkIn(habitID: habit.id, journalNote: nil)
-        let today = LogicalDay.resolve(
-            at: clock.now,
-            timeZone: habit.timeZone
-        )
-        await reminderScheduler.completeLiveActivity(for: today)
+        await reminderScheduler.completeLiveActivity(for: receipt.logicalDay)
 
         do {
             let settings = try context.sharedSettings.load()

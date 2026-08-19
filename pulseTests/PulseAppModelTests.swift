@@ -110,6 +110,19 @@ final class PulseAppModelTests: XCTestCase {
         XCTAssertEqual(context.scheduler.completedLiveActivityDays, [context.model.today!])
     }
 
+    func testCheckInUsesCommittedLogicalDayForSystemSurfaceCompletionAcrossMidnight() async throws {
+        let context = try makeContext()
+        await context.model.start()
+        context.clock.now = makeDate(day: 11, hour: 0)
+
+        let receipt = await context.model.checkIn()
+
+        let committedDay = LogicalDay(year: 2026, month: 8, day: 11)
+        XCTAssertEqual(receipt?.logicalDay, committedDay)
+        XCTAssertEqual(context.model.today, committedDay)
+        XCTAssertEqual(context.scheduler.completedLiveActivityDays, [committedDay])
+    }
+
     func testJournalNoteUpdateRefreshesSnapshotWithoutChangingCheckInFacts() async throws {
         let context = try makeContext()
         await context.model.start()
@@ -158,6 +171,27 @@ final class PulseAppModelTests: XCTestCase {
         XCTAssertEqual(context.model.today, LogicalDay(year: 2026, month: 8, day: 11))
         XCTAssertNil(context.model.todayRecord)
         XCTAssertEqual(context.model.statistics.currentStreak, 1)
+    }
+
+    func testSceneActivationDuringLongOperationReloadsAfterTheOperationFinishes() async throws {
+        let context = try makeContext()
+        await context.model.start()
+
+        let exportTask = Task { @MainActor in
+            try await context.model.makeBackupExport(passphrase: "1234")
+        }
+        await waitUntil { context.model.operation == .exportBackup }
+        context.clock.now = makeDate(day: 11, hour: 0)
+        await context.model.handleSceneActivation()
+
+        let export = try await exportTask.value
+        await waitUntil {
+            context.model.operation == nil
+                && context.model.today == LogicalDay(year: 2026, month: 8, day: 11)
+        }
+
+        XCTAssertEqual(context.model.today, LogicalDay(year: 2026, month: 8, day: 11))
+        _ = export
     }
 
     func testAcceptedTimeZoneChangePreservesStartAndRecordProvenance() async throws {

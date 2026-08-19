@@ -13,6 +13,13 @@ final class ReminderSchedulerLiveActivityTests: XCTestCase {
             PulseReminderActivityContract.completionEchoDuration,
             .seconds(2)
         )
+        let referenceDate = Date(timeIntervalSince1970: 0)
+        XCTAssertEqual(
+            PulseReminderActivityContract.completionEchoDismissalDate(now: referenceDate)
+                .timeIntervalSince(referenceDate),
+            1.7,
+            accuracy: 0.000_001
+        )
     }
 
     func testScheduledLiveActivityUsesTheBoundedRollingBudget() async throws {
@@ -32,9 +39,26 @@ final class ReminderSchedulerLiveActivityTests: XCTestCase {
         )
         XCTAssertEqual(notifications.addedIdentifiers.count, 53)
         XCTAssertEqual(client.removeAllCount, 1)
-        XCTAssertEqual(client.preservedLogicalDays, [
-            LogicalDay(year: 2026, month: 8, day: 10),
-        ])
+        XCTAssertEqual(client.preservedLogicalDays, [nil])
+    }
+
+    func testActiveTodayActivityIsPreservedAndExcludedFromTheReplacementPlan() async throws {
+        let today = LogicalDay(year: 2026, month: 8, day: 10)
+        let client = TestReminderLiveActivityScheduler(activeLogicalDays: [today])
+        let notifications = TestReminderNotificationScheduler(permission: .authorized)
+        let scheduler = ReminderScheduler(
+            notificationScheduler: notifications,
+            liveActivityScheduler: client
+        )
+
+        let mode = try await scheduler.reconcile(makeSnapshot())
+
+        XCTAssertEqual(mode, .scheduledLiveActivity)
+        XCTAssertEqual(client.preservedLogicalDays, [today])
+        XCTAssertFalse(client.scheduledReminders.contains { $0.day == today })
+        XCTAssertFalse(
+            notifications.addedIdentifiers.contains { $0.hasSuffix(today.storageValue) }
+        )
     }
 
     func testCapacityFailureSchedulesNotificationsForEveryUnacceptedDay() async throws {
@@ -198,14 +222,19 @@ private final class TestReminderLiveActivityScheduler: ReminderLiveActivitySched
         supportsScheduledLiveActivities: true,
         liveActivitiesEnabled: true
     )
+    let activeLogicalDays: Set<LogicalDay>
     private let failingCall: Int?
     private(set) var scheduledReminders: [PlannedReminder] = []
     private(set) var completedDays: [LogicalDay] = []
     private(set) var removeAllCount = 0
     private(set) var preservedLogicalDays: [LogicalDay?] = []
 
-    init(failingCall: Int? = nil) {
+    init(
+        failingCall: Int? = nil,
+        activeLogicalDays: Set<LogicalDay> = []
+    ) {
         self.failingCall = failingCall
+        self.activeLogicalDays = activeLogicalDays
     }
 
     func schedule(_ reminder: PlannedReminder, locale: Locale) async throws {

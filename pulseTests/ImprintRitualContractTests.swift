@@ -36,35 +36,35 @@ final class ImprintRitualContractTests: XCTestCase {
         XCTAssertLessThanOrEqual(PulseDesign.sunlitAmbientTravel, 8)
     }
 
-    func testSunlitDayUsesSharedFieldAndAuthoritativeTodayCompletion() throws {
-        let repositoryRoot = URL(fileURLWithPath: #filePath)
-            .deletingLastPathComponent()
-            .deletingLastPathComponent()
-        let designSource = try String(
-            contentsOf: repositoryRoot.appending(path: "pulse/Shared/PulseDesignSystem.swift"),
-            encoding: .utf8
+    func testAmbientFieldMotionHonorsVisibilityLifecycleAndReduceMotion() {
+        XCTAssertTrue(
+            PulseAmbientMotionPolicy.allowsMotion(
+                requested: true,
+                reduceMotion: false,
+                sceneIsActive: true
+            )
         )
-        let todaySource = try String(
-            contentsOf: repositoryRoot.appending(path: "pulse/Features/Today/TodayView.swift"),
-            encoding: .utf8
+        XCTAssertFalse(
+            PulseAmbientMotionPolicy.allowsMotion(
+                requested: false,
+                reduceMotion: false,
+                sceneIsActive: true
+            )
         )
-
-        XCTAssertTrue(designSource.contains("case .sunlitDay:\n            sunlitField"))
-        XCTAssertTrue(designSource.contains("PulseSunlitFieldCanvas("))
-        XCTAssertTrue(todaySource.contains("let isChecked = model.todayRecord != nil"))
-        XCTAssertFalse(designSource.contains("routeNodes"))
-        XCTAssertFalse(todaySource.contains("isCompleted: model.todayRecord != nil"))
-    }
-
-    func testAmbientFieldMotionHonorsLifecycleAndReduceMotion() throws {
-        let repositoryRoot = URL(fileURLWithPath: #filePath)
-            .deletingLastPathComponent()
-            .deletingLastPathComponent()
-        let sourceURL = repositoryRoot.appending(path: "pulse/Shared/PulseDesignSystem.swift")
-        let source = try String(contentsOf: sourceURL, encoding: .utf8)
-
-        XCTAssertTrue(source.contains("paused: !allowsAmbientMotion"))
-        XCTAssertTrue(source.contains("!reduceMotion && scenePhase == .active"))
+        XCTAssertFalse(
+            PulseAmbientMotionPolicy.allowsMotion(
+                requested: true,
+                reduceMotion: true,
+                sceneIsActive: true
+            )
+        )
+        XCTAssertFalse(
+            PulseAmbientMotionPolicy.allowsMotion(
+                requested: true,
+                reduceMotion: false,
+                sceneIsActive: false
+            )
+        )
     }
 
     func testOnlyCommittedPresentationPhasesUseTheSolidGlyph() {

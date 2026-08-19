@@ -48,8 +48,15 @@ public actor PulseMediaFileStore {
             throw PulseCoreError.invalidMedia
         }
 
-        let originalRelativePath = "originals/\(storageID.uuidString.lowercased()).jpg"
-        let thumbnailRelativePath = "thumbnails/\(storageID.uuidString.lowercased()).jpg"
+        try validateManagedDirectories()
+        let originalRelativePath = PulseMediaPath.make(
+            directory: .originals,
+            storageID: storageID
+        )
+        let thumbnailRelativePath = PulseMediaPath.make(
+            directory: .thumbnails,
+            storageID: storageID
+        )
         let transactionURL = stagingURL.appendingPathComponent(
             UUID().uuidString.lowercased(),
             isDirectory: true
@@ -138,6 +145,7 @@ public actor PulseMediaFileStore {
     }
 
     public func audit(referencedMedia: [ImprintMediaSnapshot]) throws {
+        try validateManagedDirectories()
         let referenced = Set(referencedMedia.flatMap {
             [$0.originalRelativePath, $0.thumbnailRelativePath]
         })
@@ -148,8 +156,9 @@ public actor PulseMediaFileStore {
                 options: [.skipsHiddenFiles]
             )
             for url in files {
-                let values = try url.resourceValues(forKeys: [.isRegularFileKey, .isSymbolicLinkKey])
-                guard values.isRegularFile == true, values.isSymbolicLink != true else {
+                let attributes = try fileManager.attributesOfItem(atPath: url.path)
+                guard !Self.isSymbolicLink(url, fileManager: fileManager),
+                      attributes[.type] as? FileAttributeType == .typeRegular else {
                     throw PulseCoreError.mediaStorageUnavailable
                 }
                 let relativePath = "\(prefix)/\(url.lastPathComponent)"
@@ -169,12 +178,14 @@ public actor PulseMediaFileStore {
     }
 
     public func removeAll() throws {
+        try validateManagedDirectories()
         try removeAllContents(of: originalsURL)
         try removeAllContents(of: thumbnailsURL)
         try removeAllContents(of: stagingURL)
     }
 
     public func storageByteCount() throws -> Int64 {
+        try validateManagedDirectories()
         var result: Int64 = 0
         for directory in [originalsURL, thumbnailsURL] {
             let urls = try fileManager.contentsOfDirectory(
@@ -183,11 +194,13 @@ public actor PulseMediaFileStore {
                 options: [.skipsHiddenFiles]
             )
             for url in urls {
-                let values = try url.resourceValues(forKeys: [.fileSizeKey, .isRegularFileKey])
-                guard values.isRegularFile == true, let fileSize = values.fileSize else {
+                let attributes = try fileManager.attributesOfItem(atPath: url.path)
+                guard !Self.isSymbolicLink(url, fileManager: fileManager),
+                      attributes[.type] as? FileAttributeType == .typeRegular,
+                      let fileSize = attributes[.size] as? NSNumber else {
                     throw PulseCoreError.mediaStorageUnavailable
                 }
-                result += Int64(fileSize)
+                result += fileSize.int64Value
             }
         }
         return result
@@ -209,16 +222,12 @@ public actor PulseMediaFileStore {
 
     private func readFile(relativePath: String, maximumBytes: Int) throws -> Data {
         let url = try resolvedURL(for: relativePath)
-        let values = try url.resourceValues(forKeys: [
-            .isRegularFileKey,
-            .isSymbolicLinkKey,
-            .fileSizeKey
-        ])
-        guard values.isRegularFile == true,
-              values.isSymbolicLink != true,
-              let fileSize = values.fileSize,
-              fileSize > 0,
-              fileSize <= maximumBytes else {
+        let attributes = try fileManager.attributesOfItem(atPath: url.path)
+        guard !Self.isSymbolicLink(url, fileManager: fileManager),
+              attributes[.type] as? FileAttributeType == .typeRegular,
+              let fileSize = attributes[.size] as? NSNumber,
+              fileSize.int64Value > 0,
+              fileSize.int64Value <= Int64(maximumBytes) else {
             throw PulseCoreError.mediaFileUnavailable
         }
         // Backup encryption zeroizes plaintext media after use. A mapped Data value can
@@ -227,12 +236,16 @@ public actor PulseMediaFileStore {
     }
 
     private func resolvedURL(for relativePath: String) throws -> URL {
-        guard !relativePath.isEmpty,
-              !relativePath.hasPrefix("/"),
-              !relativePath.contains(".."),
-              !relativePath.contains("\\"),
-              relativePath.split(separator: "/").count == 2 else {
+        guard PulseMediaPath.isValidStoredPath(relativePath),
+              let directory = PulseMediaPath.directory(for: relativePath) else {
             throw PulseCoreError.invalidMedia
+        }
+        try Self.requireSafeDirectory(rootURL, fileManager: fileManager)
+        switch directory {
+        case .originals:
+            try Self.requireSafeDirectory(originalsURL, fileManager: fileManager)
+        case .thumbnails:
+            try Self.requireSafeDirectory(thumbnailsURL, fileManager: fileManager)
         }
         let resolved = rootURL.appendingPathComponent(relativePath).standardizedFileURL
         let rootPrefix = rootURL.path.hasSuffix("/") ? rootURL.path : rootURL.path + "/"
@@ -254,8 +267,30 @@ public actor PulseMediaFileStore {
     }
 
     private static func prepareDirectory(_ url: URL, fileManager: FileManager) throws {
+        if isSymbolicLink(url, fileManager: fileManager) {
+            throw PulseCoreError.mediaStorageUnavailable
+        }
         try fileManager.createDirectory(at: url, withIntermediateDirectories: true)
+        try requireSafeDirectory(url, fileManager: fileManager)
         try protect(url, fileManager: fileManager)
+    }
+
+    private func validateManagedDirectories() throws {
+        for directory in [rootURL, originalsURL, thumbnailsURL, stagingURL] {
+            try Self.requireSafeDirectory(directory, fileManager: fileManager)
+        }
+    }
+
+    private static func requireSafeDirectory(_ url: URL, fileManager: FileManager) throws {
+        let attributes = try fileManager.attributesOfItem(atPath: url.path)
+        guard !isSymbolicLink(url, fileManager: fileManager),
+              attributes[.type] as? FileAttributeType == .typeDirectory else {
+            throw PulseCoreError.mediaStorageUnavailable
+        }
+    }
+
+    private static func isSymbolicLink(_ url: URL, fileManager: FileManager) -> Bool {
+        (try? fileManager.destinationOfSymbolicLink(atPath: url.path)) != nil
     }
 
     private static func protect(_ url: URL, fileManager: FileManager) throws {

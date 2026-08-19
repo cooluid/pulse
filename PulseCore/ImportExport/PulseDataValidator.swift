@@ -91,8 +91,8 @@ enum PulseDataValidator {
                   item.sha256.allSatisfy({ $0.isHexDigit && !$0.isUppercase }),
                   item.thumbnailSHA256.count == 64,
                   item.thumbnailSHA256.allSatisfy({ $0.isHexDigit && !$0.isUppercase }),
-                  validPath(item.originalRelativePath, prefix: "originals/"),
-                  validPath(item.thumbnailRelativePath, prefix: "thumbnails/"),
+                  PulseMediaPath.isValid(item.originalRelativePath, directory: .originals),
+                  PulseMediaPath.isValid(item.thumbnailRelativePath, directory: .thumbnails),
                   mediaIDs.insert(item.id).inserted,
                   mediaDays.insert(logicalDay).inserted,
                   mediaPaths.insert(item.originalRelativePath).inserted,
@@ -140,13 +140,5 @@ enum PulseDataValidator {
         } catch {
             return false
         }
-    }
-
-    private static func validPath(_ path: String, prefix: String) -> Bool {
-        path.hasPrefix(prefix)
-            && !path.contains("..")
-            && !path.contains("\\")
-            && path.split(separator: "/").count == 2
-            && path.hasSuffix(".jpg")
     }
 }

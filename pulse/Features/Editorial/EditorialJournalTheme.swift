@@ -13,15 +13,12 @@ enum EditorialJournalPrompt {
     }
 }
 
-struct EditorialTodayContent: View {
+struct EditorialTodayContent<CheckInControl: View>: View {
     @Bindable var model: PulseAppModel
     @Binding var draftJournalNote: String
     @FocusState.Binding var isJournalFocused: Bool
-    let onCheckIn: @MainActor @Sendable () -> Void
-    let onCheckInAndPhoto: @MainActor @Sendable () -> Void
     let onEditJournal: () -> Void
-    let onCaptureMedia: () -> Void
-    let onShowMedia: () -> Void
+    let checkInControl: CheckInControl
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.locale) private var locale
@@ -35,13 +32,17 @@ struct EditorialTodayContent: View {
             editorialPromptBlock
                 .padding(.top, PulseDesign.spacing24)
 
+            checkInControl
+                .frame(maxWidth: .infinity, alignment: .center)
+                .padding(.top, PulseDesign.spacing24)
+
             editorialWeekRail
                 .padding(.top, PulseDesign.spacing24)
 
-            Spacer(minLength: PulseDesign.spacing24)
+            editorialRhythmStatus
+                .padding(.top, PulseDesign.spacing20)
 
-            editorialFooter
-                .padding(.bottom, PulseDesign.spacing8)
+            Spacer(minLength: PulseDesign.spacing16)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .onAppear { lineExpanded = isChecked }
@@ -100,118 +101,22 @@ struct EditorialTodayContent: View {
         }
     }
 
-    private var editorialFooter: some View {
-        VStack(alignment: .leading, spacing: PulseDesign.spacing12) {
-            Text(
-                PulseTodayPresentation.rhythmStatusText(
-                    currentStreak: model.statistics.currentStreak,
-                    locale: locale
-                )
+    private var editorialRhythmStatus: some View {
+        Text(
+            PulseTodayPresentation.rhythmStatusText(
+                currentStreak: model.statistics.currentStreak,
+                locale: locale
             )
-            .font(.subheadline.weight(.semibold))
-            .monospacedDigit()
-            .foregroundStyle(PulseDesign.ink)
-            .multilineTextAlignment(.center)
-            .frame(maxWidth: .infinity, alignment: .center)
-            .contentTransition(
-                .numericText(value: Double(model.statistics.currentStreak))
-            )
-            .accessibilityIdentifier("today.rhythm.status")
-
-            HStack(alignment: .center, spacing: PulseDesign.spacing16) {
-                HStack(spacing: PulseDesign.spacing8) {
-                    ZStack {
-                        Circle()
-                            .stroke(
-                                isChecked
-                                    ? PulseDesign.ink
-                                    : PulseDesign.secondary.opacity(
-                                        PulseDesign.editorialPendingStrokeOpacity
-                                    ),
-                                lineWidth: PulseDesign.emphasisLineWidth
-                            )
-                            .frame(
-                                width: PulseDesign.editorialCheckButtonSize,
-                                height: PulseDesign.editorialCheckButtonSize
-                            )
-
-                        if isChecked {
-                            Circle()
-                                .fill(PulseDesign.ink)
-                                .frame(
-                                    width: PulseDesign.editorialCheckButtonSize,
-                                    height: PulseDesign.editorialCheckButtonSize
-                                )
-
-                            Image(systemName: "checkmark")
-                                .font(.caption.weight(.bold))
-                                .foregroundStyle(PulseDesign.background)
-                        } else if model.isSaving {
-                            ProgressView()
-                                .controlSize(.small)
-                        }
-                    }
-
-                    Text(isChecked ? "today.accessibility.checked" : "today.check_in")
-                        .font(.subheadline.weight(.semibold))
-                }
-                .frame(minHeight: PulseDesign.minimumHitTarget)
-                .overlay {
-                    PulseCombinedPressControl(
-                        isEnabled: model.canCheckInToday
-                            && !model.isSaving
-                            && isDraftValid,
-                        accessibilityLabel: checkInAccessibilityLabel,
-                        accessibilityHint: isChecked
-                            ? ""
-                            : PulseLocalization.string(
-                                "today.accessibility.hint",
-                                locale: locale
-                            ),
-                        accessibilityLongPressName: PulseLocalization.string(
-                            "today.accessibility.check_in_and_photo",
-                            locale: locale
-                        ),
-                        onPressChanged: { _ in },
-                        onTap: onCheckIn,
-                        onLongPress: onCheckInAndPhoto
-                    )
-                }
-                .opacity(
-                    model.canCheckInToday
-                        || model.isSaving
-                        || isChecked
-                        ? 1
-                        : PulseDesign.disabledControlOpacity
-                )
-
-                Spacer(minLength: PulseDesign.spacing12)
-            }
-
-            if isChecked,
-               model.settings.mediaInvitationEnabled || model.todayMedia != nil {
-                Button {
-                    model.todayMedia == nil ? onCaptureMedia() : onShowMedia()
-                } label: {
-                    Label(
-                        model.todayMedia == nil
-                            ? "today.media.capture_compact"
-                            : "today.media.view_compact",
-                        systemImage: model.todayMedia == nil ? "camera" : "photo"
-                    )
-                    .font(.caption.weight(.semibold))
-                    .frame(minHeight: PulseDesign.minimumHitTarget)
-                }
-                .buttonStyle(.plain)
-                .foregroundStyle(PulseDesign.editorialAccent)
-                .disabled(model.operation == .saveMedia)
-                .accessibilityIdentifier(
-                    model.todayMedia == nil
-                        ? "today.media.capture.button"
-                        : "today.media.preview.button"
-                )
-            }
-        }
+        )
+        .font(.subheadline.weight(.semibold))
+        .monospacedDigit()
+        .foregroundStyle(PulseDesign.ink)
+        .multilineTextAlignment(.center)
+        .frame(maxWidth: .infinity, alignment: .center)
+        .contentTransition(
+            .numericText(value: Double(model.statistics.currentStreak))
+        )
+        .accessibilityIdentifier("today.rhythm.status")
     }
 
     private var editorialWeekRail: some View {
@@ -285,21 +190,6 @@ struct EditorialTodayContent: View {
         return PulseTodayPresentation.weekDayAccessibilityLabel(
             item,
             timeZone: timeZone,
-            locale: locale
-        )
-    }
-
-    private var isDraftValid: Bool {
-        JournalNote.accepts(userInput: draftJournalNote)
-    }
-
-    private var checkInAccessibilityLabel: String {
-        let state = isChecked
-            ? PulseLocalization.string("today.accessibility.checked", locale: locale)
-            : PulseLocalization.string("today.accessibility.check_in", locale: locale)
-        return PulseTodayPresentation.checkInAccessibilityLabel(
-            state: state,
-            commitmentName: model.habit?.name,
             locale: locale
         )
     }

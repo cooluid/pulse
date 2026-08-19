@@ -2,39 +2,6 @@ import PulseCore
 import SwiftUI
 import WidgetKit
 
-enum PulseWidgetStyle: String, CaseIterable, Codable, Identifiable, Sendable {
-    case place
-    case orbit
-    case stack
-    case bleed
-    case letter
-    case field
-    case path
-    case tide
-
-    var id: String { rawValue }
-}
-
-enum PulseWidgetStyleAccessPolicy {
-    static let freeStyle = PulseWidgetStyle.place
-
-    static var enhancementStyles: [PulseWidgetStyle] {
-        PulseWidgetStyle.allCases.filter(requiresEnhancement)
-    }
-
-    static func requiresEnhancement(_ style: PulseWidgetStyle) -> Bool {
-        style != freeStyle
-    }
-
-    static func isAvailable(
-        _ style: PulseWidgetStyle,
-        hasEnhancementEntitlement: Bool
-    ) -> Bool {
-        !requiresEnhancement(style) || hasEnhancementEntitlement
-    }
-
-}
-
 struct PulseWidgetHomeRenderer: View {
     let snapshot: PulseWidgetSnapshot
     let style: PulseWidgetStyle
@@ -236,7 +203,7 @@ struct PulseWidgetHomeRenderer: View {
         let paperInset = geometry.paperInset
         let copyLeading = paperInset + pt(usesMediumMetrics ? 2 : 1, in: size)
         let copyTop = paperInset
-        // Keep small copy narrow like the prototype (≈4.6em), but pin it to the
+        // Keep small copy optically narrow (about 4.6em), but pin it to the
         // paper's top-leading — a free-floating VStack inside an expanded ZStack
         // was reading as a centered cluster on small sizes.
         let copyWidth = min(
@@ -1998,7 +1965,7 @@ struct PulseStackPaperGeometry {
         let height = max(1, size.height - margin * 2 - cascade)
         let origin = CGPoint(x: margin + cascade, y: margin)
         let topPaper = CGRect(origin: origin, size: CGSize(width: width, height: height))
-        // Prototype canvas coords: small 158² press 54×46 at right 28 / bottom 46;
+        // Formal canvas geometry: small 158² press 54×46 at right 28 / bottom 46;
         // medium 338×158 press 86×70 at right 48 / bottom 36.
         let pressWidth: CGFloat
         let pressHeight: CGFloat
@@ -2083,7 +2050,7 @@ private struct PulsePaperPressMark: View {
 
             ZStack {
                 if isChecked {
-                    // Single soft oval matching prototype plate; keep side soaks very faint.
+                    // A single soft oval forms the press plate; keep side soaks very faint.
                     Ellipse()
                         .fill(
                             RadialGradient(
@@ -2841,7 +2808,7 @@ struct PulseWidgetImprintMark: View {
             let side = min(proxy.size.width, proxy.size.height)
 
             ZStack {
-                PulsePrototypeRing(
+                PulseWidgetRingLayer(
                     color: isChecked ? completedColor : pendingColor,
                     isClosed: isChecked
                 )
@@ -2937,7 +2904,7 @@ struct PulseWidgetImprintMark: View {
     }
 }
 
-private struct PulsePrototypeRing: View {
+private struct PulseWidgetRingLayer: View {
     let color: Color
     let isClosed: Bool
 
@@ -2947,7 +2914,7 @@ private struct PulsePrototypeRing: View {
             if isClosed {
                 Circle()
                     .stroke(color, lineWidth: side * 0.09)
-                    .padding(side * PulseWidgetDesign.prototypeRingInsetRatio)
+                    .padding(side * PulseWidgetDesign.ringLayerInsetRatio)
                     .frame(width: side, height: side)
             } else {
                 Circle()
@@ -2961,116 +2928,10 @@ private struct PulsePrototypeRing: View {
                         )
                     )
                     .rotationEffect(.degrees(-114))
-                    .padding(side * PulseWidgetDesign.prototypeRingInsetRatio)
+                    .padding(side * PulseWidgetDesign.ringLayerInsetRatio)
                     .frame(width: side, height: side)
             }
         }
         .accessibilityHidden(true)
     }
-}
-
-enum PulseWidgetDesign {
-    static let background = Color("PulseBackground")
-    static let surface = Color("PulseSurface")
-    static let grass = Color("PulseGrass")
-    static let grassForeground = Color("PulseGrassForeground")
-    static let action = Color("PulseAction")
-    static let actionForeground = Color("PulseActionForeground")
-    static let ink = Color("PulseInk")
-    static let secondary = Color("PulseSecondary")
-    static let field = Color("PulseField")
-    static let shadow = Color("PulseShadow")
-    static let widgetPaper = Color("PulseWidgetPaper")
-    static let widgetSkyGlow = Color("PulseWidgetSkyGlow")
-    static let widgetWater = Color("PulseWidgetWater")
-    static let activityMark = Color("PulseActivityMark")
-    static let activityIslandFirefly = Color("PulseActivityIslandFirefly")
-    static let activityLockScreenFirefly = Color("PulseActivityLockScreenFirefly")
-    static let activityIslandBackground = Color.black
-    static let activityIslandForeground = Color.white
-    static let activityLockScreenBackground = Color(uiColor: .systemBackground)
-    static let activityCompletionAnimationDuration: TimeInterval = 1.25
-    static let activityAppearanceAnimationDuration: TimeInterval = 0.85
-    static let activityCopyTransitionDuration: TimeInterval = 0.32
-    static let activityAppearanceInitialCoreScale: CGFloat = 0.68
-    static let activityAppearanceInitialGlowScale: CGFloat = 0.72
-    static let activityAppearanceInitialGlowOpacity = 0.18
-    static let activityPendingCoreHighlightOpacity = 0.24
-    static let activityLockScreenPendingRingOpacity = 0.72
-    static let activityIslandFireflyGlowCoreOpacity = 0.90
-    static let activityIslandFireflyGlowMiddleOpacity = 0.46
-    static let activityIslandSecondaryOpacity = 0.56
-    static let activityIslandActionFillOpacity = 0.12
-    static let activityExpandedMarkSize: CGFloat = 36
-    static let activityCompactMarkSize: CGFloat = 26
-    static let activityMinimalMarkSize: CGFloat = 26
-    static let activityLockScreenMarkSize: CGFloat = 54
-    static let activityLockScreenInset: CGFloat = 14
-    static let activityLockScreenItemSpacing: CGFloat = 12
-    static let activityLockScreenCopySpacing: CGFloat = 2
-    static let activityLockScreenStackSpacing: CGFloat = 10
-    static let activityIslandCenterSpacing: CGFloat = 2
-    static let activityActionHorizontalPadding: CGFloat = 15
-    static let activityActionMinimumWidth: CGFloat = 72
-    static let activityActionMinimumHeight: CGFloat = 44
-    static let activityIslandActionVisibleHeight: CGFloat = 36
-    static let activityPreviewItemSpacing: CGFloat = 12
-    static let activityPreviewHorizontalInset: CGFloat = 14
-    static let activityPreviewVerticalInset: CGFloat = 12
-    static let activityPreviewCornerRadius: CGFloat = 32
-    static let stackPhysicalSheetCount = 4
-
-    static let bleedPendingTopSplitMorning: CGFloat = 0.60
-    static let bleedPendingTopSplitDaylight: CGFloat = 0.50
-    static let bleedPendingTopSplitEvening: CGFloat = 0.40
-    static let bleedPendingSkewSmall: CGFloat = 0.16
-    static let bleedPendingSkewMedium: CGFloat = 0.09
-    static let bleedCheckedTopSplitSmall: CGFloat = 0.74
-    static let bleedCheckedBottomSplitSmall: CGFloat = 0.58
-    static let bleedCheckedTopSplitMedium: CGFloat = 0.68
-    static let bleedCheckedBottomSplitMedium: CGFloat = 0.56
-
-    static let stackPendingLayerStepMedium: CGFloat = 6.5
-    static let stackPendingLayerStepSmall: CGFloat = 5.5
-    static let stackCheckedLayerStepMedium: CGFloat = 4.2
-    static let stackCheckedLayerStepSmall: CGFloat = 3.6
-    static let stackCanvasMarginMedium: CGFloat = 6
-    static let stackCanvasMarginSmall: CGFloat = 5
-    static let tidePendingHeightRatioMedium: CGFloat = 0.38
-    static let tidePendingHeightRatioSmall: CGFloat = 0.40
-    static let tideCheckedHeightRatioMedium: CGFloat = 0.48
-    static let tideCheckedHeightRatioSmall: CGFloat = 0.52
-    static let tideSmallMarkXRatio: CGFloat = 0.70
-    static let tideLipInverseRatio: CGFloat = 0.62
-    static let openRingTrim: CGFloat = 312 / 360
-    static let openRingRotationDegrees = -18.0
-
-    static let spacing4: CGFloat = 4
-    static let spacing8: CGFloat = 8
-    static let homeSafeInset: CGFloat = 12
-    static let imprintRingInsetRatio: CGFloat = 0.08
-    static let prototypeRingInsetRatio: CGFloat = 0.07
-    static let imprintCoreScale: CGFloat = 0.46
-    static let imprintGlyphScale: CGFloat = 0.18
-    static let homeContentInsets = EdgeInsets(top: 4, leading: 12, bottom: 4, trailing: 12)
-    static let accessoryRailLargeSide: CGFloat = 8
-    static let accessoryRailSmallSide: CGFloat = 5
-    static let accessoryBlockCornerRadius: CGFloat = 1.5
-    static let accessoryRailStrokeWidth: CGFloat = 1.5
-    static let accessoryConnectorWidth: CGFloat = 1
-    static let accessoryConnectorOpacity = 0.28
-    static let accessoryDateFontSize: CGFloat = 8
-    static let accessoryDateLabelWidth: CGFloat = 14
-    static let accessoryDateLabelHeight: CGFloat = 10
-    static let accessoryDateRailGap: CGFloat = 2
-    static let accessoryDateOpacity = 0.62
-    static let accessoryTodayDateScale: CGFloat = 0.24
-    static let accessoryImprintHeightRatio: CGFloat = 0.82
-    static let accessoryImprintWidthRatio: CGFloat = 0.26
-    static let accessoryRailYRatio: CGFloat = 0.73
-    static let accessoryRailTerminalGap: CGFloat = 14
-    static let homeMissedOpacity = 0.38
-    static let homeBeforeHabitOpacity = 0.58
-    static let accessoryMissedOpacity = 0.42
-    static let accessoryBeforeHabitOpacity = 0.56
 }

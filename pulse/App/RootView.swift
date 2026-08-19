@@ -121,7 +121,10 @@ struct RootView: View {
                 .animation(primaryContentAnimation, value: selectedSection)
 
                 NavigationStack(path: $historyPath) {
-                    HistoryView(model: model)
+                    HistoryView(
+                        model: model,
+                        isActive: selectedSection == .history && historyPath.isEmpty
+                    )
                         .accessibilityHidden(!historyPath.isEmpty)
                         .navigationDestination(for: PulseNavigationDestination.self) { destination in
                             secondaryDestination(destination)

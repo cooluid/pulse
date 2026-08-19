@@ -940,6 +940,11 @@ final class PulseFlowUITests: XCTestCase {
         XCTAssertTrue(checkInButton.isEnabled)
         checkInButton.tap()
         XCTAssertFalse(checkInButton.isEnabled)
+        XCTAssertTrue(checkInButton.label.contains("12:00"))
+        XCTAssertTrue(
+            app.descendants(matching: .any)["today.checkin.presentation.imprinted"]
+                .waitForExistence(timeout: 3)
+        )
         XCTAssertTrue(app.buttons["today.media.capture.button"].waitForExistence(timeout: 3))
 
         let noteSummary = app.descendants(matching: .any)["journal.summary.text"]
@@ -1009,6 +1014,66 @@ final class PulseFlowUITests: XCTestCase {
             .firstMatch
         XCTAssertTrue(clearedNote.waitForExistence(timeout: 3))
         XCTAssertEqual(clearedNote.label, "这一天还没有记事")
+    }
+
+    func testQuietFieldUsesTheSameCheckInNotePhotoAndHistoryContract() throws {
+        configureApp()
+        app.launchEnvironment["PULSE_UI_TEST_ENHANCEMENT_PURCHASED"] = "1"
+        launchAndConfirmDefaultCommitment()
+
+        app.buttons["settings.navigation.open.today"].tap()
+        openVisualThemePicker()
+        let quietTheme = app.buttons["settings.visual-theme.quietField"]
+        XCTAssertTrue(quietTheme.waitForExistence(timeout: 3))
+        XCTAssertEqual(quietTheme.value as? String, "")
+        quietTheme.tap()
+        app.buttons["navigation.back"].tap()
+        app.buttons["navigation.back"].tap()
+
+        XCTAssertTrue(
+            app.descendants(matching: .any)["today.theme.quiet-field"]
+                .waitForExistence(timeout: 3)
+        )
+        XCTAssertTrue(
+            app.descendants(matching: .any)["journal.draft.input"]
+                .waitForExistence(timeout: 3)
+        )
+        let checkInButton = app.buttons["today.checkin.button"]
+        XCTAssertTrue(checkInButton.waitForExistence(timeout: 3))
+        checkInButton.tap()
+        XCTAssertTrue(checkInButton.label.contains("12:00"))
+        XCTAssertTrue(
+            app.descendants(matching: .any)["today.checkin.presentation.imprinted"]
+                .waitForExistence(timeout: 3)
+        )
+        XCTAssertTrue(app.buttons["today.media.capture.button"].waitForExistence(timeout: 3))
+        XCTAssertTrue(app.descendants(matching: .any)["journal.summary"].exists)
+
+        let quietTodayAttachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
+        quietTodayAttachment.name = "Quiet Field unified Today"
+        quietTodayAttachment.lifetime = .keepAlways
+        add(quietTodayAttachment)
+
+        app.buttons["primary.navigation.history"].tap()
+        XCTAssertTrue(
+            app.descendants(matching: .any)["history.theme.quiet-field"]
+                .waitForExistence(timeout: 3)
+        )
+        XCTAssertTrue(app.descendants(matching: .any)["history.stat.total"].exists)
+        XCTAssertTrue(
+            app.descendants(matching: .any)["calendar.day.2026-08-10"]
+                .waitForExistence(timeout: 3)
+        )
+        app.buttons["history.mode.journal"].tap()
+        XCTAssertTrue(
+            app.descendants(matching: .any)["history.journal.section"]
+                .waitForExistence(timeout: 3)
+        )
+
+        let quietHistoryAttachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
+        quietHistoryAttachment.name = "Quiet Field unified History"
+        quietHistoryAttachment.lifetime = .keepAlways
+        add(quietHistoryAttachment)
     }
 
     func testSunlitDayHistoryRemainsStructuredInDarkAppearance() throws {

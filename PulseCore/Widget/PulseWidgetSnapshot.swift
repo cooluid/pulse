@@ -4,6 +4,7 @@ public enum PulseWidgetContract {
     public static let homeKind = "PulseDailyImprint"
     public static let accessoryKind = "PulseAccessoryRhythm"
     public static let allKinds = [homeKind, accessoryKind]
+    public static let runtimeRetryInterval: TimeInterval = 15 * 60
 }
 
 public enum PulseWidgetDayState: String, Codable, Equatable, Sendable {

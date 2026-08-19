@@ -36,4 +36,11 @@ public struct PulseReminderActivityAttributes: ActivityAttributes, Sendable {
 public enum PulseReminderActivityContract {
     public static let maximumScheduledActivities = 7
     public static let completionEchoDuration: Duration = .milliseconds(1_700)
+
+    public static func completionEchoDismissalDate(now: Date = .now) -> Date {
+        let components = completionEchoDuration.components
+        let seconds = TimeInterval(components.seconds)
+            + TimeInterval(components.attoseconds) / 1_000_000_000_000_000_000
+        return now.addingTimeInterval(seconds)
+    }
 }

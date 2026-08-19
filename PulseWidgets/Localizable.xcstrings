@@ -7,13 +7,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "You have not checked in today. Come back when you are ready."
+            "value" : "Open Pulse to check in."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "今天还未签到，准备好时再回来。"
+            "value" : "打开一日一印签到。"
           }
         }
       }
@@ -455,7 +455,7 @@
       }
     },
     "widget.place.checked" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -488,7 +488,7 @@
       }
     },
     "widget.place.pending" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -520,8 +520,8 @@
         }
       }
     },
-    "widget.state.checked.editorial" : {
-      "extractionState" : "stale",
+    "widget.state.checked" : {
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -601,8 +601,8 @@
         }
       }
     },
-    "widget.state.pending.short" : {
-      "extractionState" : "stale",
+    "widget.state.pending" : {
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {

@@ -29,7 +29,6 @@ enum PulseDesign {
     // Destructive controls follow the platform semantic color, not a brand token.
     static let background = Color("PulseBackground")
     static let surface = Color("PulseSurface")
-    static let navigationGlyphSurface = Color("PulseNavigationGlyphSurface")
     static let quietBlue = Color("PulseQuietBlue")
     static let quietCanvas = Color("PulseQuietCanvas")
     static let quietChrome = Color("PulseQuietChrome")
@@ -110,15 +109,7 @@ enum PulseDesign {
     static let sunlitCheckInGlyphDiameter: CGFloat = 48
     static let sunlitCardCornerRadius: CGFloat = 30
     static let sunlitWeekMarkSize: CGFloat = spacing20
-    static let sunlitWeekMarkCornerRadius: CGFloat = 3
-    static let sunlitHistoryMonthSize: CGFloat = 52
-    static let sunlitHistoryMonthTracking: CGFloat = -2
-    static let sunlitAccentRuleWidth: CGFloat = 44
-    static let sunlitHistoryStatisticDividerHeight: CGFloat = 30
     static let sunlitCalendarDayCornerRadius: CGFloat = 12
-    static let sunlitWatermarkSize: CGFloat = 168
-    static let sunlitWatermarkOpacity = 0.07
-    static let sunlitWatermarkOffsetX: CGFloat = 28
     static let sunlitSurfaceShadowOpacity = 0.10
     static let sunlitSurfaceShadowRadius: CGFloat = 20
     static let sunlitSurfaceShadowY: CGFloat = 8
@@ -126,9 +117,6 @@ enum PulseDesign {
     static let editorialCalendarCheckedOpacity = 0.14
     static let checkInInnerHalo: CGFloat = 18
     static let checkInOuterHalo: CGFloat = 36
-    static let checkInRingLineWidth: CGFloat = 24
-    static let checkInRingTrim: CGFloat = 312 / 360
-    static let checkInRingRotationDegrees = -114.0
 
     static let primaryNavigationMaxWidth: CGFloat = 440
     static let primaryNavigationHeight: CGFloat = 72
@@ -171,18 +159,14 @@ enum PulseDesign {
     static let navigationShadowOpacity = 0.12
     static let navigationShadowRadius: CGFloat = 30
     static let navigationShadowY: CGFloat = 10
-    static let navigationSurfaceOpacity = 0.9
     static let navigationSubtitleOpacity = 0.76
     static let sunlitWeekInactiveStrokeOpacity = 0.34
     static let sunlitWeekInactiveForegroundOpacity = 0.78
-    static let sunlitRhythmOpacity = 0.84
     static let sunlitAmbientBandOpacity = 0.68
     static let sunlitAmbientRouteOpacity = 0.16
     static let sunlitTodayHeroFieldHeightRatio = 0.43
     static let sunlitStandardHeroFieldHeightRatio = 0.24
     static let sunlitLowerFieldHeightRatio = 0.30
-    static let sunlitHistoryTodayFillOpacity = 0.22
-    static let sunlitHistoryMissedFillOpacity = 0.10
     static let calendarBeforeHabitOpacity = 0.62
     static let disabledControlOpacity = 0.38
     static let actionShadowOpacity = 0.24
@@ -224,9 +208,7 @@ enum PulseDesign {
     static let themePreviewHeight: CGFloat = 116
     static let themePreviewCornerRadius: CGFloat = 18
     static let themePreviewUnselectedBorderOpacity = 0.28
-    static let journalCardCornerRadius: CGFloat = 16
     static let journalDraftMinimumHeight: CGFloat = 76
-    static let journalHistoryEntryCornerRadius: CGFloat = 14
     static let journalHistoryExcerptLineLimit = 4
     static let historyModePickerHeight: CGFloat = minimumHitTarget
     static let historyModePickerCornerRadius: CGFloat = 12
@@ -235,12 +217,10 @@ enum PulseDesign {
     static let historyModePickerSurfaceOpacity = 0.82
     static let editorialLineHeight: CGFloat = 3
     static let editorialLineInitialWidth: CGFloat = 36
-    static let editorialCheckButtonSize: CGFloat = 36
     static let editorialTitleTracking: CGFloat = -0.02
     static let editorialKickerTracking: CGFloat = 0.06
     static let editorialJournalSurfaceOpacity = 0.42
     static let quietJournalSurfaceOpacity = 0.88
-    static let editorialPendingStrokeOpacity = 0.55
     static let journalHistorySurfaceOpacity = 0.72
 
     static let idleAuraBreathHalfDuration = 0.7
@@ -404,6 +384,16 @@ enum PulseFieldPresentation {
     case today
 }
 
+enum PulseAmbientMotionPolicy {
+    static func allowsMotion(
+        requested: Bool,
+        reduceMotion: Bool,
+        sceneIsActive: Bool
+    ) -> Bool {
+        requested && !reduceMotion && sceneIsActive
+    }
+}
+
 struct PulseFieldBackground: View {
     var presentation: PulseFieldPresentation = .standard
     var allowsMotion = true
@@ -503,7 +493,11 @@ struct PulseFieldBackground: View {
     }
 
     private var allowsAmbientMotion: Bool {
-        allowsMotion && !reduceMotion && scenePhase == .active
+        PulseAmbientMotionPolicy.allowsMotion(
+            requested: allowsMotion,
+            reduceMotion: reduceMotion,
+            sceneIsActive: scenePhase == .active
+        )
     }
 
     private func ambientPhase(at date: Date) -> Double {
@@ -944,24 +938,6 @@ struct PulseQuietSpeechBubbleShape: Shape {
         return path
     }
 }
-
-
-struct PulseOpenRing: View {
-    let color: Color
-    var lineWidth: CGFloat = PulseDesign.checkInRingLineWidth
-
-    var body: some View {
-        Circle()
-            .trim(from: 0, to: PulseDesign.checkInRingTrim)
-            .stroke(
-                color,
-                style: StrokeStyle(lineWidth: lineWidth, lineCap: .butt)
-            )
-            .rotationEffect(.degrees(PulseDesign.checkInRingRotationDegrees))
-            .accessibilityHidden(true)
-    }
-}
-
 struct PulseBrandMark: View {
     var size: CGFloat = PulseDesign.brandMarkSize
     @Environment(\.pulseVisualTheme) private var visualTheme

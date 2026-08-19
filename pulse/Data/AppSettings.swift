@@ -120,69 +120,14 @@ extension PulseInterfaceLanguage {
 
 extension PulseWidgetStyle {
     func localizedName(locale: Locale) -> String {
-        switch self {
-        case .place:
-            PulseLocalization.string("settings.widget.style.place", locale: locale)
-        case .orbit:
-            PulseLocalization.string("settings.widget.style.orbit", locale: locale)
-        case .stack:
-            PulseLocalization.string("settings.widget.style.stack", locale: locale)
-        case .bleed:
-            PulseLocalization.string("settings.widget.style.bleed", locale: locale)
-        case .letter:
-            PulseLocalization.string("settings.widget.style.letter", locale: locale)
-        case .field:
-            PulseLocalization.string("settings.widget.style.field", locale: locale)
-        case .path:
-            PulseLocalization.string("settings.widget.style.path", locale: locale)
-        case .tide:
-            PulseLocalization.string("settings.widget.style.tide", locale: locale)
-        }
+        PulseLocalization.string("settings.widget.style.\(rawValue)", locale: locale)
     }
 
     func localizedDescription(locale: Locale) -> String {
-        switch self {
-        case .place:
-            PulseLocalization.string(
-                "settings.widget.style.place.detail",
-                locale: locale
-            )
-        case .orbit:
-            PulseLocalization.string(
-                "settings.widget.style.orbit.detail",
-                locale: locale
-            )
-        case .stack:
-            PulseLocalization.string(
-                "settings.widget.style.stack.detail",
-                locale: locale
-            )
-        case .bleed:
-            PulseLocalization.string(
-                "settings.widget.style.bleed.detail",
-                locale: locale
-            )
-        case .letter:
-            PulseLocalization.string(
-                "settings.widget.style.letter.detail",
-                locale: locale
-            )
-        case .field:
-            PulseLocalization.string(
-                "settings.widget.style.field.detail",
-                locale: locale
-            )
-        case .path:
-            PulseLocalization.string(
-                "settings.widget.style.path.detail",
-                locale: locale
-            )
-        case .tide:
-            PulseLocalization.string(
-                "settings.widget.style.tide.detail",
-                locale: locale
-            )
-        }
+        PulseLocalization.string(
+            "settings.widget.style.\(rawValue).detail",
+            locale: locale
+        )
     }
 }
 

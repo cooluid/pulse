@@ -57,7 +57,7 @@ Widget 不是持续运行的动画画布。它首先必须准确表达“今天�
 - 零点 entry 重新投影新逻辑日，而非复制旧 snapshot；
 - Gallery 与 Extension 初始化同一 Renderer，不存在 legacy variant 参数；
 - Gallery 预览投影只改变展示时间与今天状态，过去六日事实保持不变，且不会触发正式签到；
-- 源码、token、Asset Catalog、原型和文档均无 sky / cloud / fish、密集 phase keyframe 或持久化视觉状态遗留；
+- 源码、token、Asset Catalog 和文档均无 sky / cloud / fish、密集 phase keyframe、旧探索标识或持久化视觉状态遗留；
 - Always-On 与 Reduce Motion 都向正式 Renderer 传入静态模式；
 - Debug、Release、Analyze 与 Widget UI 截图通过。
 

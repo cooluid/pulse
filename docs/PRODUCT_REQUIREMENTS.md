@@ -170,7 +170,7 @@ MVP 的目标不是搭建任务平台，而是让以下闭环稳定成立：
 
 通知权限只在用户主动开启提醒时请求，用于免费基础提醒，以及付费 Live Activity 系统容量之外的长期连续性；首次启动不得直接弹出。用户拒绝通知时不能假装获得完整连续提醒，提醒开关保持关闭并明确说明授权要求。今天已过提醒时间时从明天开始，已签到日期不生成请求；启动、回到前台、任一系统入口签到、权益或提醒设置变化时刷新并先取消旧计划。系统调度容量和呈现由 iOS 裁决，产品文案不能承诺“到点一定出现”。
 
-`PulseWidgetStyleAccessPolicy` 规定待落之处是唯一免费 Home Screen Widget 构图；星环、叠印、数影、手札、静场、来路、潮痕属于同一个高阶权益 entitlement。八式产品清单见 [widget-ritual-objects](./prototypes/widget-ritual-objects/)（探索草稿）。构图由 Home Screen WidgetKit 逐实例配置持有；Widget extension 在渲染边界验证权益，未验证或撤销时明确显示未解锁状态，不得静默替换构图，也不能读取 App 侧购买副本。正式枚举与共享渲染器只含现行八式，未知标识失败关闭。Lock Screen“节律汇印”使用独立、无构图参数的 Widget kind。Widget 动效边界以 [WIDGET_MOTION_CONTRACT.md](./WIDGET_MOTION_CONTRACT.md) 为准：事实只来自 store 投影；Timeline 以集中边界提交早间 / 日间 / 晚间三种低幅氛围状态并在下一逻辑日重投影，系统不承诺准点展示；签到 reload 后每式由自己的主物件完成一次有限变装，Reduce Motion 直接呈现相同终态。
+`PulseWidgetStyleAccessPolicy` 规定待落之处是唯一免费 Home Screen Widget 构图；星环、叠印、数影、手札、静场、来路、潮痕属于同一个高阶权益 entitlement。正式产品枚举只由 `PulseWidgetStyle` 与 String Catalog 持有，外观只由共享 `PulseWidgetHomeRenderer` 持有，不再保留 HTML 探索稿作为并行来源。构图由 Home Screen WidgetKit 逐实例配置持有；Widget extension 在渲染边界验证权益，未验证或撤销时明确显示未解锁状态，不得静默替换构图，也不能读取 App 侧购买副本。正式枚举与共享渲染器只含现行八式，未知标识失败关闭。Lock Screen“节律汇印”使用独立、无构图参数的 Widget kind。Widget 动效边界以 [WIDGET_MOTION_CONTRACT.md](./WIDGET_MOTION_CONTRACT.md) 为准：事实只来自 store 投影；Timeline 以集中边界提交早间 / 日间 / 晚间三种低幅氛围状态并在下一逻辑日重投影，系统不承诺准点展示；签到 reload 后每式由自己的主物件完成一次有限变装，Reduce Motion 直接呈现相同终态。
 
 ## 5. 功能范围
 

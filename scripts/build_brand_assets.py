@@ -36,7 +36,6 @@ COLOR_ASSETS = {
     "PulseGrass": "grass",
     "PulseGrassForeground": "grassForeground",
     "PulseInk": "ink",
-    "PulseNavigationGlyphSurface": "navigationGlyphSurface",
     "PulseQuietBlue": "quietBlue",
     "PulseQuietCanvas": "quietCanvas",
     "PulseQuietChrome": "quietChrome",

@@ -413,8 +413,8 @@ struct PulseWidgetStylePreview: View {
             allowsMotion: !reduceMotion,
             statusText: PulseLocalization.string(
                 snapshot.isCheckedToday
-                    ? "today.navigation.checked"
-                    : "today.navigation.pending",
+                    ? "widget.state.checked"
+                    : "widget.state.pending",
                 locale: locale
             ),
             pathSummaryFormat: PulseLocalization.string(

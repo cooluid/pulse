@@ -10,7 +10,7 @@
 
 Widget 是同一签到事实的系统入口，不是第二个应用：
 
-- Home Screen 小号/中号可逐实例选择待落之处 / 星环 / 叠印 / 数影 / 手札 / 静场 / 来路 / 潮痕八种仪式物件；产品名见 [widget-ritual-objects](./prototypes/widget-ritual-objects/)（探索草稿）。待落之处免费，其余七式由同一高阶权益解锁。正式枚举与渲染源只含现行八式；未知标识失败关闭；
+- Home Screen 小号/中号可逐实例选择待落之处 / 星环 / 叠印 / 数影 / 手札 / 静场 / 来路 / 潮痕八种仪式物件；正式产品枚举只由 `PulseWidgetStyle` 与 String Catalog 持有，外观只由共享 `PulseWidgetHomeRenderer` 持有。待落之处免费，其余七式由同一高阶权益解锁；未知标识失败关闭；
 - Lock Screen 圆形显示带当日日号的开放环或实心完成印；
 - Lock Screen 矩形把过去六日节点以连接线汇入右侧今日印记，今天不重复成第七个小节点；
 - 未签到只提供单向签到；已签到无撤销入口；删除仍只在 App 内二次确认；

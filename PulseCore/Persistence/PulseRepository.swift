@@ -612,8 +612,8 @@ public final class SwiftDataPulseRepository: PulseRepositoryProtocol {
                   media.sha256.allSatisfy({ $0.isHexDigit && !$0.isUppercase }),
                   media.thumbnailSHA256.count == 64,
                   media.thumbnailSHA256.allSatisfy({ $0.isHexDigit && !$0.isUppercase }),
-                  isValidMediaPath(media.originalRelativePath, prefix: "originals/"),
-                  isValidMediaPath(media.thumbnailRelativePath, prefix: "thumbnails/"),
+                  PulseMediaPath.isValid(media.originalRelativePath, directory: .originals),
+                  PulseMediaPath.isValid(media.thumbnailRelativePath, directory: .thumbnails),
                   media.capturedAt >= habit.createdAt,
                   media.createdAt >= media.capturedAt,
                   media.modifiedAt >= media.createdAt,
@@ -646,14 +646,6 @@ public final class SwiftDataPulseRepository: PulseRepositoryProtocol {
                 cameraPosition: cameraPosition
             )
         }
-    }
-
-    private func isValidMediaPath(_ path: String, prefix: String) -> Bool {
-        path.hasPrefix(prefix)
-            && !path.contains("..")
-            && !path.contains("\\")
-            && path.split(separator: "/").count == 2
-            && path.hasSuffix(".jpg")
     }
 
     private func saveOrRollback() throws {

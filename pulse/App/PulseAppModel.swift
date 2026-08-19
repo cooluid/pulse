@@ -47,6 +47,7 @@ final class PulseAppModel {
     private var reminderEnabledIntent: Bool?
     private var recordsByDay: [LogicalDay: CheckInRecordSnapshot] = [:]
     private var mediaByDay: [LogicalDay: ImprintMediaSnapshot] = [:]
+    private var sceneActivationPending = false
 
     let settings: AppSettings
     let featureAccess: FeatureAccessController
@@ -193,7 +194,11 @@ final class PulseAppModel {
     }
 
     func handleSceneActivation() async {
-        guard operation == nil else { return }
+        guard operation == nil else {
+            sceneActivationPending = true
+            return
+        }
+        sceneActivationPending = false
         await reload(reconcileReminders: false)
         await featureAccess.refresh()
         reconcileVisualThemeAccess(
@@ -208,14 +213,13 @@ final class PulseAppModel {
 
     @discardableResult
     func checkIn(journalNote: String? = nil) async -> CheckInCommitReceipt? {
-        guard operation == nil,
-              todayRecord == nil,
+        guard todayRecord == nil,
               let habit,
               let today,
               let habitStartDay,
               today >= habitStartDay else { return nil }
-        operation = .checkIn
-        defer { operation = nil }
+        guard beginOperation(.checkIn) else { return nil }
+        defer { finishOperation() }
 
         await Task.yield()
         do {
@@ -228,7 +232,7 @@ final class PulseAppModel {
                 hapticFeedback.notifySuccess()
             }
             widgetTimelineReloader.reloadDailyImprint()
-            await reminderScheduler.completeLiveActivity(for: today)
+            await reminderScheduler.completeLiveActivity(for: receipt.logicalDay)
             await enqueueReminderReconciliation().value
             scheduleDateBoundaryRefresh()
             return receipt
@@ -239,9 +243,8 @@ final class PulseAppModel {
     }
 
     func updateHabitIdentity(name: String, purpose: String?) async -> Bool {
-        guard operation == nil, let habit else { return false }
-        operation = .updateHabitIdentity
-        defer { operation = nil }
+        guard let habit, beginOperation(.updateHabitIdentity) else { return false }
+        defer { finishOperation() }
         do {
             let identity = try HabitIdentity(userName: name, userPurpose: purpose)
             self.habit = try repository.updateIdentity(
@@ -258,9 +261,8 @@ final class PulseAppModel {
     }
 
     func updateJournalNote(recordID: UUID, journalNote: String?) async -> Bool {
-        guard operation == nil else { return false }
-        operation = .updateJournalNote
-        defer { operation = nil }
+        guard beginOperation(.updateJournalNote) else { return false }
+        defer { finishOperation() }
         do {
             _ = try repository.updateJournalNote(
                 recordID: recordID,
@@ -275,9 +277,8 @@ final class PulseAppModel {
     }
 
     func delete(recordID: UUID) async -> Bool {
-        guard operation == nil else { return false }
-        operation = .deleteRecord
-        defer { operation = nil }
+        guard beginOperation(.deleteRecord) else { return false }
+        defer { finishOperation() }
         do {
             try repository.delete(recordID: recordID)
             try loadSnapshot()
@@ -294,9 +295,10 @@ final class PulseAppModel {
         image: UIImage,
         cameraPosition: ImprintCameraPosition
     ) async -> Bool {
-        guard operation == nil, let habit, let record = todayRecord else { return false }
-        operation = .saveMedia
-        defer { operation = nil }
+        guard let habit, let record = todayRecord, beginOperation(.saveMedia) else {
+            return false
+        }
+        defer { finishOperation() }
         do {
             _ = try await mediaService.save(
                 image: image,
@@ -317,11 +319,11 @@ final class PulseAppModel {
     }
 
     func deleteMedia(id: UUID) async -> Bool {
-        guard operation == nil, let item = media.first(where: { $0.id == id }) else {
+        guard let item = media.first(where: { $0.id == id }),
+              beginOperation(.deleteMedia) else {
             return false
         }
-        operation = .deleteMedia
-        defer { operation = nil }
+        defer { finishOperation() }
         do {
             try await mediaService.delete(item)
             try loadSnapshot()
@@ -338,9 +340,8 @@ final class PulseAppModel {
     }
 
     func originalDataForExport(for item: ImprintMediaSnapshot) async -> Data? {
-        guard operation == nil else { return nil }
-        operation = .exportMedia
-        defer { operation = nil }
+        guard beginOperation(.exportMedia) else { return nil }
+        defer { finishOperation() }
         do {
             return try await mediaService.originalData(for: item)
         } catch {
@@ -358,10 +359,9 @@ final class PulseAppModel {
     }
 
     func resetAllData() async -> Bool {
-        guard operation == nil else { return false }
-        operation = .resetData
+        guard beginOperation(.resetData) else { return false }
         invalidateReminderIntents()
-        defer { operation = nil }
+        defer { finishOperation() }
         do {
             settings.markResetPending()
             let newHabit = try repository.resetAll(systemTimeZone: .autoupdatingCurrent)
@@ -493,9 +493,8 @@ final class PulseAppModel {
     }
 
     func updateTimeZone(identifier: String) async -> Bool {
-        guard operation == nil, let habit else { return false }
-        operation = .updateTimeZone
-        defer { operation = nil }
+        guard let habit, beginOperation(.updateTimeZone) else { return false }
+        defer { finishOperation() }
         do {
             try repository.updateTimeZone(habitID: habit.id, identifier: identifier)
             try loadSnapshot()
@@ -513,9 +512,8 @@ final class PulseAppModel {
         guard let habit else {
             throw PulseCoreError.backupUnavailable
         }
-        guard operation == nil else { throw PulseCoreError.backupUnavailable }
-        operation = .exportBackup
-        defer { operation = nil }
+        guard beginOperation(.exportBackup) else { throw PulseCoreError.backupUnavailable }
+        defer { finishOperation() }
         let startLogicalDay = habit.startLogicalDay
         let payload = PulseBackupPayload(
             format: PulseBackupContract.payloadFormatIdentifier,
@@ -585,10 +583,9 @@ final class PulseAppModel {
     }
 
     func restoreBackup(_ decoded: PulseDecodedBackup) async -> Bool {
-        guard operation == nil else { return false }
-        operation = .restoreBackup
+        guard beginOperation(.restoreBackup) else { return false }
         invalidateReminderIntents()
-        defer { operation = nil }
+        defer { finishOperation() }
         do {
             habit = try await mediaService.restore(decoded)
             selectedMonth = nil
@@ -755,6 +752,21 @@ final class PulseAppModel {
         reminderIntentRevision += 1
         reminderEnabledIntent = nil
         reminderReconcileRevision += 1
+    }
+
+    private func beginOperation(_ nextOperation: AppOperation) -> Bool {
+        guard operation == nil else { return false }
+        operation = nextOperation
+        return true
+    }
+
+    private func finishOperation() {
+        operation = nil
+        guard sceneActivationPending else { return }
+        sceneActivationPending = false
+        Task { @MainActor [weak self] in
+            await self?.handleSceneActivation()
+        }
     }
 
     private func reconcileVisualThemeAccess(
