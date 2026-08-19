@@ -1,10 +1,10 @@
 # Pulse 1.1 领域合同
 
-文档版本：2.1
+文档版本：2.2
 状态：Canonical Contract
-更新时间：2026-08-17
+更新时间：2026-08-19
 
-本文是主承诺、逻辑日、签到事实、每日记事、影像事实、删除和恢复语义的唯一来源。
+本文是主承诺、逻辑日、签到事实、每日记事、影像事实、Watch 延迟命令、删除和恢复语义的唯一来源。
 
 ## 1. 事实模型
 
@@ -45,6 +45,16 @@ Pulse 只有一个 `slotKey == "primary"` 的“我的一件事”。名称规�
 - 同日重复签到返回 `alreadyPresent` 回执；App/Widget 并发由数据库唯一约束、rollback 和正式回读裁决。
 - 修改当前时区不重写项目起始日或历史记录；若新时区的今天早于起始日则拒绝。
 - 日期加减必须使用 `Calendar`，不得假定一天恒为 86,400 秒。
+
+### 2.1 Apple Watch 延迟签到命令
+
+Apple Watch 不创建 `CheckInRecord`，也不接受用户选择日期。手表点击只创建不可变 `WatchCheckInCommand`：稳定 `operationID`、当前项目 ID、由项目 ID/起始逻辑日/当前签到时区确定的项目 revision、手表动作发生绝对时间和当时项目时区。命令保存在 Watch 本机正式 outbox，通过 WatchConnectivity 即时消息或保证排队的用户信息交付；两条传输路径复用同一个命令和 iPhone 处理器。
+
+iPhone 只在以下条件全部成立时提交命令：协议版本受支持；项目 ID/revision 与当前主承诺一致；时区快照与当前签到时区一致；动作时间不晚于 iPhone 接收时间；按当前项目时区解析的目标逻辑日不早于项目起始日。验证失败返回带 `operationID` 的拒绝回执，不写签到事实。
+
+通过验证后，Repository 按命令 `occurredAt` 解析逻辑日并把它保存为 `checkedAt`，iPhone 接收时间保存为 `createdAt`。这允许真正发生在较早逻辑日、因设备失联而延迟送达的动作保留其真实日期；它不是补签，因为产品没有任意日期入口，命令在动作发生时已经以稳定 ID 写入配对 Watch 的 durable outbox。重复命令、Watch/iPhone/Widget/Live Activity 并发仍按同一 `recordKey` 幂等收敛；既有同日记录返回 `alreadyPresent`。
+
+Watch 只有收到 iPhone Repository 的创建或幂等回读回执后才能显示 `committed`。本地已入 outbox 但未收到回执为 `pendingSync`，不得使用实心完成印或成功触觉；拒绝与持久化失败均显示失败并保留明确重试路径。Watch 快照和 outbox 是可清理、可重建的跨设备传输状态，不是第二份签到历史。
 
 ## 3. 影像事务与独立性
 

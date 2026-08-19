@@ -1,5 +1,6 @@
 import XCTest
 @testable import PulseCore
+@testable import PulseWatchShared
 @testable import pulse
 
 @MainActor
@@ -107,6 +108,42 @@ final class PulseAppModelTests: XCTestCase {
         XCTAssertEqual(context.widgetReloader.reloadCount, initialWidgetReloadCount + 1)
         await waitUntil { context.scheduler.snapshots.last?.checkedDays == context.model.checkedDays }
         XCTAssertEqual(context.scheduler.snapshots.last?.checkedDays, context.model.checkedDays)
+        XCTAssertEqual(context.scheduler.completedLiveActivityDays, [context.model.today!])
+    }
+
+    func testWatchCommandCommitsThroughRepositoryAndPublishesConfirmedSnapshot() async throws {
+        let context = try makeContext()
+        await context.model.start()
+        let identityUpdated = await context.model.updateHabitIdentity(
+            name: "Test Habit",
+            purpose: nil
+        )
+        XCTAssertTrue(identityUpdated)
+        let habit = try XCTUnwrap(context.model.habit)
+        let command = PulseWatchCheckInCommand(
+            projectID: habit.id,
+            projectRevision: PulseWatchProjectRevision.make(
+                projectID: habit.id,
+                startLogicalDay: habit.startLogicalDay.storageValue,
+                timeZoneIdentifier: habit.timeZoneIdentifier
+            ),
+            occurredAt: context.clock.now,
+            projectTimeZoneIdentifierSnapshot: habit.timeZoneIdentifier
+        )
+
+        let receipt = await context.model.handleWatchCheckIn(command)
+
+        guard case .committed(let logicalDay, let checkedAt, let disposition) = receipt?.outcome else {
+            return XCTFail("Expected a committed Watch receipt.")
+        }
+        XCTAssertEqual(logicalDay, context.model.today?.storageValue)
+        XCTAssertEqual(checkedAt, context.clock.now)
+        XCTAssertEqual(disposition, .created)
+        XCTAssertEqual(context.model.statistics.totalCount, 1)
+        XCTAssertEqual(
+            context.watchConnectivity.snapshots.compactMap { $0 }.last?.isCheckedToday,
+            true
+        )
         XCTAssertEqual(context.scheduler.completedLiveActivityDays, [context.model.today!])
     }
 
@@ -396,6 +433,7 @@ final class PulseAppModelTests: XCTestCase {
         )
         let haptics = TestHaptics()
         let widgetReloader = TestWidgetTimelineReloader()
+        let watchConnectivity = TestWatchConnectivity()
         let model = PulseAppModel(
             repository: repository,
             mediaService: mediaService,
@@ -408,14 +446,16 @@ final class PulseAppModelTests: XCTestCase {
             reminderScheduler: scheduler,
             clock: clock,
             hapticFeedback: haptics,
-            widgetTimelineReloader: widgetReloader
+            widgetTimelineReloader: widgetReloader,
+            watchConnectivity: watchConnectivity
         )
         return TestContext(
             model: model,
             clock: clock,
             scheduler: scheduler,
             haptics: haptics,
-            widgetReloader: widgetReloader
+            widgetReloader: widgetReloader,
+            watchConnectivity: watchConnectivity
         )
     }
 
@@ -444,6 +484,22 @@ private struct TestContext {
     let scheduler: TestReminderScheduler
     let haptics: TestHaptics
     let widgetReloader: TestWidgetTimelineReloader
+    let watchConnectivity: TestWatchConnectivity
+}
+
+@MainActor
+private final class TestWatchConnectivity: PulseWatchConnectivityProviding {
+    var commandHandler: (@MainActor (PulseWatchCheckInCommand) async -> PulseWatchCheckInReceipt?)?
+    private(set) var startCount = 0
+    private(set) var snapshots: [PulseWatchProjectSnapshot?] = []
+
+    func start() {
+        startCount += 1
+    }
+
+    func publish(_ snapshot: PulseWatchProjectSnapshot?) {
+        snapshots.append(snapshot)
+    }
 }
 
 @MainActor

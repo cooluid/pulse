@@ -1,8 +1,8 @@
 # 一日一印（Pulse）1.1 发布范围合同
 
-文档版本：2.1
+文档版本：2.2
 状态：Canonical Release Contract
-更新时间：2026-08-18
+更新时间：2026-08-19
 
 ## 1. 发布目标
 
@@ -25,10 +25,13 @@ Pulse 1.1 把“每天可靠签到”升级为“每天留下一个可验证事�
 - 免费基础提醒、一次买断高阶权益、八种逐实例 Home Screen Widget 构图（待落之处免费，星环 / 叠印 / 数影 / 手札 / 静场 / 来路 / 潮痕收费）与 iOS 26 scheduled Live Activity，沿用正式权益合同。正式产品枚举只由 `PulseWidgetStyle` 与 String Catalog 持有，外观只由共享 `PulseWidgetHomeRenderer` 持有。
 - English / 简体中文、纸页手记免费默认主题、静野/晴昼付费主题、Dynamic Type、VoiceOver、Reduce Motion、iPhone/iPad 正式布局。
 - 设置中的正式“帮助与反馈”信息架构：原生反馈与建议页、独立帮助中心和隐私政策入口；用户在系统邮件编辑器中检查并主动发送，App 不建立账号、反馈数据库、第三方 SDK 或后台上报。
+- watchOS 10+ iPhone 伴侣 App：今日日印 Watch App、圆形/Inline 今日日印 complication、矩形七日脉冲 complication 与 Smart Stack 签到。Watch 本地只保存一份可重建快照、durable command outbox 和最后回执；即时消息与后台用户信息复用同一 `operationID` 和 iPhone Repository 写入路径。`pendingSync` 不得冒充成功，基础 Watch 能力永久免费。
 
 ## 3. 收费边界
 
 以下永久免费，不能进付费墙：签到、拍照、查看/重拍/删除自己的照片、关闭拍照邀请、存储占用、加密备份与完整恢复。
+
+基础 Watch App、今日日印/七日脉冲 complication、Smart Stack 与可靠签到同样永久免费；未来只能对高级节律与长期档案收费，不能按表盘尺寸、颜色或基础入口重复收费。
 
 高阶权益当前售卖静野/晴昼界面主题、高级 Widget 构图和支持设备上的 scheduled Live Activity。纸页手记及全部核心签到、历史、记事、照片和备份能力免费。`PulseEnhancementContract.currentCapabilities` 是权益页唯一已交付能力目录；同一永久权益可以在后续版本增值，但新能力只有真正交付后才能进入目录，不能预售路线图。未来能力不得锁住、删除或降级既有原图，也不得把人脸识别、颜值/年龄推断或远程人脸处理包装为卖点。
 
@@ -38,6 +41,7 @@ Pulse 1.1 把“每天可靠签到”升级为“每天留下一个可验证事�
 - 相册导入、批量补照片、后台偷拍、照片水印证明、地理位置保留。
 - 人脸身份、年龄、颜值、情绪推断；美颜、磨皮、瘦脸；远程上传面貌照片。
 - 自动生成“岁月流影”影片。1.1 先交付可靠影像事实与可演进的数据基础，不能放一个不可用入口或演示按钮。
+- 独立蜂窝 Watch、手表端完整历史/照片/删除/备份/付费管理，以及 Watch 上的 Plus 高级节律。
 
 ## 5. 数据与隐私
 
@@ -69,7 +73,7 @@ Pulse 1.1 把“每天可靠签到”升级为“每天留下一个可验证事�
 3. 真实 iPad 验证布局、权限、旋转/分屏、历史详情与大字号。
 4. 清洁 TestFlight 安装验证签到/照片/Widget 一致性、导出、清除、完整恢复；1.0 内部开发数据不承担迁移门禁。
 5. 中英文、深浅色、VoiceOver、最大字号、Reduce Motion、反馈邮件各状态与隐私文案验收。
-6. StoreKit/Sandbox、Widget、通知/Live Activity、签名 Archive 与 App Store 隐私申报分别通过其既有门禁。
+6. StoreKit/Sandbox、Widget、通知/Live Activity、WatchConnectivity/complication/Smart Stack、签名 Archive 与 App Store 隐私申报分别通过其既有门禁；Watch 必须使用真实配对 iPhone/Apple Watch 覆盖失联、后台、重启、跨午夜、重复命令和电量。
 7. 在 App Store Connect 按 container v2 / payload v3 的实际 PBKDF2 + AES-GCM 用途完成加密出口问卷或文档审查；结论冻结前 Info.plist 不预填 `ITSAppUsesNonExemptEncryption`，通过后再按 Apple 返回的分类写入正式声明及必要代码。
 
 App Store Connect 隐私答案不能继续沿用纯本地版本的“未收集”结论。按当前支持邮件行为，发布候选应保守申报用于 App Functionality / Customer Support、可能通过发件地址与用户关联、且不用于跟踪的 Other User Content、Photos or Videos、Other Diagnostic Data 与 Product Interaction；最终答案必须在提交前按 Apple 当时的字段和实际 Mail 行为逐项复核。

@@ -80,6 +80,14 @@
 - 购买 / 恢复 / 待批准 / 已解锁 / 不可用状态明确。
 - **版式与装饰**自由；不靠文案压迫购买。
 
+## 5C. Apple Watch
+
+- Watch 只使用“今日日印”和“七日脉冲”两种基础构图：圆形/Inline complication 表达今日状态，矩形 complication 与 Smart Stack 用六个历史节点连接一个今日印记；不复制 iPhone Home Screen 八式。
+- 黑色系统底、暖白信息、`PulseField` 空心待签到、`PulseActivityIslandFirefly` 缺口待同步、`PulseGrass` 实心已确认；失败恢复为空心并显示警示符号。状态必须同时由形状和无障碍文案表达。
+- Watch App 顶部日期必须来自项目逻辑日与项目时区，不复述或猜测设备日；1.1 不传主承诺、记事、照片或缺席说明到 Watch。
+- complication 与 Always-On 使用静态终态；只有 Watch App 从 `pendingSync`/`submitting` 收到 iPhone Repository 正式回执时播放一次成功触觉。打开一个已经完成的 Watch App 不重复播放成功。
+- 全部 Watch 颜色由 `brand-tokens.json` 经 `build_brand_assets.py` 生成到正式 Watch Asset Catalog；几何只读 `PulseWatchDesign`，不得在消费者散落第二套色板或魔法比例。
+
 ## 6. 布局与工程常量
 
 - 建议间距阶梯与水平边距可集中在 `PulseDesignSystem`（改画时可改令牌，避免页面散落魔法数）。

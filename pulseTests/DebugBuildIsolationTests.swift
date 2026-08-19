@@ -11,17 +11,59 @@ final class DebugBuildIsolationTests: XCTestCase {
             encoding: .utf8
         )
 
-        XCTAssertEqual(project.occurrences(of: "PULSE_APP_GROUP_IDENTIFIER = group.co.fanr.pulse.dev;"), 1)
-        XCTAssertEqual(project.occurrences(of: "PULSE_APP_GROUP_IDENTIFIER = group.co.fanr.pulse;"), 1)
+        XCTAssertEqual(project.occurrences(of: "PULSE_APP_GROUP_IDENTIFIER = group.co.fanr.pulse.dev;"), 3)
+        XCTAssertEqual(project.occurrences(of: "PULSE_APP_GROUP_IDENTIFIER = group.co.fanr.pulse;"), 3)
         XCTAssertEqual(project.occurrences(of: "PRODUCT_BUNDLE_IDENTIFIER = co.fanr.pulse.dev;"), 1)
         XCTAssertEqual(project.occurrences(of: "PRODUCT_BUNDLE_IDENTIFIER = co.fanr.pulse;"), 1)
         XCTAssertEqual(project.occurrences(of: "PRODUCT_BUNDLE_IDENTIFIER = co.fanr.pulse.dev.widgets;"), 1)
         XCTAssertEqual(project.occurrences(of: "PRODUCT_BUNDLE_IDENTIFIER = co.fanr.pulse.widgets;"), 1)
+        XCTAssertEqual(
+            project.occurrences(of: "PRODUCT_BUNDLE_IDENTIFIER = co.fanr.pulse.dev.watchkitapp;"),
+            1
+        )
+        XCTAssertEqual(
+            project.occurrences(of: "PRODUCT_BUNDLE_IDENTIFIER = co.fanr.pulse.watchkitapp;"),
+            1
+        )
+        XCTAssertEqual(
+            project.occurrences(
+                of: "PRODUCT_BUNDLE_IDENTIFIER = co.fanr.pulse.dev.watchkitapp.widgets;"
+            ),
+            1
+        )
+        XCTAssertEqual(
+            project.occurrences(of: "PRODUCT_BUNDLE_IDENTIFIER = co.fanr.pulse.watchkitapp.widgets;"),
+            1
+        )
         XCTAssertEqual(project.occurrences(of: "PULSE_URL_SCHEME = \"pulse-dev\";"), 1)
         XCTAssertEqual(project.occurrences(of: "PULSE_URL_SCHEME = pulse;"), 1)
-        XCTAssertEqual(project.occurrences(of: "PULSE_DISPLAY_NAME = \"一日一印 Dev\";"), 1)
+        XCTAssertEqual(project.occurrences(of: "PULSE_DISPLAY_NAME = \"一日一印 Dev\";"), 3)
         XCTAssertEqual(project.occurrences(of: "PULSE_DISPLAY_NAME = Pulse;"), 1)
         XCTAssertEqual(project.occurrences(of: "EXCLUDED_SOURCE_FILE_NAMES = InfoPlist.xcstrings;"), 1)
+    }
+
+    func testWatchTargetsUseFormalCompanionAndSharedRuntimeIdentities() throws {
+        let root = projectRoot
+        let project = try source(
+            at: root
+                .appendingPathComponent("pulse.xcodeproj", isDirectory: true)
+                .appendingPathComponent("project.pbxproj")
+        )
+        let watchWidgetInfo = try source(
+            at: root.appendingPathComponent("Config/PulseWatchWidgets-Info.plist")
+        )
+
+        XCTAssertTrue(project.contains("name = PulseWatch;"))
+        XCTAssertTrue(project.contains("name = PulseWatchWidgetsExtension;"))
+        XCTAssertTrue(project.contains("name = PulseWatchShared;"))
+        XCTAssertTrue(project.contains("PULSE_COMPANION_BUNDLE_IDENTIFIER = co.fanr.pulse;"))
+        XCTAssertTrue(project.contains("WATCHOS_DEPLOYMENT_TARGET = 10.0;"))
+        XCTAssertTrue(watchWidgetInfo.contains("$(PULSE_APP_GROUP_IDENTIFIER)"))
+        let watchInfo = try source(
+            at: root.appendingPathComponent("Config/PulseWatch-Info.plist")
+        )
+        XCTAssertTrue(watchInfo.contains("$(PULSE_APP_GROUP_IDENTIFIER)"))
+        XCTAssertTrue(watchInfo.contains("$(PULSE_COMPANION_BUNDLE_IDENTIFIER)"))
     }
 
     func testRuntimeMetadataUsesBuildSettingsInsteadOfProductionConstants() throws {

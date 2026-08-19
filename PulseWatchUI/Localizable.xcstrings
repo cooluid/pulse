@@ -1,0 +1,84 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "watch.action.check_in" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Check in" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "签到" } }
+      }
+    },
+    "watch.action.retry" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Try again" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "重试" } }
+      }
+    },
+    "watch.state.checked" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Checked in today" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "今天已签到" } }
+      }
+    },
+    "watch.state.failed" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Not saved" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "未保存" } }
+      }
+    },
+    "watch.state.needs_sync" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Open Pulse on iPhone" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "在 iPhone 打开一日一印" } }
+      }
+    },
+    "watch.state.pending" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Waiting for iPhone" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "等待 iPhone 确认" } }
+      }
+    },
+    "watch.state.ready" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Not checked in today" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "今天还未签到" } }
+      }
+    },
+    "watch.state.submitting" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Confirming" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "正在确认" } }
+      }
+    },
+    "watch.state.unavailable" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Watch data unavailable" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "无法读取手表数据" } }
+      }
+    },
+    "watch.widget.rhythm.description" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "View the previous six days and today’s check-in." } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "查看过去六天和今天的签到状态。" } }
+      }
+    },
+    "watch.widget.rhythm.name" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Seven-day rhythm" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "七日脉冲" } }
+      }
+    },
+    "watch.widget.today.description" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "View or complete today’s check-in." } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "查看或完成今天的签到。" } }
+      }
+    },
+    "watch.widget.today.name" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Today’s imprint" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "今日日印" } }
+      }
+    }
+  },
+  "version" : "1.0"
+}

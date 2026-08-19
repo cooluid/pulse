@@ -1,8 +1,8 @@
 # 一日一印（Pulse）系统仪式产品与交互合同
 
-文档版本：1.0<br>
-状态：Canonical Ritual Semantics；1.1 包含 App 内基础签到、今日入镜与既有买断提醒窗口，其余能力受路线图门禁约束<br>
-评审日期：2026-08-12
+文档版本：1.1<br>
+状态：Canonical Ritual Semantics；1.1 包含 App 内基础签到、今日入镜、既有买断提醒窗口与免费 Watch 基础能力，其余能力受路线图门禁约束<br>
+评审日期：2026-08-19
 
 本文是 Pulse 在 Widget、Live Activity、灵动岛、锁屏、StandBy、Apple Watch、Control、Action Button 和提醒通道上的产品语义权威。它定义“什么时候出现、表达什么、如何结束、什么可以收费”；签到日期、影像独立性、唯一性、删除和时区仍只以 [DOMAIN_CONTRACT.md](./DOMAIN_CONTRACT.md) 为准，版本顺序只以 [PRODUCT_ROADMAP.md](./PRODUCT_ROADMAP.md) 为准。
 
@@ -295,11 +295,11 @@ Pulse Plus 候选：
 
 Apple Watch 不是缩小版 iPhone，也不是第二套签到应用。它只承担“扫一眼今天、完成一个动作、收到克制确认”，完整历史、删除、时区修改、照片管理、导出与付费管理仍回到 iPhone。
 
-R5 首发采用 **iPhone 伴侣型 Watch App**，候选最低版本为 watchOS 10，以 WidgetKit complication 和 Smart Stack 为基础；iPhone Live Activity 自动进入 Watch Smart Stack 仅属于 watchOS 11 及以后能力。独立 Watch App、蜂窝网络独立同步和手表端完整历史暂缓；这些能力会引入账户、CloudKit、冲突和删除的新合同，不能假装只是多加一个 target。正式最低版本还要结合目标用户设备占比和真机矩阵冻结。
+1.1 采用 **iPhone 伴侣型 Watch App**，最低版本 watchOS 10，以 WidgetKit complication 和 Smart Stack 为基础；iPhone Live Activity 自动进入 Watch Smart Stack仅属于 watchOS 11 及以后能力。独立蜂窝运行和手表端完整历史暂缓；这些能力会引入账户、CloudKit、冲突和删除的新合同，不能假装只是多加一个 target。
 
 永久免费首发面：
 
-- Watch App 今日页：抽象印记、主承诺（默认可隐藏）、今日状态、一个大签到按钮和最近七日脉冲；
+- Watch App 今日页：抽象印记、今日状态、一个大签到按钮和最近七日脉冲；1.1 不把主承诺正文传到 Watch；
 - 表盘复杂功能（complication）：圆形空心/实心印记、矩形今日状态或七日脉冲；
 - Smart Stack：今日状态和一个可执行的签到动作；
 - watchOS 11 及以后：iPhone `DailyImprintActivity` 在 Watch Smart Stack 的系统呈现，以及必要的 Watch 专用紧凑布局；
@@ -332,7 +332,6 @@ Watch 使用与 iPhone 相同的“呼吸、落印、年轮”，但更短、更
 ```text
 projectID
 projectRevision
-displayName / privacyMode
 projectTimeZoneIdentifier
 logicalDay
 isChecked
@@ -359,12 +358,12 @@ createdAt
 - iPhone 收到命令后仍通过正式 command service / `SwiftDataPulseRepository` 写入；
 - 逻辑日、唯一 `recordKey` 和迟到命令语义由领域合同决定，Watch 不自行裁决最终逻辑日；
 - Watch 不提供任意日期参数、补签、删除或修改签到时间；
-- iPhone 回执至少包含 `operationID`、正式逻辑日、记录标识/时间和成功或失败原因；Watch 收到回执后才能清除 outbox 并进入 `committed`；
+- iPhone 回执至少包含 `operationID`、项目 ID/revision、正式逻辑日、记录时间和成功或失败原因；Watch 收到与当前项目及 pending command 匹配的回执后才能清除 outbox 并进入 `committed`；
 - 同一命令重复送达，以及 iPhone、Widget、Live Activity 与 Watch 同时签到，都必须幂等收敛为同一天一条记录。
 
 传输策略是一条业务路径、两种速度：伴侣当前可达时用即时消息快速取得回执；不可达、超时或 App 退到后台时，用保证排队交付的后台用户信息继续传输。两条传输都携带同一 `operationID`，不能各自实现一套保存逻辑。最新状态快照不能承担签到命令，因为覆盖语义可能吞掉动作。
 
-跨午夜、Watch 快照时区过期、项目已重建或命令迟到到下一逻辑日时，首版不得静默把动作记到错误日期。领域合同没有明确裁决前，命令保留为 `pendingSync`，并提示“在 iPhone 确认”。正式开发前必须先在 `DOMAIN_CONTRACT.md` 新增“延迟到达的当时签到命令”语义和测试；此处不越权定义补签。
+跨午夜延迟命令按手表动作发生绝对时间与项目时区解析原逻辑日，iPhone 接收时间只作为 `createdAt`；项目 ID/revision、时区、未来时间或起始日任一校验失败即拒绝并回执。产品没有历史日期选择入口，因此真实离线动作的延迟提交不是补签。详细裁决只以 `DOMAIN_CONTRACT.md` 的“Apple Watch 延迟签到命令”为准。
 
 ### 9.4 Smart Stack、complication 与 Live Activity
 
@@ -431,12 +430,12 @@ Watch 默认隐私等级高于 App 前台：
 | --- | --- |
 | R0.5 | 首版免费基础提醒 + 高阶权益：StoreKit 2 单一永久 entitlement、iOS 26 本地 scheduled Live Activity、待落之处免费与七种额外逐实例 Home Screen 物件构图与单通道仲裁 |
 | R1 | App Group 正式 store、基础 Widget、Widget AppIntent、免费待落之处与后续系统仪式原型 |
-| W0 | R1 稳定后提前验证配对真机、WatchConnectivity、`pendingSync` 与跨午夜命令；不写生产历史 |
+| 1.1 Watch | 伴侣型 Watch App、今日日印/七日脉冲 complication、Smart Stack、durable outbox、跨午夜命令与可靠回执；基础能力免费 |
 | 1.1 | 签到成功后的今日入镜，不单独追拍照提醒，照片不进入系统表面 |
 | R3 | ActivityKit push-to-start 原型、远程签到窗口与多通道仲裁；不得向买断用户重复销售现有本地提醒能力 |
 | R4 | 岁月流影实际生成进度、取消、失败与完成摘要 |
 | WX0 / WX1 | 复用 ReminderPolicy 和服务端调度基础设施，但微信资格与发送适配器独立门禁 |
-| R5 | 伴侣型 Watch App、基础 complication / Smart Stack / 可靠签到免费；高级 Watch 节律、Widget、Control、Action Button 与 Shortcuts 分层验证 |
+| R5 | 28/90/365 日高级 Watch 节律、Widget、Control、Action Button 与 Shortcuts 分层验证；不重售 1.1 基础能力 |
 
 ## 12. 平台依据
 

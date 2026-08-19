@@ -80,6 +80,7 @@ private enum PulseBootstrap {
             }
 #endif
             let settings = try AppSettings(sharedSettings: sharedSettings)
+            let watchConnectivity = PulseWatchConnectivityFactory.make()
             let model = PulseAppModel(
                 repository: repository,
                 mediaService: ImprintMediaService(
@@ -92,7 +93,9 @@ private enum PulseBootstrap {
                 featureAccess: runtimeFeatureAccess(),
                 reminderScheduler: runtimeReminderScheduler(),
                 clock: clock,
-                hapticFeedback: HapticFeedback()
+                hapticFeedback: HapticFeedback(),
+                widgetTimelineReloader: WidgetTimelineReloader(),
+                watchConnectivity: watchConnectivity
             )
             return .ready(model)
         } catch PulseAppError.invalidSettings {

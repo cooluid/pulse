@@ -1,8 +1,8 @@
 # 一日一印（Pulse）1.x–3.0 产品战略与商业化规划
 
-文档版本：1.0<br>
+文档版本：1.1<br>
 状态：Canonical Product and Commercial Strategy
-评审日期：2026-08-12
+评审日期：2026-08-19
 
 本文回答四个问题：这个项目是否值得继续、应该成为什么、哪些能力适合收费、以什么证据决定继续或停止。具体实施顺序见 [PRODUCT_ROADMAP.md](./PRODUCT_ROADMAP.md)。
 
@@ -104,7 +104,7 @@ flowchart LR
 - 主承诺首启确认、可选说明、设置编辑和今日页消费已形成单一持久化真源；当前缺口是真机、最大字号、VoiceOver 和实际使用中的产品验收，不是再建第二条身份链路。
 - 现有统计只回答累计与连续，没有回答“最近是否稳定”“中断后多久回来”“哪个阶段更适合我”。
 - 记录只有完成事实，没有可选的轻量上下文，也没有真实的缺席说明。
-- 今日入镜、Widget 和一次买断权益已形成工程实现；Watch、同步与 Plus 仍无生产基础设施。
+- 今日入镜、Widget、一次买断权益和免费 Watch 基础路径已形成工程实现；Watch 仍缺配对真机与分发证据，私密同步与 Plus 仍无生产基础设施。
 - 没有真实留存、付费转化或目标用户访谈证据。
 - 发布合同已记录公开隐私政策与产品支持 URL，App 内使用集中链接。`/Users/fanr/Documents/work/coco-web` 是公开正文与生产部署的唯一权威；本仓 `site/` 只保留到 `fanr.co/pulse` 正式 URL 的稳定跳转，不得复制隐私、支持或产品正文。公开可访问性、线上部署 commit、跳转目标与 App Store Connect 元数据仍需作为发布证据分别确认。
 
@@ -396,7 +396,7 @@ Widget 扩展需要跨进程读取或写入数据，不能把 `isCheckedToday` �
 - Watch 签到先创建稳定 `operationID` 的命令；即时消息只是快速路径，后台排队传输是失联路径，两者进入同一 iPhone command service；
 - `pendingSync` 与 `committed` 必须使用不同图形、文案和触觉；只有 iPhone Repository 成功或幂等命中后才显示实心落印；
 - latest application context 只传最新读取快照，不能承载可能被覆盖的签到动作；
-- 跨午夜、时区快照过期和迟到命令进入实现前，必须先在 `DOMAIN_CONTRACT.md` 冻结“当时动作何时可算当天签到”的语义；
+- 跨午夜延迟命令按动作发生时间归属逻辑日；项目 revision、时区、未来时间与起始日校验只以 `DOMAIN_CONTRACT.md` 为准，Watch 不自行裁决；
 - Watch 不建立第二套每日提醒。通知路由、Smart Stack、iPhone Live Activity 和未来微信通道继续服从唯一 `ReminderPolicy`；
 - watchOS 10 提供 Watch App、complication 与普通 Smart Stack Widget；iPhone Live Activity 自动进入 Watch Smart Stack 仅在 watchOS 11 及以后提供，不能对旧系统伪承诺；
 - 基础 Watch App、complication、Smart Stack 和可靠签到免费；Plus 只出售高级节律、印期和长期档案视图；

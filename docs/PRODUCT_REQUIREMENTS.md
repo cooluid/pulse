@@ -1,8 +1,8 @@
 # 一日一印（Pulse）日签到产品需求
 
-文档版本：3.2<br>
+文档版本：3.3<br>
 状态：Canonical Product Contract
-适用范围：Pulse 1.1 本地优先、单用户、单一主承诺、可选每日记事与今日入镜
+适用范围：Pulse 1.1 本地优先、单用户、单一主承诺、可选每日记事与今日入镜、iPhone 伴侣型 Watch
 
 ## 1. 背景与目标
 
@@ -209,7 +209,7 @@ MVP 的目标不是搭建任务平台，而是让以下闭环稳定成立：
 - 隐私锁；基础 Widget 已受控进入 1.0，后续仅评估不改变事实语义的高级 Widget / Control / Shortcuts，详细边界以 [WIDGET_SHARED_STORE_CONTRACT.md](./WIDGET_SHARED_STORE_CONTRACT.md) 为准；
 - 除 1.0 定时提醒窗口外的跨系统“呼吸、落印、年轮”视觉仪式：签到成功后的短暂灵动岛回声、回归和事实里程碑；App 内基础签到已属于 P0，不在此重复；
 - 与签到事实分离的轻量回响和缺席说明，不形成补签；
-- Apple Watch 伴侣 App、表盘 complication、Smart Stack、可靠离线命令与高级节律，Shortcuts 和其他高级系统入口；
+- Apple Watch 的 28/90/365 日高级节律、印期、年轮和往年今日抽象回看，Shortcuts 和其他高级系统入口；
 - 通过冲突原型门禁后的私密多设备同步；
 - 将合格单人面貌照片本地对齐、网格形变和渐变融合的“岁月流影”，不做年龄、颜值或身份推断；
 - 节律、印期、持续回响、长期档案等 Pulse Plus 能力；
@@ -291,3 +291,4 @@ MVP 的目标不是搭建任务平台，而是让以下闭环稳定成立：
 - 本地优先、系统数据保护和加密备份恢复承诺是否仍成立；任何 iCloud 或远程处理变更都必须先更新隐私政策。
 - 正式视觉、图标、商店素材和文案是否验收。
 - 通知行为是否在真机上通过授权、拒绝和系统设置变更验证。
+- iPhone 伴侣型 Apple Watch App、今日日印/七日脉冲 complication 与 Smart Stack 签到入口；Watch 只保存可重建快照和 durable command outbox，iPhone Repository 仍是唯一签到真源。基础 Watch 查看与可靠签到免费。

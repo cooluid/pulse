@@ -17,7 +17,9 @@ ROOT = Path(__file__).resolve().parents[1]
 TOKEN_PATH = ROOT / "design" / "brand-tokens.json"
 MASK_PATH = ROOT / "design" / "app-icon-source" / "open-day-ring-mask.png"
 ASSET_CATALOG = ROOT / "pulse" / "Assets.xcassets"
+WATCH_ASSET_CATALOG = ROOT / "PulseWatchAssets" / "Assets.xcassets"
 APP_ICON_OUTPUT = ASSET_CATALOG / "AppIcon.appiconset"
+WATCH_APP_ICON_OUTPUT = WATCH_ASSET_CATALOG / "AppIcon.appiconset"
 BRAND_MARK_OUTPUT = ASSET_CATALOG / "PulseMark.imageset"
 APP_ICON_REVIEW_OUTPUT = ROOT / "design" / "app-icon-review.png"
 SIZE = (1024, 1024)
@@ -228,10 +230,12 @@ def build_outputs() -> dict[Path, bytes]:
 
     outputs: dict[Path, bytes] = {}
     for asset_name, role in COLOR_ASSETS.items():
-        outputs[ASSET_CATALOG / f"{asset_name}.colorset" / "Contents.json"] = color_asset(
+        asset = color_asset(
             tokens["light"][role],
             tokens["dark"][role],
         )
+        outputs[ASSET_CATALOG / f"{asset_name}.colorset" / "Contents.json"] = asset
+        outputs[WATCH_ASSET_CATALOG / f"{asset_name}.colorset" / "Contents.json"] = asset
 
     icon = tokens["icon"]
     expected_icon_roles = {
@@ -248,6 +252,23 @@ def build_outputs() -> dict[Path, bytes]:
     default_mark = Image.new("RGB", SIZE, parse_hex(icon["defaultMark"]))
     default_icon = Image.composite(default_mark, default_background, mask)
     outputs[APP_ICON_OUTPUT / "AppIcon-Any.png"] = png_bytes(default_icon)
+    outputs[WATCH_APP_ICON_OUTPUT / "AppIcon.png"] = png_bytes(default_icon)
+    outputs[WATCH_APP_ICON_OUTPUT / "Contents.json"] = json_bytes(
+        {
+            "images": [
+                {
+                    "filename": "AppIcon.png",
+                    "idiom": "universal",
+                    "platform": "watchos",
+                    "size": "1024x1024",
+                }
+            ],
+            "info": {"author": "xcode", "version": 1},
+        }
+    )
+    outputs[WATCH_ASSET_CATALOG / "Contents.json"] = json_bytes(
+        {"info": {"author": "xcode", "version": 1}}
+    )
 
     dark_mark = Image.new("RGBA", SIZE, (*parse_hex(icon["darkMark"]), 255))
     dark_mark.putalpha(mask)

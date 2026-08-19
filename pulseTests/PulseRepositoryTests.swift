@@ -1,6 +1,7 @@
 import SwiftData
 import XCTest
 @testable import PulseCore
+@testable import PulseWatchShared
 @testable import pulse
 
 @MainActor
@@ -105,6 +106,62 @@ final class PulseRepositoryTests: XCTestCase {
         XCTAssertEqual(records.count, 1)
         XCTAssertEqual(records.first?.journalNote, "并发签到后补上的记事")
         XCTAssertEqual(records.first?.journalNoteModifiedAt, clock.now)
+    }
+
+    func testDelayedWatchCommandPreservesOccurrenceLogicalDay() throws {
+        let clock = MutableRepositoryClock(now: makeDate(day: 10, hour: 12))
+        let repository = try makeRepository(clock: clock)
+        let habit = try confirmedHabit(repository)
+        clock.now = makeDate(day: 11, hour: 8)
+        let command = makeWatchCommand(
+            habit: habit,
+            occurredAt: makeDate(day: 10, hour: 23)
+        )
+
+        let receipt = try repository.checkIn(watchCommand: command)
+        let record = try XCTUnwrap(repository.allRecords(habitID: habit.id).first)
+
+        XCTAssertEqual(receipt.logicalDay, LogicalDay(year: 2026, month: 8, day: 10))
+        XCTAssertEqual(receipt.checkedAt, command.occurredAt)
+        XCTAssertEqual(record.createdAt, clock.now)
+        XCTAssertEqual(record.timeZoneIdentifier, timeZone.identifier)
+    }
+
+    func testRepeatedWatchCommandConvergesOnOneRecord() throws {
+        let clock = MutableRepositoryClock(now: makeDate(day: 10, hour: 12))
+        let repository = try makeRepository(clock: clock)
+        let habit = try confirmedHabit(repository)
+        let command = makeWatchCommand(habit: habit, occurredAt: clock.now)
+
+        let first = try repository.checkIn(watchCommand: command)
+        clock.now = makeDate(day: 10, hour: 14)
+        let second = try repository.checkIn(watchCommand: command)
+
+        XCTAssertEqual(first.recordID, second.recordID)
+        XCTAssertEqual(first.disposition, .created)
+        XCTAssertEqual(second.disposition, .alreadyPresent)
+        XCTAssertEqual(try repository.allRecords(habitID: habit.id).count, 1)
+    }
+
+    func testWatchCommandRejectsChangedProjectTimeZoneAndFutureOccurrence() throws {
+        let clock = MutableRepositoryClock(now: makeDate(day: 10, hour: 12))
+        let repository = try makeRepository(clock: clock)
+        let habit = try confirmedHabit(repository)
+        let staleRevision = makeWatchCommand(habit: habit, occurredAt: clock.now)
+        try repository.updateTimeZone(habitID: habit.id, identifier: "Europe/Paris")
+
+        XCTAssertThrowsError(try repository.checkIn(watchCommand: staleRevision)) { error in
+            XCTAssertEqual(error as? PulseWatchRejectionReason, .timeZoneChanged)
+        }
+
+        let updatedHabit = try XCTUnwrap(repository.existingPrimaryHabit())
+        let future = makeWatchCommand(
+            habit: updatedHabit,
+            occurredAt: clock.now.addingTimeInterval(60)
+        )
+        XCTAssertThrowsError(try repository.checkIn(watchCommand: future)) { error in
+            XCTAssertEqual(error as? PulseWatchRejectionReason, .occurrenceInFuture)
+        }
     }
 
     func testRepeatedCheckInNeverOverwritesAnExistingJournalNote() throws {
@@ -548,6 +605,32 @@ final class PulseRepositoryTests: XCTestCase {
 
     private func makeInitialIdentity() throws -> HabitIdentity {
         try HabitIdentity(userName: "Test Habit", userPurpose: nil)
+    }
+
+    private func makeWatchCommand(
+        habit: HabitSnapshot,
+        occurredAt: Date
+    ) -> PulseWatchCheckInCommand {
+        PulseWatchCheckInCommand(
+            projectID: habit.id,
+            projectRevision: PulseWatchProjectRevision.make(
+                projectID: habit.id,
+                startLogicalDay: habit.startLogicalDay.storageValue,
+                timeZoneIdentifier: habit.timeZoneIdentifier
+            ),
+            occurredAt: occurredAt,
+            projectTimeZoneIdentifierSnapshot: habit.timeZoneIdentifier
+        )
+    }
+
+    private func confirmedHabit(
+        _ repository: SwiftDataPulseRepository
+    ) throws -> HabitSnapshot {
+        let habit = try repository.primaryHabit(systemTimeZone: timeZone)
+        return try repository.updateIdentity(
+            habitID: habit.id,
+            identity: try makeInitialIdentity()
+        )
     }
 
     private func makeDate(day: Int, hour: Int) -> Date {

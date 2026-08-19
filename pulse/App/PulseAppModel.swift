@@ -1,6 +1,7 @@
 import Foundation
 import Observation
 import PulseCore
+import PulseWatchShared
 import UIKit
 
 enum AppLoadState: Equatable {
@@ -12,6 +13,7 @@ enum AppLoadState: Equatable {
 enum AppOperation: Equatable {
     case updateHabitIdentity
     case checkIn
+    case watchCheckIn
     case updateJournalNote
     case deleteRecord
     case resetData
@@ -40,6 +42,7 @@ final class PulseAppModel {
     private let clock: any PulseClock
     private let hapticFeedback: any HapticFeedbackProviding
     private let widgetTimelineReloader: any WidgetTimelineReloading
+    private let watchConnectivity: any PulseWatchConnectivityProviding
     private var dateBoundaryTask: Task<Void, Never>?
     private var reminderReconcileTask: Task<Void, Never>?
     private var reminderReconcileRevision = 0
@@ -80,7 +83,8 @@ final class PulseAppModel {
         reminderScheduler: any ReminderScheduling,
         clock: any PulseClock,
         hapticFeedback: any HapticFeedbackProviding,
-        widgetTimelineReloader: any WidgetTimelineReloading = WidgetTimelineReloader()
+        widgetTimelineReloader: any WidgetTimelineReloading,
+        watchConnectivity: any PulseWatchConnectivityProviding
     ) {
         self.repository = repository
         self.mediaService = mediaService
@@ -91,6 +95,10 @@ final class PulseAppModel {
         self.clock = clock
         self.hapticFeedback = hapticFeedback
         self.widgetTimelineReloader = widgetTimelineReloader
+        self.watchConnectivity = watchConnectivity
+        watchConnectivity.commandHandler = { [weak self] command in
+            await self?.handleWatchCheckIn(command)
+        }
         featureAccess.accessDidChange = { [weak self] hasEnhancement in
             guard let self else { return }
             self.reconcileVisualThemeAccess(
@@ -173,6 +181,7 @@ final class PulseAppModel {
     }
 
     func start() async {
+        watchConnectivity.start()
         loadState = .loading
         let featureAccessTask = Task { @MainActor [featureAccess] in
             await featureAccess.start()
@@ -238,6 +247,46 @@ final class PulseAppModel {
             return receipt
         } catch {
             present(error)
+            return nil
+        }
+    }
+
+    func handleWatchCheckIn(
+        _ command: PulseWatchCheckInCommand
+    ) async -> PulseWatchCheckInReceipt? {
+        guard beginOperation(.watchCheckIn) else { return nil }
+        defer { finishOperation() }
+        do {
+            let receipt = try repository.checkIn(watchCommand: command)
+            try loadSnapshot()
+            widgetTimelineReloader.reloadDailyImprint()
+            await reminderScheduler.completeLiveActivity(for: receipt.logicalDay)
+            await enqueueReminderReconciliation().value
+            scheduleDateBoundaryRefresh()
+            let disposition: PulseWatchCommitDisposition = switch receipt.disposition {
+            case .created: .created
+            case .alreadyPresent: .alreadyPresent
+            }
+            return PulseWatchCheckInReceipt(
+                operationID: command.operationID,
+                projectID: command.projectID,
+                projectRevision: command.projectRevision,
+                outcome: .committed(
+                    logicalDay: receipt.logicalDay.storageValue,
+                    checkedAt: receipt.checkedAt,
+                    disposition: disposition
+                ),
+                acknowledgedAt: clock.now
+            )
+        } catch let reason as PulseWatchRejectionReason {
+            return PulseWatchCheckInReceipt(
+                operationID: command.operationID,
+                projectID: command.projectID,
+                projectRevision: command.projectRevision,
+                outcome: .rejected(reason: reason),
+                acknowledgedAt: clock.now
+            )
+        } catch {
             return nil
         }
     }
@@ -682,6 +731,16 @@ final class PulseAppModel {
         )
         if wasShowingCurrentMonth {
             selectedMonth = resolvedToday.firstDayOfMonth()
+        }
+        if currentHabit.isIdentityConfirmed {
+            let watchSnapshot = try PulseWatchSnapshotProjector.makeSnapshot(
+                habit: currentHabit,
+                records: fetchedRecords,
+                at: referenceNow
+            )
+            watchConnectivity.publish(watchSnapshot)
+        } else {
+            watchConnectivity.publish(nil)
         }
     }
 

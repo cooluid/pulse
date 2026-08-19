@@ -1,4 +1,5 @@
 import Foundation
+import PulseWatchShared
 import SwiftData
 
 @MainActor
@@ -9,6 +10,7 @@ public protocol PulseRepositoryProtocol: AnyObject {
     func allMedia(habitID: UUID) throws -> [ImprintMediaSnapshot]
     func updateIdentity(habitID: UUID, identity: HabitIdentity) throws -> HabitSnapshot
     func checkIn(habitID: UUID, journalNote: String?) throws -> CheckInCommitReceipt
+    func checkIn(watchCommand: PulseWatchCheckInCommand) throws -> CheckInCommitReceipt
     func updateJournalNote(recordID: UUID, journalNote: String?) throws -> CheckInRecordSnapshot
     func delete(recordID: UUID) throws
     func upsertMedia(_ draft: ImprintMediaDraft) throws -> ImprintMediaSnapshot
@@ -132,6 +134,69 @@ public final class SwiftDataPulseRepository: PulseRepositoryProtocol {
         }
         let canonicalJournalNote = try JournalNote.canonicalText(userInput: journalNote)
 
+        return try commitCheckIn(
+            habit: persistedHabit,
+            day: day,
+            checkedAt: date,
+            createdAt: date,
+            journalNote: canonicalJournalNote
+        )
+    }
+
+    public func checkIn(
+        watchCommand: PulseWatchCheckInCommand
+    ) throws -> CheckInCommitReceipt {
+        guard watchCommand.protocolVersion == PulseWatchContract.protocolVersion else {
+            throw PulseWatchRejectionReason.incompatibleProtocol
+        }
+        guard let currentHabit = try existingPrimaryHabit(),
+              currentHabit.id == watchCommand.projectID,
+              currentHabit.isIdentityConfirmed else {
+            throw PulseWatchRejectionReason.projectChanged
+        }
+        let persistedHabit = try requirePrimaryHabit(id: watchCommand.projectID)
+        guard let startLogicalDay = persistedHabit.startLogicalDay else {
+            throw PulseWatchRejectionReason.invalidCommand
+        }
+        guard watchCommand.projectTimeZoneIdentifierSnapshot
+                == persistedHabit.timeZoneIdentifier else {
+            throw PulseWatchRejectionReason.timeZoneChanged
+        }
+        let expectedRevision = PulseWatchProjectRevision.make(
+            projectID: persistedHabit.id,
+            startLogicalDay: startLogicalDay.storageValue,
+            timeZoneIdentifier: persistedHabit.timeZoneIdentifier
+        )
+        guard watchCommand.projectRevision == expectedRevision else {
+            throw PulseWatchRejectionReason.projectChanged
+        }
+        let receivedAt = clock.now
+        guard watchCommand.occurredAt <= receivedAt else {
+            throw PulseWatchRejectionReason.occurrenceInFuture
+        }
+        let day = try persistedHabit.logicalDay(at: watchCommand.occurredAt)
+        guard day >= startLogicalDay,
+              watchCommand.occurredAt >= persistedHabit.createdAt else {
+            throw PulseWatchRejectionReason.occurrenceBeforeProjectStart
+        }
+
+        return try commitCheckIn(
+            habit: persistedHabit,
+            day: day,
+            checkedAt: watchCommand.occurredAt,
+            createdAt: receivedAt,
+            journalNote: nil
+        )
+    }
+
+    private func commitCheckIn(
+        habit persistedHabit: Habit,
+        day: LogicalDay,
+        checkedAt: Date,
+        createdAt: Date,
+        journalNote canonicalJournalNote: String?
+    ) throws -> CheckInCommitReceipt {
+
         let sameDayRecords = try recordsForLogicalDay(
             habitID: persistedHabit.id,
             day: day
@@ -144,7 +209,7 @@ public final class SwiftDataPulseRepository: PulseRepositoryProtocol {
             try attachJournalNoteIfNeeded(
                 to: sameDayRecord,
                 journalNote: canonicalJournalNote,
-                modifiedAt: date
+                modifiedAt: createdAt
             )
             try attachMediaIfNeeded(
                 habitID: persistedHabit.id,
@@ -162,11 +227,11 @@ public final class SwiftDataPulseRepository: PulseRepositoryProtocol {
         let newRecord = CheckInRecord(
             habitID: persistedHabit.id,
             logicalDay: day,
-            checkedAt: date,
-            createdAt: date,
+            checkedAt: checkedAt,
+            createdAt: createdAt,
             timeZoneIdentifier: persistedHabit.timeZoneIdentifier,
             journalNote: canonicalJournalNote,
-            journalNoteModifiedAt: canonicalJournalNote == nil ? nil : date
+            journalNoteModifiedAt: canonicalJournalNote == nil ? nil : createdAt
         )
         context.insert(newRecord)
         try attachMediaIfNeeded(
@@ -180,7 +245,7 @@ public final class SwiftDataPulseRepository: PulseRepositoryProtocol {
             habitID: persistedHabit.id,
             day: day,
             journalNote: canonicalJournalNote,
-            journalNoteModifiedAt: date
+            journalNoteModifiedAt: createdAt
         )
     }
 

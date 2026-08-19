@@ -1,8 +1,8 @@
 # Pulse 1.1 测试与验收计划
 
-文档版本：2.3
+文档版本：2.4
 状态：Canonical Acceptance Plan
-更新时间：2026-08-18
+更新时间：2026-08-19
 
 ## 1. 证据边界
 
@@ -27,6 +27,7 @@
 | AppModel | 操作互斥；单击签到；系统表面只消费提交回执的逻辑日；记事更新不改签到/统计；长按先提交签到再请求相机；相机/媒体失败不撤销签到；跨日事件与激活事件在长操作结束后必须补执行；重置日志；完整备份 |
 | Settings / Store | 今日入镜邀请、空间、主题、语言、提醒；独立高阶权益页；StoreKit 动态价格；类型化能力目录；独立 Widget 画廊；重置后清理；损坏偏好失败关闭 |
 | Widget / 系统表面 | 只读 Habit + CheckInRecord；不查询或暴露 ImprintMedia；AppIntent 幂等签到；语言/样式/权益双边检查 |
+| Apple Watch | 协议版本、project revision、时区/未来时间/起始日拒绝；离线 outbox、即时/后台双路径同一 operationID、重复/乱序回执；跨午夜真实 occurredAt 归属；Watch/iPhone/Widget 并发仍单记录；pendingSync 不冒充成功 |
 | 本地化/无障碍 | 简中/英文完整字符串；格式参数；日期 Locale；照片/按钮/进度有 VoiceOver 语义；状态不只靠颜色 |
 | 资产 | 品牌 token schema、资源解码、AppIcon alpha、生成器幂等、仓库 diff |
 
@@ -61,6 +62,10 @@ xcodebuild -project pulse.xcodeproj -scheme pulse \
 xcodebuild -project pulse.xcodeproj -scheme pulse \
   -configuration Release -destination 'generic/platform=iOS' \
   CODE_SIGNING_ALLOWED=NO analyze
+
+xcodebuild -project pulse.xcodeproj -scheme PulseWatch \
+  -configuration Release -destination 'generic/platform=watchOS' \
+  CODE_SIGNING_ALLOWED=NO build
 
 python3 scripts/build_brand_assets.py --check
 plutil -lint Config/Pulse-Info.plist
