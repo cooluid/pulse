@@ -4919,6 +4919,7 @@
       }
     },
     "today.accessibility.checked" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
