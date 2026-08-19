@@ -9,6 +9,7 @@ struct RootView: View {
     @State private var selectedSection: PulsePrimarySection = .today
     @State private var todayPath: [PulseNavigationDestination] = []
     @State private var historyPath: [PulseNavigationDestination] = []
+    @State private var measuredPrimaryNavigationHeight: CGFloat = 0
 
     var body: some View {
         Group {
@@ -97,13 +98,16 @@ struct RootView: View {
     }
 
     private var primaryInterface: some View {
-        VStack(spacing: 0) {
+        ZStack(alignment: .bottom) {
             ZStack {
                 NavigationStack(path: $todayPath) {
                     TodayView(
                         model: model,
                         isActive: selectedSection == .today && todayPath.isEmpty
                     )
+                        .safeAreaInset(edge: .bottom, spacing: 0) {
+                            primaryNavigationReserve
+                        }
                         .accessibilityHidden(!todayPath.isEmpty)
                         .navigationDestination(for: PulseNavigationDestination.self) { destination in
                             secondaryDestination(destination)
@@ -125,6 +129,9 @@ struct RootView: View {
                         model: model,
                         isActive: selectedSection == .history && historyPath.isEmpty
                     )
+                        .safeAreaInset(edge: .bottom, spacing: 0) {
+                            primaryNavigationReserve
+                        }
                         .accessibilityHidden(!historyPath.isEmpty)
                         .navigationDestination(for: PulseNavigationDestination.self) { destination in
                             secondaryDestination(destination)
@@ -144,22 +151,68 @@ struct RootView: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity)
 
             if isPrimaryNavigationVisible {
-                PulsePrimaryNavigation(
-                    selection: $selectedSection,
-                    todayDayNumber: model.today?.day,
-                    isTodayChecked: model.todayRecord != nil
-                )
-                .transition(.move(edge: .bottom).combined(with: .opacity))
+                primaryNavigationBar
+                    .background {
+                        GeometryReader { proxy in
+                            Color.clear.preference(
+                                key: PulsePrimaryNavigationHeightKey.self,
+                                value: proxy.size.height
+                            )
+                        }
+                    }
+                    .transition(.opacity)
             }
+        }
+        .onPreferenceChange(PulsePrimaryNavigationHeightKey.self) { height in
+            guard height > 0 else { return }
+            measuredPrimaryNavigationHeight = height
         }
         .background(PulseScreenBackground())
         .animation(primaryContentAnimation, value: isPrimaryNavigationVisible)
+        .animation(nil, value: measuredPrimaryNavigationHeight)
     }
 
     private var isPrimaryNavigationVisible: Bool {
         switch selectedSection {
         case .today: todayPath.isEmpty
         case .history: historyPath.isEmpty
+        }
+    }
+
+    private var primaryNavigationBar: some View {
+        PulsePrimaryNavigation(
+            selection: $selectedSection,
+            todayDayNumber: model.today?.day,
+            isTodayChecked: model.todayRecord != nil
+        )
+    }
+
+    private var primaryNavigationReserve: some View {
+        Color.clear
+            .frame(height: primaryNavigationReserveHeight)
+            .accessibilityHidden(true)
+    }
+
+    private var primaryNavigationReserveHeight: CGFloat {
+        measuredPrimaryNavigationHeight > 0
+            ? measuredPrimaryNavigationHeight
+            : estimatedPrimaryNavigationHeight
+    }
+
+    private var estimatedPrimaryNavigationHeight: CGFloat {
+        switch visualTheme {
+        case .quietField:
+            PulseDesign.primaryNavigationHeight + (PulseDesign.spacing8 * 2)
+        case .sunlitDay:
+            PulseDesign.sunlitNavigationGlyph
+                + PulseDesign.spacing8
+                + PulseDesign.spacing16
+                + PulseDesign.spacing8
+                + PulseDesign.spacing12
+        case .editorialJournal:
+            PulseDesign.primaryNavigationHeight
+                + PulseDesign.spacing8
+                + PulseDesign.spacing24
         }
     }
 
@@ -181,4 +234,15 @@ struct RootView: View {
 
 enum PulseNavigationDestination: Hashable {
     case settings
+}
+
+private struct PulsePrimaryNavigationHeightKey: PreferenceKey {
+    static let defaultValue: CGFloat = 0
+
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        let next = nextValue()
+        if next > 0 {
+            value = next
+        }
+    }
 }
