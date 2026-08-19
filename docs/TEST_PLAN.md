@@ -78,7 +78,7 @@ git diff --check
 - `NSCameraUsageDescription` 简中/英文均存在；
 - 生产源码没有 schema v1、archive v1 decoder、旧 Repository、旧 FileDocument、绝对媒体路径或第二个媒体目录；
 - `ArchiveWork` 启动即清理崩溃遗留并使用 Data Protection；
-- `/Users/fanr/Documents/work/coco-web` 是公开隐私、支持与产品正文的唯一权威；`site` submodule 只能保留到正式 URL 的跳转。发布时分别验证 canonical 仓库提交、生产部署、三个 HTTPS 200 页面、1.1 关键正文、跳转目标与商店材料。
+- `/Users/fanr/Documents/work/coco-web` 是公开隐私、支持与产品正文的唯一权威；本仓 `site/` 只能保留到正式 URL 的跳转。发布时分别验证 canonical 仓库提交、生产部署、三个 HTTPS 200 页面、1.1 关键正文、跳转目标与商店材料。
 
 ## 5. 真机媒体门禁
 

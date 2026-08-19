@@ -76,7 +76,7 @@ AppModel 同时建立 `recordsByDay` 与 `mediaByDay`。照片不参与 CheckInS
 
 只有 `MFMailComposeViewController.canSendMail()` 成立才呈现系统编辑器；取消、保存草稿、进入系统发送队列和失败分别处理，不能把“已交给 Mail”写成已经送达。设备未配置 Mail 时明确说明并只允许复制同一权威支持邮箱，不建立第二提交后端。
 
-公开隐私和支持正文只由 `/Users/fanr/Documents/work/coco-web` 持有；`site` submodule 继续只做正式 URL 跳转。反馈能力合入候选时必须同步权威隐私正文，但部署是独立发布门禁。
+公开隐私和支持正文只由 `/Users/fanr/Documents/work/coco-web` 持有；本仓 `site/` 只做正式 URL 跳转。反馈能力合入候选时必须同步权威隐私正文，但部署是独立发布门禁。
 
 ## 9. 视觉与可访问性
 
