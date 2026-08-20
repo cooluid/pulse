@@ -8,6 +8,7 @@ from io import BytesIO
 import json
 import os
 from pathlib import Path
+import shutil
 import tempfile
 
 from PIL import Image, ImageDraw
@@ -74,6 +75,15 @@ COLOR_ASSETS = {
     "PulseWidgetWater": "widgetWater",
 }
 
+WATCH_COLOR_ASSETS = {
+    "AccentColor": "committed",
+    "PulseWatchCommitted": "committed",
+    "PulseWatchField": "field",
+    "PulseWatchInk": "ink",
+    "PulseWatchPending": "pending",
+    "PulseWatchSecondary": "secondary",
+}
+
 
 def parse_hex(value: str) -> tuple[int, int, int]:
     if len(value) != 7 or not value.startswith("#"):
@@ -114,6 +124,20 @@ def color_asset(light: str, dark: str) -> bytes:
                     "color": {"color-space": "srgb", "components": color_components(dark)},
                     "idiom": "universal",
                 },
+            ],
+            "info": {"author": "xcode", "version": 1},
+        }
+    )
+
+
+def solid_color_asset(value: str) -> bytes:
+    return json_bytes(
+        {
+            "colors": [
+                {
+                    "color": {"color-space": "srgb", "components": color_components(value)},
+                    "idiom": "universal",
+                }
             ],
             "info": {"author": "xcode", "version": 1},
         }
@@ -223,6 +247,12 @@ def build_outputs() -> dict[Path, bytes]:
             missing = sorted(expected_roles - roles)
             extra = sorted(roles - expected_roles)
             raise ValueError(f"Invalid {appearance} roles; missing={missing}, extra={extra}")
+    watch_roles = set(tokens["watch"])
+    expected_watch_roles = set(WATCH_COLOR_ASSETS.values())
+    if watch_roles != expected_watch_roles:
+        missing = sorted(expected_watch_roles - watch_roles)
+        extra = sorted(watch_roles - expected_watch_roles)
+        raise ValueError(f"Invalid watch roles; missing={missing}, extra={extra}")
 
     mask = Image.open(MASK_PATH)
     if mask.mode != "L" or mask.size != SIZE:
@@ -235,7 +265,10 @@ def build_outputs() -> dict[Path, bytes]:
             tokens["dark"][role],
         )
         outputs[ASSET_CATALOG / f"{asset_name}.colorset" / "Contents.json"] = asset
-        outputs[WATCH_ASSET_CATALOG / f"{asset_name}.colorset" / "Contents.json"] = asset
+    for asset_name, role in WATCH_COLOR_ASSETS.items():
+        outputs[WATCH_ASSET_CATALOG / f"{asset_name}.colorset" / "Contents.json"] = (
+            solid_color_asset(tokens["watch"][role])
+        )
 
     icon = tokens["icon"]
     expected_icon_roles = {
@@ -323,6 +356,16 @@ def output_matches(path: Path, expected: bytes) -> bool:
         return False
 
 
+def unexpected_watch_color_directories(outputs: dict[Path, bytes]) -> list[Path]:
+    expected = {
+        path.parent
+        for path in outputs
+        if path.parent.parent == WATCH_ASSET_CATALOG and path.parent.suffix == ".colorset"
+    }
+    actual = set(WATCH_ASSET_CATALOG.glob("*.colorset"))
+    return sorted(actual - expected)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -334,14 +377,21 @@ def main() -> None:
     outputs = build_outputs()
 
     drifted = [path for path, expected in outputs.items() if not output_matches(path, expected)]
+    unexpected_watch_colors = unexpected_watch_color_directories(outputs)
     if arguments.check:
-        if drifted:
-            relative = ", ".join(str(path.relative_to(ROOT)) for path in drifted)
+        if drifted or unexpected_watch_colors:
+            relative = ", ".join(
+                str(path.relative_to(ROOT))
+                for path in [*drifted, *unexpected_watch_colors]
+            )
             raise SystemExit(f"Generated brand assets are stale: {relative}")
         print(f"Verified {len(outputs)} generated brand assets")
         return
 
     updated_paths = []
+    for directory in unexpected_watch_colors:
+        shutil.rmtree(directory)
+        updated_paths.append(directory)
     for path, data in outputs.items():
         if output_matches(path, data):
             continue

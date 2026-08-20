@@ -7,6 +7,8 @@ enum PulseWatchDesign {
     static let todayMarkSide: CGFloat = 94
     static let rhythmHeight: CGFloat = 34
     static let rhythmTopPadding: CGFloat = 4
+    static let recoveryButtonHorizontalPadding: CGFloat = 16
+    static let recoveryButtonMinimumHeight: CGFloat = 44
     static let widgetMarkPadding: CGFloat = 3
     static let widgetRhythmHorizontalPadding: CGFloat = 4
 

@@ -147,6 +147,45 @@ final class PulseAppModelTests: XCTestCase {
         XCTAssertEqual(context.scheduler.completedLiveActivityDays, [context.model.today!])
     }
 
+    func testWatchSnapshotRequestReadsTheCurrentRepositoryFact() async throws {
+        let context = try makeContext()
+        await context.model.start()
+        let identityUpdated = await context.model.updateHabitIdentity(
+            name: "Test Habit",
+            purpose: nil
+        )
+        XCTAssertTrue(identityUpdated)
+        _ = await context.model.checkIn()
+
+        let handler = try XCTUnwrap(context.watchConnectivity.snapshotHandler)
+        let snapshot = try await handler()
+
+        XCTAssertEqual(snapshot?.projectID, context.model.habit?.id)
+        XCTAssertEqual(snapshot?.todayLogicalDay, context.model.today?.storageValue)
+        XCTAssertEqual(snapshot?.isCheckedToday, true)
+    }
+
+    func testExternalSystemSurfaceCommitRefreshesAppAndWatchSnapshot() async throws {
+        let context = try makeContext()
+        await context.model.start()
+        let identityUpdated = await context.model.updateHabitIdentity(
+            name: "Test Habit",
+            purpose: nil
+        )
+        XCTAssertTrue(identityUpdated)
+        let habit = try XCTUnwrap(context.model.habit)
+
+        _ = try context.repository.checkIn(habitID: habit.id, journalNote: nil)
+        PulseExternalCheckInSignal.post()
+
+        await waitUntil { context.model.todayRecord != nil }
+        XCTAssertEqual(context.model.statistics.totalCount, 1)
+        XCTAssertEqual(
+            context.watchConnectivity.snapshots.compactMap { $0 }.last?.isCheckedToday,
+            true
+        )
+    }
+
     func testCheckInUsesCommittedLogicalDayForSystemSurfaceCompletionAcrossMidnight() async throws {
         let context = try makeContext()
         await context.model.start()
@@ -451,6 +490,7 @@ final class PulseAppModelTests: XCTestCase {
         )
         return TestContext(
             model: model,
+            repository: repository,
             clock: clock,
             scheduler: scheduler,
             haptics: haptics,
@@ -480,6 +520,7 @@ final class PulseAppModelTests: XCTestCase {
 
 private struct TestContext {
     let model: PulseAppModel
+    let repository: SwiftDataPulseRepository
     let clock: MutablePulseClock
     let scheduler: TestReminderScheduler
     let haptics: TestHaptics
@@ -490,6 +531,7 @@ private struct TestContext {
 @MainActor
 private final class TestWatchConnectivity: PulseWatchConnectivityProviding {
     var commandHandler: (@MainActor (PulseWatchCheckInCommand) async -> PulseWatchCheckInReceipt?)?
+    var snapshotHandler: (@MainActor () async throws -> PulseWatchProjectSnapshot?)?
     private(set) var startCount = 0
     private(set) var snapshots: [PulseWatchProjectSnapshot?] = []
 

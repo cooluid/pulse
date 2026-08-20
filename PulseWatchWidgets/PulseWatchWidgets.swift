@@ -33,14 +33,17 @@ private struct PulseWatchTimelineProvider: TimelineProvider {
         completion: @escaping (Timeline<PulseWatchEntry>) -> Void
     ) {
         let entry = entry()
-        let reloadDate = entry.projection.snapshot?.nextDayBoundary
-            ?? entry.date.addingTimeInterval(PulseWatchContract.missingSnapshotRetryInterval)
+        let retryDate = entry.date.addingTimeInterval(
+            PulseWatchContract.missingSnapshotRetryInterval
+        )
+        let boundary = entry.projection.snapshot?.nextDayBoundary
+        let reloadDate = boundary.flatMap { $0 > entry.date ? $0 : nil } ?? retryDate
         completion(Timeline(entries: [entry], policy: .after(reloadDate)))
     }
 
     private func entry() -> PulseWatchEntry {
         do {
-            let store = try PulseWatchRuntimeIdentity.makeLocalStore()
+            let store = try PulseWatchWidgetRuntime.localStore()
             return PulseWatchEntry(date: .now, projection: try store.projection())
         } catch {
             return PulseWatchEntry(
@@ -57,6 +60,7 @@ private struct PulseWatchWidgetView: View {
 
     @Environment(\.widgetFamily) private var family
     @Environment(\.locale) private var locale
+    @Environment(\.widgetRenderingMode) private var renderingMode
 
     var body: some View {
         Group {
@@ -80,45 +84,46 @@ private struct PulseWatchWidgetView: View {
            let days = entry.projection.snapshot?.sevenDayPulse {
             PulseWatchSevenDayPulse(
                 days: days,
-                displayState: entry.projection.displayState
+                displayState: displayState,
+                usesWidgetAccent: usesWidgetAccent
             )
             .padding(.horizontal, PulseWatchDesign.widgetRhythmHorizontalPadding)
         } else if family == .accessoryInline {
             Label(statusText, systemImage: systemImage)
         } else {
-            PulseWatchImprintMark(state: entry.projection.displayState)
+            PulseWatchImprintMark(
+                state: displayState,
+                usesWidgetAccent: usesWidgetAccent
+            )
                 .padding(PulseWatchDesign.widgetMarkPadding)
         }
     }
 
     private var canCheckIn: Bool {
-        if case .ready = entry.projection.displayState { return true }
+        if case .ready = displayState { return true }
         return false
     }
 
     private var statusText: String {
-        let key: String.LocalizationValue = switch entry.projection.displayState {
-        case .needsSync: "watch.state.needs_sync"
-        case .ready: "watch.state.ready"
-        case .submitting: "watch.state.submitting"
-        case .pendingSync: "watch.state.pending"
-        case .committed: "watch.state.checked"
-        case .failed(let reason):
-            reason == .persistenceFailure
-                ? "watch.state.unavailable"
-                : "watch.state.failed"
-        }
-        return PulseWatchLocalization.string(key, locale: locale)
+        PulseWatchLocalization.status(for: displayState, locale: locale)
     }
 
     private var systemImage: String {
-        switch entry.projection.displayState {
+        switch displayState {
         case .committed: "circle.inset.filled"
         case .pendingSync: "circle.dashed"
         case .failed: "exclamationmark.circle"
         case .needsSync: "iphone.and.arrow.forward"
         case .ready, .submitting: "circle"
         }
+    }
+
+    private var displayState: PulseWatchDisplayState {
+        entry.projection.displayState(at: entry.date)
+    }
+
+    private var usesWidgetAccent: Bool {
+        renderingMode == .accented
     }
 }
 
@@ -149,7 +154,12 @@ private struct PulseWatchRhythmWidget: Widget {
 }
 
 @main
+@MainActor
 struct PulseWatchWidgetBundle: WidgetBundle {
+    init() {
+        PulseWatchWidgetRuntime.start()
+    }
+
     var body: some Widget {
         PulseWatchTodayImprintWidget()
         PulseWatchRhythmWidget()

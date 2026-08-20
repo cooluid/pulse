@@ -42,24 +42,14 @@ public final class PulseWatchLocalStore: @unchecked Sendable {
         )
     }
 
-    public func save(snapshot: PulseWatchProjectSnapshot?) throws {
+    public func save(snapshot: PulseWatchProjectSnapshot) throws {
         lock.lock()
         defer { lock.unlock() }
-        if let snapshot {
-            try PulseWatchCodec.validate(snapshot)
-        }
+        try PulseWatchCodec.validate(snapshot)
         try coordinatedMutation { state in
-            guard let snapshot else {
-                state.snapshot = nil
-                state.outbox.removeAll()
-                state.lastReceipt = nil
-                return
-            }
             if let currentSnapshot = state.snapshot,
-               currentSnapshot.projectID != snapshot.projectID
-                || currentSnapshot.projectRevision != snapshot.projectRevision {
-                state.outbox.removeAll()
-                state.lastReceipt = nil
+               currentSnapshot.generatedAt > snapshot.generatedAt {
+                return
             }
             state.snapshot = snapshot
             if let lastReceipt = state.lastReceipt,
@@ -94,11 +84,6 @@ public final class PulseWatchLocalStore: @unchecked Sendable {
         defer { lock.unlock() }
         try PulseWatchCodec.validate(receipt)
         try coordinatedMutation { state in
-            guard let snapshot = state.snapshot,
-                  receipt.projectID == snapshot.projectID,
-                  receipt.projectRevision == snapshot.projectRevision else {
-                throw PulseWatchLocalStoreError.incompatibleState
-            }
             if state.lastReceipt == receipt {
                 return
             }
@@ -111,6 +96,22 @@ public final class PulseWatchLocalStore: @unchecked Sendable {
             }
             state.outbox.removeAll { $0.operationID == receipt.operationID }
             state.lastReceipt = receipt
+        }
+    }
+
+    public func prepareForRetry() throws {
+        lock.lock()
+        defer { lock.unlock() }
+        try coordinatedMutation { state in
+            if let snapshot = state.snapshot {
+                state.outbox.removeAll { command in
+                    command.projectID != snapshot.projectID
+                        || command.projectRevision != snapshot.projectRevision
+                        || command.projectTimeZoneIdentifierSnapshot
+                            != snapshot.projectTimeZoneIdentifier
+                }
+            }
+            state.lastReceipt = nil
         }
     }
 
@@ -177,16 +178,6 @@ public final class PulseWatchLocalStore: @unchecked Sendable {
         }
         if let snapshot = state.snapshot {
             try PulseWatchCodec.validate(snapshot)
-            guard state.outbox.allSatisfy({ command in
-                command.projectID == snapshot.projectID
-                    && command.projectRevision == snapshot.projectRevision
-                    && command.projectTimeZoneIdentifierSnapshot
-                        == snapshot.projectTimeZoneIdentifier
-            }) else {
-                throw PulseWatchLocalStoreError.incompatibleState
-            }
-        } else if !state.outbox.isEmpty || state.lastReceipt != nil {
-            throw PulseWatchLocalStoreError.incompatibleState
         }
         var operationIDs = Set<UUID>()
         for command in state.outbox {
@@ -197,11 +188,6 @@ public final class PulseWatchLocalStore: @unchecked Sendable {
         }
         if let lastReceipt = state.lastReceipt {
             try PulseWatchCodec.validate(lastReceipt)
-            guard let snapshot = state.snapshot,
-                  lastReceipt.projectID == snapshot.projectID,
-                  lastReceipt.projectRevision == snapshot.projectRevision else {
-                throw PulseWatchLocalStoreError.incompatibleState
-            }
         }
         return state
     }

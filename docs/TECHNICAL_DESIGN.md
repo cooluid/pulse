@@ -36,7 +36,9 @@ PulseWatch / Watch complication
 
 `SwiftDataPulseRepository` 是领域模型唯一写入者；签到时可原子写入可选记事，签到后只有 `updateJournalNote` 可修改。`PulseMediaFileStore` actor 是媒体路径、文件保护、安装、读取和孤儿审计唯一所有者；`ImprintMediaService` 只协调图像处理、不可变文件和 Repository 提交。页面不接触 SwiftData、路径或 codec。
 
-`PulseWatchShared` 是 iPhone、Watch App 与 Watch Widget 共用的唯一 Watch 协议、revision、codec 与本地状态合同。Watch 本地单文件状态只保存最新可重建快照、durable command outbox 和最后回执；使用跨进程协调和原子写入，不包含 SwiftData 模型。所有快照、命令、回执和落盘状态均执行协议版本、项目/revision、时区、逻辑日、连续七日、完成一致性与唯一 operationID 语义校验，损坏时失败关闭。iPhone 即时消息与后台用户信息都进入同一个 `PulseAppModel.handleWatchCheckIn`，再调用 Repository 的正式 Watch 命令入口；不存在 Widget/Watch 私写记录或按界面状态补造成功。
+`PulseWatchShared` 是 iPhone、Watch App 与 Watch Widget 共用的唯一 Watch 协议、revision、codec 与本地状态合同。Watch 本地单文件状态只保存最新可重建快照、durable command outbox 和最后回执；使用跨进程协调和原子写入，不包含 SwiftData 模型。快照以 `nextDayBoundary` 统一失效，过期后只表达需要同步；坏快照、项目 revision 变化或回执乱序都不能隐式清除 outbox，命令只在匹配回执或用户明确重试/清除时收敛。所有快照、命令、回执和落盘状态均执行协议版本、项目/revision、时区、逻辑日、连续七日、完成一致性与唯一 operationID 语义校验。iPhone 即时消息与后台用户信息都进入同一个 `PulseAppModel.handleWatchCheckIn`，再调用 Repository 的正式 Watch 命令入口；Watch App 的刷新请求由 iPhone 直接从当前 Repository 重建快照，不存在 Widget/Watch 私写记录或按界面状态补造成功。
+
+iPhone Widget / Live Activity 的正式 App Intent 提交 Repository 后只发送进程内 `PulseExternalCheckInSignal` 刷新容器 App 与 Watch 快照；信号不携带、不持久化业务事实，也不承担成功裁决。Widget 自身仍由 Intent 返回后的 WidgetKit timeline reload 更新，避免建立第二条状态广播或重复 reload 路径。
 
 ## 3. 持久化
 

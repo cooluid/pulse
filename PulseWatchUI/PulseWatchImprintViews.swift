@@ -1,8 +1,10 @@
 import PulseWatchShared
 import SwiftUI
+import WidgetKit
 
 struct PulseWatchImprintMark: View {
     let state: PulseWatchDisplayState
+    var usesWidgetAccent = false
 
     var body: some View {
         GeometryReader { proxy in
@@ -12,7 +14,7 @@ struct PulseWatchImprintMark: View {
                 case .needsSync:
                     Circle()
                         .stroke(
-                            Color("PulseSecondary"),
+                            Color("PulseWatchSecondary"),
                             style: StrokeStyle(
                                 lineWidth: max(
                                     PulseWatchDesign.markNeedsSyncMinimumLineWidth,
@@ -32,7 +34,7 @@ struct PulseWatchImprintMark: View {
                             to: PulseWatchDesign.markOpenEnd
                         )
                         .stroke(
-                            Color("PulseField"),
+                            Color("PulseWatchField"),
                             style: StrokeStyle(
                                 lineWidth: max(
                                     PulseWatchDesign.markMinimumLineWidth,
@@ -45,7 +47,7 @@ struct PulseWatchImprintMark: View {
                     if case .submitting = state {
                         ProgressView()
                             .controlSize(.small)
-                            .tint(Color("PulseInk"))
+                            .tint(Color("PulseWatchInk"))
                     }
                 case .pendingSync:
                     Circle()
@@ -54,7 +56,7 @@ struct PulseWatchImprintMark: View {
                             to: PulseWatchDesign.markPendingEnd
                         )
                         .stroke(
-                            Color("PulseField"),
+                            Color("PulseWatchField"),
                             style: StrokeStyle(
                                 lineWidth: max(
                                     PulseWatchDesign.markMinimumLineWidth,
@@ -65,7 +67,7 @@ struct PulseWatchImprintMark: View {
                         )
                         .rotationEffect(.degrees(PulseWatchDesign.markRotationDegrees))
                     Circle()
-                        .fill(Color("PulseActivityIslandFirefly"))
+                        .fill(Color("PulseWatchPending"))
                         .frame(
                             width: side * PulseWatchDesign.fireflySideRatio,
                             height: side * PulseWatchDesign.fireflySideRatio
@@ -74,9 +76,11 @@ struct PulseWatchImprintMark: View {
                             x: side * PulseWatchDesign.fireflyHorizontalOffsetRatio,
                             y: side * PulseWatchDesign.fireflyVerticalOffsetRatio
                         )
+                        .widgetAccentable(usesWidgetAccent)
                 case .committed:
                     Circle()
-                        .fill(Color("PulseGrass"))
+                        .fill(Color("PulseWatchCommitted"))
+                        .widgetAccentable(usesWidgetAccent)
                     Circle()
                         .fill(Color.black.opacity(PulseWatchDesign.committedCutoutOpacity))
                         .frame(
@@ -94,7 +98,7 @@ struct PulseWatchImprintMark: View {
                             to: PulseWatchDesign.markOpenEnd
                         )
                         .stroke(
-                            Color("PulseField"),
+                            Color("PulseWatchField"),
                             style: StrokeStyle(
                                 lineWidth: max(
                                     PulseWatchDesign.markMinimumLineWidth,
@@ -109,7 +113,7 @@ struct PulseWatchImprintMark: View {
                             size: side * PulseWatchDesign.failureSymbolRatio,
                             weight: .bold
                         ))
-                        .foregroundStyle(Color("PulseInk"))
+                        .foregroundStyle(Color("PulseWatchInk"))
                 }
             }
             .frame(width: side, height: side)
@@ -122,6 +126,7 @@ struct PulseWatchImprintMark: View {
 struct PulseWatchSevenDayPulse: View {
     let days: [PulseWatchDaySnapshot]
     let displayState: PulseWatchDisplayState
+    var usesWidgetAccent = false
 
     var body: some View {
         GeometryReader { proxy in
@@ -140,7 +145,10 @@ struct PulseWatchSevenDayPulse: View {
                         .frame(width: historySide, height: historySide)
                 }
                 Spacer(minLength: spacing)
-                PulseWatchImprintMark(state: displayState)
+                PulseWatchImprintMark(
+                    state: displayState,
+                    usesWidgetAccent: usesWidgetAccent
+                )
                     .frame(width: todaySide, height: todaySide)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -151,19 +159,21 @@ struct PulseWatchSevenDayPulse: View {
     private func dayNode(_ state: PulseWatchDayState) -> some View {
         switch state {
         case .checked:
-            Circle().fill(Color("PulseGrass"))
+            Circle()
+                .fill(Color("PulseWatchCommitted"))
+                .widgetAccentable(usesWidgetAccent)
         case .missed:
             Circle().stroke(
-                Color("PulseSecondary"),
+                Color("PulseWatchSecondary"),
                 lineWidth: PulseWatchDesign.historyNodeLineWidth
             )
         case .beforeHabit:
             Circle().fill(
-                Color("PulseSecondary").opacity(PulseWatchDesign.beforeHabitOpacity)
+                Color("PulseWatchSecondary").opacity(PulseWatchDesign.beforeHabitOpacity)
             )
         case .todayPending:
             Circle().stroke(
-                Color("PulseField"),
+                Color("PulseWatchField"),
                 lineWidth: PulseWatchDesign.historyNodeLineWidth
             )
         }

@@ -9,7 +9,9 @@ struct PulseWatchTodayView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: PulseWatchDesign.pageSpacing) {
-                dateHeader
+                if let projectDateText {
+                    dateHeader(projectDateText)
+                }
 
                 Button {
                     Task { await model.checkIn() }
@@ -32,17 +34,30 @@ struct PulseWatchTodayView: View {
 
                 Text(statusText)
                     .font(.footnote.weight(.semibold))
-                    .foregroundStyle(Color("PulseInk"))
+                    .foregroundStyle(Color("PulseWatchInk"))
                     .multilineTextAlignment(.center)
 
-                if case .pendingSync = model.displayState {
+                if showsRecoveryAction {
                     Button {
-                        Task { await model.retryPending() }
+                        Task { await model.retry() }
                     } label: {
                         Text("watch.action.retry")
+                            .font(.caption.weight(.semibold))
+                            .foregroundStyle(Color("PulseWatchInk"))
+                            .padding(
+                                .horizontal,
+                                PulseWatchDesign.recoveryButtonHorizontalPadding
+                            )
+                            .frame(
+                                minHeight: PulseWatchDesign.recoveryButtonMinimumHeight
+                            )
+                            .background(
+                                Capsule()
+                                    .fill(Color("PulseWatchSecondary").opacity(0.22))
+                            )
                     }
-                    .buttonStyle(.bordered)
-                    .controlSize(.small)
+                    .buttonStyle(.plain)
+                    .fixedSize(horizontal: true, vertical: true)
                 }
 
                 if let days = model.projection.snapshot?.sevenDayPulse {
@@ -71,7 +86,9 @@ struct PulseWatchTodayView: View {
         return false
     }
 
-    private var dateHeader: some View {
+    private func dateHeader(
+        _ projectDateText: (weekday: String, monthDay: String)
+    ) -> some View {
         HStack(alignment: .firstTextBaseline) {
             Text(verbatim: projectDateText.weekday.uppercased(with: locale))
             Spacer()
@@ -79,14 +96,14 @@ struct PulseWatchTodayView: View {
                 .monospacedDigit()
         }
         .font(.caption.weight(.bold))
-        .foregroundStyle(Color("PulseSecondary"))
+        .foregroundStyle(Color("PulseWatchSecondary"))
     }
 
-    private var projectDateText: (weekday: String, monthDay: String) {
+    private var projectDateText: (weekday: String, monthDay: String)? {
         guard let snapshot = model.projection.snapshot,
               let timeZone = TimeZone(identifier: snapshot.projectTimeZoneIdentifier),
               let date = logicalDayDate(snapshot.todayLogicalDay, timeZone: timeZone) else {
-            return formattedDate(.now, timeZone: .autoupdatingCurrent)
+            return nil
         }
         return formattedDate(date, timeZone: timeZone)
     }
@@ -122,18 +139,18 @@ struct PulseWatchTodayView: View {
     }
 
     private var statusText: String {
-        let key: String.LocalizationValue = switch model.displayState {
-        case .needsSync: "watch.state.needs_sync"
-        case .ready: "watch.state.ready"
-        case .submitting: "watch.state.submitting"
-        case .pendingSync: "watch.state.pending"
-        case .committed: "watch.state.checked"
+        PulseWatchLocalization.status(for: model.displayState, locale: locale)
+    }
+
+    private var showsRecoveryAction: Bool {
+        switch model.displayState {
+        case .needsSync, .pendingSync:
+            true
         case .failed(let reason):
-            reason == .persistenceFailure
-                ? "watch.state.unavailable"
-                : "watch.state.failed"
+            reason != .incompatibleProtocol
+        case .ready, .submitting, .committed:
+            false
         }
-        return PulseWatchLocalization.string(key, locale: locale)
     }
 }
 

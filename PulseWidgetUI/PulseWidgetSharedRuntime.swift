@@ -109,6 +109,7 @@ enum PulseWidgetSharedRuntime {
         }
 
         let receipt = try repository.checkIn(habitID: habit.id, journalNote: nil)
+        PulseExternalCheckInSignal.post()
         await reminderScheduler.completeLiveActivity(for: receipt.logicalDay)
 
         do {

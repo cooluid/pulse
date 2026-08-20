@@ -20,7 +20,10 @@ final class PulseWatchSharedTests: XCTestCase {
         try store.enqueue(command)
 
         XCTAssertEqual(try store.projection().pendingCommands, [command])
-        XCTAssertEqual(try store.projection().displayState, .pendingSync)
+        XCTAssertEqual(
+            try store.projection().displayState(at: snapshot.generatedAt),
+            .pendingSync
+        )
 
         let receipt = PulseWatchCheckInReceipt(
             operationID: command.operationID,
@@ -40,10 +43,13 @@ final class PulseWatchSharedTests: XCTestCase {
         XCTAssertTrue(projection.pendingCommands.isEmpty)
         XCTAssertEqual(projection.snapshot?.isCheckedToday, false)
         XCTAssertEqual(projection.lastReceipt, receipt)
-        XCTAssertEqual(projection.displayState, .committed(checkedAt: command.occurredAt))
+        XCTAssertEqual(
+            projection.displayState(at: receipt.acknowledgedAt),
+            .committed(checkedAt: command.occurredAt)
+        )
     }
 
-    func testNewProjectSnapshotClearsCommandsFromPreviousProject() throws {
+    func testNewProjectSnapshotPreservesCommandUntilRejectedReceiptArrives() throws {
         let directory = FileManager.default.temporaryDirectory.appendingPathComponent(
             "PulseWatchSharedTests-\(UUID().uuidString)",
             isDirectory: true
@@ -52,20 +58,118 @@ final class PulseWatchSharedTests: XCTestCase {
         let store = try PulseWatchLocalStore(directoryURL: directory)
         let first = makeSnapshot()
         try store.save(snapshot: first)
-        try store.enqueue(PulseWatchCheckInCommand(
+        let command = PulseWatchCheckInCommand(
             projectID: first.projectID,
             projectRevision: first.projectRevision,
             occurredAt: first.generatedAt,
             projectTimeZoneIdentifierSnapshot: first.projectTimeZoneIdentifier
-        ))
+        )
+        try store.enqueue(command)
         let second = makeSnapshot(projectID: UUID())
 
         try store.save(snapshot: second)
 
+        XCTAssertEqual(try store.projection().pendingCommands, [command])
+        XCTAssertEqual(
+            try store.projection().displayState(at: second.generatedAt),
+            .failed(.projectChanged)
+        )
+
+        let receipt = PulseWatchCheckInReceipt(
+            operationID: command.operationID,
+            projectID: command.projectID,
+            projectRevision: command.projectRevision,
+            outcome: .rejected(reason: .projectChanged),
+            acknowledgedAt: second.generatedAt.addingTimeInterval(1)
+        )
+        try store.acknowledge(receipt)
+
+        XCTAssertTrue(try store.projection().pendingCommands.isEmpty)
+        XCTAssertEqual(
+            try store.projection().displayState(at: receipt.acknowledgedAt),
+            .failed(.projectChanged)
+        )
+    }
+
+    func testExpiredSnapshotNeedsSyncInsteadOfProjectingYesterdayAsToday() throws {
+        let snapshot = makeSnapshot()
+        let projection = PulseWatchLocalProjection(
+            snapshot: snapshot,
+            pendingCommands: [],
+            lastReceipt: nil
+        )
+
+        XCTAssertEqual(
+            projection.displayState(at: snapshot.nextDayBoundary),
+            .needsSync
+        )
+    }
+
+    func testOlderSnapshotCannotOverwriteNewerProjection() throws {
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent(
+            "PulseWatchSharedTests-\(UUID().uuidString)",
+            isDirectory: true
+        )
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let store = try PulseWatchLocalStore(directoryURL: directory)
+        let projectID = UUID()
+        let older = makeSnapshot(projectID: projectID)
+        let newer = makeSnapshot(
+            projectID: projectID,
+            generatedAt: older.generatedAt.addingTimeInterval(60)
+        )
+
+        try store.save(snapshot: newer)
+        try store.save(snapshot: older)
+
+        XCTAssertEqual(try store.projection().snapshot, newer)
+    }
+
+    func testPendingCommandRemainsVisibleAfterSnapshotBoundary() throws {
+        let snapshot = makeSnapshot()
+        let command = PulseWatchCheckInCommand(
+            projectID: snapshot.projectID,
+            projectRevision: snapshot.projectRevision,
+            occurredAt: snapshot.generatedAt,
+            projectTimeZoneIdentifierSnapshot: snapshot.projectTimeZoneIdentifier
+        )
+        let projection = PulseWatchLocalProjection(
+            snapshot: snapshot,
+            pendingCommands: [command],
+            lastReceipt: nil
+        )
+
+        XCTAssertEqual(
+            projection.displayState(at: snapshot.nextDayBoundary),
+            .pendingSync
+        )
+    }
+
+    func testPrepareForRetryRemovesOnlyIncompatibleCommandAndFailure() throws {
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent(
+            "PulseWatchSharedTests-\(UUID().uuidString)",
+            isDirectory: true
+        )
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let store = try PulseWatchLocalStore(directoryURL: directory)
+        let first = makeSnapshot()
+        let command = PulseWatchCheckInCommand(
+            projectID: first.projectID,
+            projectRevision: first.projectRevision,
+            occurredAt: first.generatedAt,
+            projectTimeZoneIdentifierSnapshot: first.projectTimeZoneIdentifier
+        )
+        try store.save(snapshot: first)
+        try store.enqueue(command)
+        let second = makeSnapshot(projectID: UUID())
+        try store.save(snapshot: second)
+
+        try store.prepareForRetry()
+
         let projection = try store.projection()
-        XCTAssertEqual(projection.snapshot?.projectID, second.projectID)
         XCTAssertTrue(projection.pendingCommands.isEmpty)
         XCTAssertNil(projection.lastReceipt)
+        XCTAssertEqual(projection.displayState(at: second.generatedAt), .ready)
     }
 
     func testProjectRevisionIsDeterministicAndSensitiveToTimeZone() {
@@ -111,6 +215,36 @@ final class PulseWatchSharedTests: XCTestCase {
         }
     }
 
+    func testCommandIdentitySurvivesProtocolRejectionForAFormalReceipt() throws {
+        let snapshot = makeSnapshot()
+        let command = PulseWatchCheckInCommand(
+            projectID: snapshot.projectID,
+            projectRevision: snapshot.projectRevision,
+            occurredAt: snapshot.generatedAt,
+            projectTimeZoneIdentifierSnapshot: snapshot.projectTimeZoneIdentifier
+        )
+        var json = try XCTUnwrap(
+            JSONSerialization.jsonObject(with: PulseWatchCodec.encode(command))
+                as? [String: Any]
+        )
+        json["protocolVersion"] = PulseWatchContract.protocolVersion + 1
+        let incompatible = try JSONSerialization.data(withJSONObject: json)
+
+        XCTAssertThrowsError(try PulseWatchCodec.decodeCommand(from: incompatible)) {
+            error in
+            XCTAssertEqual(error as? PulseWatchCodecError, .incompatibleProtocol)
+        }
+        XCTAssertEqual(
+            try PulseWatchCodec.decodeCommandIdentity(from: incompatible),
+            PulseWatchCommandIdentity(
+                protocolVersion: PulseWatchContract.protocolVersion + 1,
+                operationID: command.operationID,
+                projectID: command.projectID,
+                projectRevision: command.projectRevision
+            )
+        )
+    }
+
     func testOutboxRejectsCommandFromAnotherProject() throws {
         let directory = FileManager.default.temporaryDirectory.appendingPathComponent(
             "PulseWatchSharedTests-\(UUID().uuidString)",
@@ -138,8 +272,10 @@ final class PulseWatchSharedTests: XCTestCase {
         XCTAssertTrue(try store.projection().pendingCommands.isEmpty)
     }
 
-    private func makeSnapshot(projectID: UUID = UUID()) -> PulseWatchProjectSnapshot {
-        let date = Date(timeIntervalSince1970: 1_786_334_400)
+    private func makeSnapshot(
+        projectID: UUID = UUID(),
+        generatedAt date: Date = Date(timeIntervalSince1970: 1_786_334_400)
+    ) -> PulseWatchProjectSnapshot {
         return PulseWatchProjectSnapshot(
             projectID: projectID,
             projectRevision: PulseWatchProjectRevision.make(

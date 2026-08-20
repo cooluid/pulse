@@ -19,10 +19,16 @@
         "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "今天已签到" } }
       }
     },
-    "watch.state.failed" : {
+    "watch.state.failed_update" : {
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Not saved" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "未保存" } }
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Update Pulse on iPhone" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "请在 iPhone 更新一日一印" } }
+      }
+    },
+    "watch.state.failed_retry" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Not saved. Try again" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "未保存，请重试" } }
       }
     },
     "watch.state.needs_sync" : {

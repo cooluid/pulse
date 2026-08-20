@@ -44,6 +44,7 @@ final class PulseAppModel {
     private let widgetTimelineReloader: any WidgetTimelineReloading
     private let watchConnectivity: any PulseWatchConnectivityProviding
     private var dateBoundaryTask: Task<Void, Never>?
+    private var externalCheckInTask: Task<Void, Never>?
     private var reminderReconcileTask: Task<Void, Never>?
     private var reminderReconcileRevision = 0
     private var reminderIntentRevision = 0
@@ -99,6 +100,19 @@ final class PulseAppModel {
         watchConnectivity.commandHandler = { [weak self] command in
             await self?.handleWatchCheckIn(command)
         }
+        watchConnectivity.snapshotHandler = { [weak self] in
+            guard let self else { return nil }
+            return try self.makeCurrentWatchSnapshot()
+        }
+        externalCheckInTask = Task { @MainActor [weak self] in
+            for await _ in NotificationCenter.default.notifications(
+                named: PulseExternalCheckInSignal.didCommit
+            ) {
+                guard let self else { return }
+                await self.handleExternalCheckInCommit()
+            }
+        }
+        watchConnectivity.start()
         featureAccess.accessDidChange = { [weak self] hasEnhancement in
             guard let self else { return }
             self.reconcileVisualThemeAccess(
@@ -181,7 +195,6 @@ final class PulseAppModel {
     }
 
     func start() async {
-        watchConnectivity.start()
         loadState = .loading
         let featureAccessTask = Task { @MainActor [featureAccess] in
             await featureAccess.start()
@@ -220,6 +233,14 @@ final class PulseAppModel {
         }
     }
 
+    private func handleExternalCheckInCommit() async {
+        guard operation == nil else {
+            sceneActivationPending = true
+            return
+        }
+        await reload(reconcileReminders: false)
+    }
+
     @discardableResult
     func checkIn(journalNote: String? = nil) async -> CheckInCommitReceipt? {
         guard todayRecord == nil,
@@ -254,20 +275,19 @@ final class PulseAppModel {
     func handleWatchCheckIn(
         _ command: PulseWatchCheckInCommand
     ) async -> PulseWatchCheckInReceipt? {
-        guard beginOperation(.watchCheckIn) else { return nil }
+        guard beginOperation(.watchCheckIn) else {
+            return watchRejectionReceipt(
+                for: command,
+                reason: .temporarilyUnavailable
+            )
+        }
         defer { finishOperation() }
         let receipt: CheckInCommitReceipt
         do {
             receipt = try repository.checkIn(watchCommand: command)
         } catch {
-            guard error != .persistenceFailure else { return nil }
-            return PulseWatchCheckInReceipt(
-                operationID: command.operationID,
-                projectID: command.projectID,
-                projectRevision: command.projectRevision,
-                outcome: .rejected(reason: error),
-                acknowledgedAt: clock.now
-            )
+            try? loadSnapshot()
+            return watchRejectionReceipt(for: command, reason: error)
         }
         do {
             try loadSnapshot()
@@ -291,8 +311,24 @@ final class PulseAppModel {
                 acknowledgedAt: clock.now
             )
         } catch {
-            return nil
+            return watchRejectionReceipt(
+                for: command,
+                reason: .persistenceFailure
+            )
         }
+    }
+
+    private func watchRejectionReceipt(
+        for command: PulseWatchCheckInCommand,
+        reason: PulseWatchRejectionReason
+    ) -> PulseWatchCheckInReceipt {
+        PulseWatchCheckInReceipt(
+            operationID: command.operationID,
+            projectID: command.projectID,
+            projectRevision: command.projectRevision,
+            outcome: .rejected(reason: reason),
+            acknowledgedAt: clock.now
+        )
     }
 
     func updateHabitIdentity(name: String, purpose: String?) async -> Bool {
@@ -746,6 +782,18 @@ final class PulseAppModel {
         } else {
             watchConnectivity.publish(nil)
         }
+    }
+
+    private func makeCurrentWatchSnapshot() throws -> PulseWatchProjectSnapshot? {
+        guard let currentHabit = try repository.existingPrimaryHabit(),
+              currentHabit.isIdentityConfirmed else {
+            return nil
+        }
+        return try PulseWatchSnapshotProjector.makeSnapshot(
+            habit: currentHabit,
+            records: repository.allRecords(habitID: currentHabit.id),
+            at: clock.now
+        )
     }
 
     private func auditMediaStorage() async {

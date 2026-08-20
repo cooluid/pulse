@@ -8,10 +8,16 @@ struct PulseWatchCheckInIntent: AppIntent {
 
     @MainActor
     func perform() async throws -> some IntentResult {
-        let store = try PulseWatchRuntimeIdentity.makeLocalStore()
-        let client = PulseWatchConnectivityClient(store: store)
+        let client = try PulseWatchWidgetRuntime.connectivity()
         client.start()
-        _ = try await client.submitCheckIn()
+        do {
+            _ = try await client.submitCheckIn(
+                at: systemContext.preciseTimestamp ?? .now
+            )
+        } catch {
+            // WidgetKit reloads the timeline after perform returns. The local
+            // projection remains the only source for unavailable or pending UI.
+        }
         return .result()
     }
 }

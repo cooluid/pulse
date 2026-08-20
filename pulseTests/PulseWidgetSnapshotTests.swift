@@ -423,6 +423,52 @@ final class PulseWidgetSnapshotTests: XCTestCase {
         )
     }
 
+    func testWatchCatalogContainsOnlyWatchSemanticColors() throws {
+        let projectRoot = URL(fileURLWithPath: #filePath)
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+        let tokenURL = projectRoot
+            .appendingPathComponent("design", isDirectory: true)
+            .appendingPathComponent("brand-tokens.json", isDirectory: false)
+        let watchAssetRoot = projectRoot
+            .appendingPathComponent("PulseWatchAssets", isDirectory: true)
+            .appendingPathComponent("Assets.xcassets", isDirectory: true)
+        let root = try XCTUnwrap(
+            JSONSerialization.jsonObject(with: Data(contentsOf: tokenURL))
+                as? [String: Any]
+        )
+        let watch = try XCTUnwrap(root["watch"] as? [String: String])
+
+        XCTAssertEqual(
+            watch,
+            [
+                "ink": "#F0F5EC",
+                "secondary": "#A6B0A2",
+                "field": "#73966D",
+                "committed": "#91D55B",
+                "pending": "#F5C84B",
+            ]
+        )
+        let colorDirectories = try FileManager.default.contentsOfDirectory(
+            at: watchAssetRoot,
+            includingPropertiesForKeys: nil
+        )
+        .filter { $0.pathExtension == "colorset" }
+        .map(\.lastPathComponent)
+        .sorted()
+        XCTAssertEqual(
+            colorDirectories,
+            [
+                "AccentColor.colorset",
+                "PulseWatchCommitted.colorset",
+                "PulseWatchField.colorset",
+                "PulseWatchInk.colorset",
+                "PulseWatchPending.colorset",
+                "PulseWatchSecondary.colorset",
+            ]
+        )
+    }
+
     func testReminderActivityLetsTheSystemOwnTheLockScreenBackgroundPair() throws {
         let projectRoot = URL(fileURLWithPath: #filePath)
             .deletingLastPathComponent()

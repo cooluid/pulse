@@ -9,6 +9,7 @@ public enum PulseWatchContract {
     public static let snapshotContextKey = "pulse.watch.snapshot"
     public static let commandUserInfoKey = "pulse.watch.command"
     public static let receiptUserInfoKey = "pulse.watch.receipt"
+    public static let snapshotRequestKey = "pulse.watch.snapshot.request"
     public static let circularKind = "PulseWatchTodayImprint"
     public static let rhythmKind = "PulseWatchSevenDayRhythm"
     public static let allWidgetKinds = [circularKind, rhythmKind]
@@ -126,6 +127,7 @@ public enum PulseWatchRejectionReason: String, Codable, Equatable, Error, Sendab
     case occurrenceInFuture
     case occurrenceBeforeProjectStart
     case invalidCommand
+    case temporarilyUnavailable
     case persistenceFailure
 }
 
@@ -198,32 +200,49 @@ public struct PulseWatchLocalProjection: Equatable, Sendable {
         storageFailure: true
     )
 
-    public var displayState: PulseWatchDisplayState {
+    public func displayState(at date: Date) -> PulseWatchDisplayState {
         if storageFailure {
             return .failed(.persistenceFailure)
         }
-        if let pending = pendingCommands.last,
-           pending.projectID == snapshot?.projectID {
+        if let pending = pendingCommands.last {
+            guard let snapshot else {
+                return .pendingSync
+            }
+            guard pending.projectID == snapshot.projectID,
+                  pending.projectRevision == snapshot.projectRevision else {
+                return .failed(.projectChanged)
+            }
+            guard pending.projectTimeZoneIdentifierSnapshot
+                    == snapshot.projectTimeZoneIdentifier else {
+                return .failed(.timeZoneChanged)
+            }
             return .pendingSync
         }
+        guard let snapshot else { return .needsSync }
+        guard date < snapshot.nextDayBoundary else { return .needsSync }
         if let lastReceipt,
            case .committed(let logicalDay, let checkedAt, _) = lastReceipt.outcome,
-           lastReceipt.projectID == snapshot?.projectID,
-           lastReceipt.projectRevision == snapshot?.projectRevision,
-           logicalDay == snapshot?.todayLogicalDay {
+           lastReceipt.projectID == snapshot.projectID,
+           lastReceipt.projectRevision == snapshot.projectRevision,
+           logicalDay == snapshot.todayLogicalDay {
             return .committed(checkedAt: checkedAt)
         }
         if let lastReceipt,
            case .rejected(let reason) = lastReceipt.outcome,
-           lastReceipt.projectID == snapshot?.projectID,
-           lastReceipt.projectRevision == snapshot?.projectRevision {
+           lastReceipt.acknowledgedAt >= snapshot.generatedAt {
             return .failed(reason)
         }
-        guard let snapshot else { return .needsSync }
         return snapshot.isCheckedToday
             ? .committed(checkedAt: snapshot.checkedAt)
             : .ready
     }
+}
+
+public struct PulseWatchCommandIdentity: Codable, Equatable, Sendable {
+    public let protocolVersion: Int
+    public let operationID: UUID
+    public let projectID: UUID
+    public let projectRevision: String
 }
 
 public enum PulseWatchProjectRevision {
@@ -271,6 +290,14 @@ public enum PulseWatchCodec {
             throw PulseWatchCodecError.incompatibleProtocol
         }
         try validate(value)
+        return value
+    }
+
+    public static func decodeCommandIdentity(from data: Data) throws -> PulseWatchCommandIdentity {
+        let value = try JSONDecoder().decode(PulseWatchCommandIdentity.self, from: data)
+        guard isValidRevision(value.projectRevision) else {
+            throw PulseWatchCodecError.invalidPayload
+        }
         return value
     }
 

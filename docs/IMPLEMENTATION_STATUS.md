@@ -1,6 +1,6 @@
 # Pulse 1.1 实现与验收状态
 
-更新时间：2026-08-19
+更新时间：2026-08-20
 
 当前 checkout 结论：**1.1 (4) ENGINEERING CANDIDATE / INTERFACE CANDIDATE / DISTRIBUTION NO-GO**。
 
@@ -17,8 +17,11 @@
 - 拍照、查看、删除、原图导出、完整加密备份与恢复永久免费；静野/晴昼、七种额外 Home Screen Widget 样式和支持设备上的 scheduled Live Activity 只由同一已验证 StoreKit entitlement 控制。
 - App Group UserDefaults 只由 `PulseSharedSettings` 管理语言、提醒开关和提醒时间；不保存签到、构图、权益或统计副本。
 - 正式 Widget 产品枚举只在 `PulseWidgetStyle` 与 String Catalog，外观只在共享 `PulseWidgetHomeRenderer`；旧 HTML 原型和并行样式来源已删除。
-- `PulseWatchShared` 统一 Watch 协议、project revision、codec 与单文件本地状态；`PulseWatch` 和 `PulseWatchWidgetsExtension` 只保存最新快照、durable outbox 和最后回执。iPhone `PulseAppModel` 把即时/后台 Watch 命令路由到同一 `SwiftDataPulseRepository`；圆形/Inline 今日日印、矩形七日脉冲与 Smart Stack 均为免费基础能力。
-- Watch 写入入口使用 `throws(PulseWatchRejectionReason)` 的单一类型化失败合同；协议拒绝会返回正式回执，持久化失败不确认命令并保留 durable outbox 等待重试。
+- `PulseWatchShared` 统一 Watch 协议、project revision、codec、`nextDayBoundary` 新鲜度与单文件本地状态；`PulseWatch` 和 `PulseWatchWidgetsExtension` 只保存最新快照、durable outbox 和最后回执。坏快照、旧快照、项目变化和乱序回执不再隐式删除命令；命令只由匹配回执或用户明确重试/清除收敛。
+- Watch App、Watch Widget Intent 和 timeline 共用各自进程级唯一 WCSession runtime；Intent 使用系统精确动作时间，返回前完成异步激活，并取得即时回执或正式排队同一 `operationID` 的后台用户信息。iPhone 进程启动即建立接收器，所有命令仍只进入 `PulseAppModel` 与同一 `SwiftDataPulseRepository`。
+- Watch 写入入口使用 `throws(PulseWatchRejectionReason)` 的单一类型化失败合同；协议、项目、时区、动作时间、暂时不可用和持久化失败均返回正式回执。Watch 以失败状态和一次告警触觉呈现，并提供新命令重试；`pendingSync` 与 `committed` 继续严格分离。
+- Watch App 可向 iPhone 请求由当前 Repository 即时重建的快照；iPhone Widget / Live Activity 提交后只发送不携带业务事实的进程内刷新信号，使 App 与 Watch 快照跟随同一正式写入。信号不是第二状态源。
+- Watch 颜色只来自 `brand-tokens.json` 的 `watch` 语义组；Watch Asset Catalog 已从复制 iPhone 全色板收敛为 6 个实际颜色集。complication 明确适配 full-color / accented 渲染组，Watch App 不再在缺快照时猜测设备日期。
 
 权威合同为 [1.1 发布范围](./RELEASE_SCOPE_1_1.md)、[产品需求](./PRODUCT_REQUIREMENTS.md)、[领域合同](./DOMAIN_CONTRACT.md)、[数据加密合同](./DATA_ENCRYPTION_CONTRACT.md)、[技术设计](./TECHNICAL_DESIGN.md)、[系统仪式合同](./PULSE_RITUAL_CONTRACT.md) 与 [测试计划](./TEST_PLAN.md)。
 
@@ -34,16 +37,17 @@
 - 运行时文案统一使用“签到”；通知和 Live Activity 只写事实与动作，不再出现“准备好时回来”或“打卡”等并行人格。
 - 测试从格式敏感的源码片段断言转向类型化策略、几何、渲染附件和真实 UI 流程；源码扫描只保留旧符号禁入、敏感词和构建配置门禁。
 - `site` 子模块只剩三条正式 URL 跳转和 Sites 必需构建骨架；旧产品 CSS、CSS 图标、认证模板、OG 图片、图片优化和无用 Tailwind/PostCSS 依赖已删除。
+- Watch 快照过期、outbox 生命周期、App Intent 进程生命周期、失败恢复、触觉、日期与颜色已收敛为单一实现；旧的快照清空命令行为、临时 WCSession client、重复状态文案映射和通用 Watch 色板已删除。
 - container v2 / payload v3 的 App Store 加密出口分类仍待正式问卷或文档审查；结论冻结前 App / Widget Info.plist 不预填 `ITSAppUsesNonExemptEncryption`。
 
 ## 当前自动化与构建证据
 
 验证环境：macOS 26.6、Xcode 26.4（17E192）、iPhone 16 Pro / iOS 18.6 Simulator（arm64）、watchOS 26.4 Simulator runtime（23T240b）。
 
-- Watch 合入后的 203 项单元/集成测试与 27 项 Simulator UI 测试全部通过；覆盖 Watch 协议、本地状态、跨午夜 `occurredAt` 归属、重复命令、项目/时区/未来时间拒绝、AppModel 回执和既有领域/归档/StoreKit/Widget/三主题矩阵。
+- 当前 211 项单元/集成测试与 27 项 Simulator UI 测试全部通过；Watch 新增覆盖快照过期、旧快照拒绝、项目变化保留 outbox、正式协议拒绝回执、明确重试、Repository 即时快照与 iPhone 系统表面提交后的 Watch 刷新，并继续覆盖跨午夜 `occurredAt`、幂等命令和既有领域/归档/StoreKit/Widget/三主题矩阵。
 - Release `pulse` 全 target Build 与 Analyze 通过，未排除 Watch Asset Catalog；实际编译并校验 iPhone App、Home Screen Widget、Watch App、Watch Widget、AppIcon、颜色资产、Privacy manifest 和嵌入结构。
-- Apple Watch SE 3 40mm / watchOS 26.4 Simulator 的 Debug Build、启动、安装和进程拉起通过；未配对冷启动页已真实渲染。该证据只关闭 runtime、资源编译和基础启动，不外推为 WatchConnectivity、complication、Smart Stack 或真机视觉验收。
-- 当前 101 项品牌生成输出、App/Widget/Watch plist、Privacy manifest、entitlement 和五份 String Catalog 静态解析通过；`git diff --check` 通过。
+- Apple Watch Ultra 3 49mm / watchOS 26.4 Simulator 的 Debug Build、安装、清洁启动和进程拉起通过；未配对页已真实复核为黑色系统底、暖白状态、不猜测项目日期与 44pt 次级重试动作。该证据只关闭 runtime、资源编译和当前冷启动界面，不外推为 WatchConnectivity、complication、Smart Stack 或真机视觉验收。
+- 当前 61 项品牌生成输出、App/Widget/Watch plist、Privacy manifest、entitlement 和五份 String Catalog 静态解析通过；`git diff --check` 通过。
 - `site` production build、lint、三条 redirect 测试与依赖审计通过；正式产品、隐私和支持 URL 当前均返回 HTTPS 200。子模块提交仍须单独推送并用全新 clone 验证可获取性。
 - Simulator 截图证明三主题当前构图和交互候选，不代替真实设备、Widget host、Dynamic Island、Always-On 或人工最终视觉接受。
 
@@ -64,5 +68,6 @@ Build 2 的上传和内部 TestFlight 证据只属于 Pulse 1.0 (2)，不包含 
 
 1. 在真实 iPhone / iPad 关闭三主题、媒体、权限、低存储、恢复和无障碍门禁。
 2. 回归真实通知、Widget、scheduled Live Activity 和 StoreKit Sandbox，确认同日只有一个触达。
-3. 完成加密出口与 App Store 隐私答案，再生成当前 `1.1 (4)` 的 Apple Distribution Archive 并做完整产物审计。
-4. 推送并 fresh-clone 验证 `site` 子模块提交，随后进入 TestFlight 清洁安装。
+3. 在真实配对 iPhone / Apple Watch 关闭即时/后台传输、失联恢复、重启、飞行模式、跨午夜、乱序、complication/Smart Stack、Always-On、VoiceOver、Reduce Motion 与 14 天电量门禁。
+4. 完成加密出口与 App Store 隐私答案，再生成当前 `1.1 (4)` 的 Apple Distribution Archive 并做完整产物审计。
+5. 推送并 fresh-clone 验证 `site` 子模块提交，随后进入 TestFlight 清洁安装。

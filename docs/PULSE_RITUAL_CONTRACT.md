@@ -337,8 +337,8 @@ logicalDay
 isChecked
 checkedAt
 sevenDayPulse
-lastAcknowledgedOperationID
 generatedAt
+nextDayBoundary
 ```
 
 它适合通过会覆盖旧值的 latest-context 通道更新，因为 Watch 只需要最新显示状态；快照可以缓存和重建，不能反向写回 iPhone store，也不能在 Watch 端演变成第二份签到历史。
@@ -351,7 +351,6 @@ projectID: UUID
 projectRevision
 occurredAt: UTC instant
 projectTimeZoneIdentifierSnapshot
-createdAt
 ```
 
 - `operationID` 在重试、快速发送与后台传输之间保持不变；
@@ -368,8 +367,10 @@ createdAt
 ### 9.4 Smart Stack、complication 与 Live Activity
 
 - complication 是安静的长期扫视面，只显示最新快照；没有新鲜快照时表达“需要同步”，不猜测今天状态；
+- Watch App 与 Widget 统一以 `nextDayBoundary` 裁决快照新鲜度；边界到达立即停止投影旧的今日状态，Watch App 可向 iPhone 请求当前 Repository 快照，complication 等待下一次正式上下文更新；
 - Smart Stack 可在用户提醒时间附近提交更高相关性，但最终是否出现、排在何处由系统决定，产品文案不能承诺“到点一定浮上来”；
 - Watch App 与 complication/Smart Stack 的交互通过 App Intent 进入同一 Watch 命令 outbox；Widget 扩展不能另写一份完成状态；
+- App Intent 使用系统提供的精确动作时间，返回前必须完成 WCSession 激活并取得即时回执，或把同一 `operationID` 的后台用户信息正式排队；展示快照损坏、过期或项目 revision 变化都不得顺手删除 outbox；
 - watchOS 11 及以后，iPhone `DailyImprintActivity` 会在配对 Watch 的 Smart Stack 中出现；watchOS 10 没有这条表面，仍使用普通 Smart Stack Widget。Pulse 不再复制一条“Watch Live Activity”；可提供 Watch 专用布局，但状态仍来自同一 Activity 与签到命令；
 - iPhone 开启今日影像后，Watch 只提示“稍后用 iPhone 留一张今天”。Watch 没有相机，也不声称能远程替用户打开 iPhone 相机；
 - 岁月流影渲染时，Watch 最多显示抽象真实进度与完成入口，默认不显示面孔帧。
