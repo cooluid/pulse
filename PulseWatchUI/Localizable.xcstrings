@@ -1,6 +1,12 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "watch.accessibility.date_state" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "%1$@, %2$@" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "%1$@，%2$@" } }
+      }
+    },
     "watch.action.check_in" : {
       "localizations" : {
         "en" : { "stringUnit" : { "state" : "translated", "value" : "Check in" } },

@@ -22,7 +22,8 @@
 - Watch 写入入口使用 `throws(PulseWatchRejectionReason)` 的单一类型化失败合同；协议、项目、时区、动作时间、暂时不可用和持久化失败均返回正式回执。Watch 以失败状态和一次告警触觉呈现，并提供新命令重试；`pendingSync` 与 `committed` 继续严格分离。
 - Watch App 可向 iPhone 请求由当前 Repository 即时重建的快照；iPhone Widget / Live Activity 提交后只发送不携带业务事实的进程内刷新信号，使 App 与 Watch 快照跟随同一正式写入。信号不是第二状态源。
 - Watch 颜色只来自 `brand-tokens.json` 的 `watch` 语义组；Watch Asset Catalog 已从复制 iPhone 全色板收敛为 7 个实际颜色集，包括完成印专用深色前景。complication 明确适配 full-color / accented 渲染组，Watch App 不再在缺快照时猜测设备日期。
-- Watch App 页级尺寸只由 `PulseWatchLayoutMetrics` 读取实际容器和集中设计令牌连续求值，不保留表径/型号兼容分支或页面内固定主印记。标准字号统一使用无滚动单屏：左上逻辑日期、中央今日印与一条缺口六日周环；异常恢复态收起周环，只保留真实状态与 44 pt 重试动作。只有 Accessibility Dynamic Type 进入明确滚动路径。
+- Watch App 页级尺寸只由 `PulseWatchLayoutMetrics` 读取实际容器和集中设计令牌连续求值，不保留表径/型号兼容分支或页面内固定主印记。标准字号统一使用无滚动单屏：只保留右上系统时钟；本地化项目月份数字作为左下偏轴、可部分出屏的背景大字，项目日与“签到 / 已签到”进入中央主印，一条缺口六日周环围绕主体。异常恢复态收起日期构图和周环，只保留真实状态与 44 pt 重试动作。只有 Accessibility Dynamic Type 进入明确滚动路径。
+- Watch App 普通待签与已确认状态使用两层径向渐变形成 18 / 24 秒、10 fps 的低亮流体场；只有 Scene 活跃、屏幕非低亮且 Reduce Motion 关闭时由 `TimelineView` 驱动。待同步、失败、需要同步、提交中、后台、Always-On 与 Reduce Motion 使用无时间线的静态或纯黑终态。
 
 权威合同为 [1.1 发布范围](./RELEASE_SCOPE_1_1.md)、[产品需求](./PRODUCT_REQUIREMENTS.md)、[领域合同](./DOMAIN_CONTRACT.md)、[数据加密合同](./DATA_ENCRYPTION_CONTRACT.md)、[技术设计](./TECHNICAL_DESIGN.md)、[系统仪式合同](./PULSE_RITUAL_CONTRACT.md) 与 [测试计划](./TEST_PLAN.md)。
 
@@ -47,10 +48,10 @@
 
 - 当前 213 项单元/集成测试与 27 项 Simulator UI 测试全部通过；Watch 新增覆盖物理设备形态的系统 file URL 标准化、非 file URL 拒绝、快照过期、旧快照拒绝、项目变化保留 outbox、正式协议拒绝回执、明确重试、Repository 即时快照与 iPhone 系统表面提交后的 Watch 刷新，并继续覆盖跨午夜 `occurredAt`、幂等命令和既有领域/归档/StoreKit/Widget/三主题矩阵。
 - Release `pulse` 全 target Build 与 Analyze 通过，未排除 Watch Asset Catalog；实际编译并校验 iPhone App、Home Screen Widget、Watch App、Watch Widget、AppIcon、颜色资产、Privacy manifest 和嵌入结构。
-- Apple Watch Ultra 3 49mm / watchOS 26.4 Simulator 已对当前单核周环版完成待签、已确认与待同步三态整屏复核：系统时间与左上逻辑日期分离，中央主印、六日缺口周环、真实状态和 44 pt 重试动作均无裁切；完成印不再因 disabled Button 被系统压暗，并以深色“已签到”印内确认取代装饰内环。WatchConnectivity 既有即时 response / Application Context 与无 `_dispatch_assert_queue_fail` 证据仍成立，但模拟器视觉不外推为真实配对 Watch、complication、Smart Stack 或真机验收。
+- Apple Watch Ultra 3 49mm / watchOS 26.4 Simulator 已对当前单核周环版完成待签、已确认与待同步三态整屏复核：右上只保留系统时钟，项目月份数字偏轴落在左下背景，项目日与“签到 / 已签到”进入中央主印；六日缺口周环、真实异常状态和 44 pt 重试动作均无裁切。待签流体场的两个连续时间点截图像素不同且黑场仍占主体，完成态转为草绿流体；完成印不再因 disabled Button 被系统压暗。WatchConnectivity 既有即时 response / Application Context 与无 `_dispatch_assert_queue_fail` 证据仍成立，但模拟器视觉不外推为真实配对 Watch、complication、Smart Stack、Always-On、Reduce Motion 或真机验收。
 - Apple Watch Series 10 / watchOS 26.6 的 Debug 签名安装、App Group profile/运行时 URL、真实前台启动与快照读取证据仍成立；此前真表视觉截图属于已替换的底部横排版，不能再作为当前单核周环构图的视觉通过证据。当前版本必须重新真表截图验收。
-- Apple Watch SE 3 40 mm / watchOS 26.4 Simulator 已对当前单核周环版完成待签、已确认与待同步三态整屏复核；中文“已签到”和英文“Done”印内确认均无滚动指示、裁切或重叠。watchOS Simulator 不支持通过 `simctl ui content_size` 切换 Dynamic Type，因此最大字号仍保留为真机门禁，不能用代码分支存在代替视觉通过。
-- 当前 61 项品牌生成输出、App/Widget/Watch plist、Privacy manifest、entitlement 和五份 String Catalog 静态解析通过；`git diff --check` 通过。
+- Apple Watch SE 3 40 mm / watchOS 26.4 Simulator 已对当前单核周环版完成待签、已确认与待同步三态整屏复核；中文“已签到”和英文“Done”印内确认以及完成态低亮流体场均无滚动指示、裁切或重叠，待同步态恢复纯黑且不出现成功色流体。watchOS Simulator 不支持通过 `simctl ui content_size` 切换 Dynamic Type，因此最大字号仍保留为真机门禁，不能用代码分支存在代替视觉通过。
+- 当前 62 项品牌生成输出、App/Widget/Watch plist、Privacy manifest、entitlement 和五份 String Catalog 静态解析通过；`git diff --check` 通过。
 - `site` production build、lint、三条 redirect 测试与依赖审计通过；正式产品、隐私和支持 URL 当前均返回 HTTPS 200。子模块提交仍须单独推送并用全新 clone 验证可获取性。
 - Simulator 截图证明三主题当前构图和交互候选，不代替真实设备、Widget host、Dynamic Island、Always-On 或人工最终视觉接受。
 

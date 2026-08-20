@@ -47,9 +47,9 @@ Pinterest 是发现入口，不是设计权威，也不是素材仓。不得下�
 ### R5 · Watch：单核周环与黑场
 
 - Pinterest：[WatchOS Inspiration](https://uk.pinterest.com/pin/299137600260429433/)、[Solar System Black Orbital Chart](https://mx.pinterest.com/pin/411235009748043360/)、[Minimalist Astronomy Poster with Circles](https://cl.pinterest.com/pin/598415869272302964/)
-- 借：纯黑场中的单一大圆主控、主核与外围小节点的明确尺度差、一条不闭合轨道形成方向并主动给系统时间留空。
-- 落点：Watch App 的今日印与六日周环；矩形 complication / Smart Stack 的历史节点汇入今日印。
-- 不借：金色发光、健康指标、多层进度环、轨道小字、月相题材和海报式装饰线。
+- 借：纯黑场中的单一大圆主控、主核与外围小节点的明确尺度差、一条不闭合轨道形成方向并主动给系统时间留空；Watch App 前台以清晰可辨的深绿流体场托起主印，黑场仍占主体。
+- 落点：Watch App 只保留右上系统时钟；项目月份作为左下偏轴、可部分出屏的低对比大字，项目日进入中央主印并与“签到 / 已签到”形成两级信息；六日周环与低频流体场围绕主印组织。矩形 complication / Smart Stack 的历史节点汇入今日印。
+- 不借：全屏流体、金色或霓虹发光、健康指标、多层进度环、轨道小字、月相题材和海报式装饰线。
 
 ## 反参考：看到就停
 

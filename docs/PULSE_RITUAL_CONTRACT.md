@@ -323,6 +323,8 @@ Watch 使用与 iPhone 相同的“呼吸、落印、年轮”，但更短、更
 
 提醒到来时最多一次极轻的“呼吸”触觉和静态空心印记，不连续震动、不做惩罚性倒计时。Always-On 使用最终静态形状；Reduce Motion 只做淡入与形状替换。Watch 不显示奖杯、火焰、彩纸或“断签警告”。
 
+Watch App 的普通待签与已确认页面允许一层 18–24 秒低频环境流体循环，只在 App 前台活跃、屏幕高亮且 Reduce Motion 关闭时运行；进入后台、手腕放下、Always-On、低亮度或 Reduce Motion 时立即暂停并显示同一静态终态。`submitting`、`pendingSync`、`failed` 与 `needsSync` 不运行环境循环。流体场不改变业务状态，不进入 complication、Smart Stack、通知或 Live Activity，也不能依赖高频数据刷新驱动。
+
 ### 9.3 读取快照与签到命令
 
 两台设备之间不能共享同一 SQLite 文件。iPhone 正式 store 仍是唯一业务真源；Watch App 与 Watch Widget 只共享本机可丢弃的展示快照和命令 outbox。
@@ -394,7 +396,7 @@ Watch 默认隐私等级高于 App 前台：
 - 任一路径都不产生第二条 `CheckInRecord`，也不让 `pendingSync` 冒充成功；
 - 通知实际路由到 iPhone 或 Watch 时只有一次触达，关闭后当天不重来；
 - complication、Smart Stack、Watch App，以及 watchOS 11+ 的 Live Activity，在最小/最大支持表盘、Always-On、Dynamic Type、VoiceOver、Reduce Motion 和锁定隐私下通过真机视觉验收；
-- 不高频刷新 complication、不持续动画、不轮询连接；完成 14 天电量观察后才进入生产；
+- 不高频刷新 complication、不在后台、Always-On 或系统表面持续动画、不轮询连接；Watch App 仅允许 9.2 定义的前台低频环境循环，完成 14 天电量观察后才进入生产；
 - 基础 Watch 入口的采用率和可靠性先独立成立，再评估 Plus 高级节律，不用付费转化掩盖同步失败。
 
 任一条件触发 Watch 阶段 `NO-GO`：无法区分待同步与已保存、必须维护第二份签到数据库、跨午夜会静默错日、提醒重复、面孔默认暴露，或只有模拟器证据没有配对真机证据。

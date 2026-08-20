@@ -13,7 +13,6 @@ fileprivate struct PulseWatchScaledMetric {
 struct PulseWatchLayoutMetrics: Equatable {
     let horizontalPadding: CGFloat
     let bottomPadding: CGFloat
-    let dateLane: CGFloat
     let faceSide: CGFloat
     let todayMarkSide: CGFloat
     let orbitRadius: CGFloat
@@ -21,7 +20,6 @@ struct PulseWatchLayoutMetrics: Equatable {
 
     static func resolve(
         containerSize: CGSize,
-        showsDate: Bool,
         showsRecoveryAction: Bool,
         showsRhythm: Bool,
         showsTransientStatus: Bool
@@ -36,7 +34,6 @@ struct PulseWatchLayoutMetrics: Equatable {
             width - horizontalPadding * 2,
             PulseWatchDesign.layoutDimensionFloor
         )
-        let dateLane = showsDate ? PulseWatchDesign.dateLaneHeight : 0
         let statusLane = showsTransientStatus
             ? PulseWatchDesign.statusLaneHeight
             : 0
@@ -46,7 +43,7 @@ struct PulseWatchLayoutMetrics: Equatable {
             : 0
         let bottomChrome = statusLane + recoveryLane
         let faceHeight = max(
-            height - dateLane - bottomChrome - bottomPadding,
+            height - bottomChrome - bottomPadding,
             PulseWatchDesign.layoutDimensionFloor
         )
         let faceSide = min(innerWidth, faceHeight) * PulseWatchDesign.faceInsetRatio
@@ -74,7 +71,6 @@ struct PulseWatchLayoutMetrics: Equatable {
         return PulseWatchLayoutMetrics(
             horizontalPadding: horizontalPadding,
             bottomPadding: bottomPadding,
-            dateLane: dateLane,
             faceSide: faceSide,
             todayMarkSide: todayMarkSide,
             orbitRadius: orbitRadius,
@@ -103,7 +99,6 @@ enum PulseWatchDesign {
         minimum: 4,
         maximum: 8
     )
-    fileprivate static let dateLaneHeight: CGFloat = 16
     fileprivate static let statusLaneHeight: CGFloat = 16
     fileprivate static let recoveryGap: CGFloat = 4
     fileprivate static let faceInsetRatio: CGFloat = 0.82
@@ -159,4 +154,38 @@ enum PulseWatchDesign {
     static let rectangularHistoryEndRatio: CGFloat = 0.66
     static let rectangularHorizontalInsetRatio: CGFloat = 0.045
     static let rectangularArcAmplitudeRatio: CGFloat = 0.13
+
+    static let ambientFrameInterval = 1.0 / 10.0
+    static let ambientPrimaryPeriod = 18.0
+    static let ambientSecondaryPeriod = 24.0
+    static let ambientPrimaryWidthRatio: CGFloat = 0.96
+    static let ambientPrimaryHeightRatio: CGFloat = 0.60
+    static let ambientSecondaryWidthRatio: CGFloat = 0.74
+    static let ambientSecondaryHeightRatio: CGFloat = 0.48
+    static let ambientPrimaryCenterXRatio: CGFloat = 0.38
+    static let ambientPrimaryCenterYRatio: CGFloat = 0.62
+    static let ambientSecondaryCenterXRatio: CGFloat = 0.68
+    static let ambientSecondaryCenterYRatio: CGFloat = 0.54
+    static let ambientPrimaryMotionX: CGFloat = 12
+    static let ambientPrimaryMotionY: CGFloat = 6
+    static let ambientSecondaryMotionX: CGFloat = 10
+    static let ambientSecondaryMotionY: CGFloat = 8
+    static let ambientPrimaryScaleAmplitude: CGFloat = 0.06
+    static let ambientSecondaryScaleAmplitude: CGFloat = 0.08
+    static let ambientRotationAmplitude = 10.0
+    static let ambientReadyPrimaryOpacity = 0.30
+    static let ambientReadySecondaryOpacity = 0.20
+    static let ambientCommittedPrimaryOpacity = 0.24
+    static let ambientCommittedSecondaryOpacity = 0.16
+    static let ambientGradientMidpointOpacityRatio = 0.72
+
+    static let heroMonthFontRatio: CGFloat = 0.82
+    static let heroMonthOpacity = 0.14
+    static let heroMonthTracking: CGFloat = -5
+    static let heroMonthOffsetXRatio: CGFloat = -0.34
+    static let heroMonthOffsetYRatio: CGFloat = 0.34
+    static let heroInteriorOpacity = 0.76
+    static let heroDayFontRatio: CGFloat = 0.34
+    static let heroStateFontRatio: CGFloat = 0.13
+    static let heroDateStackSpacing: CGFloat = -2
 }

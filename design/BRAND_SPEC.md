@@ -90,8 +90,9 @@
 
 - Watch 只使用“今日日印”和“七日脉冲”两种基础构图：圆形/Inline complication 表达今日状态，矩形 complication 与 Smart Stack 用六个历史节点连接一个今日印记；Watch App 以今日印为表盘中心，六个历史节点按日序环绕成周环，日期贴在上方，完成/待签由印的形状表达。不复制 iPhone Home Screen 八式。
 - 黑色系统底、`PulseWatchInk` 暖白信息、`PulseWatchField` 空心待签到、`PulseWatchPending` 缺口待同步、`PulseWatchCommitted` 实心已确认；Watch App 主印内部以 `PulseWatchCommittedForeground` 显示“已签到” / “Done”，不另加底部完成状态栏。失败恢复为空心并显示警示符号。状态必须同时由形状和无障碍文案表达。
-- Watch App 顶部日期必须来自项目逻辑日与项目时区，不复述或猜测设备日；1.1 不传主承诺、记事、照片或缺席说明到 Watch。
+- Watch App 项目日期必须来自项目逻辑日与项目时区，不复述或猜测设备日。界面不显示星期或自定义顶栏日期，只保留右上系统时钟；本地化项目月份数字作为左下偏轴、可部分出屏的低对比大字，项目日显示在中央主印内部，下面保留“签到 / 已签到”。1.1 不传主承诺、记事、照片或缺席说明到 Watch。
 - complication 与 Always-On 使用静态终态；只有 Watch App 从 `pendingSync`/`submitting` 收到 iPhone Repository 正式回执时播放一次成功触觉。打开一个已经完成的 Watch App 不重复播放成功。
+- Watch App 普通待签与已确认状态在主印背后使用两层可辨识的深绿流体场：18–24 秒低频循环，只在前台活跃、屏幕高亮且 Reduce Motion 关闭时运行；后台、Always-On、低亮度、Reduce Motion 与异常状态显示同一静态或纯黑终态。流体不得覆盖日期、系统时间或周环，也不进入 complication / Smart Stack。
 - 全部 Watch 颜色只读 `brand-tokens.json` 的 `watch` 语义组，经 `build_brand_assets.py` 生成到正式 Watch Asset Catalog；Watch Catalog 只保留实际消费的 Watch 颜色、AccentColor 与 AppIcon，不复制 iPhone 全色板。几何只读 `PulseWatchDesign`，不得在消费者散落第二套色板或魔法比例。
 - Watch App 页级几何由实际容器与 safe area 连续求值，不按设备型号或表径分支；标准字号把日期、今日日印与环绕历史收进一屏表盘构图，只有 Accessibility Dynamic Type 或几何放不下时才纵向滚动。
 
