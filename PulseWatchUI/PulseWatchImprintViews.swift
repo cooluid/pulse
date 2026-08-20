@@ -149,6 +149,21 @@ struct PulseWatchWeekOrbit: View {
     var body: some View {
         let history = Array(days.dropLast())
         ZStack {
+            Circle()
+                .trim(
+                    from: PulseWatchDesign.orbitStartDegrees / 360,
+                    to: PulseWatchDesign.orbitEndDegrees / 360
+                )
+                .stroke(
+                    Color("PulseWatchSecondary")
+                        .opacity(PulseWatchDesign.orbitTrackOpacity),
+                    style: StrokeStyle(
+                        lineWidth: PulseWatchDesign.orbitTrackLineWidth,
+                        lineCap: .round
+                    )
+                )
+                .frame(width: radius * 2, height: radius * 2)
+
             ForEach(Array(history.enumerated()), id: \.element.id) { index, day in
                 PulseWatchHistoryNode(state: day.state)
                     .frame(width: nodeSide, height: nodeSide)
@@ -165,8 +180,11 @@ struct PulseWatchWeekOrbit: View {
 
     private func orbitOffset(index: Int, count: Int) -> CGSize {
         guard count > 0 else { return .zero }
-        let step = 360 / CGFloat(count)
-        let degrees = PulseWatchDesign.orbitStartDegrees - step * CGFloat(index)
+        let step = count > 1
+            ? (PulseWatchDesign.orbitEndDegrees - PulseWatchDesign.orbitStartDegrees)
+                / CGFloat(count - 1)
+            : 0
+        let degrees = PulseWatchDesign.orbitStartDegrees + step * CGFloat(index)
         let radians = degrees * .pi / 180
         return CGSize(
             width: radius * cos(radians),
@@ -183,30 +201,81 @@ struct PulseWatchSevenDayPulse: View {
 
     var body: some View {
         GeometryReader { proxy in
-            let spacing = proxy.size.width * PulseWatchDesign.rhythmSpacingRatio
+            let history = Array(days.dropLast())
             let historySide = historyNodeSide(in: proxy.size)
-            HStack(alignment: .center, spacing: spacing) {
-                ForEach(Array(days.dropLast())) { day in
+            let todaySide = todayImprintSide(in: proxy.size)
+            let todayCenter = CGPoint(
+                x: proxy.size.width - todaySide / 2,
+                y: proxy.size.height / 2
+            )
+            ZStack {
+                Path { path in
+                    let points = history.indices.map {
+                        historyPoint(
+                            index: $0,
+                            count: history.count,
+                            size: proxy.size
+                        )
+                    }
+                    guard let first = points.first else { return }
+                    path.move(to: first)
+                    for point in points.dropFirst() {
+                        path.addLine(to: point)
+                    }
+                    if showsTodayImprint {
+                        path.addLine(to: todayCenter)
+                    }
+                }
+                .stroke(
+                    Color("PulseWatchSecondary")
+                        .opacity(PulseWatchDesign.rectangularTrackOpacity),
+                    style: StrokeStyle(
+                        lineWidth: PulseWatchDesign.rectangularTrackLineWidth,
+                        lineCap: .round,
+                        lineJoin: .round
+                    )
+                )
+
+                ForEach(Array(history.enumerated()), id: \.element.id) { index, day in
                     PulseWatchHistoryNode(
                         state: day.state,
                         usesWidgetAccent: usesWidgetAccent
                     )
                     .frame(width: historySide, height: historySide)
+                    .position(historyPoint(
+                        index: index,
+                        count: history.count,
+                        size: proxy.size
+                    ))
                 }
                 if showsTodayImprint {
-                    Spacer(minLength: spacing)
                     PulseWatchImprintMark(
                         state: displayState,
                         usesWidgetAccent: usesWidgetAccent
                     )
-                    .frame(
-                        width: todayImprintSide(in: proxy.size),
-                        height: todayImprintSide(in: proxy.size)
-                    )
+                    .frame(width: todaySide, height: todaySide)
+                    .position(todayCenter)
                 }
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
+    }
+
+    private func historyPoint(
+        index: Int,
+        count: Int,
+        size: CGSize
+    ) -> CGPoint {
+        let progress = count > 1 ? CGFloat(index) / CGFloat(count - 1) : 0
+        let horizontalInset = size.width
+            * PulseWatchDesign.rectangularHorizontalInsetRatio
+        let historyEnd = showsTodayImprint
+            ? size.width * PulseWatchDesign.rectangularHistoryEndRatio
+            : size.width - horizontalInset
+        let x = horizontalInset + (historyEnd - horizontalInset) * progress
+        let y = size.height / 2
+            + sin(progress * .pi) * size.height
+                * PulseWatchDesign.rectangularArcAmplitudeRatio
+        return CGPoint(x: x, y: y)
     }
 
     private func historyNodeSide(in size: CGSize) -> CGFloat {

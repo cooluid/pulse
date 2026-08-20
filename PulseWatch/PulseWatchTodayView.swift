@@ -11,24 +11,19 @@ struct PulseWatchTodayView: View {
         GeometryReader { proxy in
             let metrics = PulseWatchLayoutMetrics.resolve(
                 containerSize: proxy.size,
-                safeAreaTop: proxy.safeAreaInsets.top,
-                safeAreaBottom: proxy.safeAreaInsets.bottom,
                 showsDate: projectDateText != nil,
                 showsRecoveryAction: showsRecoveryAction,
                 showsRhythm: model.projection.snapshot?.sevenDayPulse != nil,
                 showsTransientStatus: showsTransientStatus
             )
             Group {
-                if requiresScrollingPage(metrics) {
+                if requiresScrollingPage {
                     ScrollView {
                         stackedContent(metrics: metrics)
-                            .padding(.top, metrics.topReserve)
                             .padding(.bottom, metrics.bottomPadding)
                     }
                 } else {
                     faceContent(metrics: metrics)
-                        .frame(height: metrics.contentHeight)
-                        .padding(.top, metrics.topReserve)
                         .padding(.bottom, metrics.bottomPadding)
                 }
             }
@@ -42,26 +37,34 @@ struct PulseWatchTodayView: View {
     }
 
     private func faceContent(metrics: PulseWatchLayoutMetrics) -> some View {
-        ZStack {
-            VStack(spacing: 0) {
-                if let projectDateText {
-                    dateHeader(projectDateText)
-                        .frame(height: metrics.dateLane, alignment: .top)
-                }
-                Spacer(minLength: 0)
+        ZStack(alignment: .topLeading) {
+            if let projectDateText {
+                dateHeader(projectDateText)
+                    .frame(height: metrics.dateLane, alignment: .topLeading)
+            }
+
+            VStack(spacing: 2) {
+                Spacer(minLength: metrics.dateLane)
+                imprintControl(
+                    metrics: metrics,
+                    showsOrbit: !showsRecoveryAction
+                )
                 if showsTransientStatus {
                     statusLabel
                 }
                 if showsRecoveryAction {
                     recoveryButton
                 }
+                Spacer(minLength: 0)
             }
-
-            imprintControl(metrics: metrics, showsOrbit: true)
-                .padding(.top, metrics.dateLane)
-                .padding(.bottom, metrics.bottomChrome)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .padding(.horizontal, metrics.horizontalPadding)
+        .frame(
+            maxWidth: .infinity,
+            maxHeight: .infinity,
+            alignment: .topLeading
+        )
     }
 
     private func stackedContent(metrics: PulseWatchLayoutMetrics) -> some View {
@@ -96,33 +99,64 @@ struct PulseWatchTodayView: View {
         metrics: PulseWatchLayoutMetrics,
         showsOrbit: Bool
     ) -> some View {
-        Button {
-            Task { await model.checkIn() }
-        } label: {
-            ZStack {
-                if showsOrbit, let days = model.projection.snapshot?.sevenDayPulse {
-                    PulseWatchWeekOrbit(
-                        days: days,
-                        radius: metrics.orbitRadius,
-                        nodeSide: metrics.orbitNodeSide
-                    )
+        Group {
+            if canCheckIn {
+                Button {
+                    Task { await model.checkIn() }
+                } label: {
+                    imprintFace(metrics: metrics, showsOrbit: showsOrbit)
                 }
-                PulseWatchImprintMark(state: model.displayState)
+                .buttonStyle(.plain)
+                .accessibilityHint(
+                    PulseWatchLocalization.string(
+                        "watch.action.check_in",
+                        locale: locale
+                    )
+                )
+            } else {
+                imprintFace(metrics: metrics, showsOrbit: showsOrbit)
+            }
+        }
+        .accessibilityLabel(statusText)
+    }
+
+    private func imprintFace(
+        metrics: PulseWatchLayoutMetrics,
+        showsOrbit: Bool
+    ) -> some View {
+        ZStack {
+            if showsOrbit, let days = model.projection.snapshot?.sevenDayPulse {
+                PulseWatchWeekOrbit(
+                    days: days,
+                    radius: metrics.orbitRadius,
+                    nodeSide: metrics.orbitNodeSide
+                )
+            }
+            PulseWatchImprintMark(state: model.displayState)
+                .frame(
+                    width: metrics.todayMarkSide,
+                    height: metrics.todayMarkSide
+                )
+            if case .ready = model.displayState {
+                Text("watch.action.check_in")
+                    .font(.caption2.weight(.semibold))
+                    .foregroundStyle(Color("PulseWatchInk"))
+            } else if case .committed = model.displayState {
+                Circle()
+                    .stroke(
+                        Color("PulseWatchInk").opacity(0.48),
+                        lineWidth: PulseWatchDesign.heroInnerEchoLineWidth
+                    )
                     .frame(
-                        width: metrics.todayMarkSide,
+                        width: metrics.todayMarkSide
+                            * PulseWatchDesign.heroInnerEchoRatio,
                         height: metrics.todayMarkSide
+                            * PulseWatchDesign.heroInnerEchoRatio
                     )
             }
-            .contentShape(Circle())
         }
-        .buttonStyle(.plain)
-        .disabled(!canCheckIn)
-        .accessibilityLabel(statusText)
-        .accessibilityHint(
-            canCheckIn
-                ? PulseWatchLocalization.string("watch.action.check_in", locale: locale)
-                : ""
-        )
+        .frame(width: metrics.faceSide, height: metrics.faceSide)
+        .contentShape(Circle())
     }
 
     private var recoveryButton: some View {
@@ -172,21 +206,19 @@ struct PulseWatchTodayView: View {
         }
     }
 
-    private func requiresScrollingPage(_ metrics: PulseWatchLayoutMetrics) -> Bool {
-        dynamicTypeSize.isAccessibilitySize || metrics.requiresScroll
-    }
+    private var requiresScrollingPage: Bool { dynamicTypeSize.isAccessibilitySize }
 
     private func dateHeader(
         _ projectDateText: (weekday: String, monthDay: String)
     ) -> some View {
-        HStack(spacing: 8) {
+        HStack(spacing: 5) {
             Text(verbatim: projectDateText.weekday.uppercased(with: locale))
+                .foregroundStyle(Color("PulseWatchSecondary").opacity(0.82))
             Text(verbatim: projectDateText.monthDay)
                 .monospacedDigit()
+                .foregroundStyle(Color("PulseWatchInk"))
         }
-        .font(.caption.weight(.medium))
-        .foregroundStyle(Color("PulseWatchSecondary"))
-        .frame(maxWidth: .infinity)
+        .font(.caption2.weight(.semibold))
     }
 
     private var projectDateText: (weekday: String, monthDay: String)? {
