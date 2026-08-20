@@ -20,6 +20,7 @@ struct PulseWatchAmbientField: View {
                 }
             }
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .allowsHitTesting(false)
         .accessibilityHidden(true)
     }
@@ -129,18 +130,13 @@ struct PulseWatchAmbientField: View {
     }
 
     private var primaryColor: Color {
-        switch state {
-        case .committed:
-            Color("PulseWatchCommitted")
-        case .ready, .needsSync, .submitting, .pendingSync, .failed:
-            Color("PulseWatchField")
-        }
+        Color("PulseWatchField")
     }
 
     private var secondaryColor: Color {
         switch state {
         case .committed:
-            Color("PulseWatchField")
+            Color("PulseWatchCommitted")
         case .ready, .needsSync, .submitting, .pendingSync, .failed:
             Color("PulseWatchSecondary")
         }

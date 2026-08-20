@@ -101,20 +101,20 @@ enum PulseWatchDesign {
     )
     fileprivate static let statusLaneHeight: CGFloat = 16
     fileprivate static let recoveryGap: CGFloat = 4
-    fileprivate static let faceInsetRatio: CGFloat = 0.82
-    fileprivate static let todayMarkRatio: CGFloat = 0.56
+    fileprivate static let faceInsetRatio: CGFloat = 0.88
+    fileprivate static let todayMarkRatio: CGFloat = 0.64
     fileprivate static let recoveryMarkMinimumSide: CGFloat = 48
-    fileprivate static let standardMarkMinimumSide: CGFloat = 68
-    fileprivate static let todayMarkMaximumSide: CGFloat = 92
+    fileprivate static let standardMarkMinimumSide: CGFloat = 72
+    fileprivate static let todayMarkMaximumSide: CGFloat = 108
     fileprivate static let orbitNodeSide = PulseWatchScaledMetric(
-        ratio: 0.055,
-        minimum: 6,
-        maximum: 9
+        ratio: 0.08,
+        minimum: 8,
+        maximum: 12
     )
     fileprivate static let orbitGap = PulseWatchScaledMetric(
-        ratio: 0.045,
-        minimum: 5,
-        maximum: 8
+        ratio: 0.055,
+        minimum: 7,
+        maximum: 10
     )
 
     static let recoveryButtonHorizontalPadding: CGFloat = 16
@@ -143,10 +143,8 @@ enum PulseWatchDesign {
     static let rhythmHistoryWidthRatio: CGFloat = 0.095
     static let rhythmHistoryOnlyHeightRatio: CGFloat = 0.52
     static let rhythmHistoryOnlyWidthRatio: CGFloat = 0.11
-    static let historyNodeLineWidth: CGFloat = 1.5
+    static let historyNodeLineWidth: CGFloat = 1.75
     static let beforeHabitOpacity = 0.34
-    static let orbitTrackLineWidth: CGFloat = 1
-    static let orbitTrackOpacity = 0.30
     static let orbitStartDegrees: CGFloat = 24
     static let orbitEndDegrees: CGFloat = 242
     static let rectangularTrackLineWidth: CGFloat = 1
@@ -159,33 +157,29 @@ enum PulseWatchDesign {
     static let ambientPrimaryPeriod = 18.0
     static let ambientSecondaryPeriod = 24.0
     static let ambientPrimaryWidthRatio: CGFloat = 0.96
-    static let ambientPrimaryHeightRatio: CGFloat = 0.60
+    static let ambientPrimaryHeightRatio: CGFloat = 0.72
     static let ambientSecondaryWidthRatio: CGFloat = 0.74
-    static let ambientSecondaryHeightRatio: CGFloat = 0.48
-    static let ambientPrimaryCenterXRatio: CGFloat = 0.38
-    static let ambientPrimaryCenterYRatio: CGFloat = 0.62
-    static let ambientSecondaryCenterXRatio: CGFloat = 0.68
-    static let ambientSecondaryCenterYRatio: CGFloat = 0.54
-    static let ambientPrimaryMotionX: CGFloat = 12
-    static let ambientPrimaryMotionY: CGFloat = 6
-    static let ambientSecondaryMotionX: CGFloat = 10
-    static let ambientSecondaryMotionY: CGFloat = 8
-    static let ambientPrimaryScaleAmplitude: CGFloat = 0.06
-    static let ambientSecondaryScaleAmplitude: CGFloat = 0.08
+    static let ambientSecondaryHeightRatio: CGFloat = 0.52
+    static let ambientPrimaryCenterXRatio: CGFloat = 0.42
+    static let ambientPrimaryCenterYRatio: CGFloat = 0.58
+    static let ambientSecondaryCenterXRatio: CGFloat = 0.62
+    static let ambientSecondaryCenterYRatio: CGFloat = 0.48
+    static let ambientPrimaryMotionX: CGFloat = 14
+    static let ambientPrimaryMotionY: CGFloat = 8
+    static let ambientSecondaryMotionX: CGFloat = 11
+    static let ambientSecondaryMotionY: CGFloat = 9
+    static let ambientPrimaryScaleAmplitude: CGFloat = 0.07
+    static let ambientSecondaryScaleAmplitude: CGFloat = 0.09
     static let ambientRotationAmplitude = 10.0
-    static let ambientReadyPrimaryOpacity = 0.30
-    static let ambientReadySecondaryOpacity = 0.20
-    static let ambientCommittedPrimaryOpacity = 0.24
-    static let ambientCommittedSecondaryOpacity = 0.16
-    static let ambientGradientMidpointOpacityRatio = 0.72
+    static let ambientReadyPrimaryOpacity = 0.42
+    static let ambientReadySecondaryOpacity = 0.26
+    static let ambientCommittedPrimaryOpacity = 0.38
+    static let ambientCommittedSecondaryOpacity = 0.22
+    static let ambientGradientMidpointOpacityRatio = 0.70
 
-    static let heroMonthFontRatio: CGFloat = 0.82
-    static let heroMonthOpacity = 0.14
-    static let heroMonthTracking: CGFloat = -5
-    static let heroMonthOffsetXRatio: CGFloat = -0.34
-    static let heroMonthOffsetYRatio: CGFloat = 0.34
-    static let heroInteriorOpacity = 0.76
-    static let heroDayFontRatio: CGFloat = 0.34
-    static let heroStateFontRatio: CGFloat = 0.13
-    static let heroDateStackSpacing: CGFloat = -2
+    static let heroDayFontRatio: CGFloat = 0.52
+    static let heroDayOpacity = 0.34
+    static let heroDayTracking: CGFloat = -6
+    static let heroDayOffsetXRatio: CGFloat = -0.04
+    static let heroDayOffsetYRatio: CGFloat = 0.10
 }

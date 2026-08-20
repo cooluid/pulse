@@ -23,6 +23,17 @@ struct PulseWatchTodayView: View {
                     state: model.displayState,
                     animates: animatesAmbientField
                 )
+                .frame(
+                    width: proxy.size.width,
+                    height: proxy.size.height
+                )
+
+                if showsDayWatermark, let projectDateText {
+                    dayWatermark(
+                        projectDateText.day,
+                        in: proxy.size
+                    )
+                }
 
                 Group {
                     if requiresScrollingPage {
@@ -125,28 +136,6 @@ struct PulseWatchTodayView: View {
         showsOrbit: Bool
     ) -> some View {
         ZStack {
-            if let projectDateText, showsOrbit {
-                Text(verbatim: projectDateText.month)
-                    .font(.system(
-                        size: metrics.faceSide
-                            * PulseWatchDesign.heroMonthFontRatio,
-                        weight: .black,
-                        design: .rounded
-                    ))
-                    .monospacedDigit()
-                    .foregroundStyle(
-                        Color("PulseWatchSecondary")
-                            .opacity(PulseWatchDesign.heroMonthOpacity)
-                    )
-                    .tracking(PulseWatchDesign.heroMonthTracking)
-                    .offset(
-                        x: metrics.faceSide
-                            * PulseWatchDesign.heroMonthOffsetXRatio,
-                        y: metrics.faceSide
-                            * PulseWatchDesign.heroMonthOffsetYRatio
-                    )
-                    .accessibilityHidden(true)
-            }
             if showsOrbit, let days = model.projection.snapshot?.sevenDayPulse {
                 PulseWatchWeekOrbit(
                     days: days,
@@ -154,46 +143,43 @@ struct PulseWatchTodayView: View {
                     nodeSide: metrics.orbitNodeSide
                 )
             }
-            if showsHeroDateContent {
-                Circle()
-                    .fill(Color.black.opacity(
-                        PulseWatchDesign.heroInteriorOpacity
-                    ))
-                    .frame(
-                        width: metrics.todayMarkSide,
-                        height: metrics.todayMarkSide
-                    )
-            }
             PulseWatchImprintMark(state: model.displayState)
                 .frame(
                     width: metrics.todayMarkSide,
                     height: metrics.todayMarkSide
                 )
-            if let projectDateText, showsHeroDateContent {
-                VStack(spacing: PulseWatchDesign.heroDateStackSpacing) {
-                    Text(verbatim: projectDateText.day)
-                        .font(.system(
-                            size: metrics.todayMarkSide
-                                * PulseWatchDesign.heroDayFontRatio,
-                            weight: .black,
-                            design: .rounded
-                        ))
-                        .monospacedDigit()
-                    Text(heroStateKey)
-                        .font(.system(
-                            size: metrics.todayMarkSide
-                                * PulseWatchDesign.heroStateFontRatio,
-                            weight: .bold,
-                            design: .rounded
-                        ))
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.78)
-                }
-                .foregroundStyle(heroForegroundColor)
-            }
         }
         .frame(width: metrics.faceSide, height: metrics.faceSide)
         .contentShape(Circle())
+    }
+
+    private func dayWatermark(
+        _ day: String,
+        in size: CGSize
+    ) -> some View {
+        Text(verbatim: day)
+            .font(.system(
+                size: size.width * PulseWatchDesign.heroDayFontRatio,
+                weight: .black,
+                design: .rounded
+            ))
+            .monospacedDigit()
+            .foregroundStyle(
+                Color("PulseWatchSecondary")
+                    .opacity(PulseWatchDesign.heroDayOpacity)
+            )
+            .tracking(PulseWatchDesign.heroDayTracking)
+            .frame(
+                maxWidth: .infinity,
+                maxHeight: .infinity,
+                alignment: .bottomLeading
+            )
+            .offset(
+                x: size.width * PulseWatchDesign.heroDayOffsetXRatio,
+                y: size.height * PulseWatchDesign.heroDayOffsetYRatio
+            )
+            .allowsHitTesting(false)
+            .accessibilityHidden(true)
     }
 
     private var recoveryButton: some View {
@@ -245,30 +231,13 @@ struct PulseWatchTodayView: View {
 
     private var requiresScrollingPage: Bool { dynamicTypeSize.isAccessibilitySize }
 
-    private var showsHeroDateContent: Bool {
+    private var showsDayWatermark: Bool {
+        guard !requiresScrollingPage, !showsRecoveryAction else { return false }
         switch model.displayState {
         case .ready, .committed:
-            true
+            return true
         case .needsSync, .submitting, .pendingSync, .failed:
-            false
-        }
-    }
-
-    private var heroStateKey: LocalizedStringKey {
-        switch model.displayState {
-        case .committed:
-            "watch.state.done"
-        case .ready, .needsSync, .submitting, .pendingSync, .failed:
-            "watch.action.check_in"
-        }
-    }
-
-    private var heroForegroundColor: Color {
-        switch model.displayState {
-        case .committed:
-            Color("PulseWatchCommittedForeground")
-        case .ready, .needsSync, .submitting, .pendingSync, .failed:
-            Color("PulseWatchInk")
+            return false
         }
     }
 
@@ -287,7 +256,6 @@ struct PulseWatchTodayView: View {
     }
 
     private var projectDateText: (
-        month: String,
         day: String,
         accessibility: String
     )? {
@@ -314,24 +282,22 @@ struct PulseWatchTodayView: View {
     private func formattedDate(
         _ date: Date,
         timeZone: TimeZone
-    ) -> (month: String, day: String, accessibility: String) {
+    ) -> (day: String, accessibility: String) {
         var calendar = Calendar(identifier: .gregorian)
         calendar.timeZone = timeZone
-        let monthNumber = calendar.component(.month, from: date)
         let dayNumber = calendar.component(.day, from: date)
         let numberFormatter = NumberFormatter()
         numberFormatter.locale = locale
         numberFormatter.numberStyle = .none
         numberFormatter.usesGroupingSeparator = false
+        numberFormatter.minimumIntegerDigits = 2
         let accessibilityFormatter = DateFormatter()
         accessibilityFormatter.locale = locale
         accessibilityFormatter.timeZone = timeZone
         accessibilityFormatter.setLocalizedDateFormatFromTemplate("MMMMd")
         return (
-            numberFormatter.string(from: NSNumber(value: monthNumber))
-                ?? String(monthNumber),
             numberFormatter.string(from: NSNumber(value: dayNumber))
-                ?? String(dayNumber),
+                ?? String(format: "%02d", dayNumber),
             accessibilityFormatter.string(from: date)
         )
     }

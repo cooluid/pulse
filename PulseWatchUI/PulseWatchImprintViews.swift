@@ -149,21 +149,6 @@ struct PulseWatchWeekOrbit: View {
     var body: some View {
         let history = Array(days.dropLast())
         ZStack {
-            Circle()
-                .trim(
-                    from: PulseWatchDesign.orbitStartDegrees / 360,
-                    to: PulseWatchDesign.orbitEndDegrees / 360
-                )
-                .stroke(
-                    Color("PulseWatchSecondary")
-                        .opacity(PulseWatchDesign.orbitTrackOpacity),
-                    style: StrokeStyle(
-                        lineWidth: PulseWatchDesign.orbitTrackLineWidth,
-                        lineCap: .round
-                    )
-                )
-                .frame(width: radius * 2, height: radius * 2)
-
             ForEach(Array(history.enumerated()), id: \.element.id) { index, day in
                 PulseWatchHistoryNode(state: day.state)
                     .frame(width: nodeSide, height: nodeSide)
