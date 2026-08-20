@@ -46,7 +46,7 @@
 
 - 当前 211 项单元/集成测试与 27 项 Simulator UI 测试全部通过；Watch 新增覆盖快照过期、旧快照拒绝、项目变化保留 outbox、正式协议拒绝回执、明确重试、Repository 即时快照与 iPhone 系统表面提交后的 Watch 刷新，并继续覆盖跨午夜 `occurredAt`、幂等命令和既有领域/归档/StoreKit/Widget/三主题矩阵。
 - Release `pulse` 全 target Build 与 Analyze 通过，未排除 Watch Asset Catalog；实际编译并校验 iPhone App、Home Screen Widget、Watch App、Watch Widget、AppIcon、颜色资产、Privacy manifest 和嵌入结构。
-- Apple Watch Ultra 3 49mm / watchOS 26.4 Simulator 的 Debug Build、安装、清洁启动和进程拉起通过；未配对页已真实复核为黑色系统底、暖白状态、不猜测项目日期与 44pt 次级重试动作。该证据只关闭 runtime、资源编译和当前冷启动界面，不外推为 WatchConnectivity、complication、Smart Stack 或真机视觉验收。
+- Apple Watch Ultra 3 49mm / watchOS 26.4 配对 Simulator 的 Debug Build、安装、清洁启动和进程拉起通过；未配对页已真实复核为黑色系统底、暖白状态、不猜测项目日期与 44pt 次级重试动作。WatchConnectivity 实际发送 3 次带 reply/error 的即时消息，并在私有工作队列收到 3 次正式 response 与 Application Context，进程持续运行且没有 `_dispatch_assert_queue_fail`。该证据关闭本轮回调队列崩溃，但不外推为真实配对 Watch、complication、Smart Stack 或真机视觉验收。
 - 当前 61 项品牌生成输出、App/Widget/Watch plist、Privacy manifest、entitlement 和五份 String Catalog 静态解析通过；`git diff --check` 通过。
 - `site` production build、lint、三条 redirect 测试与依赖审计通过；正式产品、隐私和支持 URL 当前均返回 HTTPS 200。子模块提交仍须单独推送并用全新 clone 验证可获取性。
 - Simulator 截图证明三主题当前构图和交互候选，不代替真实设备、Widget host、Dynamic Island、Always-On 或人工最终视觉接受。

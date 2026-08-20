@@ -7,6 +7,23 @@ private enum PulseWatchConnectivityError: Error {
     case activationFailed
 }
 
+private final class PulseWatchOneShotCompletion: @unchecked Sendable {
+    private let lock = NSLock()
+    private var continuation: CheckedContinuation<Void, Never>?
+
+    init(_ continuation: CheckedContinuation<Void, Never>) {
+        self.continuation = continuation
+    }
+
+    func resume() {
+        lock.lock()
+        let continuation = self.continuation
+        self.continuation = nil
+        lock.unlock()
+        continuation?.resume()
+    }
+}
+
 @MainActor
 final class PulseWatchConnectivityClient: NSObject {
     private let session: WCSession
@@ -72,18 +89,22 @@ final class PulseWatchConnectivityClient: NSObject {
         try await ensureActivated()
         guard session.isReachable else { return }
         await withCheckedContinuation { continuation in
+            let completion = PulseWatchOneShotCompletion(continuation)
+            let replyHandler: @Sendable ([String: Any]) -> Void = { [weak self] reply in
+                let snapshotData = reply[PulseWatchContract.snapshotContextKey] as? Data
+                Task { @MainActor [weak self] in
+                    if let snapshotData {
+                        self?.receiveSnapshot(snapshotData)
+                    }
+                    completion.resume()
+                }
+            }
+            let errorHandler: @Sendable (any Error) -> Void = { _ in
+                completion.resume()
+            }
             session.sendMessage([
                 PulseWatchContract.snapshotRequestKey: PulseWatchContract.protocolVersion,
-            ]) { [self] reply in
-                Task { @MainActor in
-                    if let data = reply[PulseWatchContract.snapshotContextKey] as? Data {
-                        receiveSnapshot(data)
-                    }
-                    continuation.resume()
-                }
-            } errorHandler: { _ in
-                continuation.resume()
-            }
+            ], replyHandler: replyHandler, errorHandler: errorHandler)
         }
     }
 
@@ -96,19 +117,27 @@ final class PulseWatchConnectivityClient: NSObject {
         try await ensureActivated()
         if session.isReachable {
             await withCheckedContinuation { continuation in
-                session.sendMessageData(data) { [self] receiptData in
-                    Task { @MainActor in
-                        if !receiveReceipt(receiptData) {
-                            scheduleBackground(command, data: data)
+                let completion = PulseWatchOneShotCompletion(continuation)
+                let replyHandler: @Sendable (Data) -> Void = { [weak self] receiptData in
+                    Task { @MainActor [weak self] in
+                        if let self,
+                           !self.receiveReceipt(receiptData) {
+                            self.scheduleBackground(command, data: data)
                         }
-                        continuation.resume()
-                    }
-                } errorHandler: { [self] _ in
-                    Task { @MainActor in
-                        scheduleBackground(command, data: data)
-                        continuation.resume()
+                        completion.resume()
                     }
                 }
+                let errorHandler: @Sendable (any Error) -> Void = { [weak self] _ in
+                    Task { @MainActor [weak self] in
+                        self?.scheduleBackground(command, data: data)
+                        completion.resume()
+                    }
+                }
+                session.sendMessageData(
+                    data,
+                    replyHandler: replyHandler,
+                    errorHandler: errorHandler
+                )
             }
         } else {
             scheduleBackground(command, data: data)

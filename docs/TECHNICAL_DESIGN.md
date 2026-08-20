@@ -38,6 +38,8 @@ PulseWatch / Watch complication
 
 `PulseWatchShared` 是 iPhone、Watch App 与 Watch Widget 共用的唯一 Watch 协议、revision、codec 与本地状态合同。Watch 本地单文件状态只保存最新可重建快照、durable command outbox 和最后回执；使用跨进程协调和原子写入，不包含 SwiftData 模型。快照以 `nextDayBoundary` 统一失效，过期后只表达需要同步；坏快照、项目 revision 变化或回执乱序都不能隐式清除 outbox，命令只在匹配回执或用户明确重试/清除时收敛。所有快照、命令、回执和落盘状态均执行协议版本、项目/revision、时区、逻辑日、连续七日、完成一致性与唯一 operationID 语义校验。iPhone 即时消息与后台用户信息都进入同一个 `PulseAppModel.handleWatchCheckIn`，再调用 Repository 的正式 Watch 命令入口；Watch App 的刷新请求由 iPhone 直接从当前 Repository 重建快照，不存在 Widget/Watch 私写记录或按界面状态补造成功。
 
+WCSession 的 reply/error 回调由明确的非隔离 `@Sendable` 闭包接收，只把 `Data` 和不可变命令跨到 `MainActor`；一次性 completion 以锁保护并最多恢复一次 continuation。不得把在 `@MainActor` 方法中隐式继承隔离的普通闭包直接交给 WatchConnectivity 的私有工作队列，否则 Swift 6 会在进入闭包前触发 libdispatch 队列断言。
+
 iPhone Widget / Live Activity 的正式 App Intent 提交 Repository 后只发送进程内 `PulseExternalCheckInSignal` 刷新容器 App 与 Watch 快照；信号不携带、不持久化业务事实，也不承担成功裁决。Widget 自身仍由 Intent 返回后的 WidgetKit timeline reload 更新，避免建立第二条状态广播或重复 reload 路径。
 
 ## 3. 持久化
