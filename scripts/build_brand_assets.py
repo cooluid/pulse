@@ -78,6 +78,7 @@ COLOR_ASSETS = {
 WATCH_COLOR_ASSETS = {
     "AccentColor": "committed",
     "PulseWatchCommitted": "committed",
+    "PulseWatchCommittedForeground": "committedForeground",
     "PulseWatchField": "field",
     "PulseWatchInk": "ink",
     "PulseWatchPending": "pending",

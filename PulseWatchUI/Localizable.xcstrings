@@ -19,6 +19,12 @@
         "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "今天已签到" } }
       }
     },
+    "watch.state.done" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Done" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "已签到" } }
+      }
+    },
     "watch.state.failed_update" : {
       "localizations" : {
         "en" : { "stringUnit" : { "state" : "translated", "value" : "Update Pulse on iPhone" } },

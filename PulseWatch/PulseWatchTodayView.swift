@@ -142,17 +142,11 @@ struct PulseWatchTodayView: View {
                     .font(.caption2.weight(.semibold))
                     .foregroundStyle(Color("PulseWatchInk"))
             } else if case .committed = model.displayState {
-                Circle()
-                    .stroke(
-                        Color("PulseWatchInk").opacity(0.48),
-                        lineWidth: PulseWatchDesign.heroInnerEchoLineWidth
-                    )
-                    .frame(
-                        width: metrics.todayMarkSide
-                            * PulseWatchDesign.heroInnerEchoRatio,
-                        height: metrics.todayMarkSide
-                            * PulseWatchDesign.heroInnerEchoRatio
-                    )
+                Text("watch.state.done")
+                    .font(.caption2.weight(.bold))
+                    .foregroundStyle(Color("PulseWatchCommittedForeground"))
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.78)
             }
         }
         .frame(width: metrics.faceSide, height: metrics.faceSide)

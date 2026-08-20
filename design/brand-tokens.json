@@ -100,6 +100,7 @@
     "secondary" : "#A6B0A2",
     "field" : "#73966D",
     "committed" : "#91D55B",
+    "committedForeground" : "#102013",
     "pending" : "#F5C84B"
   },
   "icon" : {

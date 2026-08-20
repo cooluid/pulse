@@ -154,8 +154,6 @@ enum PulseWatchDesign {
     static let orbitTrackOpacity = 0.30
     static let orbitStartDegrees: CGFloat = 24
     static let orbitEndDegrees: CGFloat = 242
-    static let heroInnerEchoRatio: CGFloat = 0.47
-    static let heroInnerEchoLineWidth: CGFloat = 1.25
     static let rectangularTrackLineWidth: CGFloat = 1
     static let rectangularTrackOpacity = 0.34
     static let rectangularHistoryEndRatio: CGFloat = 0.66
