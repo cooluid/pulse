@@ -256,8 +256,20 @@ final class PulseAppModel {
     ) async -> PulseWatchCheckInReceipt? {
         guard beginOperation(.watchCheckIn) else { return nil }
         defer { finishOperation() }
+        let receipt: CheckInCommitReceipt
         do {
-            let receipt = try repository.checkIn(watchCommand: command)
+            receipt = try repository.checkIn(watchCommand: command)
+        } catch {
+            guard error != .persistenceFailure else { return nil }
+            return PulseWatchCheckInReceipt(
+                operationID: command.operationID,
+                projectID: command.projectID,
+                projectRevision: command.projectRevision,
+                outcome: .rejected(reason: error),
+                acknowledgedAt: clock.now
+            )
+        }
+        do {
             try loadSnapshot()
             widgetTimelineReloader.reloadDailyImprint()
             await reminderScheduler.completeLiveActivity(for: receipt.logicalDay)
@@ -276,14 +288,6 @@ final class PulseAppModel {
                     checkedAt: receipt.checkedAt,
                     disposition: disposition
                 ),
-                acknowledgedAt: clock.now
-            )
-        } catch let reason as PulseWatchRejectionReason {
-            return PulseWatchCheckInReceipt(
-                operationID: command.operationID,
-                projectID: command.projectID,
-                projectRevision: command.projectRevision,
-                outcome: .rejected(reason: reason),
                 acknowledgedAt: clock.now
             )
         } catch {

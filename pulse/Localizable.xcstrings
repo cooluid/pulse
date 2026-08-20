@@ -4901,23 +4901,6 @@
         }
       }
     },
-    "today.accessibility.checked" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Today is checked in"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "今日已签到"
-          }
-        }
-      }
-    },
     "today.accessibility.commitment_state_format" : {
       "extractionState" : "manual",
       "localizations" : {

@@ -18,6 +18,7 @@
 - App Group UserDefaults 只由 `PulseSharedSettings` 管理语言、提醒开关和提醒时间；不保存签到、构图、权益或统计副本。
 - 正式 Widget 产品枚举只在 `PulseWidgetStyle` 与 String Catalog，外观只在共享 `PulseWidgetHomeRenderer`；旧 HTML 原型和并行样式来源已删除。
 - `PulseWatchShared` 统一 Watch 协议、project revision、codec 与单文件本地状态；`PulseWatch` 和 `PulseWatchWidgetsExtension` 只保存最新快照、durable outbox 和最后回执。iPhone `PulseAppModel` 把即时/后台 Watch 命令路由到同一 `SwiftDataPulseRepository`；圆形/Inline 今日日印、矩形七日脉冲与 Smart Stack 均为免费基础能力。
+- Watch 写入入口使用 `throws(PulseWatchRejectionReason)` 的单一类型化失败合同；协议拒绝会返回正式回执，持久化失败不确认命令并保留 durable outbox 等待重试。
 
 权威合同为 [1.1 发布范围](./RELEASE_SCOPE_1_1.md)、[产品需求](./PRODUCT_REQUIREMENTS.md)、[领域合同](./DOMAIN_CONTRACT.md)、[数据加密合同](./DATA_ENCRYPTION_CONTRACT.md)、[技术设计](./TECHNICAL_DESIGN.md)、[系统仪式合同](./PULSE_RITUAL_CONTRACT.md) 与 [测试计划](./TEST_PLAN.md)。
 
@@ -37,11 +38,11 @@
 
 ## 当前自动化与构建证据
 
-验证环境：macOS 26.6、Xcode 26.4（17E192）、iPhone 16 Pro / iOS 18.6 Simulator（arm64）。
+验证环境：macOS 26.6、Xcode 26.4（17E192）、iPhone 16 Pro / iOS 18.6 Simulator（arm64）、watchOS 26.4 Simulator runtime（23T240b）。
 
-- Watch 合入前最后一轮完整运行证据为 193 项单元/集成测试与 27 项 Simulator UI 测试通过；它覆盖既有领域/归档/StoreKit/Widget/三主题矩阵，但不能外推为本轮 Watch 合入后的运行结果。
-- 新增 Watch 协议、本地状态、跨午夜 `occurredAt` 归属、重复命令、项目/时区/未来时间拒绝和 AppModel 回执测试；当前机器已完成 iOS/watchOS 源码与测试 bundle 编译，但因未安装 watchOS 26.4 Simulator runtime，尚未执行合并后的 Simulator 测试或带 Watch 资产的完整 scheme build。
-- 本轮已完成警告按错误的 Debug iOS/watchOS 源码与测试 bundle 编译，并完成 Release 全 target 源码构建和 Analyze；这些命令因本机缺 watchOS runtime 而显式排除了 Watch Asset Catalog，只能证明源码、依赖图、嵌入结构和静态分析，不能替代带图标/颜色资产的完整 scheme Build/Archive。
+- Watch 合入后的 203 项单元/集成测试与 27 项 Simulator UI 测试全部通过；覆盖 Watch 协议、本地状态、跨午夜 `occurredAt` 归属、重复命令、项目/时区/未来时间拒绝、AppModel 回执和既有领域/归档/StoreKit/Widget/三主题矩阵。
+- Release `pulse` 全 target Build 与 Analyze 通过，未排除 Watch Asset Catalog；实际编译并校验 iPhone App、Home Screen Widget、Watch App、Watch Widget、AppIcon、颜色资产、Privacy manifest 和嵌入结构。
+- Apple Watch SE 3 40mm / watchOS 26.4 Simulator 的 Debug Build、启动、安装和进程拉起通过；未配对冷启动页已真实渲染。该证据只关闭 runtime、资源编译和基础启动，不外推为 WatchConnectivity、complication、Smart Stack 或真机视觉验收。
 - 当前 101 项品牌生成输出、App/Widget/Watch plist、Privacy manifest、entitlement 和五份 String Catalog 静态解析通过；`git diff --check` 通过。
 - `site` production build、lint、三条 redirect 测试与依赖审计通过；正式产品、隐私和支持 URL 当前均返回 HTTPS 200。子模块提交仍须单独推送并用全新 clone 验证可获取性。
 - Simulator 截图证明三主题当前构图和交互候选，不代替真实设备、Widget host、Dynamic Island、Always-On 或人工最终视觉接受。
@@ -52,7 +53,7 @@
 - 真实 iPad：相机能力差异、横竖屏、分屏、最大字号和文件导入/导出。
 - 恢复：真实设备导出带多张原图的 v2 归档，在另一清洁安装完整恢复并逐张核对；清除和卸载后确认无非预期残留。
 - 系统与无障碍：真人 VoiceOver、Switch Control、最大 Dynamic Type、Reduce Motion、提高对比度、通知、真实 Home / Lock Screen Widget、iOS 26 Live Activity / Dynamic Island 和 StoreKit Sandbox。
-- Apple Watch：安装匹配 Xcode 的 watchOS runtime 后完成资产/图标编译；真实配对设备验证即时/后台传输、失联恢复、强退/重启/飞行模式、跨午夜、重复/乱序命令、Always-On、VoiceOver、Reduce Motion、complication、Smart Stack 和 14 天电量。
+- Apple Watch：真实配对设备验证即时/后台传输、失联恢复、强退/重启/飞行模式、跨午夜、重复/乱序命令、Always-On、VoiceOver、Reduce Motion、complication、Smart Stack 和 14 天电量。
 - 分发：当前源码不可变提交、站点子模块可获取提交、Apple Distribution Archive、签名/entitlement/dSYM/Privacy manifest 产物核验、加密出口分类、App Store 隐私答案、TestFlight 处理与清洁安装。
 
 ## 历史证据边界

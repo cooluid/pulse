@@ -150,8 +150,11 @@ final class PulseRepositoryTests: XCTestCase {
         let staleRevision = makeWatchCommand(habit: habit, occurredAt: clock.now)
         try repository.updateTimeZone(habitID: habit.id, identifier: "Europe/Paris")
 
-        XCTAssertThrowsError(try repository.checkIn(watchCommand: staleRevision)) { error in
-            XCTAssertEqual(error as? PulseWatchRejectionReason, .timeZoneChanged)
+        do {
+            _ = try repository.checkIn(watchCommand: staleRevision)
+            XCTFail("A command created under the previous project time zone must be rejected.")
+        } catch {
+            XCTAssertEqual(error, .timeZoneChanged)
         }
 
         let updatedHabit = try XCTUnwrap(repository.existingPrimaryHabit())
@@ -159,8 +162,11 @@ final class PulseRepositoryTests: XCTestCase {
             habit: updatedHabit,
             occurredAt: clock.now.addingTimeInterval(60)
         )
-        XCTAssertThrowsError(try repository.checkIn(watchCommand: future)) { error in
-            XCTAssertEqual(error as? PulseWatchRejectionReason, .occurrenceInFuture)
+        do {
+            _ = try repository.checkIn(watchCommand: future)
+            XCTFail("A Watch command cannot claim an occurrence after receipt time.")
+        } catch {
+            XCTAssertEqual(error, .occurrenceInFuture)
         }
     }
 

@@ -10,7 +10,9 @@ public protocol PulseRepositoryProtocol: AnyObject {
     func allMedia(habitID: UUID) throws -> [ImprintMediaSnapshot]
     func updateIdentity(habitID: UUID, identity: HabitIdentity) throws -> HabitSnapshot
     func checkIn(habitID: UUID, journalNote: String?) throws -> CheckInCommitReceipt
-    func checkIn(watchCommand: PulseWatchCheckInCommand) throws -> CheckInCommitReceipt
+    func checkIn(
+        watchCommand: PulseWatchCheckInCommand
+    ) throws(PulseWatchRejectionReason) -> CheckInCommitReceipt
     func updateJournalNote(recordID: UUID, journalNote: String?) throws -> CheckInRecordSnapshot
     func delete(recordID: UUID) throws
     func upsertMedia(_ draft: ImprintMediaDraft) throws -> ImprintMediaSnapshot
@@ -145,16 +147,32 @@ public final class SwiftDataPulseRepository: PulseRepositoryProtocol {
 
     public func checkIn(
         watchCommand: PulseWatchCheckInCommand
-    ) throws -> CheckInCommitReceipt {
+    ) throws(PulseWatchRejectionReason) -> CheckInCommitReceipt {
         guard watchCommand.protocolVersion == PulseWatchContract.protocolVersion else {
             throw PulseWatchRejectionReason.incompatibleProtocol
         }
-        guard let currentHabit = try existingPrimaryHabit(),
+        do {
+            try PulseWatchCodec.validate(watchCommand)
+        } catch {
+            throw PulseWatchRejectionReason.invalidCommand
+        }
+        let currentHabit: HabitSnapshot?
+        do {
+            currentHabit = try existingPrimaryHabit()
+        } catch {
+            throw PulseWatchRejectionReason.persistenceFailure
+        }
+        guard let currentHabit,
               currentHabit.id == watchCommand.projectID,
               currentHabit.isIdentityConfirmed else {
             throw PulseWatchRejectionReason.projectChanged
         }
-        let persistedHabit = try requirePrimaryHabit(id: watchCommand.projectID)
+        let persistedHabit: Habit
+        do {
+            persistedHabit = try requirePrimaryHabit(id: watchCommand.projectID)
+        } catch {
+            throw PulseWatchRejectionReason.persistenceFailure
+        }
         guard let startLogicalDay = persistedHabit.startLogicalDay else {
             throw PulseWatchRejectionReason.invalidCommand
         }
@@ -174,19 +192,28 @@ public final class SwiftDataPulseRepository: PulseRepositoryProtocol {
         guard watchCommand.occurredAt <= receivedAt else {
             throw PulseWatchRejectionReason.occurrenceInFuture
         }
-        let day = try persistedHabit.logicalDay(at: watchCommand.occurredAt)
+        let day: LogicalDay
+        do {
+            day = try persistedHabit.logicalDay(at: watchCommand.occurredAt)
+        } catch {
+            throw PulseWatchRejectionReason.persistenceFailure
+        }
         guard day >= startLogicalDay,
               watchCommand.occurredAt >= persistedHabit.createdAt else {
             throw PulseWatchRejectionReason.occurrenceBeforeProjectStart
         }
 
-        return try commitCheckIn(
-            habit: persistedHabit,
-            day: day,
-            checkedAt: watchCommand.occurredAt,
-            createdAt: receivedAt,
-            journalNote: nil
-        )
+        do {
+            return try commitCheckIn(
+                habit: persistedHabit,
+                day: day,
+                checkedAt: watchCommand.occurredAt,
+                createdAt: receivedAt,
+                journalNote: nil
+            )
+        } catch {
+            throw PulseWatchRejectionReason.persistenceFailure
+        }
     }
 
     private func commitCheckIn(
