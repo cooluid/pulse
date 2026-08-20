@@ -13,7 +13,6 @@ fileprivate struct PulseWatchScaledMetric {
 struct PulseWatchLayoutMetrics: Equatable {
     let horizontalPadding: CGFloat
     let bottomPadding: CGFloat
-    let bloomSide: CGFloat
     let todayMarkSide: CGFloat
 
     static func resolve(
@@ -51,19 +50,14 @@ struct PulseWatchLayoutMetrics: Equatable {
         let minimumMarkSide = showsRecoveryAction
             ? PulseWatchDesign.recoveryMarkMinimumSide
             : PulseWatchDesign.standardMarkMinimumSide
-        let bloomSide = availableSide * PulseWatchDesign.bloomFillRatio
         let todayMarkSide = clamp(
-            bloomSide / PulseWatchDesign.ambientBloomRatio,
+            availableSide * PulseWatchDesign.markFillRatio,
             minimum: minimumMarkSide,
             maximum: PulseWatchDesign.todayMarkMaximumSide
         )
         return PulseWatchLayoutMetrics(
             horizontalPadding: horizontalPadding,
             bottomPadding: bottomPadding,
-            bloomSide: min(
-                todayMarkSide * PulseWatchDesign.ambientBloomRatio,
-                availableSide
-            ),
             todayMarkSide: todayMarkSide
         )
     }
@@ -80,9 +74,9 @@ struct PulseWatchLayoutMetrics: Equatable {
 enum PulseWatchDesign {
     fileprivate static let layoutDimensionFloor: CGFloat = 1
     fileprivate static let pageHorizontalPadding = PulseWatchScaledMetric(
-        ratio: 0.045,
-        minimum: 6,
-        maximum: 10
+        ratio: 0.03,
+        minimum: 4,
+        maximum: 8
     )
     fileprivate static let pageBottomPadding = PulseWatchScaledMetric(
         ratio: 0.02,
@@ -91,21 +85,21 @@ enum PulseWatchDesign {
     )
     fileprivate static let statusLaneHeight: CGFloat = 16
     fileprivate static let recoveryGap: CGFloat = 4
-    fileprivate static let bloomFillRatio: CGFloat = 0.92
+    fileprivate static let markFillRatio: CGFloat = 0.82
     fileprivate static let recoveryMarkMinimumSide: CGFloat = 48
-    fileprivate static let standardMarkMinimumSide: CGFloat = 88
-    fileprivate static let todayMarkMaximumSide: CGFloat = 136
+    fileprivate static let standardMarkMinimumSide: CGFloat = 100
+    fileprivate static let todayMarkMaximumSide: CGFloat = 168
 
     static let dateCaptionHeight: CGFloat = 16
-    static let dateCaptionGap: CGFloat = 6
+    static let dateCaptionGap: CGFloat = 2
     static let recoveryButtonHorizontalPadding: CGFloat = 16
     static let recoveryButtonMinimumHeight: CGFloat = 44
     static let widgetMarkPadding: CGFloat = 3
     static let widgetRhythmHorizontalPadding: CGFloat = 4
     static let accessibilityRhythmHeight: CGFloat = 24
 
-    static let markMinimumLineWidth: CGFloat = 3
-    static let markLineWidthRatio: CGFloat = 0.075
+    static let markMinimumLineWidth: CGFloat = 3.5
+    static let markLineWidthRatio: CGFloat = 0.09
     static let markNeedsSyncMinimumLineWidth: CGFloat = 2
     static let markNeedsSyncLineWidthRatio: CGFloat = 0.085
     static let markDashRatio: CGFloat = 0.12
@@ -135,26 +129,26 @@ enum PulseWatchDesign {
     static let ambientFrameInterval = 1.0 / 10.0
     static let ambientPrimaryPeriod = 18.0
     static let ambientSecondaryPeriod = 24.0
-    static let ambientBloomRatio: CGFloat = 1.28
-    static let ambientPrimaryWidthRatio: CGFloat = 1.04
-    static let ambientPrimaryHeightRatio: CGFloat = 0.92
-    static let ambientSecondaryWidthRatio: CGFloat = 0.86
-    static let ambientSecondaryHeightRatio: CGFloat = 0.78
+    static let ambientBloomRatio: CGFloat = 1.16
+    static let ambientPrimaryWidthRatio: CGFloat = 1.0
+    static let ambientPrimaryHeightRatio: CGFloat = 1.0
+    static let ambientSecondaryWidthRatio: CGFloat = 0.94
+    static let ambientSecondaryHeightRatio: CGFloat = 0.94
     static let ambientPrimaryCenterXRatio: CGFloat = 0.50
-    static let ambientPrimaryCenterYRatio: CGFloat = 0.53
-    static let ambientSecondaryCenterXRatio: CGFloat = 0.52
+    static let ambientPrimaryCenterYRatio: CGFloat = 0.50
+    static let ambientSecondaryCenterXRatio: CGFloat = 0.50
     static let ambientSecondaryCenterYRatio: CGFloat = 0.50
-    static let ambientPrimaryMotionX: CGFloat = 6
-    static let ambientPrimaryMotionY: CGFloat = 4
-    static let ambientSecondaryMotionX: CGFloat = 5
-    static let ambientSecondaryMotionY: CGFloat = 5
-    static let ambientPrimaryScaleAmplitude: CGFloat = 0.05
-    static let ambientSecondaryScaleAmplitude: CGFloat = 0.06
-    static let ambientRotationAmplitude = 6.0
-    static let ambientReadyPrimaryOpacity = 0.46
+    static let ambientPrimaryMotionX: CGFloat = 2
+    static let ambientPrimaryMotionY: CGFloat = 2
+    static let ambientSecondaryMotionX: CGFloat = 3
+    static let ambientSecondaryMotionY: CGFloat = 2
+    static let ambientPrimaryScaleAmplitude: CGFloat = 0.045
+    static let ambientSecondaryScaleAmplitude: CGFloat = 0.035
+    static let ambientRotationAmplitude = 3.0
+    static let ambientReadyPrimaryOpacity = 0.52
     static let ambientReadySecondaryOpacity = 0.28
-    static let ambientCommittedPrimaryOpacity = 0.40
-    static let ambientCommittedSecondaryOpacity = 0.30
-    static let ambientGradientMidpointOpacityRatio = 0.58
-    static let ambientGradientStartRadiusRatio: CGFloat = 0.58
+    static let ambientCommittedPrimaryOpacity = 0.48
+    static let ambientCommittedSecondaryOpacity = 0.26
+    static let ambientGradientMidpointOpacityRatio = 0.55
+    static let ambientGradientStartRadiusRatio: CGFloat = 0.80
 }

@@ -108,19 +108,19 @@ struct PulseWatchTodayView: View {
     }
 
     private func imprintFace(metrics: PulseWatchLayoutMetrics) -> some View {
-        ZStack {
-            PulseWatchAmbientField(
-                state: model.displayState,
-                animates: animatesAmbientField
+        PulseWatchImprintMark(state: model.displayState)
+            .frame(
+                width: metrics.todayMarkSide,
+                height: metrics.todayMarkSide
             )
-            PulseWatchImprintMark(state: model.displayState)
-                .frame(
-                    width: metrics.todayMarkSide,
-                    height: metrics.todayMarkSide
+            .background {
+                PulseWatchAmbientField(
+                    state: model.displayState,
+                    animates: animatesAmbientField
                 )
-        }
-        .frame(width: metrics.bloomSide, height: metrics.bloomSide)
-        .contentShape(Circle())
+                .scaleEffect(PulseWatchDesign.ambientBloomRatio)
+            }
+            .contentShape(Circle())
     }
 
     private func dateCaption(_ text: String) -> some View {
