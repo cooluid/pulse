@@ -113,6 +113,68 @@ struct PulseWatchImprintMark: View {
     }
 }
 
+struct PulseWatchHistoryNode: View {
+    let state: PulseWatchDayState
+    var usesWidgetAccent = false
+
+    var body: some View {
+        switch state {
+        case .checked:
+            Circle()
+                .fill(Color("PulseWatchCommitted"))
+                .widgetAccentable(usesWidgetAccent)
+        case .missed:
+            Circle().stroke(
+                Color("PulseWatchSecondary"),
+                lineWidth: PulseWatchDesign.historyNodeLineWidth
+            )
+        case .beforeHabit:
+            Circle().fill(
+                Color("PulseWatchSecondary").opacity(PulseWatchDesign.beforeHabitOpacity)
+            )
+        case .todayPending:
+            Circle().stroke(
+                Color("PulseWatchField"),
+                lineWidth: PulseWatchDesign.historyNodeLineWidth
+            )
+        }
+    }
+}
+
+struct PulseWatchWeekOrbit: View {
+    let days: [PulseWatchDaySnapshot]
+    let radius: CGFloat
+    let nodeSide: CGFloat
+
+    var body: some View {
+        let history = Array(days.dropLast())
+        ZStack {
+            ForEach(Array(history.enumerated()), id: \.element.id) { index, day in
+                PulseWatchHistoryNode(state: day.state)
+                    .frame(width: nodeSide, height: nodeSide)
+                    .offset(orbitOffset(index: index, count: history.count))
+            }
+        }
+        .frame(
+            width: radius * 2 + nodeSide,
+            height: radius * 2 + nodeSide
+        )
+        .allowsHitTesting(false)
+        .accessibilityHidden(true)
+    }
+
+    private func orbitOffset(index: Int, count: Int) -> CGSize {
+        guard count > 0 else { return .zero }
+        let step = 360 / CGFloat(count)
+        let degrees = PulseWatchDesign.orbitStartDegrees - step * CGFloat(index)
+        let radians = degrees * .pi / 180
+        return CGSize(
+            width: radius * cos(radians),
+            height: radius * sin(radians)
+        )
+    }
+}
+
 struct PulseWatchSevenDayPulse: View {
     let days: [PulseWatchDaySnapshot]
     let displayState: PulseWatchDisplayState
@@ -125,8 +187,11 @@ struct PulseWatchSevenDayPulse: View {
             let historySide = historyNodeSide(in: proxy.size)
             HStack(alignment: .center, spacing: spacing) {
                 ForEach(Array(days.dropLast())) { day in
-                    dayNode(day.state)
-                        .frame(width: historySide, height: historySide)
+                    PulseWatchHistoryNode(
+                        state: day.state,
+                        usesWidgetAccent: usesWidgetAccent
+                    )
+                    .frame(width: historySide, height: historySide)
                 }
                 if showsTodayImprint {
                     Spacer(minLength: spacing)
@@ -162,29 +227,5 @@ struct PulseWatchSevenDayPulse: View {
             size.height,
             size.width * PulseWatchDesign.rhythmTodayWidthRatio
         )
-    }
-
-    @ViewBuilder
-    private func dayNode(_ state: PulseWatchDayState) -> some View {
-        switch state {
-        case .checked:
-            Circle()
-                .fill(Color("PulseWatchCommitted"))
-                .widgetAccentable(usesWidgetAccent)
-        case .missed:
-            Circle().stroke(
-                Color("PulseWatchSecondary"),
-                lineWidth: PulseWatchDesign.historyNodeLineWidth
-            )
-        case .beforeHabit:
-            Circle().fill(
-                Color("PulseWatchSecondary").opacity(PulseWatchDesign.beforeHabitOpacity)
-            )
-        case .todayPending:
-            Circle().stroke(
-                Color("PulseWatchField"),
-                lineWidth: PulseWatchDesign.historyNodeLineWidth
-            )
-        }
     }
 }

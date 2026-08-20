@@ -15,9 +15,12 @@ struct PulseWatchLayoutMetrics: Equatable {
     let contentHeight: CGFloat
     let horizontalPadding: CGFloat
     let bottomPadding: CGFloat
-    let spacing: CGFloat
+    let dateLane: CGFloat
+    let bottomChrome: CGFloat
     let todayMarkSide: CGFloat
-    let rhythmHeight: CGFloat
+    let orbitRadius: CGFloat
+    let orbitNodeSide: CGFloat
+    let requiresScroll: Bool
 
     static func resolve(
         containerSize: CGSize,
@@ -25,7 +28,8 @@ struct PulseWatchLayoutMetrics: Equatable {
         safeAreaBottom: CGFloat,
         showsDate: Bool,
         showsRecoveryAction: Bool,
-        showsRhythm: Bool
+        showsRhythm: Bool,
+        showsTransientStatus: Bool
     ) -> PulseWatchLayoutMetrics {
         let width = max(containerSize.width, PulseWatchDesign.layoutDimensionFloor)
         let height = max(containerSize.height, PulseWatchDesign.layoutDimensionFloor)
@@ -44,38 +48,55 @@ struct PulseWatchLayoutMetrics: Equatable {
             height - topReserve - bottomPadding,
             PulseWatchDesign.layoutDimensionFloor
         )
-        let spacing = PulseWatchDesign.pageSpacing.resolve(for: height)
-        let rhythmHeight = showsRhythm
-            ? PulseWatchDesign.pageRhythmHeight.resolve(for: height)
+        let innerWidth = max(
+            width - horizontalPadding * 2,
+            PulseWatchDesign.layoutDimensionFloor
+        )
+        let dateLane = showsDate ? PulseWatchDesign.dateLaneHeight : 0
+        let statusLane = showsTransientStatus
+            ? PulseWatchDesign.statusLaneHeight
             : 0
-        let visibleSectionCount = PulseWatchDesign.baseVisibleSectionCount
-            + (showsDate ? 1 : 0)
-            + (showsRecoveryAction ? 1 : 0)
-            + (showsRhythm ? 1 : 0)
-        let gapHeight = CGFloat(max(visibleSectionCount - 1, 0)) * spacing
-        let fixedHeight = (showsDate ? PulseWatchDesign.dateRowReservation : 0)
-            + PulseWatchDesign.statusRowReservation
-            + (showsRecoveryAction ? PulseWatchDesign.recoveryButtonMinimumHeight : 0)
-            + rhythmHeight
-            + gapHeight
-        let widthBound = width * PulseWatchDesign.todayMarkWidthRatio
-        let remainingHeight = contentHeight - fixedHeight
+        let recoveryLane = showsRecoveryAction
+            ? PulseWatchDesign.recoveryButtonMinimumHeight
+                + PulseWatchDesign.recoveryGap
+            : 0
+        let bottomChrome = statusLane + recoveryLane
+        let faceHeight = max(
+            contentHeight - dateLane - bottomChrome,
+            PulseWatchDesign.layoutDimensionFloor
+        )
+        let faceSide = min(innerWidth, faceHeight) * PulseWatchDesign.faceInsetRatio
+        let orbitNodeSide = showsRhythm
+            ? PulseWatchDesign.orbitNodeSide.resolve(for: faceSide)
+            : 0
+        let orbitGap = showsRhythm
+            ? PulseWatchDesign.orbitGap.resolve(for: faceSide)
+            : 0
+        let orbitChrome = showsRhythm ? (orbitGap + orbitNodeSide) * 2 : 0
         let minimumMarkSide = showsRecoveryAction
             ? PulseWatchDesign.recoveryMarkMinimumSide
             : PulseWatchDesign.standardMarkMinimumSide
+        let fittedMark = faceSide - orbitChrome
+        let requiresScroll = fittedMark < minimumMarkSide
         let todayMarkSide = clamp(
-            min(widthBound, remainingHeight),
+            fittedMark,
             minimum: minimumMarkSide,
             maximum: PulseWatchDesign.todayMarkMaximumSide
         )
+        let orbitRadius = showsRhythm
+            ? todayMarkSide / 2 + orbitGap + orbitNodeSide / 2
+            : 0
         return PulseWatchLayoutMetrics(
             topReserve: topReserve,
             contentHeight: contentHeight,
             horizontalPadding: horizontalPadding,
             bottomPadding: bottomPadding,
-            spacing: spacing,
+            dateLane: dateLane,
+            bottomChrome: bottomChrome,
             todayMarkSide: todayMarkSide,
-            rhythmHeight: rhythmHeight
+            orbitRadius: orbitRadius,
+            orbitNodeSide: orbitNodeSide,
+            requiresScroll: requiresScroll
         )
     }
 
@@ -105,31 +126,32 @@ enum PulseWatchDesign {
         minimum: 4,
         maximum: 8
     )
-    fileprivate static let pageSpacing = PulseWatchScaledMetric(
-        ratio: 0.026,
+    fileprivate static let dateLaneHeight: CGFloat = 16
+    fileprivate static let statusLaneHeight: CGFloat = 16
+    fileprivate static let recoveryGap: CGFloat = 4
+    fileprivate static let faceInsetRatio: CGFloat = 0.94
+    fileprivate static let recoveryMarkMinimumSide: CGFloat = 48
+    fileprivate static let standardMarkMinimumSide: CGFloat = 72
+    fileprivate static let todayMarkMaximumSide: CGFloat = 128
+    fileprivate static let orbitNodeSide = PulseWatchScaledMetric(
+        ratio: 0.055,
+        minimum: 6,
+        maximum: 9
+    )
+    fileprivate static let orbitGap = PulseWatchScaledMetric(
+        ratio: 0.045,
         minimum: 5,
         maximum: 8
     )
-    fileprivate static let pageRhythmHeight = PulseWatchScaledMetric(
-        ratio: 0.12,
-        minimum: 22,
-        maximum: 30
-    )
-    fileprivate static let baseVisibleSectionCount = 2
-    fileprivate static let dateRowReservation: CGFloat = 16
-    fileprivate static let statusRowReservation: CGFloat = 20
-    fileprivate static let todayMarkWidthRatio: CGFloat = 0.50
-    fileprivate static let recoveryMarkMinimumSide: CGFloat = 48
-    fileprivate static let standardMarkMinimumSide: CGFloat = 60
-    fileprivate static let todayMarkMaximumSide: CGFloat = 96
 
     static let recoveryButtonHorizontalPadding: CGFloat = 16
     static let recoveryButtonMinimumHeight: CGFloat = 44
     static let widgetMarkPadding: CGFloat = 3
     static let widgetRhythmHorizontalPadding: CGFloat = 4
+    static let accessibilityRhythmHeight: CGFloat = 24
 
     static let markMinimumLineWidth: CGFloat = 3
-    static let markLineWidthRatio: CGFloat = 0.10
+    static let markLineWidthRatio: CGFloat = 0.075
     static let markNeedsSyncMinimumLineWidth: CGFloat = 2
     static let markNeedsSyncLineWidthRatio: CGFloat = 0.085
     static let markDashRatio: CGFloat = 0.12
@@ -150,4 +172,5 @@ enum PulseWatchDesign {
     static let rhythmHistoryOnlyWidthRatio: CGFloat = 0.11
     static let historyNodeLineWidth: CGFloat = 1.5
     static let beforeHabitOpacity = 0.34
+    static let orbitStartDegrees: CGFloat = 240
 }

@@ -82,12 +82,12 @@
 
 ## 5C. Apple Watch
 
-- Watch 只使用“今日日印”和“七日脉冲”两种基础构图：圆形/Inline complication 表达今日状态，矩形 complication 与 Smart Stack 用六个历史节点连接一个今日印记；Watch App 主印就是今日，页内七日脉冲只画六个历史节点，不在底栏再复制一颗今日印。不复制 iPhone Home Screen 八式。
+- Watch 只使用“今日日印”和“七日脉冲”两种基础构图：圆形/Inline complication 表达今日状态，矩形 complication 与 Smart Stack 用六个历史节点连接一个今日印记；Watch App 以今日印为表盘中心，六个历史节点按日序环绕成周环，日期贴在上方，完成/待签由印的形状表达。不复制 iPhone Home Screen 八式。
 - 黑色系统底、`PulseWatchInk` 暖白信息、`PulseWatchField` 空心待签到、`PulseWatchPending` 缺口待同步、`PulseWatchCommitted` 实心已确认；失败恢复为空心并显示警示符号。状态必须同时由形状和无障碍文案表达。
 - Watch App 顶部日期必须来自项目逻辑日与项目时区，不复述或猜测设备日；1.1 不传主承诺、记事、照片或缺席说明到 Watch。
 - complication 与 Always-On 使用静态终态；只有 Watch App 从 `pendingSync`/`submitting` 收到 iPhone Repository 正式回执时播放一次成功触觉。打开一个已经完成的 Watch App 不重复播放成功。
 - 全部 Watch 颜色只读 `brand-tokens.json` 的 `watch` 语义组，经 `build_brand_assets.py` 生成到正式 Watch Asset Catalog；Watch Catalog 只保留实际消费的 Watch 颜色、AccentColor 与 AppIcon，不复制 iPhone 全色板。几何只读 `PulseWatchDesign`，不得在消费者散落第二套色板或魔法比例。
-- Watch App 页级几何由实际容器与 safe area 连续求值，不按设备型号或表径分支；标准字号的日期、今日日印、状态与七日脉冲应在一屏完整呈现，只有 Accessibility Dynamic Type 或同时包含恢复动作与七日脉冲的高内容态允许纵向滚动。
+- Watch App 页级几何由实际容器与 safe area 连续求值，不按设备型号或表径分支；标准字号把日期、今日日印与环绕历史收进一屏表盘构图，只有 Accessibility Dynamic Type 或几何放不下时才纵向滚动。
 
 ## 6. 布局与工程常量
 

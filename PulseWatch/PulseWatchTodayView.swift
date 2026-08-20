@@ -15,18 +15,19 @@ struct PulseWatchTodayView: View {
                 safeAreaBottom: proxy.safeAreaInsets.bottom,
                 showsDate: projectDateText != nil,
                 showsRecoveryAction: showsRecoveryAction,
-                showsRhythm: model.projection.snapshot?.sevenDayPulse != nil
+                showsRhythm: model.projection.snapshot?.sevenDayPulse != nil,
+                showsTransientStatus: showsTransientStatus
             )
             Group {
-                if requiresScrollingPage {
+                if requiresScrollingPage(metrics) {
                     ScrollView {
-                        pageContent(metrics: metrics)
+                        stackedContent(metrics: metrics)
                             .padding(.top, metrics.topReserve)
                             .padding(.bottom, metrics.bottomPadding)
                     }
                 } else {
-                    pageContent(metrics: metrics)
-                        .frame(height: metrics.contentHeight, alignment: .center)
+                    faceContent(metrics: metrics)
+                        .frame(height: metrics.contentHeight)
                         .padding(.top, metrics.topReserve)
                         .padding(.bottom, metrics.bottomPadding)
                 }
@@ -40,59 +41,41 @@ struct PulseWatchTodayView: View {
         }
     }
 
-    private func pageContent(metrics: PulseWatchLayoutMetrics) -> some View {
-        VStack(spacing: metrics.spacing) {
+    private func faceContent(metrics: PulseWatchLayoutMetrics) -> some View {
+        ZStack {
+            VStack(spacing: 0) {
+                if let projectDateText {
+                    dateHeader(projectDateText)
+                        .frame(height: metrics.dateLane, alignment: .top)
+                }
+                Spacer(minLength: 0)
+                if showsTransientStatus {
+                    statusLabel
+                }
+                if showsRecoveryAction {
+                    recoveryButton
+                }
+            }
+
+            imprintControl(metrics: metrics, showsOrbit: true)
+                .padding(.top, metrics.dateLane)
+                .padding(.bottom, metrics.bottomChrome)
+        }
+        .padding(.horizontal, metrics.horizontalPadding)
+    }
+
+    private func stackedContent(metrics: PulseWatchLayoutMetrics) -> some View {
+        VStack(spacing: 8) {
             if let projectDateText {
                 dateHeader(projectDateText)
             }
 
-            Button {
-                Task { await model.checkIn() }
-            } label: {
-                PulseWatchImprintMark(state: model.displayState)
-                    .frame(
-                        width: metrics.todayMarkSide,
-                        height: metrics.todayMarkSide
-                    )
-                    .contentShape(Circle())
-            }
-            .buttonStyle(.plain)
-            .disabled(!canCheckIn)
-            .accessibilityLabel(statusText)
-            .accessibilityHint(
-                canCheckIn
-                    ? PulseWatchLocalization.string("watch.action.check_in", locale: locale)
-                    : ""
-            )
+            imprintControl(metrics: metrics, showsOrbit: false)
 
-            Text(statusText)
-                .font(.footnote.weight(.semibold))
-                .foregroundStyle(Color("PulseWatchInk"))
-                .multilineTextAlignment(.center)
-                .lineLimit(dynamicTypeSize.isAccessibilitySize ? nil : 2)
-                .fixedSize(horizontal: false, vertical: true)
+            statusLabel
 
             if showsRecoveryAction {
-                Button {
-                    Task { await model.retry() }
-                } label: {
-                    Text("watch.action.retry")
-                        .font(.caption.weight(.semibold))
-                        .foregroundStyle(Color("PulseWatchInk"))
-                        .padding(
-                            .horizontal,
-                            PulseWatchDesign.recoveryButtonHorizontalPadding
-                        )
-                        .frame(
-                            minHeight: PulseWatchDesign.recoveryButtonMinimumHeight
-                        )
-                        .background(
-                            Capsule()
-                                .fill(Color("PulseWatchSecondary").opacity(0.22))
-                        )
-                }
-                .buttonStyle(.plain)
-                .fixedSize(horizontal: true, vertical: true)
+                recoveryButton
             }
 
             if let days = model.projection.snapshot?.sevenDayPulse {
@@ -101,7 +84,7 @@ struct PulseWatchTodayView: View {
                     displayState: model.displayState,
                     showsTodayImprint: false
                 )
-                .frame(height: metrics.rhythmHeight)
+                .frame(height: PulseWatchDesign.accessibilityRhythmHeight)
                 .accessibilityHidden(true)
             }
         }
@@ -109,28 +92,101 @@ struct PulseWatchTodayView: View {
         .padding(.horizontal, metrics.horizontalPadding)
     }
 
+    private func imprintControl(
+        metrics: PulseWatchLayoutMetrics,
+        showsOrbit: Bool
+    ) -> some View {
+        Button {
+            Task { await model.checkIn() }
+        } label: {
+            ZStack {
+                if showsOrbit, let days = model.projection.snapshot?.sevenDayPulse {
+                    PulseWatchWeekOrbit(
+                        days: days,
+                        radius: metrics.orbitRadius,
+                        nodeSide: metrics.orbitNodeSide
+                    )
+                }
+                PulseWatchImprintMark(state: model.displayState)
+                    .frame(
+                        width: metrics.todayMarkSide,
+                        height: metrics.todayMarkSide
+                    )
+            }
+            .contentShape(Circle())
+        }
+        .buttonStyle(.plain)
+        .disabled(!canCheckIn)
+        .accessibilityLabel(statusText)
+        .accessibilityHint(
+            canCheckIn
+                ? PulseWatchLocalization.string("watch.action.check_in", locale: locale)
+                : ""
+        )
+    }
+
+    private var recoveryButton: some View {
+        Button {
+            Task { await model.retry() }
+        } label: {
+            Text("watch.action.retry")
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(Color("PulseWatchInk"))
+                .padding(
+                    .horizontal,
+                    PulseWatchDesign.recoveryButtonHorizontalPadding
+                )
+                .frame(
+                    minHeight: PulseWatchDesign.recoveryButtonMinimumHeight
+                )
+                .background(
+                    Capsule()
+                        .fill(Color("PulseWatchSecondary").opacity(0.22))
+                )
+        }
+        .buttonStyle(.plain)
+        .fixedSize(horizontal: true, vertical: true)
+    }
+
+    private var statusLabel: some View {
+        Text(statusText)
+            .font(.caption2.weight(.semibold))
+            .foregroundStyle(Color("PulseWatchInk"))
+            .multilineTextAlignment(.center)
+            .lineLimit(dynamicTypeSize.isAccessibilitySize ? nil : 2)
+            .minimumScaleFactor(0.8)
+            .fixedSize(horizontal: false, vertical: true)
+    }
+
     private var canCheckIn: Bool {
         if case .ready = model.displayState { return true }
         return false
     }
 
-    private var requiresScrollingPage: Bool {
-        dynamicTypeSize.isAccessibilitySize
-            || (showsRecoveryAction
-                && model.projection.snapshot?.sevenDayPulse != nil)
+    private var showsTransientStatus: Bool {
+        switch model.displayState {
+        case .ready, .committed:
+            false
+        case .needsSync, .submitting, .pendingSync, .failed:
+            true
+        }
+    }
+
+    private func requiresScrollingPage(_ metrics: PulseWatchLayoutMetrics) -> Bool {
+        dynamicTypeSize.isAccessibilitySize || metrics.requiresScroll
     }
 
     private func dateHeader(
         _ projectDateText: (weekday: String, monthDay: String)
     ) -> some View {
-        HStack(alignment: .firstTextBaseline) {
+        HStack(spacing: 8) {
             Text(verbatim: projectDateText.weekday.uppercased(with: locale))
-            Spacer()
             Text(verbatim: projectDateText.monthDay)
                 .monospacedDigit()
         }
         .font(.caption.weight(.medium))
         .foregroundStyle(Color("PulseWatchSecondary"))
+        .frame(maxWidth: .infinity)
     }
 
     private var projectDateText: (weekday: String, monthDay: String)? {
