@@ -19,16 +19,16 @@ public final class PulseWatchLocalStore: @unchecked Sendable {
     private let lock = NSLock()
 
     public init(directoryURL: URL, fileManager: FileManager = .default) throws {
-        guard directoryURL.isFileURL,
-              directoryURL.standardizedFileURL == directoryURL else {
+        guard directoryURL.isFileURL else {
             throw PulseWatchLocalStoreError.invalidDirectory
         }
-        self.stateURL = directoryURL.appendingPathComponent(
+        let canonicalDirectoryURL = directoryURL.standardizedFileURL
+        self.stateURL = canonicalDirectoryURL.appendingPathComponent(
             PulseWatchContract.localStateFilename,
             isDirectory: false
         )
         self.fileManager = fileManager
-        try Self.prepareDirectory(directoryURL, fileManager: fileManager)
+        try Self.prepareDirectory(canonicalDirectoryURL, fileManager: fileManager)
     }
 
     public func projection() throws -> PulseWatchLocalProjection {

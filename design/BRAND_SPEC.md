@@ -1,6 +1,6 @@
 # 一日一印（Pulse）1.1 品牌与界面规范
 
-更新日期：2026-08-17
+更新日期：2026-08-20
 适用范围：App（今日 / 历史 / 设置 / 权益 / 入镜）、Widget、AppIcon、商店素材
 
 ## 全局原则（全产品）
@@ -87,6 +87,7 @@
 - Watch App 顶部日期必须来自项目逻辑日与项目时区，不复述或猜测设备日；1.1 不传主承诺、记事、照片或缺席说明到 Watch。
 - complication 与 Always-On 使用静态终态；只有 Watch App 从 `pendingSync`/`submitting` 收到 iPhone Repository 正式回执时播放一次成功触觉。打开一个已经完成的 Watch App 不重复播放成功。
 - 全部 Watch 颜色只读 `brand-tokens.json` 的 `watch` 语义组，经 `build_brand_assets.py` 生成到正式 Watch Asset Catalog；Watch Catalog 只保留实际消费的 Watch 颜色、AccentColor 与 AppIcon，不复制 iPhone 全色板。几何只读 `PulseWatchDesign`，不得在消费者散落第二套色板或魔法比例。
+- Watch App 页级几何由实际容器与 safe area 连续求值，不按设备型号或表径分支；标准字号的日期、今日日印、状态与七日脉冲应在一屏完整呈现，只有 Accessibility Dynamic Type 或同时包含恢复动作与七日脉冲的高内容态允许纵向滚动。
 
 ## 6. 布局与工程常量
 

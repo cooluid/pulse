@@ -1,8 +1,8 @@
 # Pulse 1.1 测试与验收计划
 
-文档版本：2.4
+文档版本：2.5
 状态：Canonical Acceptance Plan
-更新时间：2026-08-19
+更新时间：2026-08-20
 
 ## 1. 证据边界
 
@@ -27,7 +27,7 @@
 | AppModel | 操作互斥；单击签到；系统表面只消费提交回执的逻辑日；记事更新不改签到/统计；长按先提交签到再请求相机；相机/媒体失败不撤销签到；跨日事件与激活事件在长操作结束后必须补执行；重置日志；完整备份 |
 | Settings / Store | 今日入镜邀请、空间、主题、语言、提醒；独立高阶权益页；StoreKit 动态价格；类型化能力目录；独立 Widget 画廊；重置后清理；损坏偏好失败关闭 |
 | Widget / 系统表面 | 只读 Habit + CheckInRecord；不查询或暴露 ImprintMedia；AppIntent 幂等签到；语言/样式/权益双边检查 |
-| Apple Watch | 协议版本、project revision、时区/未来时间/起始日拒绝；快照在 nextDayBoundary 失效；坏快照与项目变化不删除 outbox；即时/后台双路径同一 operationID；重复/乱序回执；App Intent 精确动作时间与异步激活；跨午夜真实 occurredAt 归属；Watch/iPhone/Widget 并发仍单记录；pendingSync 不冒充成功 |
+| Apple Watch | 协议版本、project revision、时区/未来时间/起始日拒绝；系统 file URL 单次标准化；快照在 nextDayBoundary 失效；坏快照与项目变化不删除 outbox；即时/后台双路径同一 operationID；重复/乱序回执；App Intent 精确动作时间与异步激活；跨午夜真实 occurredAt 归属；Watch/iPhone/Widget 并发仍单记录；pendingSync 不冒充成功；页级几何只依赖容器/safe area/集中令牌，不出现设备型号分支 |
 | 本地化/无障碍 | 简中/英文完整字符串；格式参数；日期 Locale；照片/按钮/进度有 VoiceOver 语义；状态不只靠颜色 |
 | 资产 | 品牌 token schema、资源解码、AppIcon alpha、生成器幂等、仓库 diff |
 
@@ -110,6 +110,7 @@ iPad 需覆盖无后置能力差异、横竖屏、分屏和文件导入/导出�
 - 在系统“编辑小组件”中验证逐实例构图：默认构图必须是待落之处；同一主屏至少放置两个不同构图，分别修改后互不影响；权益未验证或撤销时包括星环在内的收费实例明确显示“构图尚未解锁”，不能静默换成待落之处；Lock Screen“节律汇印”不出现无关构图参数；App Group 中不存在 `widget.style`。
 - 记录详情必须先显示日期/签到状态和按真实宽高比完整呈现的照片，且不重复 App 标志或常驻动作坞。标准与 Accessibility Dynamic Type 都只显示一个至少 44 pt 的“管理这一天”菜单；分别验证只签到、只影像、二者并存时菜单项的存在性、导出与破坏性操作之间的系统分隔、同一来源锚定的独立确认，以及删除后的事实保留关系。含照片状态默认 `.large`；只签到状态的紧凑 detent 不得缩成胶囊或让菜单大于 Sheet，Accessibility 字号和紧凑高度直接 `.large`。横图、竖图和极长本地化日期不得裁切、缩字、产生大面积内部空框、使用内容高度反馈循环或依赖设备型号常量。
 - 今日页前台连续录屏必须能辨认细线漂移与低透明潮面位移；后台、失活与 Reduce Motion 使用同一静态事实表达，不允许按钮循环呼吸或潮面产生加载语义。
+- Watch App 至少覆盖当前支持范围内的 40 mm 小屏和一台真实 Watch：标准字号的完成态/待签到态必须在一屏完整显示项目日期、今日日印、状态与七日脉冲且无滚动指示；无快照恢复态必须完整显示 44 pt 重试动作；Accessibility Dynamic Type 以及带七日脉冲的失败恢复态允许滚动但不得裁切、重叠或伪造日期。今日印记大于六个历史节点是正式“六历史 + 一今日”语义，不得因缩屏改成七个同权节点。
 - 根背景环境动效需录屏核对 18 秒低振幅周期；进入后台和开启 Reduce Motion 后必须静止。静态截图只能验证构图，不能作为动效已验收证据。
 - History 的相机标记与签到状态可同时辨认；仅影像不能被误读为完成。
 - 简中/英文、iPhone/iPad、深浅、提高对比度、降低透明度、最大 Dynamic Type、VoiceOver、Switch Control、Reduce Motion 分别验收。

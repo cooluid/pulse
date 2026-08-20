@@ -2,6 +2,36 @@ import XCTest
 @testable import PulseWatchShared
 
 final class PulseWatchSharedTests: XCTestCase {
+    func testLocalStoreCanonicalizesEquivalentSystemFileURL() throws {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent(
+            "PulseWatchSharedTests-\(UUID().uuidString)",
+            isDirectory: true
+        )
+        defer { try? FileManager.default.removeItem(at: root) }
+        let nonstandardDirectory = root
+            .appendingPathComponent("intermediate", isDirectory: true)
+            .appendingPathComponent("..", isDirectory: true)
+            .appendingPathComponent("PulseWatch", isDirectory: true)
+        XCTAssertNotEqual(nonstandardDirectory.standardizedFileURL, nonstandardDirectory)
+
+        _ = try PulseWatchLocalStore(directoryURL: nonstandardDirectory)
+
+        var isDirectory: ObjCBool = false
+        XCTAssertTrue(FileManager.default.fileExists(
+            atPath: nonstandardDirectory.standardizedFileURL.path,
+            isDirectory: &isDirectory
+        ))
+        XCTAssertTrue(isDirectory.boolValue)
+    }
+
+    func testLocalStoreRejectsNonFileURL() throws {
+        let remoteURL = try XCTUnwrap(URL(string: "https://example.com/PulseWatch"))
+
+        XCTAssertThrowsError(try PulseWatchLocalStore(directoryURL: remoteURL)) { error in
+            XCTAssertEqual(error as? PulseWatchLocalStoreError, .invalidDirectory)
+        }
+    }
+
     func testLocalStorePersistsOutboxAndAcknowledgesCommittedReceipt() throws {
         let directory = FileManager.default.temporaryDirectory.appendingPathComponent(
             "PulseWatchSharedTests-\(UUID().uuidString)",

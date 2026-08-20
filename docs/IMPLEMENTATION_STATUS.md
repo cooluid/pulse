@@ -22,6 +22,7 @@
 - Watch 写入入口使用 `throws(PulseWatchRejectionReason)` 的单一类型化失败合同；协议、项目、时区、动作时间、暂时不可用和持久化失败均返回正式回执。Watch 以失败状态和一次告警触觉呈现，并提供新命令重试；`pendingSync` 与 `committed` 继续严格分离。
 - Watch App 可向 iPhone 请求由当前 Repository 即时重建的快照；iPhone Widget / Live Activity 提交后只发送不携带业务事实的进程内刷新信号，使 App 与 Watch 快照跟随同一正式写入。信号不是第二状态源。
 - Watch 颜色只来自 `brand-tokens.json` 的 `watch` 语义组；Watch Asset Catalog 已从复制 iPhone 全色板收敛为 6 个实际颜色集。complication 明确适配 full-color / accented 渲染组，Watch App 不再在缺快照时猜测设备日期。
+- Watch App 页级尺寸只由 `PulseWatchLayoutMetrics` 读取实际容器、safe area、可见区段和集中设计令牌连续求值，不保留表径/型号兼容分支或页面内固定 94 pt 主印记。标准字号普通状态使用无滚动单屏；Accessibility Dynamic Type 和同时包含恢复动作与七日脉冲的高内容态进入明确滚动路径。
 
 权威合同为 [1.1 发布范围](./RELEASE_SCOPE_1_1.md)、[产品需求](./PRODUCT_REQUIREMENTS.md)、[领域合同](./DOMAIN_CONTRACT.md)、[数据加密合同](./DATA_ENCRYPTION_CONTRACT.md)、[技术设计](./TECHNICAL_DESIGN.md)、[系统仪式合同](./PULSE_RITUAL_CONTRACT.md) 与 [测试计划](./TEST_PLAN.md)。
 
@@ -44,9 +45,11 @@
 
 验证环境：macOS 26.6、Xcode 26.4（17E192）、iPhone 16 Pro / iOS 18.6 Simulator（arm64）、watchOS 26.4 Simulator runtime（23T240b）。
 
-- 当前 211 项单元/集成测试与 27 项 Simulator UI 测试全部通过；Watch 新增覆盖快照过期、旧快照拒绝、项目变化保留 outbox、正式协议拒绝回执、明确重试、Repository 即时快照与 iPhone 系统表面提交后的 Watch 刷新，并继续覆盖跨午夜 `occurredAt`、幂等命令和既有领域/归档/StoreKit/Widget/三主题矩阵。
+- 当前 213 项单元/集成测试与 27 项 Simulator UI 测试全部通过；Watch 新增覆盖物理设备形态的系统 file URL 标准化、非 file URL 拒绝、快照过期、旧快照拒绝、项目变化保留 outbox、正式协议拒绝回执、明确重试、Repository 即时快照与 iPhone 系统表面提交后的 Watch 刷新，并继续覆盖跨午夜 `occurredAt`、幂等命令和既有领域/归档/StoreKit/Widget/三主题矩阵。
 - Release `pulse` 全 target Build 与 Analyze 通过，未排除 Watch Asset Catalog；实际编译并校验 iPhone App、Home Screen Widget、Watch App、Watch Widget、AppIcon、颜色资产、Privacy manifest 和嵌入结构。
 - Apple Watch Ultra 3 49mm / watchOS 26.4 配对 Simulator 的 Debug Build、安装、清洁启动和进程拉起通过；未配对页已真实复核为黑色系统底、暖白状态、不猜测项目日期与 44pt 次级重试动作。WatchConnectivity 实际发送 3 次带 reply/error 的即时消息，并在私有工作队列收到 3 次正式 response 与 Application Context，进程持续运行且没有 `_dispatch_assert_queue_fail`。该证据关闭本轮回调队列崩溃，但不外推为真实配对 Watch、complication、Smart Stack 或真机视觉验收。
+- Apple Watch Series 10 / watchOS 26.6 已完成 Debug 签名安装、App Group profile/运行时 URL 核验和真实前台启动；修复系统 file URL 对象比较误判后，真表实际渲染 `08/20`、已签到印记、`今天已签到` 与七日节律。最终布局真表截图确认日期不再被系统时间裁切，主状态和七日节律在标准字号一屏完整呈现且无滚动指示。该证据关闭安装、App Group 启动、当前快照显示与此设备标准字号布局，不外推为真表签到提交、失联恢复、Accessibility、complication、Smart Stack 或压力验收。
+- Apple Watch SE 3 40 mm / watchOS 26.4 Simulator 已分别复核完成态与无快照恢复态：日期、今日日印、状态、七日脉冲以及 44 pt 重试动作无裁切或重叠。watchOS Simulator 不支持通过 `simctl ui content_size` 切换 Dynamic Type，因此最大字号仍保留为真机门禁，不能用代码分支存在代替视觉通过。
 - 当前 61 项品牌生成输出、App/Widget/Watch plist、Privacy manifest、entitlement 和五份 String Catalog 静态解析通过；`git diff --check` 通过。
 - `site` production build、lint、三条 redirect 测试与依赖审计通过；正式产品、隐私和支持 URL 当前均返回 HTTPS 200。子模块提交仍须单独推送并用全新 clone 验证可获取性。
 - Simulator 截图证明三主题当前构图和交互候选，不代替真实设备、Widget host、Dynamic Island、Always-On 或人工最终视觉接受。
