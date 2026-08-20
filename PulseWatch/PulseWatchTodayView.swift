@@ -15,36 +15,18 @@ struct PulseWatchTodayView: View {
             let metrics = PulseWatchLayoutMetrics.resolve(
                 containerSize: proxy.size,
                 showsRecoveryAction: showsRecoveryAction,
-                showsRhythm: model.projection.snapshot?.sevenDayPulse != nil,
+                showsDateCaption: showsDateCaption,
                 showsTransientStatus: showsTransientStatus
             )
-            ZStack {
-                PulseWatchAmbientField(
-                    state: model.displayState,
-                    animates: animatesAmbientField
-                )
-                .frame(
-                    width: proxy.size.width,
-                    height: proxy.size.height
-                )
-
-                if showsDayWatermark, let projectDateText {
-                    dayWatermark(
-                        projectDateText.day,
-                        in: proxy.size
-                    )
-                }
-
-                Group {
-                    if requiresScrollingPage {
-                        ScrollView {
-                            stackedContent(metrics: metrics)
-                                .padding(.bottom, metrics.bottomPadding)
-                        }
-                    } else {
-                        faceContent(metrics: metrics)
+            Group {
+                if requiresScrollingPage {
+                    ScrollView {
+                        stackedContent(metrics: metrics)
                             .padding(.bottom, metrics.bottomPadding)
                     }
+                } else {
+                    faceContent(metrics: metrics)
+                        .padding(.bottom, metrics.bottomPadding)
                 }
             }
             .frame(width: proxy.size.width, height: proxy.size.height)
@@ -57,34 +39,31 @@ struct PulseWatchTodayView: View {
     }
 
     private func faceContent(metrics: PulseWatchLayoutMetrics) -> some View {
-        ZStack {
-            VStack(spacing: 2) {
-                Spacer(minLength: 0)
-                imprintControl(
-                    metrics: metrics,
-                    showsOrbit: !showsRecoveryAction
-                )
-                if showsTransientStatus {
-                    statusLabel
-                }
-                if showsRecoveryAction {
-                    recoveryButton
-                }
-                Spacer(minLength: 0)
+        VStack(spacing: PulseWatchDesign.dateCaptionGap) {
+            Spacer(minLength: 0)
+            imprintControl(metrics: metrics)
+            if showsDateCaption, let projectDateCaption {
+                dateCaption(projectDateCaption)
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            if showsTransientStatus {
+                statusLabel
+            }
+            if showsRecoveryAction {
+                recoveryButton
+            }
+            Spacer(minLength: 0)
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding(.horizontal, metrics.horizontalPadding)
-        .frame(
-            maxWidth: .infinity,
-            maxHeight: .infinity,
-            alignment: .topLeading
-        )
     }
 
     private func stackedContent(metrics: PulseWatchLayoutMetrics) -> some View {
         VStack(spacing: 8) {
-            imprintControl(metrics: metrics, showsOrbit: false)
+            imprintControl(metrics: metrics)
+
+            if let projectDateCaption {
+                dateCaption(projectDateCaption)
+            }
 
             statusLabel
 
@@ -106,16 +85,13 @@ struct PulseWatchTodayView: View {
         .padding(.horizontal, metrics.horizontalPadding)
     }
 
-    private func imprintControl(
-        metrics: PulseWatchLayoutMetrics,
-        showsOrbit: Bool
-    ) -> some View {
+    private func imprintControl(metrics: PulseWatchLayoutMetrics) -> some View {
         Group {
             if canCheckIn {
                 Button {
                     Task { await model.checkIn() }
                 } label: {
-                    imprintFace(metrics: metrics, showsOrbit: showsOrbit)
+                    imprintFace(metrics: metrics)
                 }
                 .buttonStyle(.plain)
                 .accessibilityHint(
@@ -125,60 +101,34 @@ struct PulseWatchTodayView: View {
                     )
                 )
             } else {
-                imprintFace(metrics: metrics, showsOrbit: showsOrbit)
+                imprintFace(metrics: metrics)
             }
         }
         .accessibilityLabel(imprintAccessibilityLabel)
     }
 
-    private func imprintFace(
-        metrics: PulseWatchLayoutMetrics,
-        showsOrbit: Bool
-    ) -> some View {
+    private func imprintFace(metrics: PulseWatchLayoutMetrics) -> some View {
         ZStack {
-            if showsOrbit, let days = model.projection.snapshot?.sevenDayPulse {
-                PulseWatchWeekOrbit(
-                    days: days,
-                    radius: metrics.orbitRadius,
-                    nodeSide: metrics.orbitNodeSide
-                )
-            }
+            PulseWatchAmbientField(
+                state: model.displayState,
+                animates: animatesAmbientField
+            )
             PulseWatchImprintMark(state: model.displayState)
                 .frame(
                     width: metrics.todayMarkSide,
                     height: metrics.todayMarkSide
                 )
         }
-        .frame(width: metrics.faceSide, height: metrics.faceSide)
+        .frame(width: metrics.bloomSide, height: metrics.bloomSide)
         .contentShape(Circle())
     }
 
-    private func dayWatermark(
-        _ day: String,
-        in size: CGSize
-    ) -> some View {
-        Text(verbatim: day)
-            .font(.system(
-                size: size.width * PulseWatchDesign.heroDayFontRatio,
-                weight: .black,
-                design: .rounded
-            ))
-            .monospacedDigit()
-            .foregroundStyle(
-                Color("PulseWatchSecondary")
-                    .opacity(PulseWatchDesign.heroDayOpacity)
-            )
-            .tracking(PulseWatchDesign.heroDayTracking)
-            .frame(
-                maxWidth: .infinity,
-                maxHeight: .infinity,
-                alignment: .bottomLeading
-            )
-            .offset(
-                x: size.width * PulseWatchDesign.heroDayOffsetXRatio,
-                y: size.height * PulseWatchDesign.heroDayOffsetYRatio
-            )
-            .allowsHitTesting(false)
+    private func dateCaption(_ text: String) -> some View {
+        Text(verbatim: text)
+            .font(.caption2.weight(.medium))
+            .foregroundStyle(Color("PulseWatchSecondary"))
+            .lineLimit(1)
+            .minimumScaleFactor(0.8)
             .accessibilityHidden(true)
     }
 
@@ -231,11 +181,11 @@ struct PulseWatchTodayView: View {
 
     private var requiresScrollingPage: Bool { dynamicTypeSize.isAccessibilitySize }
 
-    private var showsDayWatermark: Bool {
+    private var showsDateCaption: Bool {
         guard !requiresScrollingPage, !showsRecoveryAction else { return false }
         switch model.displayState {
         case .ready, .committed:
-            return true
+            return projectDateCaption != nil
         case .needsSync, .submitting, .pendingSync, .failed:
             return false
         }
@@ -255,16 +205,17 @@ struct PulseWatchTodayView: View {
         }
     }
 
-    private var projectDateText: (
-        day: String,
-        accessibility: String
-    )? {
+    private var projectDateCaption: String? {
         guard let snapshot = model.projection.snapshot,
               let timeZone = TimeZone(identifier: snapshot.projectTimeZoneIdentifier),
               let date = logicalDayDate(snapshot.todayLogicalDay, timeZone: timeZone) else {
             return nil
         }
-        return formattedDate(date, timeZone: timeZone)
+        let formatter = DateFormatter()
+        formatter.locale = locale
+        formatter.timeZone = timeZone
+        formatter.setLocalizedDateFormatFromTemplate("MMMMd")
+        return formatter.string(from: date)
     }
 
     private func logicalDayDate(_ value: String, timeZone: TimeZone) -> Date? {
@@ -279,31 +230,8 @@ struct PulseWatchTodayView: View {
         ))
     }
 
-    private func formattedDate(
-        _ date: Date,
-        timeZone: TimeZone
-    ) -> (day: String, accessibility: String) {
-        var calendar = Calendar(identifier: .gregorian)
-        calendar.timeZone = timeZone
-        let dayNumber = calendar.component(.day, from: date)
-        let numberFormatter = NumberFormatter()
-        numberFormatter.locale = locale
-        numberFormatter.numberStyle = .none
-        numberFormatter.usesGroupingSeparator = false
-        numberFormatter.minimumIntegerDigits = 2
-        let accessibilityFormatter = DateFormatter()
-        accessibilityFormatter.locale = locale
-        accessibilityFormatter.timeZone = timeZone
-        accessibilityFormatter.setLocalizedDateFormatFromTemplate("MMMMd")
-        return (
-            numberFormatter.string(from: NSNumber(value: dayNumber))
-                ?? String(format: "%02d", dayNumber),
-            accessibilityFormatter.string(from: date)
-        )
-    }
-
     private var imprintAccessibilityLabel: String {
-        guard let projectDateText else { return statusText }
+        guard let projectDateCaption else { return statusText }
         let format = PulseWatchLocalization.string(
             "watch.accessibility.date_state",
             locale: locale
@@ -311,7 +239,7 @@ struct PulseWatchTodayView: View {
         return String(
             format: format,
             locale: locale,
-            projectDateText.accessibility,
+            projectDateCaption,
             statusText
         )
     }

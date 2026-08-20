@@ -299,7 +299,7 @@ Apple Watch 不是缩小版 iPhone，也不是第二套签到应用。它只承�
 
 永久免费首发面：
 
-- Watch App 今日页：抽象印记、今日状态、一个大签到按钮和最近七日脉冲；1.1 不把主承诺正文传到 Watch；
+- Watch App 今日页：一枚可签到的今日印，完成/待签由空心与实心表达；1.1 不把主承诺正文传到 Watch；
 - 表盘复杂功能（complication）：圆形空心/实心印记、矩形今日状态或七日脉冲；
 - Smart Stack：今日状态和一个可执行的签到动作；
 - watchOS 11 及以后：iPhone `DailyImprintActivity` 在 Watch Smart Stack 的系统呈现，以及必要的 Watch 专用紧凑布局；

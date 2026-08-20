@@ -22,7 +22,7 @@
 - Watch 写入入口使用 `throws(PulseWatchRejectionReason)` 的单一类型化失败合同；协议、项目、时区、动作时间、暂时不可用和持久化失败均返回正式回执。Watch 以失败状态和一次告警触觉呈现，并提供新命令重试；`pendingSync` 与 `committed` 继续严格分离。
 - Watch App 可向 iPhone 请求由当前 Repository 即时重建的快照；iPhone Widget / Live Activity 提交后只发送不携带业务事实的进程内刷新信号，使 App 与 Watch 快照跟随同一正式写入。信号不是第二状态源。
 - Watch 颜色只来自 `brand-tokens.json` 的 `watch` 语义组；Watch Asset Catalog 已从复制 iPhone 全色板收敛为 7 个实际颜色集，包括完成印专用深色前景。complication 明确适配 full-color / accented 渲染组，Watch App 不再在缺快照时猜测设备日期。
-- Watch App 页级尺寸只由 `PulseWatchLayoutMetrics` 读取实际容器和集中设计令牌连续求值，不保留表径/型号兼容分支或页面内固定主印记。标准字号统一使用无滚动单屏：只保留右上系统时钟；本地化项目日数字作为左下偏轴、可部分出屏的背景大字；今日印保持空心/实心，印心不放日期或状态文案；六个历史节点沿缺口周环围绕主体。异常恢复态收起日期构图和周环，只保留真实状态与 44 pt 重试动作。只有 Accessibility Dynamic Type 进入明确滚动路径。
+- Watch App 页级尺寸只由 `PulseWatchLayoutMetrics` 读取实际容器和集中设计令牌连续求值，不保留表径/型号兼容分支或页面内固定主印记。标准字号统一使用无滚动单屏：只保留右上系统时钟；今日印保持空心/实心，印心不放日期或状态文案；项目日若出现，只作为印下方一行小字。异常恢复态只保留真实状态与 44 pt 重试动作。只有 Accessibility Dynamic Type 进入明确滚动路径。
 - Watch App 普通待签与已确认状态使用两层径向渐变形成 18 / 24 秒、10 fps 的低亮流体场；只有 Scene 活跃、屏幕非低亮且 Reduce Motion 关闭时由 `TimelineView` 驱动。待同步、失败、需要同步、提交中、后台、Always-On 与 Reduce Motion 使用无时间线的静态或纯黑终态。
 
 权威合同为 [1.1 发布范围](./RELEASE_SCOPE_1_1.md)、[产品需求](./PRODUCT_REQUIREMENTS.md)、[领域合同](./DOMAIN_CONTRACT.md)、[数据加密合同](./DATA_ENCRYPTION_CONTRACT.md)、[技术设计](./TECHNICAL_DESIGN.md)、[系统仪式合同](./PULSE_RITUAL_CONTRACT.md) 与 [测试计划](./TEST_PLAN.md)。

@@ -114,7 +114,9 @@ struct PulseWatchAmbientField: View {
                     .clear,
                 ],
                 center: .center,
-                startRadius: 0,
+                startRadius: max(size.width, size.height)
+                    * PulseWatchDesign.ambientGradientStartRadiusRatio
+                    / 2,
                 endRadius: max(size.width, size.height) / 2
             ))
             .frame(width: size.width, height: size.height)

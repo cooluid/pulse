@@ -141,43 +141,6 @@ struct PulseWatchHistoryNode: View {
     }
 }
 
-struct PulseWatchWeekOrbit: View {
-    let days: [PulseWatchDaySnapshot]
-    let radius: CGFloat
-    let nodeSide: CGFloat
-
-    var body: some View {
-        let history = Array(days.dropLast())
-        ZStack {
-            ForEach(Array(history.enumerated()), id: \.element.id) { index, day in
-                PulseWatchHistoryNode(state: day.state)
-                    .frame(width: nodeSide, height: nodeSide)
-                    .offset(orbitOffset(index: index, count: history.count))
-            }
-        }
-        .frame(
-            width: radius * 2 + nodeSide,
-            height: radius * 2 + nodeSide
-        )
-        .allowsHitTesting(false)
-        .accessibilityHidden(true)
-    }
-
-    private func orbitOffset(index: Int, count: Int) -> CGSize {
-        guard count > 0 else { return .zero }
-        let step = count > 1
-            ? (PulseWatchDesign.orbitEndDegrees - PulseWatchDesign.orbitStartDegrees)
-                / CGFloat(count - 1)
-            : 0
-        let degrees = PulseWatchDesign.orbitStartDegrees + step * CGFloat(index)
-        let radians = degrees * .pi / 180
-        return CGSize(
-            width: radius * cos(radians),
-            height: radius * sin(radians)
-        )
-    }
-}
-
 struct PulseWatchSevenDayPulse: View {
     let days: [PulseWatchDaySnapshot]
     let displayState: PulseWatchDisplayState
