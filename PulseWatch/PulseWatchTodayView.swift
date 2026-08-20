@@ -98,7 +98,8 @@ struct PulseWatchTodayView: View {
             if let days = model.projection.snapshot?.sevenDayPulse {
                 PulseWatchSevenDayPulse(
                     days: days,
-                    displayState: model.displayState
+                    displayState: model.displayState,
+                    showsTodayImprint: false
                 )
                 .frame(height: metrics.rhythmHeight)
                 .accessibilityHidden(true)
@@ -128,7 +129,7 @@ struct PulseWatchTodayView: View {
             Text(verbatim: projectDateText.monthDay)
                 .monospacedDigit()
         }
-        .font(.caption.weight(.bold))
+        .font(.caption.weight(.medium))
         .foregroundStyle(Color("PulseWatchSecondary"))
     }
 

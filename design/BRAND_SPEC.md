@@ -82,7 +82,7 @@
 
 ## 5C. Apple Watch
 
-- Watch 只使用“今日日印”和“七日脉冲”两种基础构图：圆形/Inline complication 表达今日状态，矩形 complication 与 Smart Stack 用六个历史节点连接一个今日印记；不复制 iPhone Home Screen 八式。
+- Watch 只使用“今日日印”和“七日脉冲”两种基础构图：圆形/Inline complication 表达今日状态，矩形 complication 与 Smart Stack 用六个历史节点连接一个今日印记；Watch App 主印就是今日，页内七日脉冲只画六个历史节点，不在底栏再复制一颗今日印。不复制 iPhone Home Screen 八式。
 - 黑色系统底、`PulseWatchInk` 暖白信息、`PulseWatchField` 空心待签到、`PulseWatchPending` 缺口待同步、`PulseWatchCommitted` 实心已确认；失败恢复为空心并显示警示符号。状态必须同时由形状和无障碍文案表达。
 - Watch App 顶部日期必须来自项目逻辑日与项目时区，不复述或猜测设备日；1.1 不传主承诺、记事、照片或缺席说明到 Watch。
 - complication 与 Always-On 使用静态终态；只有 Watch App 从 `pendingSync`/`submitting` 收到 iPhone Repository 正式回执时播放一次成功触觉。打开一个已经完成的 Watch App 不重复播放成功。

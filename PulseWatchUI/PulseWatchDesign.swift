@@ -118,10 +118,10 @@ enum PulseWatchDesign {
     fileprivate static let baseVisibleSectionCount = 2
     fileprivate static let dateRowReservation: CGFloat = 16
     fileprivate static let statusRowReservation: CGFloat = 20
-    fileprivate static let todayMarkWidthRatio: CGFloat = 0.44
+    fileprivate static let todayMarkWidthRatio: CGFloat = 0.50
     fileprivate static let recoveryMarkMinimumSide: CGFloat = 48
     fileprivate static let standardMarkMinimumSide: CGFloat = 60
-    fileprivate static let todayMarkMaximumSide: CGFloat = 88
+    fileprivate static let todayMarkMaximumSide: CGFloat = 96
 
     static let recoveryButtonHorizontalPadding: CGFloat = 16
     static let recoveryButtonMinimumHeight: CGFloat = 44
@@ -140,16 +140,14 @@ enum PulseWatchDesign {
     static let fireflySideRatio: CGFloat = 0.16
     static let fireflyHorizontalOffsetRatio: CGFloat = 0.30
     static let fireflyVerticalOffsetRatio: CGFloat = -0.22
-    static let committedCutoutSideRatio: CGFloat = 0.22
-    static let committedCutoutHorizontalOffsetRatio: CGFloat = 0.18
-    static let committedCutoutVerticalOffsetRatio: CGFloat = -0.18
-    static let committedCutoutOpacity = 0.78
     static let failureSymbolRatio: CGFloat = 0.28
 
     static let rhythmSpacingRatio: CGFloat = 0.035
     static let rhythmTodayWidthRatio: CGFloat = 0.18
     static let rhythmHistoryHeightRatio: CGFloat = 0.44
     static let rhythmHistoryWidthRatio: CGFloat = 0.095
+    static let rhythmHistoryOnlyHeightRatio: CGFloat = 0.52
+    static let rhythmHistoryOnlyWidthRatio: CGFloat = 0.11
     static let historyNodeLineWidth: CGFloat = 1.5
-    static let beforeHabitOpacity = 0.22
+    static let beforeHabitOpacity = 0.34
 }

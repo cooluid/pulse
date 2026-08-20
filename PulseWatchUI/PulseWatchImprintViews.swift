@@ -81,16 +81,6 @@ struct PulseWatchImprintMark: View {
                     Circle()
                         .fill(Color("PulseWatchCommitted"))
                         .widgetAccentable(usesWidgetAccent)
-                    Circle()
-                        .fill(Color.black.opacity(PulseWatchDesign.committedCutoutOpacity))
-                        .frame(
-                            width: side * PulseWatchDesign.committedCutoutSideRatio,
-                            height: side * PulseWatchDesign.committedCutoutSideRatio
-                        )
-                        .offset(
-                            x: side * PulseWatchDesign.committedCutoutHorizontalOffsetRatio,
-                            y: side * PulseWatchDesign.committedCutoutVerticalOffsetRatio
-                        )
                 case .failed:
                     Circle()
                         .trim(
@@ -127,32 +117,51 @@ struct PulseWatchSevenDayPulse: View {
     let days: [PulseWatchDaySnapshot]
     let displayState: PulseWatchDisplayState
     var usesWidgetAccent = false
+    var showsTodayImprint = true
 
     var body: some View {
         GeometryReader { proxy in
             let spacing = proxy.size.width * PulseWatchDesign.rhythmSpacingRatio
-            let todaySide = min(
-                proxy.size.height,
-                proxy.size.width * PulseWatchDesign.rhythmTodayWidthRatio
-            )
-            let historySide = min(
-                proxy.size.height * PulseWatchDesign.rhythmHistoryHeightRatio,
-                proxy.size.width * PulseWatchDesign.rhythmHistoryWidthRatio
-            )
+            let historySide = historyNodeSide(in: proxy.size)
             HStack(alignment: .center, spacing: spacing) {
                 ForEach(Array(days.dropLast())) { day in
                     dayNode(day.state)
                         .frame(width: historySide, height: historySide)
                 }
-                Spacer(minLength: spacing)
-                PulseWatchImprintMark(
-                    state: displayState,
-                    usesWidgetAccent: usesWidgetAccent
-                )
-                    .frame(width: todaySide, height: todaySide)
+                if showsTodayImprint {
+                    Spacer(minLength: spacing)
+                    PulseWatchImprintMark(
+                        state: displayState,
+                        usesWidgetAccent: usesWidgetAccent
+                    )
+                    .frame(
+                        width: todayImprintSide(in: proxy.size),
+                        height: todayImprintSide(in: proxy.size)
+                    )
+                }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
+    }
+
+    private func historyNodeSide(in size: CGSize) -> CGFloat {
+        if showsTodayImprint {
+            return min(
+                size.height * PulseWatchDesign.rhythmHistoryHeightRatio,
+                size.width * PulseWatchDesign.rhythmHistoryWidthRatio
+            )
+        }
+        return min(
+            size.height * PulseWatchDesign.rhythmHistoryOnlyHeightRatio,
+            size.width * PulseWatchDesign.rhythmHistoryOnlyWidthRatio
+        )
+    }
+
+    private func todayImprintSide(in size: CGSize) -> CGFloat {
+        min(
+            size.height,
+            size.width * PulseWatchDesign.rhythmTodayWidthRatio
+        )
     }
 
     @ViewBuilder
