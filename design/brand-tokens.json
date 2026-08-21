@@ -96,6 +96,12 @@
     "tint" : "#91D55B"
   },
   "watch" : {
+    "canvasTop" : "#04152E",
+    "canvasBottom" : "#075EA8",
+    "waveBack" : "#093D7C",
+    "waveMiddle" : "#0865B8",
+    "waveFront" : "#0789E6",
+    "axis" : "#32C2FF",
     "ink" : "#F0F5EC",
     "secondary" : "#A6B0A2",
     "field" : "#73966D",

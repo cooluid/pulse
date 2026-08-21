@@ -5,95 +5,44 @@ struct PulseWatchTodayView: View {
     let model: PulseWatchModel
 
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @Environment(\.isLuminanceReduced) private var isLuminanceReduced
     @Environment(\.locale) private var locale
-    @Environment(\.scenePhase) private var scenePhase
 
     var body: some View {
         GeometryReader { proxy in
-            let metrics = PulseWatchLayoutMetrics.resolve(
-                containerSize: proxy.size,
-                showsRecoveryAction: showsRecoveryAction,
-                showsDateCaption: showsDateCaption,
-                showsTransientStatus: showsTransientStatus
-            )
-            Group {
-                if requiresScrollingPage {
-                    ScrollView {
-                        stackedContent(metrics: metrics)
-                            .padding(.bottom, metrics.bottomPadding)
+            let metrics = PulseWatchLayoutMetrics.resolve(containerSize: proxy.size)
+            ZStack {
+                PulseWatchStatusFieldBackground(state: model.displayState)
+
+                Group {
+                    if dynamicTypeSize.isAccessibilitySize {
+                        ScrollView {
+                            statusControl(metrics: metrics)
+                                .frame(minHeight: proxy.size.height)
+                        }
+                    } else {
+                        statusControl(metrics: metrics)
                     }
-                } else {
-                    faceContent(metrics: metrics)
-                        .padding(.bottom, metrics.bottomPadding)
                 }
             }
             .frame(width: proxy.size.width, height: proxy.size.height)
         }
-        .containerBackground(Color.black.gradient, for: .navigation)
-        .background(Color.black)
+        .containerBackground(Color("PulseWatchCanvasTop").gradient, for: .navigation)
+        .background(Color("PulseWatchCanvasTop"))
         .task {
             await model.start()
         }
     }
 
-    private func faceContent(metrics: PulseWatchLayoutMetrics) -> some View {
-        VStack(spacing: PulseWatchDesign.dateCaptionGap) {
-            Spacer(minLength: 0)
-            imprintControl(metrics: metrics)
-            if showsDateCaption, let projectDateCaption {
-                dateCaption(projectDateCaption)
-            }
-            if showsTransientStatus {
-                statusLabel
-            }
-            if showsRecoveryAction {
-                recoveryButton
-            }
-            Spacer(minLength: 0)
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .padding(.horizontal, metrics.horizontalPadding)
-    }
-
-    private func stackedContent(metrics: PulseWatchLayoutMetrics) -> some View {
-        VStack(spacing: 8) {
-            imprintControl(metrics: metrics)
-
-            if let projectDateCaption {
-                dateCaption(projectDateCaption)
-            }
-
-            statusLabel
-
-            if showsRecoveryAction {
-                recoveryButton
-            }
-
-            if let days = model.projection.snapshot?.sevenDayPulse {
-                PulseWatchSevenDayPulse(
-                    days: days,
-                    displayState: model.displayState,
-                    showsTodayImprint: false
-                )
-                .frame(height: PulseWatchDesign.accessibilityRhythmHeight)
-                .accessibilityHidden(true)
-            }
-        }
-        .frame(maxWidth: .infinity)
-        .padding(.horizontal, metrics.horizontalPadding)
-    }
-
-    private func imprintControl(metrics: PulseWatchLayoutMetrics) -> some View {
+    private func statusControl(metrics: PulseWatchLayoutMetrics) -> some View {
         Group {
             if canCheckIn {
                 Button {
                     Task { await model.checkIn() }
                 } label: {
-                    imprintFace(metrics: metrics)
+                    statusFace(metrics: metrics)
                 }
                 .buttonStyle(.plain)
+                .accessibilityLabel(statusText)
                 .accessibilityHint(
                     PulseWatchLocalization.string(
                         "watch.action.check_in",
@@ -101,35 +50,55 @@ struct PulseWatchTodayView: View {
                     )
                 )
             } else {
-                imprintFace(metrics: metrics)
+                statusFace(metrics: metrics)
             }
         }
-        .accessibilityLabel(imprintAccessibilityLabel)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .contentShape(Rectangle())
     }
 
-    private func imprintFace(metrics: PulseWatchLayoutMetrics) -> some View {
-        PulseWatchImprintMark(state: model.displayState)
-            .frame(
-                width: metrics.todayMarkSide,
-                height: metrics.todayMarkSide
-            )
-            .background {
-                PulseWatchAmbientField(
-                    state: model.displayState,
-                    animates: animatesAmbientField
-                )
-                .scaleEffect(PulseWatchDesign.ambientBloomRatio)
+    private func statusFace(metrics: PulseWatchLayoutMetrics) -> some View {
+        HStack(spacing: metrics.contentGap) {
+            VStack(alignment: .leading, spacing: 5) {
+                Text("watch.field.today")
+                    .font(.caption2.weight(.semibold))
+                    .foregroundStyle(Color("PulseWatchInk").opacity(0.62))
+                    .tracking(0.7)
+                    .accessibilityHidden(true)
+
+                Text(primaryTitleKey)
+                    .font(.system(
+                        size: metrics.primaryFontSize,
+                        weight: .bold,
+                        design: .rounded
+                    ))
+                    .foregroundStyle(Color("PulseWatchInk"))
+                    .lineLimit(2)
+                    .minimumScaleFactor(0.72)
+                    .accessibilityHidden(true)
+
+                Spacer(minLength: 4)
+
+                Text(verbatim: statusText)
+                    .font(.caption2.weight(.semibold))
+                    .foregroundStyle(statusForeground)
+                    .lineLimit(dynamicTypeSize.isAccessibilitySize ? nil : 3)
+                    .minimumScaleFactor(0.74)
+                    .fixedSize(horizontal: false, vertical: true)
+
+                if showsRecoveryAction {
+                    recoveryButton
+                }
             }
-            .contentShape(Circle())
-    }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
 
-    private func dateCaption(_ text: String) -> some View {
-        Text(verbatim: text)
-            .font(.caption2.weight(.medium))
-            .foregroundStyle(Color("PulseWatchSecondary"))
-            .lineLimit(1)
-            .minimumScaleFactor(0.8)
-            .accessibilityHidden(true)
+            PulseWatchDayAxis(state: model.displayState)
+                .frame(width: metrics.axisWidth)
+        }
+        .padding(.horizontal, metrics.horizontalPadding)
+        .padding(.top, metrics.topPadding)
+        .padding(.bottom, metrics.bottomPadding)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
     private var recoveryButton: some View {
@@ -143,105 +112,43 @@ struct PulseWatchTodayView: View {
                     .horizontal,
                     PulseWatchDesign.recoveryButtonHorizontalPadding
                 )
-                .frame(
-                    minHeight: PulseWatchDesign.recoveryButtonMinimumHeight
-                )
+                .frame(minHeight: PulseWatchDesign.recoveryButtonMinimumHeight)
                 .background(
                     Capsule()
-                        .fill(Color("PulseWatchSecondary").opacity(0.22))
+                        .fill(Color("PulseWatchCanvasTop").opacity(0.46))
                 )
         }
         .buttonStyle(.plain)
         .fixedSize(horizontal: true, vertical: true)
     }
 
-    private var statusLabel: some View {
-        Text(statusText)
-            .font(.caption2.weight(.semibold))
-            .foregroundStyle(Color("PulseWatchInk"))
-            .multilineTextAlignment(.center)
-            .lineLimit(dynamicTypeSize.isAccessibilitySize ? nil : 2)
-            .minimumScaleFactor(0.8)
-            .fixedSize(horizontal: false, vertical: true)
+    private var primaryTitleKey: LocalizedStringKey {
+        switch model.displayState {
+        case .ready, .submitting, .pendingSync:
+            "watch.action.check_in"
+        case .committed:
+            "watch.state.done"
+        case .needsSync:
+            "watch.field.sync"
+        case .failed:
+            "watch.field.unsaved"
+        }
+    }
+
+    private var statusForeground: Color {
+        switch model.displayState {
+        case .submitting, .pendingSync:
+            Color("PulseWatchPending")
+        case .failed:
+            Color("PulseWatchInk")
+        case .ready, .committed, .needsSync:
+            Color("PulseWatchInk").opacity(0.82)
+        }
     }
 
     private var canCheckIn: Bool {
         if case .ready = model.displayState { return true }
         return false
-    }
-
-    private var showsTransientStatus: Bool {
-        switch model.displayState {
-        case .ready, .committed:
-            false
-        case .needsSync, .submitting, .pendingSync, .failed:
-            true
-        }
-    }
-
-    private var requiresScrollingPage: Bool { dynamicTypeSize.isAccessibilitySize }
-
-    private var showsDateCaption: Bool {
-        guard !requiresScrollingPage, !showsRecoveryAction else { return false }
-        switch model.displayState {
-        case .ready, .committed:
-            return projectDateCaption != nil
-        case .needsSync, .submitting, .pendingSync, .failed:
-            return false
-        }
-    }
-
-    private var animatesAmbientField: Bool {
-        guard scenePhase == .active,
-              !reduceMotion,
-              !isLuminanceReduced else {
-            return false
-        }
-        switch model.displayState {
-        case .ready, .committed:
-            return true
-        case .needsSync, .submitting, .pendingSync, .failed:
-            return false
-        }
-    }
-
-    private var projectDateCaption: String? {
-        guard let snapshot = model.projection.snapshot,
-              let timeZone = TimeZone(identifier: snapshot.projectTimeZoneIdentifier),
-              let date = logicalDayDate(snapshot.todayLogicalDay, timeZone: timeZone) else {
-            return nil
-        }
-        let formatter = DateFormatter()
-        formatter.locale = locale
-        formatter.timeZone = timeZone
-        formatter.setLocalizedDateFormatFromTemplate("MMMMd")
-        return formatter.string(from: date)
-    }
-
-    private func logicalDayDate(_ value: String, timeZone: TimeZone) -> Date? {
-        let components = value.split(separator: "-").compactMap { Int($0) }
-        guard components.count == 3 else { return nil }
-        var calendar = Calendar(identifier: .gregorian)
-        calendar.timeZone = timeZone
-        return calendar.date(from: DateComponents(
-            year: components[0],
-            month: components[1],
-            day: components[2]
-        ))
-    }
-
-    private var imprintAccessibilityLabel: String {
-        guard let projectDateCaption else { return statusText }
-        let format = PulseWatchLocalization.string(
-            "watch.accessibility.date_state",
-            locale: locale
-        )
-        return String(
-            format: format,
-            locale: locale,
-            projectDateCaption,
-            statusText
-        )
     }
 
     private var statusText: String {
@@ -265,7 +172,7 @@ struct PulseWatchStartupFailureView: View {
 
     var body: some View {
         VStack(spacing: 10) {
-            Image(systemName: "exclamationmark.circle")
+            Image(systemName: "exclamationmark.triangle")
                 .font(.title2)
             Text("watch.state.unavailable")
                 .font(.footnote)

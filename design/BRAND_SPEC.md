@@ -88,13 +88,14 @@
 
 ## 5C. Apple Watch
 
-- Watch 只使用“今日日印”和“七日脉冲”两种基础构图：圆形/Inline complication 表达今日状态，矩形 complication 与 Smart Stack 用六个历史节点连接一个今日印记；Watch App 只以今日印为唯一动作中心，完成/待签由印的空心与实心表达，不在 App 页上环绕历史节点。不复制 iPhone Home Screen 八式。
-- 黑色系统底、`PulseWatchInk` 暖白信息、`PulseWatchField` 空心待签到、`PulseWatchPending` 缺口待同步、`PulseWatchCommitted` 实心已确认；Watch App 主印不放日期或“签到 / 已签到”文案。项目日若显示，只作为印下方一行小字。失败恢复为空心并显示警示符号。状态必须同时由形状和无障碍文案表达。
+- Watch App 使用全幅蓝色状态场；Watch 玻璃本身就是构图，不在屏内再套一张圆角卡。左侧以「今日」和「签到 / 已签到 / 同步 / 未保存」建立主次，底部只显示当前真实状态；右侧细轴和白色节点表达离散状态。节点不是滑杆，不接受拖动；只有 `.ready` 的整屏是签到 Button，重试使用独立 44 pt Button。
+- 待签到、确认中/待同步、已确认的节点位置与底部波面终态不同；确认中/待同步不得使用已确认位置。波面是状态场的美术层，不表示湿度、时间、百分比、进度或统计。失败和需要同步必须同时由文字、轴色/位置及无障碍文案表达，不能只靠蓝色深浅。
+- complication / Smart Stack 继续使用“今日日印”和“七日脉冲”两种基础构图：圆形/Inline complication 表达今日状态，矩形 complication 用六个历史节点连接一个今日状态；不复制 Watch App 的全幅波面。
 - Watch App 项目日期必须来自项目逻辑日与项目时区，不复述或猜测设备日。界面不显示星期或自定义顶栏日期，只保留右上系统时钟。1.1 不传主承诺、记事、照片或缺席说明到 Watch。
 - complication 与 Always-On 使用静态终态；只有 Watch App 从 `pendingSync`/`submitting` 收到 iPhone Repository 正式回执时播放一次成功触觉。打开一个已经完成的 Watch App 不重复播放成功。
-- Watch App 普通待签与已确认状态在主印边缘使用同一色系的低频湿度场：18–24 秒循环，只在前台活跃、屏幕高亮且 Reduce Motion 关闭时运行；后台、Always-On、低亮度、Reduce Motion 与异常状态显示同一静态或纯黑终态。流体是印的一部分，不铺满表盘，也不进入 complication / Smart Stack。
-- 全部 Watch 颜色只读 `brand-tokens.json` 的 `watch` 语义组，经 `build_brand_assets.py` 生成到正式 Watch Asset Catalog；Watch Catalog 只保留实际消费的 Watch 颜色、AccentColor 与 AppIcon，不复制 iPhone 全色板。几何只读 `PulseWatchDesign`，不得在消费者散落第二套色板或魔法比例。
-- Watch App 页级几何由实际容器与 safe area 连续求值，不按设备型号或表径分支；标准字号把今日日印收进一屏，只有 Accessibility Dynamic Type 或几何放不下时才纵向滚动。
+- Watch App 状态场不持续循环动画；状态改变可使用一次有限过渡，Reduce Motion、Always-On、低亮度和重新打开已完成页面均显示同一静态终态。
+- 全部 Watch 颜色只读 `brand-tokens.json` 的 `watch` 语义组：App 状态场使用 `canvasTop` / `canvasBottom`、`waveBack` / `waveMiddle` / `waveFront` 与 `axis`；complication 继续使用既有状态色。颜色由 `build_brand_assets.py` 生成到正式 Watch Asset Catalog，几何只读 `PulseWatchDesign`。
+- Watch App 页级几何由实际容器与 safe area 连续求值，不按设备型号或表径分支；标准字号把完整状态场收进一屏，只有 Accessibility Dynamic Type 或几何放不下时才纵向滚动。
 
 ## 6. 布局与工程常量
 
