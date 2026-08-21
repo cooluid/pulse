@@ -3,8 +3,26 @@ import SwiftUI
 
 struct PulseWatchStatusFieldBackground: View {
     let state: PulseWatchDisplayState
+    let animates: Bool
 
     var body: some View {
+        Group {
+            if animates {
+                TimelineView(.periodic(
+                    from: .now,
+                    by: PulseWatchDesign.waveFrameInterval
+                )) { context in
+                    field(at: context.date)
+                }
+            } else {
+                field(at: Date(timeIntervalSinceReferenceDate: 0))
+            }
+        }
+        .ignoresSafeArea()
+        .accessibilityHidden(true)
+    }
+
+    private func field(at date: Date) -> some View {
         GeometryReader { proxy in
             ZStack {
                 LinearGradient(
@@ -19,28 +37,38 @@ struct PulseWatchStatusFieldBackground: View {
                 PulseWatchWaveShape(
                     baseline: waveBaselines.back,
                     amplitude: 0.075,
-                    phase: 0.08
+                    phase: phase(
+                        at: date,
+                        period: PulseWatchDesign.waveBackPeriod,
+                        offset: 0.08
+                    )
                 )
                 .fill(Color("PulseWatchWaveBack"))
 
                 PulseWatchWaveShape(
                     baseline: waveBaselines.middle,
                     amplitude: 0.065,
-                    phase: 0.44
+                    phase: phase(
+                        at: date,
+                        period: PulseWatchDesign.waveMiddlePeriod,
+                        offset: 0.44
+                    )
                 )
                 .fill(Color("PulseWatchWaveMiddle"))
 
                 PulseWatchWaveShape(
                     baseline: waveBaselines.front,
                     amplitude: 0.055,
-                    phase: 0.76
+                    phase: phase(
+                        at: date,
+                        period: PulseWatchDesign.waveFrontPeriod,
+                        offset: 0.76
+                    )
                 )
                 .fill(Color("PulseWatchWaveFront"))
             }
             .frame(width: proxy.size.width, height: proxy.size.height)
         }
-        .ignoresSafeArea()
-        .accessibilityHidden(true)
     }
 
     private var waveBaselines: (back: CGFloat, middle: CGFloat, front: CGFloat) {
@@ -56,6 +84,16 @@ struct PulseWatchStatusFieldBackground: View {
         case .failed:
             (0.69, 0.78, 0.87)
         }
+    }
+
+    private func phase(
+        at date: Date,
+        period: TimeInterval,
+        offset: Double
+    ) -> Double {
+        let normalized = date.timeIntervalSinceReferenceDate
+            .truncatingRemainder(dividingBy: period) / period
+        return normalized + offset
     }
 }
 
@@ -137,9 +175,15 @@ private struct PulseWatchWaveShape: Shape {
     let phase: CGFloat
 
     func path(in rect: CGRect) -> Path {
-        let y = rect.height * baseline
+        let angle = phase * 2 * Double.pi
+        let verticalOffset = CGFloat(cos(angle))
+            * rect.height
+            * PulseWatchDesign.waveVerticalTravelRatio
+        let y = rect.height * baseline + verticalOffset
         let rise = rect.height * amplitude
-        let phaseOffset = (phase - 0.5) * rect.width * 0.12
+        let phaseOffset = CGFloat(sin(angle))
+            * rect.width
+            * PulseWatchDesign.waveHorizontalTravelRatio
 
         var path = Path()
         path.move(to: CGPoint(x: 0, y: rect.height))

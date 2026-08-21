@@ -93,7 +93,7 @@
 - complication / Smart Stack 继续使用“今日日印”和“七日脉冲”两种基础构图：圆形/Inline complication 表达今日状态，矩形 complication 用六个历史节点连接一个今日状态；不复制 Watch App 的全幅波面。
 - Watch App 项目日期必须来自项目逻辑日与项目时区，不复述或猜测设备日。界面不显示星期或自定义顶栏日期，只保留右上系统时钟。1.1 不传主承诺、记事、照片或缺席说明到 Watch。
 - complication 与 Always-On 使用静态终态；只有 Watch App 从 `pendingSync`/`submitting` 收到 iPhone Repository 正式回执时播放一次成功触觉。打开一个已经完成的 Watch App 不重复播放成功。
-- Watch App 状态场不持续循环动画；状态改变可使用一次有限过渡，Reduce Motion、Always-On、低亮度和重新打开已完成页面均显示同一静态终态。
+- Watch App 前台高亮且 Reduce Motion 关闭时，三层波面以 10–17 秒错速周期低频漂移；它只改变美术轮廓，不改变节点位置、状态文案或签到事实。需要同步、失败、后台、Always-On、低亮度与 Reduce Motion 使用同一静态终态；complication / Smart Stack 不播放波浪动画。
 - 全部 Watch 颜色只读 `brand-tokens.json` 的 `watch` 语义组：App 状态场使用 `canvasTop` / `canvasBottom`、`waveBack` / `waveMiddle` / `waveFront` 与 `axis`；complication 继续使用既有状态色。颜色由 `build_brand_assets.py` 生成到正式 Watch Asset Catalog，几何只读 `PulseWatchDesign`。
 - Watch App 页级几何由实际容器与 safe area 连续求值，不按设备型号或表径分支；标准字号把完整状态场收进一屏，只有 Accessibility Dynamic Type 或几何放不下时才纵向滚动。
 

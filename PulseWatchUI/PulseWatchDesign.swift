@@ -73,6 +73,12 @@ enum PulseWatchDesign {
     static let statusAxisNodeSide: CGFloat = 16
     static let statusAxisNodeStrokeWidth: CGFloat = 3
     static let statusAxisNodeShadowRadius: CGFloat = 6
+    static let waveFrameInterval = 1.0 / 12.0
+    static let waveBackPeriod = 17.0
+    static let waveMiddlePeriod = 13.0
+    static let waveFrontPeriod = 10.0
+    static let waveHorizontalTravelRatio: CGFloat = 0.065
+    static let waveVerticalTravelRatio: CGFloat = 0.012
 
     static let widgetMarkPadding: CGFloat = 3
     static let widgetRhythmHorizontalPadding: CGFloat = 4

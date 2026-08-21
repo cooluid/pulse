@@ -5,13 +5,19 @@ struct PulseWatchTodayView: View {
     let model: PulseWatchModel
 
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.isLuminanceReduced) private var isLuminanceReduced
     @Environment(\.locale) private var locale
+    @Environment(\.scenePhase) private var scenePhase
 
     var body: some View {
         GeometryReader { proxy in
             let metrics = PulseWatchLayoutMetrics.resolve(containerSize: proxy.size)
             ZStack {
-                PulseWatchStatusFieldBackground(state: model.displayState)
+                PulseWatchStatusFieldBackground(
+                    state: model.displayState,
+                    animates: animatesWaves
+                )
 
                 Group {
                     if dynamicTypeSize.isAccessibilitySize {
@@ -149,6 +155,20 @@ struct PulseWatchTodayView: View {
     private var canCheckIn: Bool {
         if case .ready = model.displayState { return true }
         return false
+    }
+
+    private var animatesWaves: Bool {
+        guard scenePhase == .active,
+              !reduceMotion,
+              !isLuminanceReduced else {
+            return false
+        }
+        switch model.displayState {
+        case .ready, .submitting, .pendingSync, .committed:
+            return true
+        case .needsSync, .failed:
+            return false
+        }
     }
 
     private var statusText: String {
