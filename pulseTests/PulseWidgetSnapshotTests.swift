@@ -442,10 +442,17 @@ final class PulseWidgetSnapshotTests: XCTestCase {
         XCTAssertEqual(
             watch,
             [
+                "canvasTop": "#04152E",
+                "canvasBottom": "#075EA8",
+                "waveBack": "#093D7C",
+                "waveMiddle": "#0865B8",
+                "waveFront": "#0789E6",
+                "axis": "#32C2FF",
                 "ink": "#F0F5EC",
                 "secondary": "#A6B0A2",
                 "field": "#73966D",
                 "committed": "#91D55B",
+                "committedForeground": "#102013",
                 "pending": "#F5C84B",
             ]
         )
@@ -460,11 +467,18 @@ final class PulseWidgetSnapshotTests: XCTestCase {
             colorDirectories,
             [
                 "AccentColor.colorset",
+                "PulseWatchAxis.colorset",
+                "PulseWatchCanvasBottom.colorset",
+                "PulseWatchCanvasTop.colorset",
                 "PulseWatchCommitted.colorset",
+                "PulseWatchCommittedForeground.colorset",
                 "PulseWatchField.colorset",
                 "PulseWatchInk.colorset",
                 "PulseWatchPending.colorset",
                 "PulseWatchSecondary.colorset",
+                "PulseWatchWaveBack.colorset",
+                "PulseWatchWaveFront.colorset",
+                "PulseWatchWaveMiddle.colorset",
             ]
         )
     }
