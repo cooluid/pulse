@@ -2,6 +2,7 @@
   "sourceLanguage" : "en",
   "strings" : {
     "watch.accessibility.date_state" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -114,7 +115,6 @@
       }
     },
     "watch.state.done" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
