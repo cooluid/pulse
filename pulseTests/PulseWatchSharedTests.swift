@@ -245,6 +245,26 @@ final class PulseWatchSharedTests: XCTestCase {
         }
     }
 
+    func testSnapshotDecoderDefaultsWaveMotionForExistingLocalState() throws {
+        let envelope = PulseWatchSnapshotEnvelope(
+            snapshot: makeSnapshot(),
+            generatedAt: Date(timeIntervalSince1970: 1_786_334_400)
+        )
+        var json = try XCTUnwrap(
+            JSONSerialization.jsonObject(with: PulseWatchCodec.encode(envelope))
+                as? [String: Any]
+        )
+        var snapshot = try XCTUnwrap(json["snapshot"] as? [String: Any])
+        snapshot.removeValue(forKey: "waveMotionEnabled")
+        json["snapshot"] = snapshot
+
+        let decoded = try PulseWatchCodec.decodeSnapshotEnvelope(
+            from: JSONSerialization.data(withJSONObject: json)
+        )
+
+        XCTAssertEqual(decoded.snapshot?.waveMotionEnabled, true)
+    }
+
     func testCommandIdentitySurvivesProtocolRejectionForAFormalReceipt() throws {
         let snapshot = makeSnapshot()
         let command = PulseWatchCheckInCommand(
@@ -317,6 +337,7 @@ final class PulseWatchSharedTests: XCTestCase {
             todayLogicalDay: "2026-08-10",
             isCheckedToday: false,
             checkedAt: nil,
+            waveMotionEnabled: true,
             sevenDayPulse: (4...10).map { day in
                 PulseWatchDaySnapshot(
                     logicalDay: String(format: "2026-08-%02d", day),

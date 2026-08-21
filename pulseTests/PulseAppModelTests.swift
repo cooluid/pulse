@@ -165,6 +165,36 @@ final class PulseAppModelTests: XCTestCase {
         XCTAssertEqual(snapshot?.isCheckedToday, true)
     }
 
+    func testWatchWaveMotionSettingPersistsAndPublishesSnapshot() async throws {
+        let context = try makeContext()
+        await context.model.start()
+        let identityUpdated = await context.model.updateHabitIdentity(
+            name: "Test Habit",
+            purpose: nil
+        )
+        XCTAssertTrue(identityUpdated)
+
+        context.model.setWatchWaveMotionEnabled(false)
+
+        XCTAssertFalse(context.model.settings.watchWaveMotionEnabled)
+        XCTAssertEqual(
+            context.watchConnectivity.snapshots.compactMap { $0 }.last?.waveMotionEnabled,
+            false
+        )
+        let handler = try XCTUnwrap(context.watchConnectivity.snapshotHandler)
+        let requestedSnapshot = try await handler()
+        XCTAssertEqual(requestedSnapshot?.waveMotionEnabled, false)
+    }
+
+    func testWatchConnectionStatusTracksConnectivityChanges() throws {
+        let context = try makeContext()
+        XCTAssertEqual(context.model.watchConnectionStatus, .installed)
+
+        context.watchConnectivity.connectionStatus = .notInstalled
+
+        XCTAssertEqual(context.model.watchConnectionStatus, .notInstalled)
+    }
+
     func testExternalSystemSurfaceCommitRefreshesAppAndWatchSnapshot() async throws {
         let context = try makeContext()
         await context.model.start()
@@ -532,11 +562,16 @@ private struct TestContext {
 private final class TestWatchConnectivity: PulseWatchConnectivityProviding {
     var commandHandler: (@MainActor (PulseWatchCheckInCommand) async -> PulseWatchCheckInReceipt?)?
     var snapshotHandler: (@MainActor () async throws -> PulseWatchProjectSnapshot?)?
+    var connectionStatusDidChange: (@MainActor (PulseWatchConnectionStatus) -> Void)?
+    var connectionStatus = PulseWatchConnectionStatus.installed {
+        didSet { connectionStatusDidChange?(connectionStatus) }
+    }
     private(set) var startCount = 0
     private(set) var snapshots: [PulseWatchProjectSnapshot?] = []
 
     func start() {
         startCount += 1
+        connectionStatusDidChange?(connectionStatus)
     }
 
     func publish(_ snapshot: PulseWatchProjectSnapshot?) {

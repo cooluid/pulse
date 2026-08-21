@@ -43,6 +43,7 @@ public struct PulseWatchProjectSnapshot: Codable, Equatable, Sendable {
     public let todayLogicalDay: String
     public let isCheckedToday: Bool
     public let checkedAt: Date?
+    public let waveMotionEnabled: Bool
     public let sevenDayPulse: [PulseWatchDaySnapshot]
     public let generatedAt: Date
     public let nextDayBoundary: Date
@@ -54,6 +55,7 @@ public struct PulseWatchProjectSnapshot: Codable, Equatable, Sendable {
         todayLogicalDay: String,
         isCheckedToday: Bool,
         checkedAt: Date?,
+        waveMotionEnabled: Bool,
         sevenDayPulse: [PulseWatchDaySnapshot],
         generatedAt: Date,
         nextDayBoundary: Date
@@ -71,9 +73,48 @@ public struct PulseWatchProjectSnapshot: Codable, Equatable, Sendable {
         self.todayLogicalDay = todayLogicalDay
         self.isCheckedToday = isCheckedToday
         self.checkedAt = checkedAt
+        self.waveMotionEnabled = waveMotionEnabled
         self.sevenDayPulse = sevenDayPulse
         self.generatedAt = generatedAt
         self.nextDayBoundary = nextDayBoundary
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case protocolVersion
+        case projectID
+        case projectRevision
+        case projectTimeZoneIdentifier
+        case todayLogicalDay
+        case isCheckedToday
+        case checkedAt
+        case waveMotionEnabled
+        case sevenDayPulse
+        case generatedAt
+        case nextDayBoundary
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        protocolVersion = try container.decode(Int.self, forKey: .protocolVersion)
+        projectID = try container.decode(UUID.self, forKey: .projectID)
+        projectRevision = try container.decode(String.self, forKey: .projectRevision)
+        projectTimeZoneIdentifier = try container.decode(
+            String.self,
+            forKey: .projectTimeZoneIdentifier
+        )
+        todayLogicalDay = try container.decode(String.self, forKey: .todayLogicalDay)
+        isCheckedToday = try container.decode(Bool.self, forKey: .isCheckedToday)
+        checkedAt = try container.decodeIfPresent(Date.self, forKey: .checkedAt)
+        waveMotionEnabled = try container.decodeIfPresent(
+            Bool.self,
+            forKey: .waveMotionEnabled
+        ) ?? true
+        sevenDayPulse = try container.decode(
+            [PulseWatchDaySnapshot].self,
+            forKey: .sevenDayPulse
+        )
+        generatedAt = try container.decode(Date.self, forKey: .generatedAt)
+        nextDayBoundary = try container.decode(Date.self, forKey: .nextDayBoundary)
     }
 }
 

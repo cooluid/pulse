@@ -70,6 +70,7 @@ final class PulseAppModel {
     private(set) var notificationPermission: NotificationPermissionState = .notDetermined
     private(set) var reminderSyncState: ReminderSyncState = .idle
     private(set) var reminderDeliveryMode: PulseReminderDeliveryMode = .disabled
+    private(set) var watchConnectionStatus: PulseWatchConnectionStatus = .activating
     private(set) var navigationResetToken = UUID()
     private(set) var themeAccessNoticePresented = false
     var selectedMonth: LogicalDay?
@@ -103,6 +104,10 @@ final class PulseAppModel {
         watchConnectivity.snapshotHandler = { [weak self] in
             guard let self else { return nil }
             return try self.makeCurrentWatchSnapshot()
+        }
+        watchConnectionStatus = watchConnectivity.connectionStatus
+        watchConnectivity.connectionStatusDidChange = { [weak self] status in
+            self?.watchConnectionStatus = status
         }
         externalCheckInTask = Task { @MainActor [weak self] in
             for await _ in NotificationCenter.default.notifications(
@@ -316,6 +321,12 @@ final class PulseAppModel {
                 reason: .persistenceFailure
             )
         }
+    }
+
+    func setWatchWaveMotionEnabled(_ enabled: Bool) {
+        guard settings.watchWaveMotionEnabled != enabled else { return }
+        settings.watchWaveMotionEnabled = enabled
+        publishCurrentWatchSnapshot()
     }
 
     private func watchRejectionReceipt(
@@ -773,12 +784,7 @@ final class PulseAppModel {
             selectedMonth = resolvedToday.firstDayOfMonth()
         }
         if currentHabit.isIdentityConfirmed {
-            let watchSnapshot = try PulseWatchSnapshotProjector.makeSnapshot(
-                habit: currentHabit,
-                records: fetchedRecords,
-                at: referenceNow
-            )
-            watchConnectivity.publish(watchSnapshot)
+            publishCurrentWatchSnapshot()
         } else {
             watchConnectivity.publish(nil)
         }
@@ -792,8 +798,17 @@ final class PulseAppModel {
         return try PulseWatchSnapshotProjector.makeSnapshot(
             habit: currentHabit,
             records: repository.allRecords(habitID: currentHabit.id),
+            waveMotionEnabled: settings.watchWaveMotionEnabled,
             at: clock.now
         )
+    }
+
+    private func publishCurrentWatchSnapshot() {
+        do {
+            watchConnectivity.publish(try makeCurrentWatchSnapshot())
+        } catch {
+            watchConnectivity.publish(nil)
+        }
     }
 
     private func auditMediaStorage() async {

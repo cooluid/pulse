@@ -291,4 +291,4 @@ MVP 的目标不是搭建任务平台，而是让以下闭环稳定成立：
 - 本地优先、系统数据保护和加密备份恢复承诺是否仍成立；任何 iCloud 或远程处理变更都必须先更新隐私政策。
 - 正式视觉、图标、商店素材和文案是否验收。
 - 通知行为是否在真机上通过授权、拒绝和系统设置变更验证。
-- iPhone 伴侣型 Apple Watch App、今日日印/七日脉冲 complication 与 Smart Stack 签到入口；Watch 只保存可重建快照和 durable command outbox，iPhone Repository 仍是唯一签到真源。基础 Watch 查看与可靠签到免费。
+- iPhone 伴侣型 Apple Watch App、今日日印/七日脉冲 complication 与 Smart Stack 签到入口；iPhone 设置首页提供 Apple Watch 发现入口、配对/安装状态与波浪动态开关。Watch 只保存可重建快照和 durable command outbox，iPhone Repository 仍是唯一签到真源，iPhone `AppSettings` 是 Watch 外观偏好唯一真源。基础 Watch 查看与可靠签到免费。

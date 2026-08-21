@@ -141,6 +141,7 @@ final class AppSettings {
         static let visualTheme = "settings.visualTheme"
         static let resetPending = "maintenance.resetPending"
         static let mediaInvitationEnabled = "settings.mediaInvitationEnabled"
+        static let watchWaveMotionEnabled = "settings.watchWaveMotionEnabled"
     }
 
     @ObservationIgnored private let defaults: UserDefaults
@@ -181,6 +182,10 @@ final class AppSettings {
         didSet { persist(StorageKey.mediaInvitationEnabled, value: mediaInvitationEnabled) }
     }
 
+    var watchWaveMotionEnabled: Bool {
+        didSet { persist(StorageKey.watchWaveMotionEnabled, value: watchWaveMotionEnabled) }
+    }
+
     var language: PulseInterfaceLanguage {
         didSet {
             guard !isLoading else { return }
@@ -201,7 +206,8 @@ final class AppSettings {
             StorageKey.weekStart: WeekStart.monday.rawValue,
             StorageKey.theme: AppTheme.system.rawValue,
             StorageKey.visualTheme: PulseVisualThemeAccessPolicy.freeTheme.rawValue,
-            StorageKey.mediaInvitationEnabled: true
+            StorageKey.mediaInvitationEnabled: true,
+            StorageKey.watchWaveMotionEnabled: true,
         ])
         let sharedSnapshot: PulseSharedSettings.Snapshot
         do {
@@ -227,6 +233,7 @@ final class AppSettings {
         theme = loadedTheme
         visualTheme = loadedVisualTheme
         mediaInvitationEnabled = defaults.bool(forKey: StorageKey.mediaInvitationEnabled)
+        watchWaveMotionEnabled = defaults.bool(forKey: StorageKey.watchWaveMotionEnabled)
         language = sharedSnapshot.language
         isLoading = false
     }
@@ -249,6 +256,7 @@ final class AppSettings {
         theme = .system
         visualTheme = PulseVisualThemeAccessPolicy.freeTheme
         mediaInvitationEnabled = true
+        watchWaveMotionEnabled = true
         language = .system
         isLoading = false
     }
@@ -274,7 +282,8 @@ final class AppSettings {
             StorageKey.weekStart,
             StorageKey.theme,
             StorageKey.visualTheme,
-            StorageKey.mediaInvitationEnabled
+            StorageKey.mediaInvitationEnabled,
+            StorageKey.watchWaveMotionEnabled,
         ].forEach(defaults.removeObject(forKey:))
         sharedSettings.reset()
     }

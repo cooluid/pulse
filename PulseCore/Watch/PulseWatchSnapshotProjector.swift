@@ -5,6 +5,7 @@ public enum PulseWatchSnapshotProjector {
     public static func makeSnapshot(
         habit: HabitSnapshot,
         records: [CheckInRecordSnapshot],
+        waveMotionEnabled: Bool,
         at date: Date
     ) throws -> PulseWatchProjectSnapshot {
         let widgetSnapshot = try PulseWidgetProjector.makeSnapshot(
@@ -24,6 +25,7 @@ public enum PulseWatchSnapshotProjector {
             todayLogicalDay: widgetSnapshot.today.storageValue,
             isCheckedToday: widgetSnapshot.isCheckedToday,
             checkedAt: widgetSnapshot.checkedAt,
+            waveMotionEnabled: waveMotionEnabled,
             sevenDayPulse: widgetSnapshot.recentDays.map { day in
                 PulseWatchDaySnapshot(
                     logicalDay: day.day.storageValue,

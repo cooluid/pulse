@@ -218,6 +218,42 @@ final class PulseFlowUITests: XCTestCase {
         XCTAssertTrue(app.buttons["primary.navigation.history"].exists)
     }
 
+    func testAppleWatchSettingsIsDiscoverableAndControlsWaveMotion() throws {
+        configureApp()
+        launchAndConfirmDefaultCommitment()
+
+        app.buttons["settings.navigation.open.today"].tap()
+        let watchLink = app.descendants(matching: .any)["settings.watch.link"]
+        XCTAssertTrue(watchLink.waitForExistence(timeout: 3))
+        XCTAssertTrue(watchLink.isHittable)
+
+        let entryAttachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
+        entryAttachment.name = "Apple Watch settings entry"
+        entryAttachment.lifetime = .keepAlways
+        add(entryAttachment)
+
+        watchLink.tap()
+
+        XCTAssertTrue(app.navigationBars["Apple Watch"].waitForExistence(timeout: 3))
+        let motionToggle = app.switches["settings.watch.wave-motion.toggle"]
+        XCTAssertTrue(motionToggle.waitForExistence(timeout: 3))
+        XCTAssertEqual(motionToggle.value as? String, "1")
+
+        let attachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
+        attachment.name = "Apple Watch settings"
+        attachment.lifetime = .keepAlways
+        add(attachment)
+
+        motionToggle.coordinate(
+            withNormalizedOffset: CGVector(dx: 0.92, dy: 0.5)
+        ).tap()
+        expectation(
+            for: NSPredicate(format: "value == '0'"),
+            evaluatedWith: motionToggle
+        )
+        waitForExpectations(timeout: 3)
+    }
+
     func testDebugActivityLabShowsOnlyIsolatedRuntimeIdentity() throws {
         configureApp()
         launchAndConfirmDefaultCommitment()

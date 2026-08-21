@@ -63,10 +63,12 @@ final class AppSettingsTests: XCTestCase {
         XCTAssertEqual(settings.theme, .system)
         XCTAssertEqual(settings.visualTheme, .editorialJournal)
         XCTAssertEqual(settings.language, .system)
+        XCTAssertTrue(settings.watchWaveMotionEnabled)
 
         settings.theme = .dark
         settings.visualTheme = .sunlitDay
         settings.language = .english
+        settings.watchWaveMotionEnabled = false
 
         XCTAssertNil(
             defaults.object(forKey: PulseSharedSettings.StorageKey.language)
@@ -85,6 +87,7 @@ final class AppSettingsTests: XCTestCase {
         XCTAssertEqual(reloaded.theme, .dark)
         XCTAssertEqual(reloaded.visualTheme, .sunlitDay)
         XCTAssertEqual(reloaded.language, .english)
+        XCTAssertFalse(reloaded.watchWaveMotionEnabled)
         XCTAssertEqual(reloaded.locale.identifier, "en")
     }
 
@@ -124,16 +127,19 @@ final class AppSettingsTests: XCTestCase {
         settings.theme = .light
         settings.visualTheme = .sunlitDay
         settings.language = .simplifiedChinese
+        settings.watchWaveMotionEnabled = false
 
         settings.reset()
 
         XCTAssertEqual(settings.theme, .system)
         XCTAssertEqual(settings.visualTheme, .editorialJournal)
         XCTAssertEqual(settings.language, .system)
+        XCTAssertTrue(settings.watchWaveMotionEnabled)
         let reloaded = try makeSettings(defaults: defaults)
         XCTAssertEqual(reloaded.theme, .system)
         XCTAssertEqual(reloaded.visualTheme, .editorialJournal)
         XCTAssertEqual(reloaded.language, .system)
+        XCTAssertTrue(reloaded.watchWaveMotionEnabled)
     }
 
     func testInvalidPersistedReminderTimeFailsInitialization() throws {

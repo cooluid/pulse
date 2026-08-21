@@ -91,6 +91,15 @@ WATCH_COLOR_ASSETS = {
     "PulseWatchWaveMiddle": "waveMiddle",
 }
 
+WATCH_PREVIEW_COLOR_ASSETS = {
+    "PulseWatchPreviewAxis": "axis",
+    "PulseWatchPreviewCanvasBottom": "canvasBottom",
+    "PulseWatchPreviewCanvasTop": "canvasTop",
+    "PulseWatchPreviewWaveBack": "waveBack",
+    "PulseWatchPreviewWaveFront": "waveFront",
+    "PulseWatchPreviewWaveMiddle": "waveMiddle",
+}
+
 
 def parse_hex(value: str) -> tuple[int, int, int]:
     if len(value) != 7 or not value.startswith("#"):
@@ -275,6 +284,10 @@ def build_outputs() -> dict[Path, bytes]:
     for asset_name, role in WATCH_COLOR_ASSETS.items():
         outputs[WATCH_ASSET_CATALOG / f"{asset_name}.colorset" / "Contents.json"] = (
             solid_color_asset(tokens["watch"][role])
+        )
+    for asset_name, role in WATCH_PREVIEW_COLOR_ASSETS.items():
+        outputs[ASSET_CATALOG / f"{asset_name}.colorset" / "Contents.json"] = solid_color_asset(
+            tokens["watch"][role]
         )
 
     icon = tokens["icon"]

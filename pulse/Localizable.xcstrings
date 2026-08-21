@@ -4060,6 +4060,126 @@
         }
       }
     },
+    "settings.watch.appearance.section" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Appearance" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "外观" } }
+      }
+    },
+    "settings.watch.connection.section" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Connection" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "连接" } }
+      }
+    },
+    "settings.watch.connection.status" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Apple Watch" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "Apple Watch" } }
+      }
+    },
+    "settings.watch.preview.check_in" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Check in" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "签到" } }
+      }
+    },
+    "settings.watch.preview.pending" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Not checked in today" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "今天还未签到" } }
+      }
+    },
+    "settings.watch.preview.today" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "TODAY" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "今日" } }
+      }
+    },
+    "settings.watch.status.activating" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Checking" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "正在检查" } }
+      }
+    },
+    "settings.watch.status.activating.detail" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Checking the paired Apple Watch." } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "正在检查配对的 Apple Watch。" } }
+      }
+    },
+    "settings.watch.status.installed" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Installed" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "已安装" } }
+      }
+    },
+    "settings.watch.status.installed.detail" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Check in and view today’s status on Apple Watch." } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "可在 Apple Watch 上签到并查看今天的状态。" } }
+      }
+    },
+    "settings.watch.status.not_installed" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Not installed" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "尚未安装" } }
+      }
+    },
+    "settings.watch.status.not_installed.detail" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Install Pulse from the Watch app on iPhone." } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "请在 iPhone 的 Watch App 中安装一日一印。" } }
+      }
+    },
+    "settings.watch.status.unpaired" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Not paired" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "尚未配对" } }
+      }
+    },
+    "settings.watch.status.unpaired.detail" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Pair an Apple Watch with this iPhone to use Pulse on your wrist." } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "将 Apple Watch 与这部 iPhone 配对后即可在手腕上使用一日一印。" } }
+      }
+    },
+    "settings.watch.status.unsupported" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Unavailable" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "不可用" } }
+      }
+    },
+    "settings.watch.status.unsupported.detail" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Apple Watch is unavailable on this device." } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "这台设备无法使用 Apple Watch。" } }
+      }
+    },
+    "settings.watch.summary" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Check in from your wrist and see today’s status at a glance." } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "抬腕即可签到，并快速查看今天的状态。" } }
+      }
+    },
+    "settings.watch.title" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Apple Watch" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "Apple Watch" } }
+      }
+    },
+    "settings.watch.wave_motion" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Wave Motion" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "波浪动态" } }
+      }
+    },
+    "settings.watch.wave_motion.detail" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Waves move slowly while the Watch app is active." } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "手表 App 在前台显示时，波浪缓慢流动。" } }
+      }
+    },
     "settings.week_start" : {
       "localizations" : {
         "en" : {

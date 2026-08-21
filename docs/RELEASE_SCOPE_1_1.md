@@ -25,7 +25,7 @@ Pulse 1.1 把“每天可靠签到”升级为“每天留下一个可验证事�
 - 免费基础提醒、一次买断高阶权益、八种逐实例 Home Screen Widget 构图（待落之处免费，星环 / 叠印 / 数影 / 手札 / 静场 / 来路 / 潮痕收费）与 iOS 26 scheduled Live Activity，沿用正式权益合同。正式产品枚举只由 `PulseWidgetStyle` 与 String Catalog 持有，外观只由共享 `PulseWidgetHomeRenderer` 持有。
 - English / 简体中文、纸页手记免费默认主题、静野/晴昼付费主题、Dynamic Type、VoiceOver、Reduce Motion、iPhone/iPad 正式布局。
 - 设置中的正式“帮助与反馈”信息架构：原生反馈与建议页、独立帮助中心和隐私政策入口；用户在系统邮件编辑器中检查并主动发送，App 不建立账号、反馈数据库、第三方 SDK 或后台上报。
-- watchOS 10+ iPhone 伴侣 App：今日日印 Watch App、圆形/Inline 今日日印 complication、矩形七日脉冲 complication 与 Smart Stack 签到。Watch 本地只保存一份可重建快照、durable command outbox 和最后回执；即时消息与后台用户信息复用同一 `operationID` 和 iPhone Repository 写入路径。`pendingSync` 不得冒充成功，基础 Watch 能力永久免费。
+- watchOS 10+ iPhone 伴侣 App：蓝色状态场 Watch App、圆形/Inline 今日日印 complication、矩形七日脉冲 complication 与 Smart Stack 签到。iPhone 设置提供可发现的 Apple Watch 入口、配对/安装状态与“波浪动态”开关；开关随正式快照进入 Watch，并继续服从 Reduce Motion / Always-On。Watch 本地只保存一份可重建快照、durable command outbox 和最后回执；即时消息与后台用户信息复用同一 `operationID` 和 iPhone Repository 写入路径。`pendingSync` 不得冒充成功，基础 Watch 能力永久免费。
 
 ## 3. 收费边界
 

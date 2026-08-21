@@ -18,6 +18,7 @@ struct SettingsView: View {
     var body: some View {
         Form {
             commitmentSection.pulseFormRows(for: visualTheme)
+            watchSection.pulseFormRows(for: visualTheme)
             dailySection.pulseFormRows(for: visualTheme)
             storeSection.pulseFormRows(for: visualTheme)
             appearanceSection.pulseFormRows(for: visualTheme)
@@ -144,6 +145,23 @@ struct SettingsView: View {
                 }
             }
             .accessibilityIdentifier("settings.widget.gallery.link")
+
+        }
+    }
+
+    private var watchSection: some View {
+        Section {
+            NavigationLink {
+                WatchSettingsView(model: model)
+            } label: {
+                LabeledContent {
+                    Text(model.watchConnectionStatus.titleKey)
+                        .foregroundStyle(PulseDesign.appMuted(for: visualTheme))
+                } label: {
+                    Label("settings.watch.title", systemImage: "applewatch")
+                }
+            }
+            .accessibilityIdentifier("settings.watch.link")
         }
     }
 

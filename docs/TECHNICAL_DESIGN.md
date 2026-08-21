@@ -42,7 +42,7 @@ Watch 本地目录只接受 file URL，并在唯一入口标准化后使用。�
 
 WCSession 的 reply/error 回调由明确的非隔离 `@Sendable` 闭包接收，只把 `Data` 和不可变命令跨到 `MainActor`；一次性 completion 以锁保护并最多恢复一次 continuation。不得把在 `@MainActor` 方法中隐式继承隔离的普通闭包直接交给 WatchConnectivity 的私有工作队列，否则 Swift 6 会在进入闭包前触发 libdispatch 队列断言。
 
-Watch App 页级几何只由 `PulseWatchLayoutMetrics` 解析实际容器、safe area、可见区段和集中设计令牌；禁止设备型号/表径分支和页面内散落固定尺寸。标准字号以今日印为中心的无滚动单屏；Accessibility Dynamic Type 或主印低于最小边长时进入明确的纵向滚动路径，避免用裁切冒充适配。
+Watch App 页级几何只由 `PulseWatchLayoutMetrics` 解析实际容器、safe area、可见区段和集中设计令牌；禁止设备型号/表径分支和页面内散落固定尺寸。标准字号使用无滚动的蓝色状态场：左侧动作/事实、右侧离散日轴、底部三层波面；Accessibility Dynamic Type 进入明确纵向滚动路径。iPhone `AppSettings.watchWaveMotionEnabled` 是波浪偏好唯一真源，经 `PulseWatchProjectSnapshot` 同步；Watch 端只消费快照，并与 Scene、Reduce Motion、低亮度共同裁决是否运行时间线。
 
 iPhone Widget / Live Activity 的正式 App Intent 提交 Repository 后只发送进程内 `PulseExternalCheckInSignal` 刷新容器 App 与 Watch 快照；信号不携带、不持久化业务事实，也不承担成功裁决。Widget 自身仍由 Intent 返回后的 WidgetKit timeline reload 更新，避免建立第二条状态广播或重复 reload 路径。
 

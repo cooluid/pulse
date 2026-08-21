@@ -3,6 +3,14 @@ import OSLog
 import PulseWatchShared
 @preconcurrency import WatchConnectivity
 
+enum PulseWatchConnectionStatus: Equatable {
+    case unsupported
+    case activating
+    case unpaired
+    case notInstalled
+    case installed
+}
+
 @MainActor
 protocol PulseWatchConnectivityProviding: AnyObject {
     var commandHandler: (@MainActor (PulseWatchCheckInCommand) async -> PulseWatchCheckInReceipt?)? {
@@ -11,6 +19,10 @@ protocol PulseWatchConnectivityProviding: AnyObject {
     var snapshotHandler: (@MainActor () async throws -> PulseWatchProjectSnapshot?)? {
         get set
     }
+    var connectionStatusDidChange: (@MainActor (PulseWatchConnectionStatus) -> Void)? {
+        get set
+    }
+    var connectionStatus: PulseWatchConnectionStatus { get }
 
     func start()
     func publish(_ snapshot: PulseWatchProjectSnapshot?)
@@ -29,8 +41,12 @@ enum PulseWatchConnectivityFactory {
 private final class UnsupportedPulseWatchConnectivity: PulseWatchConnectivityProviding {
     var commandHandler: (@MainActor (PulseWatchCheckInCommand) async -> PulseWatchCheckInReceipt?)?
     var snapshotHandler: (@MainActor () async throws -> PulseWatchProjectSnapshot?)?
+    var connectionStatusDidChange: (@MainActor (PulseWatchConnectionStatus) -> Void)?
+    let connectionStatus = PulseWatchConnectionStatus.unsupported
 
-    func start() {}
+    func start() {
+        connectionStatusDidChange?(connectionStatus)
+    }
 
     func publish(_ snapshot: PulseWatchProjectSnapshot?) {}
 }
@@ -64,6 +80,13 @@ final class PulseWatchConnectivityController: NSObject,
     private var latestSnapshotEnvelope: PulseWatchSnapshotEnvelope?
     var commandHandler: (@MainActor (PulseWatchCheckInCommand) async -> PulseWatchCheckInReceipt?)?
     var snapshotHandler: (@MainActor () async throws -> PulseWatchProjectSnapshot?)?
+    var connectionStatusDidChange: (@MainActor (PulseWatchConnectionStatus) -> Void)?
+
+    var connectionStatus: PulseWatchConnectionStatus {
+        guard session.activationState == .activated else { return .activating }
+        guard session.isPaired else { return .unpaired }
+        return session.isWatchAppInstalled ? .installed : .notInstalled
+    }
 
     override init() {
         session = .default
@@ -73,6 +96,7 @@ final class PulseWatchConnectivityController: NSObject,
     func start() {
         session.delegate = self
         session.activate()
+        connectionStatusDidChange?(connectionStatus)
     }
 
     func publish(_ snapshot: PulseWatchProjectSnapshot?) {
@@ -97,6 +121,10 @@ final class PulseWatchConnectivityController: NSObject,
         } catch {
             logger.error("Failed to publish Watch snapshot: \(error.localizedDescription, privacy: .public)")
         }
+    }
+
+    private func reportConnectionStatus() {
+        connectionStatusDidChange?(connectionStatus)
     }
 
     private func handle(
@@ -187,6 +215,7 @@ final class PulseWatchConnectivityController: NSObject,
         error: Error?
     ) {
         Task { @MainActor [weak self] in
+            self?.reportConnectionStatus()
             self?.flushSnapshotIfPossible()
         }
     }
@@ -199,6 +228,7 @@ final class PulseWatchConnectivityController: NSObject,
 
     nonisolated func sessionWatchStateDidChange(_ session: WCSession) {
         Task { @MainActor [weak self] in
+            self?.reportConnectionStatus()
             self?.flushSnapshotIfPossible()
         }
     }

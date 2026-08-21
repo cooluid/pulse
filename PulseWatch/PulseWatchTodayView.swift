@@ -159,6 +159,7 @@ struct PulseWatchTodayView: View {
 
     private var animatesWaves: Bool {
         guard scenePhase == .active,
+              model.projection.snapshot?.waveMotionEnabled == true,
               !reduceMotion,
               !isLuminanceReduced else {
             return false
