@@ -1,10 +1,10 @@
 # Pulse 1.1 实现与验收状态
 
-更新时间：2026-08-20
+更新时间：2026-08-21
 
-当前 checkout 结论：**1.1 (4) ENGINEERING CANDIDATE / INTERFACE CANDIDATE / DISTRIBUTION NO-GO**。
+当前 checkout 结论：**1.1 (4) ENGINEERING GO / INTERFACE CANDIDATE / DISTRIBUTION ARTIFACT GO / PUBLIC RELEASE NO-GO**。
 
-领域、持久化、媒体、归档、提醒、三主题、iPhone/iPad 系统表面和 Watch 基础工程路径已收敛；真实相机、磁盘压力、真机无障碍、真实 Widget / Live Activity host、StoreKit Sandbox、配对 WatchConnectivity/complication/Smart Stack、Apple Distribution Archive、TestFlight 清洁安装和 App Store Connect 仍没有本轮完整证据，因此不能写成公开发布 GO。
+领域、持久化、媒体、归档、提醒、三主题、iPhone/iPad 系统表面和 Watch 基础工程路径已收敛；当前不可变源码、签名 Release Archive、Apple Distribution IPA、entitlement、dSYM、Privacy manifest 与公开政策部署已有完整本地证据。真实相机、磁盘压力、真机无障碍、真实 Widget / Live Activity host、StoreKit Sandbox、配对 WatchConnectivity/complication/Smart Stack、TestFlight 清洁安装和 App Store Connect 仍没有本轮完整证据，因此不能写成公开发布 GO。
 
 ## 当前唯一生产基线
 
@@ -39,7 +39,7 @@
 - Widget 样式合同、设计常量和共享 Renderer 已分离；无引用颜色、常量、组件和全部旧 Widget HTML 探索稿已删除。
 - 运行时文案统一使用“签到”；通知和 Live Activity 只写事实与动作，不再出现“准备好时回来”或“打卡”等并行人格。
 - 测试从格式敏感的源码片段断言转向类型化策略、几何、渲染附件和真实 UI 流程；源码扫描只保留旧符号禁入、敏感词和构建配置门禁。
-- `site` 子模块只剩三条正式 URL 跳转和 Sites 必需构建骨架；旧产品 CSS、CSS 图标、认证模板、OG 图片、图片优化和无用 Tailwind/PostCSS 依赖已删除。
+- 本仓 `site/` 目录只剩三条正式 URL 跳转和 Sites 必需构建骨架；旧产品 CSS、CSS 图标、认证模板、OG 图片、图片优化和无用 Tailwind/PostCSS 依赖已删除。
 - Watch 快照过期、outbox 生命周期、App Intent 进程生命周期、失败恢复、触觉、日期与颜色已收敛为单一实现；旧的快照清空命令行为、临时 WCSession client、重复状态文案映射和通用 Watch 色板已删除。
 - container v2 / payload v3 的 App Store 加密出口分类仍待正式问卷或文档审查；结论冻结前 App / Widget Info.plist 不预填 `ITSAppUsesNonExemptEncryption`。
 
@@ -47,14 +47,16 @@
 
 验证环境：macOS 26.6、Xcode 26.4（17E192）、iPhone 16 Pro / iOS 18.6 Simulator（arm64）、watchOS 26.4 Simulator runtime（23T240b）。
 
-- 当前 213 项单元/集成测试与 27 项 Simulator UI 测试全部通过；Watch 新增覆盖物理设备形态的系统 file URL 标准化、非 file URL 拒绝、快照过期、旧快照拒绝、项目变化保留 outbox、正式协议拒绝回执、明确重试、Repository 即时快照与 iPhone 系统表面提交后的 Watch 刷新，并继续覆盖跨午夜 `occurredAt`、幂等命令和既有领域/归档/StoreKit/Widget/三主题矩阵。
+- 当前 216 项单元/集成测试与 28 项 Simulator UI 测试全部通过；Watch 新增覆盖物理设备形态的系统 file URL 标准化、非 file URL 拒绝、快照过期、旧快照拒绝、项目变化保留 outbox、正式协议拒绝回执、明确重试、Repository 即时快照与 iPhone 系统表面提交后的 Watch 刷新，并继续覆盖跨午夜 `occurredAt`、幂等命令和既有领域/归档/StoreKit/Widget/三主题矩阵。Watch 色板白名单已同步当前 12 个正式语义色与 13 个 Watch Color Set，避免新增波面资产后测试继续宣称旧目录。
 - Release `pulse` 全 target Build 与 Analyze 通过，未排除 Watch Asset Catalog；实际编译并校验 iPhone App、Home Screen Widget、Watch App、Watch Widget、AppIcon、颜色资产、Privacy manifest 和嵌入结构。
 - Apple Watch Ultra 3 49 mm 与 SE 40 mm / watchOS 26.4 Simulator 已对当前蓝色状态场复核待签到、已确认和需要同步状态；文字、三层波面、日轴和 44 pt 重试无裁切。Simulator 录屏证明三层波面错速移动，但不外推为真实配对 Watch、Always-On、Reduce Motion 或电量验收。
 - Apple Watch Series 10 / watchOS 26.6 的 Debug 签名安装、App Group profile/运行时 URL、真实前台启动与快照读取证据仍成立；此前真表视觉截图属于已替换构图，当前蓝色状态场必须重新真表截图验收。
 - iPhone 17 Pro / iOS 26.4 Simulator 已从设置首页直接进入 Apple Watch 页面，显示蓝色预览、WCSession 安装状态并实际关闭“波浪动态”；设置持久化、快照发布与旧快照默认值有自动化覆盖。watchOS Simulator 不支持通过 `simctl ui content_size` 切换 Dynamic Type，因此最大字号仍保留为真机门禁。
 - 当前 74 项品牌生成输出、App/Widget/Watch plist、Privacy manifest、entitlement 和五份 String Catalog 静态解析通过；`git diff --check` 通过。
-- `site` production build、lint、三条 redirect 测试与依赖审计通过；正式产品、隐私和支持 URL 当前均返回 HTTPS 200。子模块提交仍须单独推送并用全新 clone 验证可获取性。
+- 本仓 `site/` redirect-only production build、lint 与三条跳转测试通过；公开正文权威 `/Users/fanr/Documents/work/coco-web` 的提交 `6e628529bb415a72cd7d821ebb3c8eaa2933a503` 已通过依赖审计、lint、生产构建和原子部署。正式产品、隐私和支持 URL 均返回 HTTPS 200，线上文件与该提交的本地 `out/` 逐字节一致。
 - Simulator 截图证明三主题当前构图和交互候选，不代替真实设备、Widget host、Dynamic Island、Always-On 或人工最终视觉接受。
+- 当前 App 源码候选为 `9a5c5e5b5765a9cfa1b72b76ae91c9bc34ae6ca4`；证据根目录为 `/Users/fanr/Documents/work/pulse-release-artifacts/Pulse-1.1.4-9a5c5e5-formal`。全量测试、Release Build/Analyze、Archive 与本地 App Store 导出均成功。
+- IPA SHA-256 为 `c088ba944b37ec5fb85df4a849f46cc720a2715cd442000006e2b1fc6c19c3d9`。App、iPhone Widget、Watch App 与 Watch Widget 均由同一 Cloud Managed Apple Distribution 证书签名，四份 Store profile 均为 `get-task-allow=false`、`beta-reports-active=true`，到期日为 2027-08-12；严格嵌套签名、四套 dSYM 与二进制 UUID、Privacy manifest 源/产物哈希均通过。
 
 ## 仍为 NO-GO 的证据
 
@@ -63,7 +65,7 @@
 - 恢复：真实设备导出带多张原图的 v2 归档，在另一清洁安装完整恢复并逐张核对；清除和卸载后确认无非预期残留。
 - 系统与无障碍：真人 VoiceOver、Switch Control、最大 Dynamic Type、Reduce Motion、提高对比度、通知、真实 Home / Lock Screen Widget、iOS 26 Live Activity / Dynamic Island 和 StoreKit Sandbox。
 - Apple Watch：真实配对设备验证即时/后台传输、失联恢复、强退/重启/飞行模式、跨午夜、重复/乱序命令、Always-On、VoiceOver、Reduce Motion、complication、Smart Stack 和 14 天电量。
-- 分发：当前源码不可变提交、站点子模块可获取提交、Apple Distribution Archive、签名/entitlement/dSYM/Privacy manifest 产物核验、加密出口分类、App Store 隐私答案、TestFlight 处理与清洁安装。
+- 分发外部环节：加密出口正式分类、App Store 隐私答案、TestFlight 处理与清洁安装；当前本地签名 Archive 与 Apple Distribution IPA 产物链已关闭。
 
 ## 历史证据边界
 
@@ -74,5 +76,5 @@ Build 2 的上传和内部 TestFlight 证据只属于 Pulse 1.0 (2)，不包含 
 1. 在真实 iPhone / iPad 关闭三主题、媒体、权限、低存储、恢复和无障碍门禁。
 2. 回归真实通知、Widget、scheduled Live Activity 和 StoreKit Sandbox，确认同日只有一个触达。
 3. 在真实配对 iPhone / Apple Watch 关闭即时/后台传输、失联恢复、重启、飞行模式、跨午夜、乱序、complication/Smart Stack、Always-On、VoiceOver、Reduce Motion 与 14 天电量门禁。
-4. 完成加密出口与 App Store 隐私答案，再生成当前 `1.1 (4)` 的 Apple Distribution Archive 并做完整产物审计。
-5. 推送并 fresh-clone 验证 `site` 子模块提交，随后进入 TestFlight 清洁安装。
+4. 在 App Store Connect 按当前 PBKDF2 + AES-GCM 行为完成加密出口与隐私答案；四个生产 Info.plist 当前均有意不预填 `ITSAppUsesNonExemptEncryption`，不能复用旧版本结论。
+5. 使用已生成并审计的 `1.1 (4)` IPA 进入 TestFlight 处理与清洁安装；这些 App Store Connect 操作不属于本轮代理执行范围。
