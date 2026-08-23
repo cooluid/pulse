@@ -438,6 +438,11 @@ def render_watch_and_review() -> None:
     for name in ("advanced-features-zh.png", "backup.png", "backup-en.png"):
         image = Image.open(SOURCE / "review" / name).convert("RGB")
         save_rgb(image, OUTPUT / "review" / name)
+    advanced = Image.open(SOURCE / "review" / "advanced-features-zh.png").convert("RGB")
+    review_crop = advanced.crop((0, 888, 1206, 2622)).resize(
+        (640, 920), Image.Resampling.LANCZOS
+    )
+    save_rgb(review_crop, OUTPUT / "review" / "advanced-features-review-640x920.png")
 
 
 def make_contact_sheet(paths: list[Path], destination: Path) -> None:
