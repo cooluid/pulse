@@ -221,7 +221,7 @@ final class UITestStoreKitAccessClient: StoreKitAccessClient {
             identifier: identifier,
             displayName: String(localized: "store.title"),
             description: String(localized: "store.hero.promise"),
-            displayPrice: "¥18.00"
+            displayPrice: "¥28.00"
         )
     }
 

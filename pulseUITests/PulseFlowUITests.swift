@@ -647,6 +647,11 @@ final class PulseFlowUITests: XCTestCase {
         XCTAssertTrue(confirmationField.exists)
         XCTAssertFalse(submitButton.isEnabled)
 
+        let cleanBackupAttachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
+        cleanBackupAttachment.name = "Store Gallery 07 Encrypted backup"
+        cleanBackupAttachment.lifetime = .keepAlways
+        add(cleanBackupAttachment)
+
         passphraseField.typeText("abc")
         confirmationField.tap()
         confirmationField.typeText("abc")
@@ -667,6 +672,30 @@ final class PulseFlowUITests: XCTestCase {
 
         app.buttons["取消"].tap()
         XCTAssertFalse(app.navigationBars["加密备份"].exists)
+    }
+
+    func testCaptureAppStoreBackupEnglish() throws {
+        configureApp()
+        app.launchArguments = ["-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
+        launchAndConfirmDefaultCommitment()
+
+        app.buttons["settings.navigation.open.today"].tap()
+        let exportButton = app.buttons["settings.backup.export.button"]
+        for _ in 0..<8 where !exportButton.exists {
+            app.swipeUp()
+        }
+        XCTAssertTrue(exportButton.waitForExistence(timeout: 3))
+        for _ in 0..<6 where exportButton.frame.maxY > app.frame.maxY - 80 {
+            app.swipeUp()
+        }
+        XCTAssertTrue(exportButton.isHittable)
+        exportButton.tap()
+
+        XCTAssertTrue(
+            app.secureTextFields["backup.passphrase.field"]
+                .waitForExistence(timeout: 3)
+        )
+        captureStoreScreenshot("Store Gallery EN 07 Encrypted backup")
     }
 
     func testThemeAndLanguageChoicesApplyImmediatelyAndPersistAcrossRelaunch() throws {
@@ -1660,6 +1689,155 @@ final class PulseFlowUITests: XCTestCase {
         assertHeroGeometry()
         assertRhythmStatusFollowsWeekRail()
         XCTAssertFalse(app.buttons["today.checkin.button"].isEnabled)
+    }
+
+    func testCaptureAppStoreGallery() throws {
+        try captureAppStoreGallery(isEnglish: false)
+    }
+
+    func testCaptureAppStoreGalleryEnglish() throws {
+        try captureAppStoreGallery(isEnglish: true)
+    }
+
+    private func captureAppStoreGallery(isEnglish: Bool) throws {
+        configureApp()
+        if isEnglish {
+            app.launchArguments = ["-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
+        }
+        app.launchEnvironment["PULSE_UI_TEST_ENHANCEMENT_PURCHASED"] = "1"
+        app.launchEnvironment["PULSE_UI_TEST_NOW"] = "2026-08-01T04:00:00Z"
+        app.launch()
+
+        let nameField = app.textFields["commitment.name.field"]
+        let purposeField = app.textFields["commitment.purpose.field"]
+        XCTAssertTrue(nameField.waitForExistence(timeout: 5))
+        replaceText(in: nameField, with: isEnglish ? "Read daily" : "每天阅读")
+        replaceText(
+            in: purposeField,
+            with: isEnglish ? "Make space for one clear page" : "让一天有清晰的落点"
+        )
+        app.buttons["commitment.save.button"].tap()
+        XCTAssertTrue(app.buttons["today.checkin.button"].waitForExistence(timeout: 5))
+
+        // App Store gallery captures show the real, purchased Sunlit Day theme.
+        // The purchase surface itself is kept out of public marketing images.
+        app.buttons["settings.navigation.open.today"].tap()
+        openVisualThemePicker()
+        let sunlitThemeChoice = app.buttons["settings.visual-theme.sunlitDay"]
+        XCTAssertTrue(sunlitThemeChoice.waitForExistence(timeout: 3))
+        XCTAssertEqual(sunlitThemeChoice.value as? String, "")
+        sunlitThemeChoice.tap()
+        app.buttons["navigation.back"].tap()
+        app.buttons["navigation.back"].tap()
+        XCTAssertTrue(
+            app.descendants(matching: .any)["today.theme.sunlit-day"]
+                .waitForExistence(timeout: 3)
+        )
+
+        let completedDays: [(String, String?)] = [
+            (
+                "2026-08-01T04:00:00Z",
+                isEnglish ? "Thirty pages, one question." : "读完三十页，记下一个问题。"
+            ),
+            ("2026-08-02T04:00:00Z", nil),
+            ("2026-08-03T04:00:00Z", nil),
+            (
+                "2026-08-05T04:00:00Z",
+                isEnglish ? "Back to chapter one." : "回看第一章，补上遗漏的线索。"
+            ),
+            ("2026-08-07T04:00:00Z", nil),
+            (
+                "2026-08-08T04:00:00Z",
+                isEnglish ? "Copied one sentence." : "把喜欢的一句抄进手记。"
+            ),
+            ("2026-08-09T04:00:00Z", nil),
+        ]
+
+        for (index, entry) in completedDays.enumerated() {
+            if index > 0 {
+                app.terminate()
+                app.launchEnvironment.removeValue(forKey: "PULSE_UI_TEST_RESET")
+                app.launchEnvironment["PULSE_UI_TEST_NOW"] = entry.0
+                app.launch()
+                XCTAssertTrue(app.buttons["today.checkin.button"].waitForExistence(timeout: 5))
+            }
+            if let note = entry.1 {
+                let draft = app.descendants(matching: .any)["journal.draft.input"]
+                XCTAssertTrue(draft.waitForExistence(timeout: 3))
+                replaceText(in: draft, with: note)
+                let keyboardDone = app.buttons["journal.keyboard.done"]
+                XCTAssertTrue(keyboardDone.waitForExistence(timeout: 3))
+                keyboardDone.tap()
+                XCTAssertFalse(app.keyboards.firstMatch.exists)
+            }
+            let checkIn = app.buttons["today.checkin.button"]
+            checkIn.tap()
+            expectation(for: NSPredicate(format: "isEnabled == false"), evaluatedWith: checkIn)
+            waitForExpectations(timeout: 3)
+        }
+
+        app.terminate()
+        app.launchEnvironment.removeValue(forKey: "PULSE_UI_TEST_RESET")
+        app.launchEnvironment["PULSE_UI_TEST_NOW"] = "2026-08-10T04:00:00Z"
+        app.launch()
+        XCTAssertTrue(app.buttons["today.checkin.button"].waitForExistence(timeout: 5))
+
+        let todayDraft = app.descendants(matching: .any)["journal.draft.input"]
+        XCTAssertTrue(todayDraft.waitForExistence(timeout: 3))
+        replaceText(
+            in: todayDraft,
+            with: isEnglish ? "Close the book. Keep the day." : "合上书，也把今天轻轻收好。"
+        )
+        let keyboardDone = app.buttons["journal.keyboard.done"]
+        XCTAssertTrue(keyboardDone.waitForExistence(timeout: 3))
+        keyboardDone.tap()
+        XCTAssertFalse(app.keyboards.firstMatch.exists)
+        let prefix = isEnglish ? "Store Gallery EN" : "Store Gallery ZH"
+        captureStoreScreenshot("\(prefix) 01 Today before check-in")
+
+        let todayCheckIn = app.buttons["today.checkin.button"]
+        todayCheckIn.tap()
+        XCTAssertTrue(
+            app.descendants(matching: .any)["today.checkin.presentation.imprinted"]
+                .waitForExistence(timeout: 3)
+        )
+        captureStoreScreenshot("\(prefix) 02 Today after check-in")
+
+        app.buttons["primary.navigation.history"].tap()
+        XCTAssertTrue(
+            app.descendants(matching: .any)["calendar.day.2026-08-10"]
+                .waitForExistence(timeout: 3)
+        )
+        captureStoreScreenshot("\(prefix) 03 History calendar")
+
+        app.buttons["history.mode.journal"].tap()
+        XCTAssertTrue(
+            app.descendants(matching: .any)["history.journal.section"]
+                .waitForExistence(timeout: 3)
+        )
+        captureStoreScreenshot("\(prefix) 04 Journal records")
+
+        app.buttons["primary.navigation.today"].tap()
+        app.buttons["settings.navigation.open.today"].tap()
+
+        let galleryLink = app.descendants(matching: .any)["settings.widget.gallery.link"]
+        for _ in 0..<6 where !galleryLink.exists || !galleryLink.isHittable {
+            app.swipeUp()
+        }
+        XCTAssertTrue(galleryLink.waitForExistence(timeout: 3))
+        galleryLink.tap()
+        XCTAssertTrue(
+            app.descendants(matching: .any)["widget.gallery.style.place"]
+                .waitForExistence(timeout: 3)
+        )
+        captureStoreScreenshot("\(prefix) 05 Widget styles")
+    }
+
+    private func captureStoreScreenshot(_ name: String) {
+        let attachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
+        attachment.name = name
+        attachment.lifetime = .keepAlways
+        add(attachment)
     }
 
     private func assertRedundantTodayCopyIsAbsent() {

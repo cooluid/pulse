@@ -114,6 +114,15 @@ struct JournalDraftComposer: View {
             .disabled(isDisabled)
             .focused($isFocused)
             .accessibilityIdentifier("journal.draft.input")
+            .toolbar {
+                ToolbarItemGroup(placement: .keyboard) {
+                    Spacer()
+                    Button("action.done") {
+                        isFocused = false
+                    }
+                    .accessibilityIdentifier("journal.keyboard.done")
+                }
+            }
 
             HStack(alignment: .firstTextBaseline, spacing: PulseDesign.spacing8) {
                 if !isValid {

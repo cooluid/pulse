@@ -12,6 +12,9 @@ enum PulseWatchBootstrap {
     static func build() -> PulseWatchBootstrap {
         do {
             let store = try PulseWatchRuntimeIdentity.makeLocalStore()
+#if DEBUG
+            try seedAppStoreCaptureSnapshotIfNeeded(in: store)
+#endif
             return .ready(PulseWatchModel(
                 connectivity: PulseWatchConnectivityClient(store: store)
             ))
@@ -19,6 +22,48 @@ enum PulseWatchBootstrap {
             return .failed
         }
     }
+
+#if DEBUG
+    private static func seedAppStoreCaptureSnapshotIfNeeded(
+        in store: PulseWatchLocalStore
+    ) throws {
+        guard let requestedState = ProcessInfo.processInfo.environment[
+            "PULSE_WATCH_APP_STORE_CAPTURE_STATE"
+        ], requestedState == "ready" || requestedState == "committed" else {
+            return
+        }
+        let now = Date()
+        let isCommitted = requestedState == "committed"
+        let logicalDays = [
+            "2026-08-17", "2026-08-18", "2026-08-19", "2026-08-20",
+            "2026-08-21", "2026-08-22", "2026-08-23",
+        ]
+        let states: [PulseWatchDayState] = [
+            .missed, .checked, .missed, .checked, .checked, .checked,
+            isCommitted ? .checked : .todayPending,
+        ]
+        try store.clear()
+        let projectID = UUID(uuidString: "7E4A69A5-2B20-4A18-9E10-0C225D52688F")!
+        try store.save(snapshot: PulseWatchProjectSnapshot(
+            projectID: projectID,
+            projectRevision: PulseWatchProjectRevision.make(
+                projectID: projectID,
+                startLogicalDay: "2026-08-01",
+                timeZoneIdentifier: "Asia/Shanghai"
+            ),
+            projectTimeZoneIdentifier: "Asia/Shanghai",
+            todayLogicalDay: logicalDays.last!,
+            isCheckedToday: isCommitted,
+            checkedAt: isCommitted ? now.addingTimeInterval(-60 * 30) : nil,
+            waveMotionEnabled: true,
+            sevenDayPulse: zip(logicalDays, states).map {
+                PulseWatchDaySnapshot(logicalDay: $0.0, state: $0.1)
+            },
+            generatedAt: now,
+            nextDayBoundary: now.addingTimeInterval(60 * 60 * 12)
+        ))
+    }
+#endif
 }
 
 @MainActor
