@@ -15,10 +15,11 @@ enum ImprintImageProcessor {
     static let thumbnailMaximumDimension: CGFloat = 720
 
     static func process(_ image: UIImage) throws -> ProcessedImprintImage {
-        guard image.size.width > 0, image.size.height > 0 else {
+        let upright = normalizedUprightImage(image)
+        guard upright.size.width > 0, upright.size.height > 0 else {
             throw PulseCoreError.invalidMedia
         }
-        let normalized = try renderedImage(image, maximumDimension: maximumDimension)
+        let normalized = try renderedImage(upright, maximumDimension: maximumDimension)
         let thumbnail = try renderedImage(normalized, maximumDimension: thumbnailMaximumDimension)
         guard let originalData = normalized.jpegData(compressionQuality: 0.9),
               let thumbnailData = thumbnail.jpegData(compressionQuality: 0.82),
@@ -32,6 +33,17 @@ enum ImprintImageProcessor {
             pixelWidth: Int(normalized.size.width * normalized.scale),
             pixelHeight: Int(normalized.size.height * normalized.scale)
         )
+    }
+
+    private static func normalizedUprightImage(_ image: UIImage) -> UIImage {
+        guard image.imageOrientation != .up else { return image }
+        let format = UIGraphicsImageRendererFormat()
+        format.scale = image.scale
+        format.opaque = true
+        let renderer = UIGraphicsImageRenderer(size: image.size, format: format)
+        return renderer.image { _ in
+            image.draw(in: CGRect(origin: .zero, size: image.size))
+        }
     }
 
     private static func renderedImage(
@@ -67,6 +79,7 @@ final class ImprintMediaService {
     private let repository: any PulseRepositoryProtocol
     private let fileStore: PulseMediaFileStore
     private let clock: any PulseClock
+    private var thumbnailCache: [UUID: Data] = [:]
 
     init(
         repository: any PulseRepositoryProtocol,
@@ -117,8 +130,10 @@ final class ImprintMediaService {
         do {
             let result = try repository.upsertMedia(draft)
             if let previous {
+                thumbnailCache.removeValue(forKey: previous.id)
                 try? await fileStore.remove(previous)
             }
+            thumbnailCache[result.id] = processed.thumbnailData
             return result
         } catch {
             await fileStore.removeInstalledFiles(installed)
@@ -127,12 +142,18 @@ final class ImprintMediaService {
     }
 
     func delete(_ media: ImprintMediaSnapshot) async throws {
+        thumbnailCache.removeValue(forKey: media.id)
         try repository.deleteMedia(id: media.id)
         try? await fileStore.remove(media)
     }
 
     func thumbnailData(for media: ImprintMediaSnapshot) async throws -> Data {
-        try await fileStore.readThumbnail(for: media)
+        if let cached = thumbnailCache[media.id] {
+            return cached
+        }
+        let data = try await fileStore.readThumbnail(for: media)
+        thumbnailCache[media.id] = data
+        return data
     }
 
     func originalData(for media: ImprintMediaSnapshot) async throws -> Data {
@@ -144,6 +165,7 @@ final class ImprintMediaService {
     }
 
     func removeAllFiles() async throws {
+        thumbnailCache.removeAll()
         try await fileStore.removeAll()
     }
 

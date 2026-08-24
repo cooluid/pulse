@@ -103,26 +103,38 @@ public actor PulseMediaFileStore {
         }
     }
 
-    public func readThumbnail(for media: ImprintMediaSnapshot) throws -> Data {
+    public func readThumbnail(for media: ImprintMediaSnapshot) async throws -> Data {
+        try await readWithTransientRetry {
+            try readThumbnailValidated(for: media)
+        }
+    }
+
+    public func readOriginal(for media: ImprintMediaSnapshot) async throws -> Data {
+        try await readWithTransientRetry {
+            try readOriginalValidated(for: media)
+        }
+    }
+
+    private func readThumbnailValidated(for media: ImprintMediaSnapshot) throws -> Data {
         let data = try readFile(
             relativePath: media.thumbnailRelativePath,
             maximumBytes: Self.maximumThumbnailBytes
         )
         let hash = SHA256.hash(data: data).map { String(format: "%02x", $0) }.joined()
         guard hash == media.thumbnailSHA256,
-              data.count == media.thumbnailByteCount else {
+              Int64(data.count) == media.thumbnailByteCount else {
             throw PulseCoreError.invalidMedia
         }
         return data
     }
 
-    public func readOriginal(for media: ImprintMediaSnapshot) throws -> Data {
+    private func readOriginalValidated(for media: ImprintMediaSnapshot) throws -> Data {
         let data = try readFile(
             relativePath: media.originalRelativePath,
             maximumBytes: Self.maximumOriginalBytes
         )
         let hash = SHA256.hash(data: data).map { String(format: "%02x", $0) }.joined()
-        guard hash == media.sha256, data.count == media.byteCount else {
+        guard hash == media.sha256, Int64(data.count) == media.byteCount else {
             throw PulseCoreError.invalidMedia
         }
         return data
@@ -218,6 +230,24 @@ public actor PulseMediaFileStore {
         ) { relativePath, maximumBytes in
             try readFile(relativePath: relativePath, maximumBytes: maximumBytes)
         }
+    }
+
+    private func readWithTransientRetry(
+        _ operation: () throws -> Data
+    ) async throws -> Data {
+        let retryable: [PulseCoreError] = [.invalidMedia, .mediaFileUnavailable]
+        var lastError: Error?
+        for attempt in 0..<4 {
+            if attempt > 0 {
+                try await Task.sleep(nanoseconds: UInt64(attempt) * 40_000_000)
+            }
+            do {
+                return try operation()
+            } catch let error as PulseCoreError where retryable.contains(error) {
+                lastError = error
+            }
+        }
+        throw lastError ?? PulseCoreError.mediaFileUnavailable
     }
 
     private func readFile(relativePath: String, maximumBytes: Int) throws -> Data {

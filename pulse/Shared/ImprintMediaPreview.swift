@@ -123,6 +123,12 @@ struct ImprintMediaPreview: View {
         category: "media-preview"
     )
 
+    private struct LoadIdentity: Hashable {
+        let mediaID: UUID
+        let thumbnailRelativePath: String
+        let thumbnailSHA256: String
+    }
+
     private enum PreviewLoadState {
         case loading
         case image(UIImage)
@@ -171,7 +177,13 @@ struct ImprintMediaPreview: View {
                 lineWidth: PulseDesign.thinLineWidth
             )
         }
-        .task(id: media.modifiedAt) {
+        .task(
+            id: LoadIdentity(
+                mediaID: media.id,
+                thumbnailRelativePath: media.thumbnailRelativePath,
+                thumbnailSHA256: media.thumbnailSHA256
+            )
+        ) {
             state = .loading
             do {
                 let data = try await load(media)
@@ -217,6 +229,12 @@ struct ImprintMediaThumbnail: View {
         category: "media-thumbnail"
     )
 
+    private struct LoadIdentity: Hashable {
+        let mediaID: UUID
+        let thumbnailRelativePath: String
+        let thumbnailSHA256: String
+    }
+
     var body: some View {
         Group {
             if let image {
@@ -243,7 +261,13 @@ struct ImprintMediaThumbnail: View {
                     lineWidth: PulseDesign.thinLineWidth
                 )
         }
-        .task(id: media.modifiedAt) {
+        .task(
+            id: LoadIdentity(
+                mediaID: media.id,
+                thumbnailRelativePath: media.thumbnailRelativePath,
+                thumbnailSHA256: media.thumbnailSHA256
+            )
+        ) {
             do {
                 let data = try await load(media)
                 try Task.checkCancellation()
