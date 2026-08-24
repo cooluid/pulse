@@ -22,7 +22,7 @@
 
 环境：macOS 26.6、Xcode 26.4（17E192）、iPhone 17 Pro / iOS 26.4 Simulator。
 
-- 177 项单元/集成测试全部通过。
+- 178 项单元/集成测试全部通过。
 - 24 项 Simulator UI 功能测试全部通过。
 - Release 全 target Build 通过，包含 iPhone App、Home Screen Widget、Watch App 与 Watch Widget。
 - Release Analyze 通过。

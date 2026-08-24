@@ -7,10 +7,12 @@
 ## 当前状态
 
 - 产品阶段：核心功能进入发布前工程收口；外观可继续迭代、人工验收。自动化结果见实现状态，真机、通知、最终视觉与分发仍是独立门禁
-- 共享业务 target：`PulseCore`（静态、extension-safe，领域、schema、Repository 与导入导出唯一实现）
-- App target：`pulse`
+- 共享业务 framework：`PulseCore`（领域、schema、Repository 与导入导出）、`PulseWatchShared`（Watch 协议与本地状态）
+- 共享 UI 源目录：`PulseWidgetUI`（Home Screen Widget / Live Activity）、`PulseWatchUI`（Watch App / complication），分别编译进对应 extension 与容器 App
+- App target：`pulse`（iPhone / iPad 主应用）
+- Extension target：`PulseWidgetsExtension`、`PulseWatch`、`PulseWatchWidgetsExtension`
 - 测试 target：`pulseTests`、`pulseUITests`
-- 最低系统版本：iOS / iPadOS 18.0
+- 最低系统版本：iOS / iPadOS 18.0，watchOS 10.0
 - 数据策略：App Group store 使用 iOS Data Protection；只支持口令保护的版本化 `.pulsebackup` 导出与全量恢复
 - 工程基线：Swift 6 严格并发、所有 target 警告即错误
 

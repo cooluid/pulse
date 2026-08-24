@@ -21,25 +21,7 @@ enum PulseTodayPresentation {
         timeZone: TimeZone,
         locale: Locale
     ) -> String {
-        let date = PulseFormatting.fullDate(item.day, timeZone: timeZone, locale: locale)
-        let state: String
-        switch item.status {
-        case .beforeHabit:
-            state = PulseLocalization.string("calendar.status.before_habit", locale: locale)
-        case .checked:
-            state = PulseLocalization.string("calendar.status.checked", locale: locale)
-        case .missed:
-            state = PulseLocalization.string("calendar.status.missed", locale: locale)
-        case .todayPending:
-            state = PulseLocalization.string("calendar.status.pending", locale: locale)
-        case .future:
-            state = PulseLocalization.string("calendar.status.future", locale: locale)
-        }
-        return String(
-            format: PulseLocalization.string("accessibility.date_status_format", locale: locale),
-            date,
-            state
-        )
+        CalendarDayAccessibility.weekDayLabel(item, timeZone: timeZone, locale: locale)
     }
 
     static func checkInAccessibilityLabel(

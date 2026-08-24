@@ -1,8 +1,8 @@
 # Pulse 1.1 技术设计
 
-文档版本：3.4
+文档版本：3.5
 状态：Canonical Implemented Contract
-更新时间：2026-08-20
+更新时间：2026-08-24
 
 ## 1. 基线
 
@@ -44,7 +44,7 @@ WCSession 的 reply/error 回调由明确的非隔离 `@Sendable` 闭包接收�
 
 Watch 页面使用实际容器和 safe area 适配，不按设备型号复制业务路径。Accessibility Dynamic Type 下关键状态和操作必须可达。iPhone `AppSettings.watchWaveMotionEnabled` 是当前 Watch 动效偏好的唯一真源，经 `PulseWatchProjectSnapshot` 同步；Watch 端只消费快照，并与 Scene、Reduce Motion、低亮度共同裁决是否允许运动。
 
-Home / Accessory Widget 使用普通 `PulseWidgetCheckInIntent: AppIntent`，直接在 Widget extension 进程提交 Repository，避免为一次本地签到冷启动容器 App；返回后只接受 WidgetKit 保证的自动 timeline reload，不主动重复请求。容器 App 在下次生命周期激活或 Watch 快照请求时从 Repository 重投影，不依赖 Widget 进程内通知。Live Activity 使用独立 `PulseLiveActivityCheckInIntent: LiveActivityIntent`，在 App 进程提交成功后才发送 `PulseExternalCheckInSignal` 并通过唯一 `PulseWidgetTimelineReloadCoordinator` 刷新两个正式 Widget kind。信号不携带、不持久化业务事实，也不承担成功裁决。App 内其他事实变化也只通过同一 coordinator 适配器刷新，不再散落 `WidgetCenter` 调用。
+Home / Accessory Widget 使用普通 `PulseWidgetCheckInIntent: AppIntent`，直接在 Widget extension 进程提交 Repository，避免为一次本地签到冷启动容器 App；返回后只接受 WidgetKit 保证的自动 timeline reload，不主动重复请求。容器 App 在下次生命周期激活或 Watch 快照请求时从 Repository 重投影，不依赖 Widget 进程内通知。Live Activity 使用独立 `PulseLiveActivityCheckInIntent: LiveActivityIntent`，在 App 进程提交成功后才发送 `PulseExternalCheckInSignal` 并通过 `PulseWidgetTimelineReloadCoordinator` 刷新两个正式 Home Screen Widget kind。信号不携带、不持久化业务事实，也不承担成功裁决。iPhone App 内其他事实变化通过 `WidgetTimelineReloader` 适配同一 coordinator，不散落 `WidgetCenter` 调用。Watch App 在本地投影变化后通过 `PulseWatchWidgetTimelineReloadCoordinator` 刷新 `PulseWatchContract.allWidgetKinds`，与 iOS 侧保持同一集中化模式。
 
 ## 3. 持久化
 

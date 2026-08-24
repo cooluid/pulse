@@ -60,7 +60,7 @@ Pulse 1.1 把“每天可靠签到”升级为“每天留下一个可验证事�
 | SwiftData | 只接受 `PulseSchema 1.1.1` marker；实验性 1.1.0 与更旧内部安装明确要求清洁安装 |
 | 加密归档 | 只接受 container v2 / payload v3；payload v1/v2 与 container v1 明确报版本不支持 |
 | Bundle / App Group | `co.fanr.pulse` / `group.co.fanr.pulse` |
-| 最低系统 | iOS / iPadOS 18.0 |
+| 最低系统 | iOS / iPadOS 18.0，watchOS 10.0 |
 
 首次公开发布 1.1 后，这一 schema 与 container v2 / payload v3 归档才成为必须长期迁移的公开基线。
 

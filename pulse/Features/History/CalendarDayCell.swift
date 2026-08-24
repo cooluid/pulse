@@ -144,28 +144,6 @@ struct CalendarDayCell: View {
     }
 
     private var accessibilityLabel: String {
-        let state: String
-        switch item.status {
-        case .checked:
-            state = PulseLocalization.string("calendar.status.checked", locale: locale)
-        case .missed:
-            state = PulseLocalization.string("calendar.status.missed", locale: locale)
-        case .todayPending:
-            state = PulseLocalization.string("calendar.status.pending", locale: locale)
-        case .future:
-            state = PulseLocalization.string("calendar.status.future", locale: locale)
-        case .beforeHabit:
-            state = PulseLocalization.string("calendar.status.before_habit", locale: locale)
-        }
-        let base = String(
-            format: PulseLocalization.string("accessibility.date_status_format", locale: locale),
-            item.day.storageValue,
-            state
-        )
-        guard hasMedia else { return base }
-        return String(
-            format: PulseLocalization.string("calendar.status.with_media_format", locale: locale),
-            base
-        )
+        CalendarDayAccessibility.monthDayLabel(item, locale: locale, hasMedia: hasMedia)
     }
 }

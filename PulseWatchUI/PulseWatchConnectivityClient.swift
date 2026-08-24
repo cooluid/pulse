@@ -239,9 +239,7 @@ final class PulseWatchConnectivityClient: NSObject {
         } catch {
             stateDidChange?(.storageUnavailable)
         }
-        for kind in PulseWatchContract.allWidgetKinds {
-            WidgetCenter.shared.reloadTimelines(ofKind: kind)
-        }
+        PulseWatchWidgetTimelineReloadCoordinator.reloadAllKinds()
     }
 }
 
