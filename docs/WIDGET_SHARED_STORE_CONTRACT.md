@@ -4,7 +4,7 @@
 状态：Canonical Functional Contract
 更新日期：2026-08-24
 
-本文只定义 Widget 的产品能力、数据所有权和跨进程行为，不定义外观或设计意图。
+本文定义 Widget 的产品能力、数据所有权和跨进程行为。
 
 ## 1. 产品能力
 
@@ -12,7 +12,7 @@
 - 待落之处免费，其余七个样式由统一高级功能 entitlement 解锁。
 - Home Screen 每个实例独立选择样式；Lock Screen 使用独立 kind，不接收 Home Screen 样式参数。
 - 未签到时 Widget 提供单向签到；完成后不提供撤销。
-- 产品名称和收费边界是合同，具体外观不是合同。
+- 产品名称和收费边界以本节为准。
 
 ## 2. 唯一身份与容器
 
@@ -38,7 +38,7 @@ App、Widget 和相关 Intent 从同一 build setting 取得 App Group。系统�
 - `PulseWidgetSnapshotReader` 从 Repository 生成不可变快照。
 - 快照包含当前项目、逻辑日、今日状态和所需历史投影；所有派生值均可重建。
 - Timeline 必须覆盖下一逻辑日边界，不能跨日继续显示昨天的今天。
-- 其他纯展示 entry 由当前实现决定，不成为产品合同，系统也不保证准点交付。
+- 系统不保证 timeline 准点交付。
 - Gallery 可以投影内存预览，但不得写 Repository、UserDefaults、正式 Timeline 或权益。
 
 ## 5. 权益
@@ -60,10 +60,7 @@ App、Widget 和相关 Intent 从同一 build setting 取得 App Group。系统�
 - Home Screen 可以显示用户确认的名称；Lock Screen、StandBy 和 Always-On 不显示名称；任何 Widget 都不显示备注、记事或照片。
 - 状态不能只靠颜色，VoiceOver 提供日期、状态和操作后果。
 - Reduce Motion、Always-On、低亮度和系统 rendering mode 下保持事实可读。
-- 具体控件、构图、颜色、图层和动画不属于合同。
 
-## 8. 测试边界
+## 8. 测试
 
 自动化验证 store 身份、schema、快照事实、跨日、幂等、权益、Intent、失败、隐私和无障碍结果。
-
-自动化不得读取源码来限定实现写法，也不得断言外观、View 层级、视觉令牌、像素或截图。渲染附件只供人工查看。

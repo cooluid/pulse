@@ -17,7 +17,6 @@
 - App Group UserDefaults 只管理共享语言和提醒设置，不保存签到、统计、样式或权益副本。
 - StoreKit 已验证交易与 `PulseEnhancementContract.currentCapabilities` 是高级功能唯一来源。
 - Watch 只保存可重建快照、durable outbox 和回执；iPhone Repository 仍是签到唯一真源。
-- 外观由当前实现和人工判断决定；项目文档和自动化不定义或锁定外观。
 
 ## 当前验证
 
@@ -31,7 +30,7 @@
 - 五份 String Catalog 和 `brand-tokens.json` 解析通过。
 - `git diff --check` 通过。
 
-自动化只验证功能、事实、无障碍结果和平台硬限制；不包含源码写法、构图、视觉令牌、几何、图层、像素或截图 golden test。
+自动化验证功能、事实、无障碍结果和平台硬限制。
 
 ## 仍未关闭
 

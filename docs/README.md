@@ -13,7 +13,6 @@
 | [TEST_PLAN.md](./TEST_PLAN.md) | 定义自动化、手工、设备与发布前验证 | 开发、测试 |
 | [IMPLEMENTATION_STATUS.md](./IMPLEMENTATION_STATUS.md) | 记录当前实现范围、验证证据和发布门槛 | 全员 |
 | [PRODUCT_STRATEGY_2_X.md](./PRODUCT_STRATEGY_2_X.md) | 定义长期定位、功能组合、收费边界与验证方法 | 产品、设计、商业、开发 |
-| [PRODUCT_ROADMAP.md](./PRODUCT_ROADMAP.md) | 将当前 1.1 与后续 Plus、岁月流影、系统入口和智能阶段拆成证据门禁 | 产品、开发、测试、发布负责人 |
 | [PULSE_RITUAL_CONTRACT.md](./PULSE_RITUAL_CONTRACT.md) | 定义 Widget、Live Activity、灵动岛、锁屏、Apple Watch、系统动效和提醒通道的统一产品语义 | 产品、设计、开发、测试 |
 | [WIDGET_SHARED_STORE_CONTRACT.md](./WIDGET_SHARED_STORE_CONTRACT.md) | 定义基础 Widget、唯一 App Group store、跨进程签到、隐私与能力准入门禁 | 产品、开发、测试、发布负责人 |
 | [DATA_ENCRYPTION_CONTRACT.md](./DATA_ENCRYPTION_CONTRACT.md) | 定义设备内文件保护、加密备份容器、口令/KDF、失败语义与内购边界 | 产品、安全、开发、测试、发布负责人 |
@@ -43,13 +42,13 @@
 2. 1.1 已选择本地优先、iOS Data Protection 与包含照片的口令加密备份恢复；发布文案必须明确卸载和密码不可找回边界，CloudKit 不进入 1.1。
 3. App 的正式版本号、商店文案与截图；Bundle ID、中英文显示名称、隐私说明和支持入口已经冻结。
 
-生产设计见 [`design`](../design/README.md)。颜色与 AppIcon 走令牌生成链；全 App 外观以代码与人工截图为准。最终界面与商店素材仍需独立确认。
+生产设计见 [`design`](../design/README.md)。颜色与 AppIcon 走令牌生成链。商店素材仍需独立确认。
 
 ## 变更规则
 
 - 签到规则发生变化时，先修改 `DOMAIN_CONTRACT.md`，再改实现和测试。
 - 产品范围发生变化时，先修改 `PRODUCT_REQUIREMENTS.md` 与 `RELEASE_SCOPE_1_1.md`。
-- Widget、Live Activity、灵动岛、Apple Watch 或提醒通道语义变化时，先修改 `PULSE_RITUAL_CONTRACT.md`，再映射路线图、实现和测试。
+- Widget、Live Activity、灵动岛、Apple Watch 或提醒通道语义变化时，先修改 `PULSE_RITUAL_CONTRACT.md`，再改实现和测试。
 - Widget 的共享数据位置、schema 或跨进程写入变化时，先修改 `WIDGET_SHARED_STORE_CONTRACT.md`，不得在 Widget target 内另建数据路径。
 - 不在多个文档复制完整算法；其他文档通过链接引用业务规则。
 - 完成一项任务时，必须同时满足对应自动化测试和手工验收，不以“能编译”代替完成。

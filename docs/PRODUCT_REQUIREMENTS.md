@@ -117,18 +117,18 @@ MVP 的目标不是搭建任务平台，而是让以下闭环稳定成立：
 
 - 面向所有用户的每日基础提醒开关与提醒时间。
 - 独立高阶权益页：购买状态、恢复购买与诚实错误；商品价格只读取 StoreKit，未购买不展示伪价格。已交付能力只读 `PulseEnhancementContract.currentCapabilities`，页面不得写入当前主题或签到事实。
-- 独立 Widget 样式画廊：可以预览当前正式样式和内存中的待签到/完成状态，不得写入签到事实。收费样式必须明确权益状态并提供进入高级功能页的可达操作；具体卡片、文案、预览和导航构图不由本文规定。
+- 独立 Widget 样式画廊：可以预览当前正式样式和内存中的待签到/完成状态，不得写入签到事实。收费样式必须明确权益状态并提供进入高级功能页的可达操作。
 - 提醒时间。
 - 一周起始日。
 - 主题模式设置：跟随系统、浅色、深色。
-- 界面主题：纸页手记是唯一免费与默认主题；静野、晴昼由同一个高级功能 StoreKit entitlement 解锁。三套主题中的签到、记事、照片、月历、漏签和统计能力必须等价。未验证权益时付费主题只能预览，不得启用、静默替换或保存伪解锁状态；权益撤销时统一切回纸页手记并说明结果。具体视觉不属于产品合同。界面语言设置：跟随系统、English、简体中文；App 与 Widget 消费同一语言事实。
+- 界面主题：纸页手记是唯一免费与默认主题；静野、晴昼由同一个高级功能 StoreKit entitlement 解锁。三套主题中的签到、记事、照片、月历、漏签和统计能力必须等价。未验证权益时付费主题只能预览，不得启用、静默替换或保存伪解锁状态；权益撤销时统一切回纸页手记并说明结果。界面语言设置：跟随系统、English、简体中文；App 与 Widget 消费同一语言事实。
 - 导出口令保护的 Pulse 加密备份；口令不保存且无法找回。
 - 从 `.pulsebackup` 恢复数据；认证和完整校验后再由用户确认全量替换，不做隐式合并。
 - 修改签到时区。
 - 今日入镜邀请开关、媒体占用空间和“照片仅保存在本机与用户主动导出的加密归档”说明。
 - 独立“帮助与反馈”分组：帮助中心、反馈与建议、隐私政策分别承担自助排障、主动联系和数据说明，不再用一个“产品支持”外链混合三种任务。反馈正文最多 2000 个 Swift `Character`，问题/建议分类、支持邮箱、版本信息和邮件模板只来自集中合同。页面只保留写信任务：分类、正文、可选截图、可选技术信息。发送时打开系统邮件编辑器，由用户检查、修改或取消。
 
-破坏性确认必须来自实际触发操作并明确后果；设置页面如何分组和构图不由本文规定。
+破坏性确认必须来自实际触发操作并明确后果。
 
 高阶权益只由 StoreKit 2 已验证交易派生，不持久化购买布尔值，也不进入 `CheckInRecord`、Repository、备份格式或 Widget 事实。商品展示名称与价格消费 App Store 返回值；`PulseEnhancementContract.currentCapabilities` 是已交付买断能力的唯一目录。新能力只有真正发布后才能加入目录和高阶权益页；加载失败、待处理、取消、无可恢复购买和验证失败均不得伪装为成功。
 
@@ -136,7 +136,7 @@ MVP 的目标不是搭建任务平台，而是让以下闭环稳定成立：
 
 通知权限只在用户主动开启提醒时请求，用于免费基础提醒，以及付费 Live Activity 系统容量之外的长期连续性；首次启动不得直接弹出。用户拒绝通知时不能假装获得完整连续提醒，提醒开关保持关闭并明确说明授权要求。今天已过提醒时间时从明天开始，已签到日期不生成请求；启动、回到前台、任一系统入口签到、权益或提醒设置变化时刷新并先取消旧计划。系统调度容量和呈现由 iOS 裁决，产品文案不能承诺“到点一定出现”。
 
-`PulseWidgetStyleAccessPolicy` 规定待落之处是唯一免费 Home Screen Widget 样式；星环、叠印、数影、手札、静场、来路、潮痕属于同一个高阶权益 entitlement。样式由 Home Screen WidgetKit 逐实例配置持有；Widget extension 验证权益，未知标识或未验证权益失败关闭。Lock Screen Widget 使用独立、无 Home Screen 样式参数的 kind。事实与系统行为见 [WIDGET_MOTION_CONTRACT.md](./WIDGET_MOTION_CONTRACT.md)；任何具体外观和动效都不是产品合同。
+`PulseWidgetStyleAccessPolicy` 规定待落之处是唯一免费 Home Screen Widget 样式；星环、叠印、数影、手札、静场、来路、潮痕属于同一个高阶权益 entitlement。样式由 Home Screen WidgetKit 逐实例配置持有；Widget extension 验证权益，未知标识或未验证权益失败关闭。Lock Screen Widget 使用独立、无 Home Screen 样式参数的 kind。事实与系统行为见 [PULSE_RITUAL_CONTRACT.md](./PULSE_RITUAL_CONTRACT.md) 和 [WIDGET_SHARED_STORE_CONTRACT.md](./WIDGET_SHARED_STORE_CONTRACT.md)。
 
 ## 5. 功能范围
 
@@ -162,7 +162,7 @@ MVP 的目标不是搭建任务平台，而是让以下闭环稳定成立：
 
 ### 5.2 P1：1.1 增强范围
 
-- 免费基础提醒：所有用户均可使用本地通知；一次买断高阶权益在受支持的 iOS 26 系统上增加定时 standard Live Activity，可从 Lock Screen / Dynamic Island 直接签到。该系统表面没有用户样式选择，也不保存视觉偏好；“萤火日晕”只是当前产品名称，不约束未来画法。
+- 免费基础提醒：所有用户均可使用本地通知；一次买断高阶权益在受支持的 iOS 26 系统上增加定时 standard Live Activity，可从 Lock Screen / Dynamic Island 直接签到。该系统表面没有用户样式选择，也不保存视觉偏好。当前产品名为“萤火日晕”。
 - Pulse 加密备份 container v2 / payload v3 导出与全量恢复，包含签到、记事、媒体清单、原图与缩略图；备份/恢复永久属于免费数据主权能力。
 - 签到时区设置。
 - 一周起始日设置。
@@ -173,7 +173,7 @@ MVP 的目标不是搭建任务平台，而是让以下闭环稳定成立：
 ### 5.3 P2：后续候选，不属于 MVP 承诺
 
 - 隐私锁；基础 Widget 已受控进入 1.0，后续仅评估不改变事实语义的高级 Widget / Control / Shortcuts，详细边界以 [WIDGET_SHARED_STORE_CONTRACT.md](./WIDGET_SHARED_STORE_CONTRACT.md) 为准；
-- 签到成功后的其他跨系统反馈候选；具体视觉不进入路线图合同；
+- 签到成功后的其他跨系统反馈候选；
 - 与签到事实分离的轻量回响和缺席说明，不形成补签；
 - Apple Watch 的 28/90/365 日高级节律、印期、年轮和往年今日抽象回看，Shortcuts 和其他高级系统入口；
 - 通过冲突原型门禁后的私密多设备同步；
@@ -181,7 +181,7 @@ MVP 的目标不是搭建任务平台，而是让以下闭环稳定成立：
 - 节律、印期、持续回响、长期档案等 Pulse Plus 能力；
 - 微信提醒仅作为官方资格轨候选：主体、类目、模板、用户授权和真实发送全部通过后，才评估为本地提醒之外的可选通道。
 
-后续候选的 GO / HOLD / NO-GO、免费与收费边界、数据合同和阶段门禁以 [PRODUCT_STRATEGY_2_X.md](./PRODUCT_STRATEGY_2_X.md) 与 [PRODUCT_ROADMAP.md](./PRODUCT_ROADMAP.md) 为准；Widget、Live Activity、灵动岛、Apple Watch 和提醒通道语义以 [PULSE_RITUAL_CONTRACT.md](./PULSE_RITUAL_CONTRACT.md) 为准。多个并行项目继续 `HOLD`；补签、连续冻结、AI 面龄、全天常驻未签到灵动岛和非官方微信个人号自动化为 `NO-GO`。
+后续候选的 GO / HOLD / NO-GO、免费与收费边界、数据合同和阶段门禁以 [PRODUCT_STRATEGY_2_X.md](./PRODUCT_STRATEGY_2_X.md) 为准；Widget、Live Activity、灵动岛、Apple Watch 和提醒通道语义以 [PULSE_RITUAL_CONTRACT.md](./PULSE_RITUAL_CONTRACT.md) 为准。多个并行项目继续 `HOLD`；补签、连续冻结、AI 面龄、全天常驻未签到灵动岛和非官方微信个人号自动化为 `NO-GO`。
 
 ### 5.4 明确不在 MVP 范围
 

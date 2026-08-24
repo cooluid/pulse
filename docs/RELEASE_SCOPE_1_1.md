@@ -14,7 +14,7 @@ Pulse 1.1 把“每天可靠签到”升级为“每天留下一个可验证事�
 
 - 单用户、单一主承诺、固定签到时区与 00:00 日界线。
 - 今日签到、幂等并发、最近 7 天、月历、当前/最长连续和累计签到。
-- 单击只签到；长按 0.45 秒执行“签到并拍照”：先完成同一权威签到事务，成功后才请求相机。签到后提供独立拍照、查看和管理入口；具体控件、位置、图形和 Sheet 构图不属于发布合同。不提供相册导入或伪造拍照 fallback。
+- 单击只签到；长按 0.45 秒执行“签到并拍照”：先完成同一权威签到事务，成功后才请求相机。签到后提供独立拍照、查看和管理入口。不提供相册导入或伪造拍照 fallback。
 - 每个逻辑日最多一条 `ImprintMedia`；统一保存去元数据 JPEG 原图和缩略图，原图最大边 4096 px，缩略图最大边 720 px。
 - 照片失败、取消或拒绝权限不撤销签到；照片成功状态只来自文件安装与数据库提交完成。
 - 删除/重拍照片不改变签到与统计；删除签到只解除照片关联，不暗中删除照片。历史月历以相机标记显示仍保留影像的日期。
@@ -25,7 +25,7 @@ Pulse 1.1 把“每天可靠签到”升级为“每天留下一个可验证事�
 - 免费基础提醒、一次买断高阶权益、八种逐实例 Home Screen Widget 构图（待落之处免费，星环 / 叠印 / 数影 / 手札 / 静场 / 来路 / 潮痕收费）与 iOS 26 scheduled Live Activity，沿用正式权益合同。正式产品枚举只由 `PulseWidgetStyle` 与 String Catalog 持有，外观只由共享 `PulseWidgetHomeRenderer` 持有。
 - English / 简体中文、纸页手记免费默认主题、静野/晴昼付费主题、Dynamic Type、VoiceOver、Reduce Motion、iPhone/iPad 正式布局。
 - 设置中的正式“帮助与反馈”信息架构：原生反馈与建议页、独立帮助中心和隐私政策入口；用户在系统邮件编辑器中检查并主动发送，App 不建立账号、反馈数据库、第三方 SDK 或后台上报。
-- watchOS 10+ iPhone 伴侣 App、complication 与 Smart Stack 签到。iPhone 设置提供 Apple Watch 入口、配对/安装状态与当前动效开关；设置随正式快照进入 Watch，并服从 Reduce Motion / Always-On。Watch 本地只保存可重建快照、durable command outbox 和最后回执；即时消息与后台用户信息复用同一 `operationID` 和 iPhone Repository 写入路径。`pendingSync` 不得冒充成功，基础 Watch 能力永久免费。具体 Watch 外观不属于发布合同。
+- watchOS 10+ iPhone 伴侣 App、complication 与 Smart Stack 签到。iPhone 设置提供 Apple Watch 入口、配对/安装状态与当前动效开关；设置随正式快照进入 Watch，并服从 Reduce Motion / Always-On。Watch 本地只保存可重建快照、durable command outbox 和最后回执；即时消息与后台用户信息复用同一 `operationID` 和 iPhone Repository 写入路径。`pendingSync` 不得冒充成功，基础 Watch 能力永久免费。
 
 ## 3. 收费边界
 
@@ -85,5 +85,5 @@ App Store Connect 隐私答案不能继续沿用纯本地版本的“未收集�
 - 产品范围修改本文与 `PRODUCT_REQUIREMENTS.md`。
 - 日期、签到、记事、影像独立性与删除语义修改 `DOMAIN_CONTRACT.md`。
 - 文件保护和归档协议修改 `DATA_ENCRYPTION_CONTRACT.md`。
-- 领域/仪式/隐私/权益事实修改对应合同；外观改代码后人工截图验收即可。
+- 领域/仪式/隐私/权益事实修改对应合同。外观直接改实现。
 - 自动化通过不是相机真机、视觉人工或 App Store 发布 GO。

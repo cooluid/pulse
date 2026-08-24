@@ -6,7 +6,7 @@ import XCTest
 @testable import pulse
 
 @MainActor
-final class PulseWidgetSnapshotTests: XCTestCase {
+final class PulseWidgetProjectionTests: XCTestCase {
 
     func testReminderActivityTimeUsesTheAttributeTimeZone() {
         let reminderDate = Date(timeIntervalSince1970: 67_320)

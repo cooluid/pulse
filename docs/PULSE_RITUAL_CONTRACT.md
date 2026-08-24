@@ -4,7 +4,7 @@
 状态：Canonical Functional Contract
 更新日期：2026-08-24
 
-本文定义 App、Widget、通知、Live Activity 和 Apple Watch 如何消费同一个签到事实。本文不定义任何外观或设计意图；当前产品名称和实现均可重画。
+本文定义 App、Widget、通知、Live Activity 和 Apple Watch 如何消费同一个签到事实。
 
 ## 1. 单一事实
 
@@ -13,13 +13,12 @@
 - App、Widget、Live Activity 和 Watch 并发时按同一 `recordKey` 收敛为同一逻辑日一条记录。
 - 系统表面不读取或显示每日记事、照片和主承诺备注。Home Screen Widget 可以显示用户确认的“我的一件事”；Lock Screen、StandBy、Always-On 和 Watch 不显示其正文。
 
-## 2. 产品能力与外观自由
+## 2. 产品能力
 
-- Home Screen Widget 当前提供待落之处、星环、叠印、数影、手札、静场、来路、潮痕八个产品样式名；待落之处免费，其余由统一高级功能 entitlement 解锁。
+- Home Screen Widget 提供待落之处、星环、叠印、数影、手札、静场、来路、潮痕八个样式；待落之处免费，其余由统一高级功能 entitlement 解锁。
 - Lock Screen Widget 使用独立 kind，不消费 Home Screen 样式参数，永久免费。
-- iOS 26 scheduled Live Activity 当前产品名为“萤火日晕”；名称不规定图形或颜色。
+- iOS 26 scheduled Live Activity 产品名为“萤火日晕”。
 - Apple Watch 提供基础今日状态、签到、complication 和 Smart Stack，永久免费。
-- 上述名称、数量和收费边界是产品事实；具体长相只由当前实现和人工验收决定，文档和测试不得固定。
 
 ## 3. App 内签到
 
@@ -35,7 +34,7 @@
 - App 与 Widget 使用同一 App Group SwiftData store，不存在 UserDefaults 签到副本、私有 store fallback 或第二 Repository。
 - Home Screen 样式由 WidgetKit 逐实例配置持有；App Group 不保存全局 `widget.style`。
 - Widget extension 在生成 snapshot/timeline 时验证 StoreKit 权益。未知样式、未验证或撤销的收费权益必须明确失败，不能静默替换成免费样式。
-- Timeline 必须在下一逻辑日重新投影；纯视觉 entry 的数量和时刻由实现自由决定，系统不保证准点展示。
+- Timeline 必须在下一逻辑日重新投影。系统不保证 timeline 准点展示。
 
 ### 4.2 交互
 
@@ -91,17 +90,14 @@ Watch 点击先创建不可变命令：稳定 `operationID`、项目 ID/revision
 - 关键状态不能只靠颜色；VoiceOver 必须读出当前事实和操作后果。
 - Dynamic Type 下关键任务可完成，不裁切或重叠操作。
 - Reduce Motion、Always-On、低亮度和后台场景提供等价静态状态。
-- Widget / Live Activity 单次动画遵守 Apple 当前平台上限；具体曲线、材料和图层不属于合同。
+- Widget / Live Activity 单次动画遵守 Apple 当前平台上限。
 - 系统托管表面的最终尺寸、位置、时机和动画由系统裁决。
 
-## 8. 测试边界
+## 8. 测试
 
-自动化必须验证领域事实、幂等、权限、通道仲裁、Intent 进程结果、跨日、失败、Watch outbox/回执和隐私边界。
-
-自动化不得验证具体外观、View 层级、SwiftUI 写法、像素差、截图哈希或设计参考。渲染附件只供人工检查。
+自动化验证领域事实、幂等、权限、通道仲裁、Intent 进程结果、跨日、失败、Watch outbox/回执和隐私边界。
 
 ## 9. 发布证据
 
 - Simulator 和自动化不替代真实 Widget host、通知、Live Activity、Dynamic Island 或配对 Watch。
 - Watch 必须在真实配对设备覆盖前后台、失联、重启、飞行模式、跨午夜、重复/乱序命令、Always-On、VoiceOver、Reduce Motion、complication、Smart Stack 和电量。
-- 外观只需提供当前完整页面/系统表面给人验收；人工结论不转化成未来设计门禁。

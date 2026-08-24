@@ -53,7 +53,7 @@
 | 签到 / 记事 / 照片 / 删除 | [`docs/DOMAIN_CONTRACT.md`](./docs/DOMAIN_CONTRACT.md) |
 | 范围、收费、验收 | [`docs/PRODUCT_REQUIREMENTS.md`](./docs/PRODUCT_REQUIREMENTS.md)、[`docs/RELEASE_SCOPE_1_1.md`](./docs/RELEASE_SCOPE_1_1.md) |
 | 用户可见文字 | [`design/CONTENT_DESIGN_SPEC.md`](./design/CONTENT_DESIGN_SPEC.md) |
-| 外观工程与人工验收边界 | [`design/BRAND_SPEC.md`](./design/BRAND_SPEC.md) |
+| 外观工程 | [`design/BRAND_SPEC.md`](./design/BRAND_SPEC.md) |
 | Widget / 灵动岛 / 提醒 | [`docs/PULSE_RITUAL_CONTRACT.md`](./docs/PULSE_RITUAL_CONTRACT.md) |
 | 备份加密 | [`docs/DATA_ENCRYPTION_CONTRACT.md`](./docs/DATA_ENCRYPTION_CONTRACT.md) |
 | 当前是否可发布 | [`docs/IMPLEMENTATION_STATUS.md`](./docs/IMPLEMENTATION_STATUS.md) |
