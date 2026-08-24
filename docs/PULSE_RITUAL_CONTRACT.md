@@ -89,7 +89,7 @@ preparing → aligning → blending → encoding → completed / failed / cancel
 - Lock Screen 矩形：使用唯一“节律汇印”语法；左上显示今日短状态，过去六日节点上方显示不带日期后缀的本地化纯数字并以真实连接线汇入右侧唯一今日印记，今天数字显示在大印内部，不显示主承诺文本、星期或第七个今日小节点；
 - Home Screen 小号/中号：待落之处是唯一面向所有用户的免费构图；高阶权益解锁星环 / 叠印 / 数影 / 手札 / 静场 / 来路 / 潮痕。八式是产品构图名；外观以渲染器与人工截图为准。各式按任务选择快照事实。正式枚举只含现行八式，未知标识失败关闭。
 
-构图只是逐实例呈现选择：App Group 只允许 `PulseSharedSettings` 保存 `interface.language`、`reminder.enabled` 与 `reminder.timeMinutes`；后两项只用于 Widget Intent 提交签到后重建同一提醒计划。不得复制构图、签到记录、连续天数、日期、主承诺或购买状态。`WidgetConfigurationIntent` 是每个 Home Screen 实例的唯一构图来源；Widget extension 在生成每个 snapshot/timeline 时独立验证 entitlement，收费构图在权益未验证或撤销时明确显示未解锁，不得静默换成待落之处。Lock Screen / StandBy / Always-On 使用独立、无构图参数的 Accessory Widget kind，永久免费，不消费 Home Screen 构图，也不显示主承诺正文。App 与 Widget 内容消费同一语言；未知语言失败关闭，不能用系统语言伪装成功。
+构图只是逐实例呈现选择：App Group 只允许 `PulseSharedSettings` 保存 `interface.language`、`reminder.enabled` 与 `reminder.timeMinutes`；后两项由 App 的唯一提醒协调器使用。Widget Intent 签到后只完成当天精确投递，不在返回前读取权益或重建未来提醒计划。不得复制构图、签到记录、连续天数、日期、主承诺或购买状态。`WidgetConfigurationIntent` 是每个 Home Screen 实例的唯一构图来源；Widget extension 在生成每个 snapshot/timeline 时独立验证 entitlement，收费构图在权益未验证或撤销时明确显示未解锁，不得静默换成待落之处。Lock Screen / StandBy / Always-On 使用独立、无构图参数的 Accessory Widget kind，永久免费，不消费 Home Screen 构图，也不显示主承诺正文。App 与 Widget 内容消费同一语言；未知语言失败关闭，不能用系统语言伪装成功。
 
 Widget 的未签到操作使用 `Button`，不使用可以反向切换的 `Toggle`。Accessory 待签到时整块系统分配区域都是同一按钮，不能只让图形局部可点；完成态静态。签到可从系统入口创建，但删除仍只在 App 内二次确认。设备锁定时交互遵循系统认证，不绕过锁屏。
 

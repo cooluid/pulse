@@ -476,7 +476,7 @@ struct PulseReminderActivityActionButton: View {
     let surface: PulseReminderActivitySurface
 
     var body: some View {
-        Button(intent: PulseCheckInIntent()) {
+        Button(intent: PulseLiveActivityCheckInIntent()) {
             Text(verbatim: actionTitle)
             .font(.system(.subheadline, weight: actionWeight))
             .lineLimit(1)

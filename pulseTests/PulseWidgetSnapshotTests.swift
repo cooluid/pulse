@@ -1250,7 +1250,11 @@ final class PulseWidgetSnapshotTests: XCTestCase {
         let sharedSource = try swiftSource(in: sharedSourceDirectory)
         let extensionSource = try swiftSource(in: extensionSourceDirectory)
 
-        for typeName in ["PulseWidgetConfigurationIntent", "PulseCheckInIntent"] {
+        for typeName in [
+            "PulseWidgetConfigurationIntent",
+            "PulseWidgetCheckInIntent",
+            "PulseLiveActivityCheckInIntent",
+        ] {
             XCTAssertTrue(sharedSource.contains("struct \(typeName)"))
             XCTAssertFalse(extensionSource.contains("struct \(typeName)"))
         }
@@ -1259,6 +1263,120 @@ final class PulseWidgetSnapshotTests: XCTestCase {
             3,
             "PulseWidgetUI must remain a synchronized source group of both the app and widget-extension targets."
         )
+    }
+
+    func testSystemCheckInIntentsHaveSingleReloadOwnership() throws {
+        let projectRoot = URL(fileURLWithPath: #filePath)
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+        let intentsSource = try String(
+            contentsOf: projectRoot
+                .appendingPathComponent("PulseWidgetUI", isDirectory: true)
+                .appendingPathComponent("PulseCheckInIntents.swift", isDirectory: false),
+            encoding: .utf8
+        )
+        let widgetSource = try String(
+            contentsOf: projectRoot
+                .appendingPathComponent("PulseWidgets", isDirectory: true)
+                .appendingPathComponent("PulseWidgets.swift", isDirectory: false),
+            encoding: .utf8
+        )
+        let activitySource = try String(
+            contentsOf: projectRoot
+                .appendingPathComponent("PulseWidgetUI", isDirectory: true)
+                .appendingPathComponent("PulseReminderActivityRenderer.swift", isDirectory: false),
+            encoding: .utf8
+        )
+        let runtimeSource = try String(
+            contentsOf: projectRoot
+                .appendingPathComponent("PulseWidgetUI", isDirectory: true)
+                .appendingPathComponent("PulseWidgetSharedRuntime.swift", isDirectory: false),
+            encoding: .utf8
+        )
+        let productionSource = try ["pulse", "PulseWidgetUI", "PulseWidgets"]
+            .map { directory in
+                try recursiveSwiftSource(
+                    in: projectRoot.appendingPathComponent(directory, isDirectory: true)
+                )
+            }
+            .joined(separator: "\n")
+
+        XCTAssertTrue(widgetSource.contains("Button(intent: PulseWidgetCheckInIntent())"))
+        XCTAssertTrue(activitySource.contains("Button(intent: PulseLiveActivityCheckInIntent())"))
+        XCTAssertFalse(productionSource.contains("struct PulseCheckInIntent"))
+        XCTAssertFalse(productionSource.contains("checkInAndReconcileReminders"))
+        XCTAssertFalse(productionSource.contains("completeLiveActivity"))
+        XCTAssertTrue(runtimeSource.contains("checkInAndCompleteTodayDelivery"))
+        XCTAssertFalse(runtimeSource.contains("hasCurrentEntitlement"))
+        XCTAssertFalse(runtimeSource.contains("reminderScheduler.reconcile"))
+        XCTAssertFalse(runtimeSource.contains("repository.allRecords"))
+        XCTAssertFalse(runtimeSource.contains("PulseExternalCheckInSignal.post()"))
+
+        let widgetIntentStart = try XCTUnwrap(
+            intentsSource.range(of: "struct PulseWidgetCheckInIntent")
+        )
+        let activityIntentStart = try XCTUnwrap(
+            intentsSource.range(of: "struct PulseLiveActivityCheckInIntent")
+        )
+        let widgetIntentSource = intentsSource[
+            widgetIntentStart.lowerBound..<activityIntentStart.lowerBound
+        ]
+        let activityIntentSource = intentsSource[activityIntentStart.lowerBound...]
+
+        XCTAssertTrue(widgetIntentSource.contains("struct PulseWidgetCheckInIntent: AppIntent"))
+        XCTAssertFalse(widgetIntentSource.contains("LiveActivityIntent"))
+        XCTAssertFalse(widgetIntentSource.contains("reloadAllKinds"))
+        XCTAssertFalse(widgetIntentSource.contains("PulseExternalCheckInSignal.post()"))
+        XCTAssertTrue(activityIntentSource.contains(
+            "struct PulseLiveActivityCheckInIntent: LiveActivityIntent"
+        ))
+        XCTAssertTrue(activityIntentSource.contains("PulseExternalCheckInSignal.post()"))
+        XCTAssertTrue(activityIntentSource.contains(
+            "PulseWidgetTimelineReloadCoordinator.reloadAllKinds()"
+        ))
+        XCTAssertEqual(
+            productionSource.components(
+                separatedBy: "WidgetCenter.shared.reloadTimelines"
+            ).count - 1,
+            1,
+            "Only the centralized Widget reload coordinator may call WidgetCenter directly."
+        )
+    }
+
+    func testWidgetCheckInUsesPersistentLayersWithoutInvalidation() throws {
+        let projectRoot = URL(fileURLWithPath: #filePath)
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+        let rendererSource = try String(
+            contentsOf: projectRoot
+                .appendingPathComponent("PulseWidgetUI", isDirectory: true)
+                .appendingPathComponent("PulseWidgetRenderer.swift", isDirectory: false),
+            encoding: .utf8
+        )
+        let widgetSource = try String(
+            contentsOf: projectRoot
+                .appendingPathComponent("PulseWidgets", isDirectory: true)
+                .appendingPathComponent("PulseWidgets.swift", isDirectory: false),
+            encoding: .utf8
+        )
+        let productionSource = try recursiveSwiftSource(
+            in: projectRoot.appendingPathComponent("PulseWidgetUI", isDirectory: true)
+        ) + recursiveSwiftSource(
+            in: projectRoot.appendingPathComponent("PulseWidgets", isDirectory: true)
+        )
+
+        XCTAssertFalse(productionSource.contains("invalidatableContent"))
+        XCTAssertFalse(productionSource.contains("pulseWidgetCheckInFeedback"))
+        XCTAssertFalse(widgetSource.contains("if snapshot.isCheckedToday"))
+        XCTAssertTrue(widgetSource.contains(".disabled(!isEnabled)"))
+        XCTAssertFalse(rendererSource.contains("if isChecked {"))
+        XCTAssertEqual(
+            rendererSource.components(separatedBy: "if snapshot.isCheckedToday {").count - 1,
+            2,
+            "Only non-ViewBuilder numeric composition helpers may branch on today's fact."
+        )
+        XCTAssertTrue(rendererSource.contains(".contentTransition(.identity)"))
+        XCTAssertFalse(rendererSource.contains(".contentTransition(allowsMotion"))
     }
 
     func testWidgetStringCatalogHasEnglishAndSimplifiedChineseForEveryKey() throws {
@@ -2020,6 +2138,33 @@ final class PulseWidgetSnapshotTests: XCTestCase {
         .filter { $0.pathExtension == "swift" }
         .map { try String(contentsOf: $0, encoding: .utf8) }
         .joined(separator: "\n")
+    }
+
+    private func recursiveSwiftSource(in directoryURL: URL) throws -> String {
+        let resourceKeys: [URLResourceKey] = [.isRegularFileKey]
+        guard let enumerator = FileManager.default.enumerator(
+            at: directoryURL,
+            includingPropertiesForKeys: resourceKeys,
+            options: [.skipsHiddenFiles]
+        ) else {
+            return ""
+        }
+
+        let sourceURLs = try enumerator
+            .compactMap { $0 as? URL }
+            .filter { url in
+                guard url.pathExtension == "swift" else {
+                    return false
+                }
+                return try url.resourceValues(
+                    forKeys: Set(resourceKeys)
+                ).isRegularFile == true
+            }
+            .sorted { $0.path < $1.path }
+
+        return try sourceURLs
+            .map { try String(contentsOf: $0, encoding: .utf8) }
+            .joined(separator: "\n")
     }
 
     private func makeDate(

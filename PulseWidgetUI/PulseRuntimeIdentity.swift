@@ -1,4 +1,5 @@
 import Foundation
+import PulseCore
 
 enum PulseRuntimeIdentity {
     static let bundleIdentifier: String = {
@@ -42,4 +43,8 @@ enum PulseRuntimeIdentity {
     }
 
     static let reminderRequestPrefix = "\(bundleIdentifier).daily-reminder."
+
+    static func reminderRequestIdentifier(for logicalDay: LogicalDay) -> String {
+        reminderRequestPrefix + logicalDay.storageValue
+    }
 }

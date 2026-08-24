@@ -23,7 +23,7 @@ Widget 不是持续运行的动画画布。它首先必须准确表达“今天�
 
 1. `PulseWidgetSnapshotReader` 从唯一 Repository 投影不可变 snapshot。
 2. `PulseWidgetTimelineSchedule` 生成当前 entry、当天剩余的 06:00 / 12:00 / 18:00 氛围边界，以及下一逻辑日零点；每天最多五条，边界只由一个集中定义持有。
-3. App Intent 保存签到事实后，reload 两个正式 Widget kind。
+3. Home / Accessory Widget Intent 保存签到事实后返回，由 WidgetKit 自动 reload 当前 Widget timeline；Live Activity 的独立 Intent 保存成功后才经唯一 coordinator reload 两个正式 Widget kind。Widget 交互不得再叠加主动 reload。
 4. `PulseWidgetHomeRenderer` 根据 `snapshot.generatedAt` 与项目时区推导氛围状态，根据 `snapshot.isCheckedToday` 选择事实终态；氛围状态不能改变日期、签到、历史或文案。
 5. `PulseWidgetMotionPresentation` 为各物件提供一次、有限、可关闭的过渡曲线。
 
@@ -37,6 +37,8 @@ Widget 不是持续运行的动画画布。它首先必须准确表达“今天�
 
 “来路”在时段 entry 变化时只移动雾层与远山轮廓，主路线保持稳定；签到 entry 到达后，最后一段抵达线沿路径生长，今日缺口圆环连续闭合并留下低幅光晕。待签到与已签到必须保持同一 Renderer 层级，不能因为交互按钮出现或消失而替换整棵内容视图、截断系统的数据更新过渡。
 
+点击后保持当前待签到构图，直到权威事实 reload 到达；Widget 不使用 `invalidatableContent` 另造一段失效外观。Renderer 根内容 transition 固定为 identity，日期、名称、状态文案、背景和历史节点不参与签到透明度过渡；按钮、待签到层和完成层保持稳定层级，完成曲线只连续改变主物件属性，不通过移除待签到视图、插入完成视图形成多次闪烁。
+
 工程上仍遵守：单次动画 ≤ 两秒、Reduce Motion 直接终态、不伪造事实、不密集 Timeline 帧。
 
 ## 4. 曲线与 Reduce Motion
@@ -45,6 +47,7 @@ Widget 不是持续运行的动画画布。它首先必须准确表达“今天�
 - 每种材料的事实变装、时段氛围 duration、spring/easing 与早中晚姿态统一由 `PulseWidgetMotionPresentation` 管理；Renderer 不散落自定义曲线。事实变装按材料为 1.45...1.90 秒，时段氛围为 0.76...0.96 秒，每次独立变化均不超过官方两秒上限。
 - 两秒上限约束一次系统 Widget 变化，不约束 App 内串联多个独立状态的教学时长。画廊依次展示早间、日间、晚间与完成态，总时长允许超过两秒；每个氛围态必须至少等待上一段氛围过渡完成，完成态必须覆盖对应材料的完整事实变装。不得为了追求短总时长而在动画尚未完成时重新指定下一目标。
 - 事实变装只绑定 `snapshot.isCheckedToday`；时段氛围只绑定集中解析的 `snapshot.generatedAt` 与项目时区。两者都不使用随机数或持续 timer。
+- 点击签到本身不改变 `ambientPeriod`；只有系统实际交付 06:00 / 12:00 / 18:00 的计划 entry 时才发生时段变化，普通点击后的 reload 不得重播时段动画。
 - Reduce Motion 为真时，Renderer 传入 `allowsMotion = false`，取消插值但保留完全相同的事实终态、层级与颜色；画廊跳过早间 / 日间 / 晚间串联，只呈现当前时段的待办静态等价与完成静态等价。
 - Accessory Widget 维持静态事实表达；不为 Lock Screen、StandBy 或 Always-On 另存动效副本。Always-On 的 `isLuminanceReduced` 与 Reduce Motion 都会显式关闭 Renderer 动效，不能只依赖系统停止播放。
 - 画廊每张卡使用独立标准 Button 重播；播放中禁用该按钮，离页或权威事实变化立即取消任务并恢复当前事实。锁定构图可以预览，但购买入口必须是独立 Button，不得嵌套交互。
@@ -59,6 +62,8 @@ Widget 不是持续运行的动画画布。它首先必须准确表达“今天�
 - Gallery 预览投影只改变展示时间与今天状态，过去六日事实保持不变，且不会触发正式签到；
 - 源码、token、Asset Catalog 和文档均无 sky / cloud / fish、密集 phase keyframe、旧探索标识或持久化视觉状态遗留；
 - Always-On 与 Reduce Motion 都向正式 Renderer 传入静态模式；
+- 两个系统入口使用专属 Intent；Widget 使用 extension 进程的普通 `AppIntent`，无容器 App 冷启动或主动 reload，Live Activity 使用 `LiveActivityIntent` 并只调用唯一 reload coordinator；源码中直接 `WidgetCenter` 调用只有一处；
+- 生产 Widget 源码中不存在 `invalidatableContent`；按钮、主物件、待签到层与完成层保持同一结构，根内容 transition 为 identity；
 - Debug、Release、Analyze 与 Widget UI 截图通过。
 
 ## 6. 真机验收

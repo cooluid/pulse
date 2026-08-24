@@ -115,17 +115,29 @@ final class ReminderSchedulerLiveActivityTests: XCTestCase {
         XCTAssertTrue(notifications.addedIdentifiers.isEmpty)
     }
 
-    func testCompletionIsForwardedToTheLiveActivityAuthority() async {
+    func testCheckInCompletionRemovesOnlyTodayDeliveryAndPreservesFuturePlan() async {
         let client = TestReminderLiveActivityScheduler()
+        let day = LogicalDay(year: 2026, month: 8, day: 10)
+        let tomorrow = LogicalDay(year: 2026, month: 8, day: 11)
+        let dayIdentifier = PulseRuntimeIdentity.reminderRequestIdentifier(for: day)
+        let tomorrowIdentifier = PulseRuntimeIdentity.reminderRequestIdentifier(for: tomorrow)
+        let notifications = TestReminderNotificationScheduler(
+            permission: .authorized,
+            pendingIdentifiers: [dayIdentifier, tomorrowIdentifier],
+            deliveredIdentifiers: [dayIdentifier, tomorrowIdentifier]
+        )
         let scheduler = ReminderScheduler(
-            notificationScheduler: TestReminderNotificationScheduler(permission: .authorized),
+            notificationScheduler: notifications,
             liveActivityScheduler: client
         )
-        let day = LogicalDay(year: 2026, month: 8, day: 10)
 
-        await scheduler.completeLiveActivity(for: day)
+        await scheduler.completeCheckIn(for: day)
 
         XCTAssertEqual(client.completedDays, [day])
+        XCTAssertEqual(notifications.pendingIdentifiers, [tomorrowIdentifier])
+        XCTAssertEqual(notifications.deliveredIdentifiers, [tomorrowIdentifier])
+        XCTAssertTrue(client.scheduledReminders.isEmpty)
+        XCTAssertEqual(client.removeAllCount, 0)
     }
 
     func testBasicNotificationPlanDoesNotPreserveAnyLiveActivity() async throws {
@@ -173,8 +185,14 @@ private final class TestReminderNotificationScheduler: ReminderNotificationSched
     private(set) var pendingIdentifiers: [String] = []
     private(set) var deliveredIdentifiers: [String] = []
 
-    init(permission: NotificationPermissionState) {
+    init(
+        permission: NotificationPermissionState,
+        pendingIdentifiers: [String] = [],
+        deliveredIdentifiers: [String] = []
+    ) {
         self.permission = permission
+        self.pendingIdentifiers = pendingIdentifiers
+        self.deliveredIdentifiers = deliveredIdentifiers
     }
 
     func permissionState() async -> NotificationPermissionState {

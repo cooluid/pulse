@@ -46,9 +46,7 @@ struct PulseWidgetHomeRenderer: View {
             .clipped()
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .contentTransition(allowsMotion ? .interpolate : .identity)
-        .animation(motion(materialForCurrentStyle), value: snapshot.isCheckedToday)
-        .animation(ambientMotion(materialForCurrentStyle), value: ambientPeriod)
+        .contentTransition(.identity)
     }
 
     private func place(size: CGSize) -> some View {
@@ -151,6 +149,7 @@ struct PulseWidgetHomeRenderer: View {
         .rotationEffect(.degrees(ambientRotation * 0.32))
         .offset(x: ambientHorizontalShift(in: size) * 0.28)
         .animation(motion(.place), value: snapshot.isCheckedToday)
+        .animation(ambientMotion(.place), value: ambientPeriod)
     }
 
     private func orbit(size: CGSize) -> some View {
@@ -168,6 +167,8 @@ struct PulseWidgetHomeRenderer: View {
                 x: ambientHorizontalShift(in: size) * 0.10,
                 y: ambientVerticalShift(in: size) * 0.10
             )
+            .animation(motion(.starRing), value: snapshot.isCheckedToday)
+            .animation(ambientMotion(.starRing), value: ambientPeriod)
 
             orbitCopyVeil(size: size)
 
@@ -274,7 +275,10 @@ struct PulseWidgetHomeRenderer: View {
         return ZStack(alignment: .topLeading) {
             baseBackground
             tideAtmosphere(size: size)
+                .animation(motion(.tide), value: snapshot.isCheckedToday)
             tideSky(size: size, geometry: skyGeometry)
+                .animation(motion(.tide), value: snapshot.isCheckedToday)
+                .animation(ambientMotion(.tide), value: ambientPeriod)
             tideShore(
                 size: size,
                 shoreHeight: shoreHeight,
@@ -291,6 +295,7 @@ struct PulseWidgetHomeRenderer: View {
                 y: markY + ambientVerticalShift(in: size) * 0.62
             )
             .animation(motion(.tide), value: snapshot.isCheckedToday)
+            .animation(ambientMotion(.tide), value: ambientPeriod)
 
             VStack(alignment: .leading, spacing: pt(isMedium ? 10 : 8, in: size)) {
                 Text(verbatim: tideDate)
@@ -364,6 +369,7 @@ struct PulseWidgetHomeRenderer: View {
         )
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
         .animation(motion(.tide), value: snapshot.isCheckedToday)
+        .animation(ambientMotion(.tide), value: ambientPeriod)
     }
 
     private func tideSky(
@@ -481,18 +487,17 @@ struct PulseWidgetHomeRenderer: View {
                     endPoint: .bottomTrailing
                 )
 
-                if snapshot.isCheckedToday {
-                    RadialGradient(
-                        colors: [
-                            skyGlowColor.opacity(0.11),
-                            grassColor.opacity(0.055),
-                            Color.clear,
-                        ],
-                        center: .topTrailing,
-                        startRadius: 0,
-                        endRadius: max(size.width, size.height) * 0.72
-                    )
-                }
+                RadialGradient(
+                    colors: [
+                        skyGlowColor.opacity(0.11),
+                        grassColor.opacity(0.055),
+                        Color.clear,
+                    ],
+                    center: .topTrailing,
+                    startRadius: 0,
+                    endRadius: max(size.width, size.height) * 0.72
+                )
+                .opacity(snapshot.isCheckedToday ? 1 : 0)
             }
             .frame(width: size.width, height: size.height)
         }
@@ -838,6 +843,7 @@ struct PulseWidgetHomeRenderer: View {
         .frame(width: size.width, height: size.height)
         .rotationEffect(.degrees(ambientRotation * 0.18))
         .offset(x: ambientHorizontalShift(in: size) * 0.24)
+        .animation(ambientMotion(.letter), value: ambientPeriod)
     }
 
     private func letterWritingLines(size: CGSize) -> some View {
@@ -930,6 +936,7 @@ struct PulseWidgetHomeRenderer: View {
                 usesFullColorPalette: usesFullColorPalette
             )
                 .frame(width: sealSide, height: sealSide)
+                .animation(motion(.echo), value: snapshot.isCheckedToday)
                 .padding(.trailing, pt(usesMediumMetrics ? 15 : 11, in: size))
                 .padding(.bottom, pt(usesMediumMetrics ? 13 : 11, in: size))
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
@@ -944,6 +951,8 @@ struct PulseWidgetHomeRenderer: View {
         return ZStack(alignment: .topLeading) {
             baseBackground
             pathAtmosphere(size: size, geometry: geometry)
+                .animation(motion(.footprint), value: snapshot.isCheckedToday)
+                .animation(ambientMotion(.footprint), value: ambientPeriod)
 
             pathInkStroke(size: size)
             pathDayNodes(size: size)
@@ -1128,7 +1137,6 @@ struct PulseWidgetHomeRenderer: View {
             }
         }
         .frame(width: size.width, height: size.height)
-        .animation(motion(.footprint), value: snapshot.isCheckedToday)
         .allowsHitTesting(false)
     }
 
@@ -1203,6 +1211,7 @@ struct PulseWidgetHomeRenderer: View {
             height: size.height * (usesMediumMetrics ? 1.04 : 0.86)
         )
         .animation(motion(.starRing), value: snapshot.isCheckedToday)
+        .animation(ambientMotion(.starRing), value: ambientPeriod)
         .position(
             x: size.width * (usesMediumMetrics ? 0.72 : 0.59)
                 + ambientHorizontalShift(in: size) * 0.35,
@@ -1279,6 +1288,7 @@ struct PulseWidgetHomeRenderer: View {
         .scaleEffect(snapshot.isCheckedToday ? 1.03 : 1)
         .offset(x: ambientHorizontalShift(in: size) * 0.42)
         .animation(motion(.place), value: snapshot.isCheckedToday)
+        .animation(ambientMotion(.place), value: ambientPeriod)
     }
 
     private func stackDeskMat(size: CGSize) -> some View {
@@ -1301,6 +1311,7 @@ struct PulseWidgetHomeRenderer: View {
         .rotationEffect(.degrees((usesMediumMetrics ? 1.1 : 1.6) + ambientRotation * 0.28))
         .scaleEffect(snapshot.isCheckedToday ? 0.99 : 1)
         .animation(motion(.paper), value: snapshot.isCheckedToday)
+        .animation(ambientMotion(.paper), value: ambientPeriod)
         .position(
             x: size.width / 2 + ambientHorizontalShift(in: size) * 0.28,
             y: size.height / 2 + pt(1.5, in: size)
@@ -1314,6 +1325,8 @@ struct PulseWidgetHomeRenderer: View {
             isChecked: snapshot.isCheckedToday
         )
         let paperFrame = geometry.topPaperFrame
+        let foldSide = geometry.foldSize.width
+        let foldOverlap = pt(3.0, in: size)
 
         return ZStack {
             ForEach(0..<PulseStackPaperGeometry.sheetCount, id: \.self) { index in
@@ -1331,13 +1344,12 @@ struct PulseWidgetHomeRenderer: View {
                             .fill(fieldColor.opacity(Double(depth) * 0.08))
                     }
                     .overlay {
-                        if !cutsCorner {
-                            sheet
-                                .stroke(
-                                    fieldColor.opacity(0.18 + Double(depth) * 0.07),
-                                    lineWidth: pt(1, in: size)
-                                )
-                        }
+                        sheet
+                            .stroke(
+                                fieldColor.opacity(0.18 + Double(depth) * 0.07),
+                                lineWidth: pt(1, in: size)
+                            )
+                            .opacity(cutsCorner ? 0 : 1)
                     }
                     .shadow(
                         color: shadowColor.opacity(0.07 + Double(depth) * 0.025),
@@ -1362,29 +1374,28 @@ struct PulseWidgetHomeRenderer: View {
                 y: geometry.pressFrame.midY - paperFrame.minY
             )
 
-            if snapshot.isCheckedToday {
-                // Keep the outer corner anchored; grow the flap inward so it seals the
-                // cut hypotenuse. Any sub-pixel gap shows the darker under-sheet as a
-                // false black crease.
-                let foldSide = geometry.foldSize.width
-                let foldOverlap = pt(3.0, in: size)
-                PulseFoldedPaperFlap()
-                    .fill(paperColor)
-                    .overlay {
-                        PulseFoldedPaperFlap()
-                            .fill(fieldColor.opacity(usesFullColorPalette ? 0.10 : 0.05))
-                    }
-                    .frame(width: foldSide + foldOverlap, height: foldSide + foldOverlap)
-                    .position(
-                        x: paperFrame.width - (foldSide + foldOverlap) / 2,
-                        y: paperFrame.height - (foldSide + foldOverlap) / 2
-                    )
-            }
+            // Keep the outer corner anchored; grow the flap inward so it seals the
+            // cut hypotenuse. Any sub-pixel gap shows the darker under-sheet as a
+            // false black crease.
+            PulseFoldedPaperFlap()
+                .fill(paperColor)
+                .overlay {
+                    PulseFoldedPaperFlap()
+                        .fill(fieldColor.opacity(usesFullColorPalette ? 0.10 : 0.05))
+                }
+                .frame(width: foldSide + foldOverlap, height: foldSide + foldOverlap)
+                .scaleEffect(snapshot.isCheckedToday ? 1 : 0.92, anchor: .bottomTrailing)
+                .opacity(snapshot.isCheckedToday ? 1 : 0)
+                .position(
+                    x: paperFrame.width - (foldSide + foldOverlap) / 2,
+                    y: paperFrame.height - (foldSide + foldOverlap) / 2
+                )
         }
         .frame(width: paperFrame.width, height: paperFrame.height)
         .rotationEffect(.degrees(ambientRotation * 0.22))
         .position(x: paperFrame.midX, y: paperFrame.midY)
         .animation(motion(.paper), value: snapshot.isCheckedToday)
+        .animation(ambientMotion(.paper), value: ambientPeriod)
     }
 
     private func letterDeskField(size: CGSize) -> some View {
@@ -1398,6 +1409,8 @@ struct PulseWidgetHomeRenderer: View {
                 x: size.width * 0.48 + ambientHorizontalShift(in: size) * 0.45,
                 y: size.height * 0.58
             )
+            .animation(motion(.letter), value: snapshot.isCheckedToday)
+            .animation(ambientMotion(.letter), value: ambientPeriod)
     }
 
     private func pastPostmarkRow(size: CGSize) -> some View {
@@ -1458,6 +1471,7 @@ struct PulseWidgetHomeRenderer: View {
         }
         .scaleEffect(snapshot.isCheckedToday ? 1.06 : 0.96)
         .animation(motion(.echo), value: snapshot.isCheckedToday)
+        .animation(ambientMotion(.echo), value: ambientPeriod)
         .position(center)
     }
 
@@ -1665,22 +1679,9 @@ private struct PulseAwaitingPlaceWell: View {
                     .stroke(fieldColor.opacity(isChecked ? 0.09 : 0.07), lineWidth: side * 0.18)
                     .padding(side * 0.09)
 
-                if isChecked {
-                    ZStack {
-                        Circle().fill(completedColor)
-                        Image(systemName: "checkmark")
-                            .font(.system(size: side * 0.31, weight: .semibold))
-                            .foregroundStyle(usesFullColorPalette
-                                ? PulseWidgetDesign.grassForeground
-                                : Color.black)
-                            .blendMode(usesFullColorPalette ? .normal : .destinationOut)
-                    }
-                    .compositingGroup()
-                    .frame(width: side * 0.70, height: side * 0.70)
-                } else {
+                ZStack {
                     Circle()
-                        .fill(surfaceColor.opacity(0.82))
-                        .frame(width: side * 0.58, height: side * 0.58)
+                        .fill(isChecked ? completedColor : surfaceColor.opacity(0.82))
 
                     Text(verbatim: emptyText)
                         .font(.system(size: side * 0.22, weight: .bold))
@@ -1688,7 +1689,21 @@ private struct PulseAwaitingPlaceWell: View {
                         .minimumScaleFactor(0.70)
                         .lineLimit(1)
                         .frame(width: side * 0.52)
+                        .opacity(isChecked ? 0 : 1)
+
+                    Image(systemName: "checkmark")
+                        .font(.system(size: side * 0.31, weight: .semibold))
+                        .foregroundStyle(usesFullColorPalette
+                            ? PulseWidgetDesign.grassForeground
+                            : Color.black)
+                        .blendMode(usesFullColorPalette ? .normal : .destinationOut)
+                        .opacity(isChecked ? 1 : 0)
                 }
+                .compositingGroup()
+                .frame(
+                    width: side * (isChecked ? 0.70 : 0.58),
+                    height: side * (isChecked ? 0.70 : 0.58)
+                )
             }
             .frame(width: side, height: side)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -2049,45 +2064,46 @@ private struct PulsePaperPressMark: View {
             let radius = hypot(width, height) * 0.52
 
             ZStack {
-                if isChecked {
-                    // A single soft oval forms the press plate; keep side soaks very faint.
-                    Ellipse()
-                        .fill(
-                            RadialGradient(
-                                colors: [markColor.opacity(0.14), markColor.opacity(0)],
-                                center: .center,
-                                startRadius: 0,
-                                endRadius: radius * 0.70
-                            )
+                // A single soft oval forms the press plate; keep side soaks very faint.
+                Ellipse()
+                    .fill(
+                        RadialGradient(
+                            colors: [markColor.opacity(0.14), markColor.opacity(0)],
+                            center: .center,
+                            startRadius: 0,
+                            endRadius: radius * 0.70
                         )
-                        .frame(width: width * 0.70, height: height * 0.60)
-                        .offset(x: width * 0.14, y: height * 0.16)
+                    )
+                    .frame(width: width * 0.70, height: height * 0.60)
+                    .offset(x: width * 0.14, y: height * 0.16)
+                    .opacity(isChecked ? 1 : 0)
 
-                    Ellipse()
-                        .fill(
-                            RadialGradient(
-                                stops: [
-                                    .init(color: markColor.opacity(0.48), location: 0),
-                                    .init(color: markColor.opacity(0.28), location: 0.55),
-                                    .init(color: markColor.opacity(0.12), location: 0.88),
-                                    .init(color: markColor.opacity(0), location: 1),
-                                ],
-                                center: UnitPoint(x: 0.42, y: 0.48),
-                                startRadius: 0,
-                                endRadius: radius
-                            )
+                Ellipse()
+                    .fill(
+                        RadialGradient(
+                            stops: [
+                                .init(color: markColor.opacity(0.48), location: 0),
+                                .init(color: markColor.opacity(0.28), location: 0.55),
+                                .init(color: markColor.opacity(0.12), location: 0.88),
+                                .init(color: markColor.opacity(0), location: 1),
+                            ],
+                            center: UnitPoint(x: 0.42, y: 0.48),
+                            startRadius: 0,
+                            endRadius: radius
                         )
-                        .rotationEffect(.degrees(-9))
-                } else {
-                    Ellipse()
-                        .fill(markColor.opacity(0.06))
-                        .overlay {
-                            Ellipse()
-                                .stroke(markColor.opacity(0.38), lineWidth: max(1.2, min(width, height) * 0.035))
-                        }
-                        .padding(min(width, height) * 0.06)
-                        .rotationEffect(.degrees(-11))
-                }
+                    )
+                    .rotationEffect(.degrees(-9))
+                    .opacity(isChecked ? 1 : 0)
+
+                Ellipse()
+                    .fill(markColor.opacity(0.06))
+                    .overlay {
+                        Ellipse()
+                            .stroke(markColor.opacity(0.38), lineWidth: max(1.2, min(width, height) * 0.035))
+                    }
+                    .padding(min(width, height) * 0.06)
+                    .rotationEffect(.degrees(-11))
+                    .opacity(isChecked ? 0 : 1)
             }
             .frame(width: width, height: height)
         }
@@ -2231,6 +2247,14 @@ private struct PulseLetterPressRidges: Shape {
 private struct PulseStackedSheetShape: Shape {
     var cornerRadius: CGFloat
     var foldSide: CGFloat
+
+    var animatableData: AnimatablePair<CGFloat, CGFloat> {
+        get { AnimatablePair(cornerRadius, foldSide) }
+        set {
+            cornerRadius = newValue.first
+            foldSide = newValue.second
+        }
+    }
 
     func path(in rect: CGRect) -> Path {
         let radius = min(cornerRadius, min(rect.width, rect.height) / 2)
@@ -2400,11 +2424,10 @@ private struct PulseEchoCompletionMark: View {
                     .frame(width: side * (isChecked ? 0.24 : 0.12), height: side * (isChecked ? 0.24 : 0.12))
                     .rotationEffect(.degrees(45))
                     .overlay {
-                        if isChecked {
-                            Image(systemName: "checkmark")
-                                .font(.system(size: side * 0.11, weight: .bold))
-                                .foregroundStyle(completedForeground)
-                        }
+                        Image(systemName: "checkmark")
+                            .font(.system(size: side * 0.11, weight: .bold))
+                            .foregroundStyle(completedForeground)
+                            .opacity(isChecked ? 1 : 0)
                     }
             }
         }
@@ -2815,9 +2838,10 @@ struct PulseWidgetImprintMark: View {
                     .padding(side * ringInsetRatio)
                     .rotationEffect(.degrees(ringRotationDegrees))
 
-                if isChecked {
-                    completedCore(side: side)
-                } else if let centerLabel {
+                completedCore(side: side)
+                    .opacity(isChecked ? 1 : 0)
+
+                if let centerLabel {
                     Text(verbatim: centerLabel)
                         .font(.system(size: side * centerLabelScale, weight: .bold))
                         .monospacedDigit()
@@ -2825,6 +2849,7 @@ struct PulseWidgetImprintMark: View {
                         .minimumScaleFactor(0.72)
                         .lineLimit(1)
                         .frame(width: side * coreScale, height: side * coreScale)
+                        .opacity(isChecked ? 0 : 1)
                 } else if showsPendingCore {
                     ZStack {
                         Circle().fill(pendingColor)
@@ -2842,6 +2867,7 @@ struct PulseWidgetImprintMark: View {
                     }
                     .frame(width: side * coreScale, height: side * coreScale)
                     .rotationEffect(.degrees(coreRotationDegrees))
+                    .opacity(isChecked ? 0 : 1)
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -2911,26 +2937,19 @@ private struct PulseWidgetRingLayer: View {
     var body: some View {
         GeometryReader { proxy in
             let side = min(proxy.size.width, proxy.size.height)
-            if isClosed {
-                Circle()
-                    .stroke(color, lineWidth: side * 0.09)
-                    .padding(side * PulseWidgetDesign.ringLayerInsetRatio)
-                    .frame(width: side, height: side)
-            } else {
-                Circle()
-                    .trim(from: 0, to: 312 / 360)
-                    .stroke(
-                        color,
-                        style: StrokeStyle(
-                            lineWidth: side * 0.09,
-                            lineCap: .round,
-                            lineJoin: .round
-                        )
+            Circle()
+                .trim(from: 0, to: isClosed ? 1 : 312 / 360)
+                .stroke(
+                    color,
+                    style: StrokeStyle(
+                        lineWidth: side * 0.09,
+                        lineCap: .round,
+                        lineJoin: .round
                     )
-                    .rotationEffect(.degrees(-114))
-                    .padding(side * PulseWidgetDesign.ringLayerInsetRatio)
-                    .frame(width: side, height: side)
-            }
+                )
+                .rotationEffect(.degrees(isClosed ? 0 : -114))
+                .padding(side * PulseWidgetDesign.ringLayerInsetRatio)
+                .frame(width: side, height: side)
         }
         .accessibilityHidden(true)
     }

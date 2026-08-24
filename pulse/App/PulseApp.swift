@@ -228,7 +228,7 @@ private final class PulseUITestReminderScheduler: ReminderScheduling {
         snapshot.enabled ? snapshot.deliveryMode : .disabled
     }
 
-    func completeLiveActivity(for logicalDay: LogicalDay) async {}
+    func completeCheckIn(for logicalDay: LogicalDay) async {}
 
     func removeAllPulseNotifications() async {}
 }

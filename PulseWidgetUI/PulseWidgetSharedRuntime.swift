@@ -1,6 +1,5 @@
 import Foundation
 import PulseCore
-import OSLog
 
 @MainActor
 enum PulseWidgetSharedRuntime {
@@ -14,11 +13,6 @@ enum PulseWidgetSharedRuntime {
         case sharedStoreMissing
         case missingPrimaryHabit
     }
-
-    private static let logger = Logger(
-        subsystem: PulseRuntimeIdentity.bundleIdentifier,
-        category: "shared-check-in"
-    )
 
     static func makeContext(
         bundle: Bundle = .main,
@@ -94,7 +88,7 @@ enum PulseWidgetSharedRuntime {
     }
 
     @discardableResult
-    static func checkInAndReconcileReminders(
+    static func checkInAndCompleteTodayDelivery(
         bundle: Bundle = .main,
         fileManager: FileManager = .default,
         clock: any PulseClock = SystemPulseClock(),
@@ -109,34 +103,7 @@ enum PulseWidgetSharedRuntime {
         }
 
         let receipt = try repository.checkIn(habitID: habit.id, journalNote: nil)
-        PulseExternalCheckInSignal.post()
-        await reminderScheduler.completeLiveActivity(for: receipt.logicalDay)
-
-        do {
-            let settings = try context.sharedSettings.load()
-            let hasEnhancement = await PulseStoreKitEntitlementReader.hasCurrentEntitlement(
-                for: PulseEnhancementContract.productIdentifier
-            )
-            let records = try repository.allRecords(habitID: habit.id)
-            let snapshot = ReminderScheduleSnapshot(
-                enabled: settings.reminderEnabled,
-                deliveryMode: PulseReminderDeliveryPolicy.deliveryMode(
-                    reminderEnabled: settings.reminderEnabled,
-                    hasEnhancementEntitlement: hasEnhancement,
-                    capabilities: reminderScheduler.deliveryCapabilities
-                ),
-                time: settings.reminderTime,
-                timeZoneIdentifier: habit.timeZoneIdentifier,
-                localeIdentifier: settings.language.locale.identifier,
-                checkedDays: Set(records.map(\.logicalDay)),
-                now: clock.now
-            )
-            _ = try await reminderScheduler.reconcile(snapshot)
-        } catch {
-            logger.error(
-                "Check-in committed, but reminder reconciliation failed: \(String(describing: error), privacy: .private)"
-            )
-        }
+        await reminderScheduler.completeCheckIn(for: receipt.logicalDay)
         return receipt
     }
 }

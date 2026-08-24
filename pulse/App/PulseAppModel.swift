@@ -267,8 +267,7 @@ final class PulseAppModel {
                 hapticFeedback.notifySuccess()
             }
             widgetTimelineReloader.reloadDailyImprint()
-            await reminderScheduler.completeLiveActivity(for: receipt.logicalDay)
-            await enqueueReminderReconciliation().value
+            await reminderScheduler.completeCheckIn(for: receipt.logicalDay)
             scheduleDateBoundaryRefresh()
             return receipt
         } catch {
@@ -297,8 +296,7 @@ final class PulseAppModel {
         do {
             try loadSnapshot()
             widgetTimelineReloader.reloadDailyImprint()
-            await reminderScheduler.completeLiveActivity(for: receipt.logicalDay)
-            await enqueueReminderReconciliation().value
+            await reminderScheduler.completeCheckIn(for: receipt.logicalDay)
             scheduleDateBoundaryRefresh()
             let disposition: PulseWatchCommitDisposition = switch receipt.disposition {
             case .created: .created

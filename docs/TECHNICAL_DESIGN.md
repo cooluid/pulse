@@ -44,7 +44,7 @@ WCSession 的 reply/error 回调由明确的非隔离 `@Sendable` 闭包接收�
 
 Watch App 页级几何只由 `PulseWatchLayoutMetrics` 解析实际容器、safe area、可见区段和集中设计令牌；禁止设备型号/表径分支和页面内散落固定尺寸。标准字号使用无滚动的蓝色状态场：左侧动作/事实、右侧离散日轴、底部三层波面；Accessibility Dynamic Type 进入明确纵向滚动路径。iPhone `AppSettings.watchWaveMotionEnabled` 是波浪偏好唯一真源，经 `PulseWatchProjectSnapshot` 同步；Watch 端只消费快照，并与 Scene、Reduce Motion、低亮度共同裁决是否运行时间线。
 
-iPhone Widget / Live Activity 的正式 App Intent 提交 Repository 后只发送进程内 `PulseExternalCheckInSignal` 刷新容器 App 与 Watch 快照；信号不携带、不持久化业务事实，也不承担成功裁决。Widget 自身仍由 Intent 返回后的 WidgetKit timeline reload 更新，避免建立第二条状态广播或重复 reload 路径。
+Home / Accessory Widget 使用普通 `PulseWidgetCheckInIntent: AppIntent`，直接在 Widget extension 进程提交 Repository，避免为一次本地签到冷启动容器 App；返回后只接受 WidgetKit 保证的自动 timeline reload，不主动重复请求。容器 App 在下次生命周期激活或 Watch 快照请求时从 Repository 重投影，不依赖 Widget 进程内通知。Live Activity 使用独立 `PulseLiveActivityCheckInIntent: LiveActivityIntent`，在 App 进程提交成功后才发送 `PulseExternalCheckInSignal` 并通过唯一 `PulseWidgetTimelineReloadCoordinator` 刷新两个正式 Widget kind。信号不携带、不持久化业务事实，也不承担成功裁决。App 内其他事实变化也只通过同一 coordinator 适配器刷新，不再散落 `WidgetCenter` 调用。
 
 ## 3. 持久化
 
@@ -80,7 +80,7 @@ AppModel 同时建立 `recordsByDay` 与 `mediaByDay`。照片不参与 CheckInS
 
 `PulseEnhancementContract` 与 StoreKit 已验证 entitlement 是购买唯一来源；不保存 `isPro`。拍照、媒体和备份不读取权益。增强只控制静野/晴昼界面主题、额外 Widget 构图与可用设备的 scheduled Live Activity。`PulseVisualThemeAccessPolicy` 规定纸页手记为唯一免费默认，`enhancementThemes` 是收费主题的唯一枚举；主题写入只经 `PulseAppModel.requestVisualTheme`，权益未验证或撤销时失败关闭并统一回到纸页手记，不保留第二套购买状态。高级功能页按 `currentCapabilities` 展示不可交互同源标本，主题标本与设置预览共用 `PulseVisualThemeSpecimen`，购买页不得写入当前主题。
 
-提醒、语言与 Widget 共享事实沿用正式合同。App Group UserDefaults 只允许 `PulseSharedSettings` 管理 `interface.language`、`reminder.enabled` 与 `reminder.timeMinutes`，用于 Widget Intent 提交签到后重建同一提醒计划；不得保存签到、构图或权益副本。Home Screen 构图由 WidgetKit 逐实例配置持有，不存在全局 `widget.style`。`mediaInvitationEnabled` 是 App 本机设置，不进入共享事实或备份。
+提醒、语言与 Widget 共享事实沿用正式合同。App Group UserDefaults 只允许 `PulseSharedSettings` 管理 `interface.language`、`reminder.enabled` 与 `reminder.timeMinutes`；后两项由 App 的正式提醒协调器消费，不是 Widget 签到返回前的重建前置条件。Widget 签到成功只按逻辑日完成当天唯一投递，保留既有未来计划；不得保存签到、构图或权益副本。Home Screen 构图由 WidgetKit 逐实例配置持有，不存在全局 `widget.style`。`mediaInvitationEnabled` 是 App 本机设置，不进入共享事实或备份。
 
 ## 8. 帮助与反馈
 

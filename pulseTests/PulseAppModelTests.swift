@@ -94,6 +94,7 @@ final class PulseAppModelTests: XCTestCase {
         let context = try makeContext()
         await context.model.start()
         let initialWidgetReloadCount = context.widgetReloader.reloadCount
+        let initialReminderSnapshotCount = context.scheduler.snapshots.count
 
         let first = await context.model.checkIn()
         let second = await context.model.checkIn()
@@ -106,8 +107,7 @@ final class PulseAppModelTests: XCTestCase {
         XCTAssertEqual(context.model.statistics.totalCount, 1)
         XCTAssertEqual(context.haptics.successCount, 1)
         XCTAssertEqual(context.widgetReloader.reloadCount, initialWidgetReloadCount + 1)
-        await waitUntil { context.scheduler.snapshots.last?.checkedDays == context.model.checkedDays }
-        XCTAssertEqual(context.scheduler.snapshots.last?.checkedDays, context.model.checkedDays)
+        XCTAssertEqual(context.scheduler.snapshots.count, initialReminderSnapshotCount)
         XCTAssertEqual(context.scheduler.completedLiveActivityDays, [context.model.today!])
     }
 
@@ -668,7 +668,7 @@ private final class TestReminderScheduler: ReminderScheduling {
         return snapshot.deliveryMode
     }
 
-    func completeLiveActivity(for logicalDay: LogicalDay) async {
+    func completeCheckIn(for logicalDay: LogicalDay) async {
         completedLiveActivityDays.append(logicalDay)
     }
 

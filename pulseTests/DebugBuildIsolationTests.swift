@@ -142,6 +142,22 @@ final class DebugBuildIsolationTests: XCTestCase {
         XCTAssertFalse(modelSource.contains("PULSE_UI_TEST_RESET"))
     }
 
+    func testHomeWidgetSharedSchemeLaunchesTheFormalMediumWidgetKind() throws {
+        let scheme = try source(
+            at: projectRoot
+                .appendingPathComponent("pulse.xcodeproj", isDirectory: true)
+                .appendingPathComponent("xcshareddata/xcschemes", isDirectory: true)
+                .appendingPathComponent("PulseWidgetsExtension.xcscheme")
+        )
+
+        XCTAssertTrue(scheme.contains("wasCreatedForAppExtension = \"YES\""))
+        XCTAssertTrue(scheme.contains("key = \"_XCWidgetKind\""))
+        XCTAssertTrue(scheme.contains("value = \"PulseDailyImprint\""))
+        XCTAssertTrue(scheme.contains("key = \"_XCWidgetFamily\""))
+        XCTAssertTrue(scheme.contains("value = \"systemMedium\""))
+        XCTAssertTrue(scheme.contains("BundleIdentifier = \"com.apple.springboard\""))
+    }
+
     private var projectRoot: URL {
         URL(fileURLWithPath: #filePath)
             .deletingLastPathComponent()

@@ -98,7 +98,7 @@ protocol ReminderScheduling: AnyObject {
     func permissionState() async -> NotificationPermissionState
     func requestPermission() async throws -> Bool
     func reconcile(_ snapshot: ReminderScheduleSnapshot) async throws -> PulseReminderDeliveryMode
-    func completeLiveActivity(for logicalDay: LogicalDay) async
+    func completeCheckIn(for logicalDay: LogicalDay) async
     func removeAllPulseNotifications() async
 }
 
@@ -310,7 +310,12 @@ final class ReminderScheduler: ReminderScheduling {
         try await notificationScheduler.requestPermission()
     }
 
-    func completeLiveActivity(for logicalDay: LogicalDay) async {
+    func completeCheckIn(for logicalDay: LogicalDay) async {
+        let notificationIdentifier = PulseRuntimeIdentity.reminderRequestIdentifier(
+            for: logicalDay
+        )
+        notificationScheduler.removePendingRequests(identifiers: [notificationIdentifier])
+        notificationScheduler.removeDeliveredNotifications(identifiers: [notificationIdentifier])
         await liveActivityScheduler.complete(logicalDay: logicalDay)
     }
 
@@ -393,7 +398,7 @@ final class ReminderScheduler: ReminderScheduling {
             try Task.checkCancellation()
 
             try await notificationScheduler.add(
-                identifier: PulseRuntimeIdentity.reminderRequestPrefix + reminder.day.storageValue,
+                identifier: PulseRuntimeIdentity.reminderRequestIdentifier(for: reminder.day),
                 title: PulseLocalization.string("notification.title", locale: locale),
                 body: PulseLocalization.string("notification.body", locale: locale),
                 triggerComponents: reminder.triggerComponents

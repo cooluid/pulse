@@ -14,7 +14,7 @@ Widget 是同一签到事实的系统入口，不是第二个应用：
 - Lock Screen 圆形显示带当日日号的开放环或实心完成印；
 - Lock Screen 矩形把过去六日节点以连接线汇入右侧今日印记，今天不重复成第七个小节点；
 - 未签到只提供单向签到；已签到无撤销入口；删除仍只在 App 内二次确认；
-- Widget 不创建第二套 Live Activity、Watch、Control、远程服务或提醒计划；系统入口签到后由共享协调器结束当天 Live Activity 并重建唯一提醒计划。
+- Widget 不创建第二套 Live Activity、Watch、Control、远程服务或提醒计划；系统入口签到后由共享协调器完成当天唯一投递，既有未来提醒计划保持不变。
 
 Widget 不保存 `isCheckedToday`、连续天数、名称副本或记录副本。所有状态必须从正式 Repository 投影。
 
@@ -43,7 +43,7 @@ FileManager.containerURL(forSecurityApplicationGroupIdentifier:)
 - 不存在 App 私有 store、旧库迁移、journal、staging、fallback 或双写。
 - 旧开发安装不属于公开数据合同，进入此首发基线时必须清洁安装。
 
-App Group UserDefaults 只允许 `PulseSharedSettings` 管理 `interface.language`、`reminder.enabled` 与 `reminder.timeMinutes`。这些是跨 App/Widget Intent 重建提醒计划所需的用户设置，不是签到事实或权益副本；未知语言和非法时间必须失败关闭。不得保存构图、业务事实或可反向覆盖 store 的投影。Home Screen 构图由 `WidgetConfigurationIntent` 逐实例持有：正式枚举只含 `place` / `orbit` / `stack` / `bleed` / `letter` / `field` / `path` / `tide`，其中待落之处是唯一免费构图，其余七式需要统一高阶权益 entitlement。未知 raw value 失败关闭，不静默迁移。Widget extension 在生成 snapshot/timeline 时验证 StoreKit 权益，未验证或撤销时明确返回未解锁状态，不得用免费构图伪装成功。scheduled Live Activity 使用唯一“萤火日晕”构图，不存在样式偏好。Lock Screen“节律汇印”使用独立 StaticConfiguration kind，不接收 Home Screen 构图参数。
+App Group UserDefaults 只允许 `PulseSharedSettings` 管理 `interface.language`、`reminder.enabled` 与 `reminder.timeMinutes`。后两项由 App 的唯一提醒协调器使用，不是 Widget 签到返回前的依赖；它们不是签到事实或权益副本，未知语言和非法时间必须失败关闭。不得保存构图、业务事实或可反向覆盖 store 的投影。Home Screen 构图由 `WidgetConfigurationIntent` 逐实例持有：正式枚举只含 `place` / `orbit` / `stack` / `bleed` / `letter` / `field` / `path` / `tide`，其中待落之处是唯一免费构图，其余七式需要统一高阶权益 entitlement。未知 raw value 失败关闭，不静默迁移。Widget extension 在生成 snapshot/timeline 时验证 StoreKit 权益，未验证或撤销时明确返回未解锁状态，不得用免费构图伪装成功。scheduled Live Activity 使用唯一“萤火日晕”构图，不存在样式偏好。Lock Screen“节律汇印”使用独立 StaticConfiguration kind，不接收 Home Screen 构图参数。
 
 ## 4. 共享代码边界
 
@@ -67,7 +67,7 @@ App 与 Widget 的签到都通过 `SwiftDataPulseRepository.checkIn`：
 3. 不存在时插入并保存；
 4. 保存因并发写入失败时 rollback，再按同一键回读；
 5. 只有正式回读到记录才返回 `alreadyPresent`，否则报告原始持久化失败；
-6. 事实保存后结束当天 Live Activity、按共享设置与已验证权益重建未来提醒，再请求 Widget timeline reload；提醒协调失败必须记录，但不能回滚已经成立的签到事实。
+6. Home / Accessory 使用普通 `AppIntent` 在 Widget extension 进程完成事实写入，不冷启动容器 App；事实保存后执行唯一快速收口：移除当天精确标识的待发送/已送达本地通知，并把当天 Live Activity 更新为完成后结束；未来日期的既有通知与 scheduled Activity 不删除、不重建。完整提醒协调只在 App 启动/回前台，或提醒开关、时间、语言、时区、权益及删除/恢复等真正改变计划的事件发生时运行。Widget 按钮返回后只使用 WidgetKit 保证的自动 timeline reload；容器 App 与 Watch 在生命周期激活或快照请求时从 Repository 重投影。Live Activity 使用独立 `LiveActivityIntent`，签到成功后发送进程内信号并通过唯一 reload coordinator 刷新两个正式 Widget kind。
 
 不能依赖 App 与 Widget 共享内存锁。进程间由 SQLite 事务、唯一约束、rollback 和回读共同裁决。
 
@@ -82,7 +82,7 @@ Widget 不能调用删除、清除、导入、修改时区或编辑承诺。
 - 最近七日状态；
 - 快照生成时间、项目时区标识与下一个逻辑日零点。
 
-`PulseWidgetTimelinePlan` 返回严格按时间排序的 `[PulseWidgetTimelineEntry]`：包含当前权威 snapshot、当天剩余的 06:00 / 12:00 / 18:00 稀疏氛围边界，以及下一逻辑日零点重新投影的 snapshot，每天最多五条。三种氛围 entry 只改变同一事实的低幅构图，不承担准确报时，不能伪造签到或历史；WidgetKit 的实际交付时机由系统决定。时间线不承载密集动画关键帧；事实变化由 App Intent 保存后触发 Widget reload。动效边界与禁止项见 [WIDGET_MOTION_CONTRACT.md](./WIDGET_MOTION_CONTRACT.md)。
+`PulseWidgetTimelinePlan` 返回严格按时间排序的 `[PulseWidgetTimelineEntry]`：包含当前权威 snapshot、当天剩余的 06:00 / 12:00 / 18:00 稀疏氛围边界，以及下一逻辑日零点重新投影的 snapshot，每天最多五条。三种氛围 entry 只改变同一事实的低幅构图，不承担准确报时，不能伪造签到或历史；WidgetKit 的实际交付时机由系统决定。时间线不承载密集动画关键帧；事实变化由 App Intent 保存后触发一次 Widget reload。点击后待签到构图保持静态，权威 reload 到达后才做一次连续属性变装；不存在额外 invalidation 外观。动效边界与禁止项见 [WIDGET_MOTION_CONTRACT.md](./WIDGET_MOTION_CONTRACT.md)。
 
 成功 plan 使用 `TimelineReloadPolicy.atEnd`。Reduce Motion 不改变时间线或事实，只让 Renderer 直接呈现相同终态。
 
@@ -119,6 +119,8 @@ store 缺失或身份未确认显示“打开 App”；store 打不开、偏好�
 - English / 简体中文下的 Widget 状态文案、日期、月份、数字和 VoiceOver 组合；App 切换语言只刷新一次 timeline；
 - Home Screen 显示名称，Accessory 不泄露名称或说明；
 - AppIntent 仅在正式保存后刷新。
+- Home / Accessory 使用 extension 进程的普通 `AppIntent`，没有主动 reload 或容器 App 冷启动；Live Activity 使用独立 `LiveActivityIntent`，只经唯一 coordinator 主动刷新；生产代码只有 coordinator 可以直接调用 `WidgetCenter`。
+- Home / Accessory 不使用交互 invalidation；按钮、待签到层与完成层保持同一结构，根内容 transition 固定为 identity，状态更新不得依赖视图插入/移除的默认淡入淡出。
 
 ## 9. 独立验收门禁
 

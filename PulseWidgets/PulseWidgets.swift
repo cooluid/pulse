@@ -424,35 +424,36 @@ private struct PulseLocalizedWidgetView: View {
         ZStack {
             content
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .invalidatableContent()
                 .allowsHitTesting(false)
                 .accessibilityHidden(true)
 
-            if snapshot.isCheckedToday {
-                Color.clear
-                    .accessibilityElement()
-                    .accessibilityLabel("widget.accessibility.checked")
-            } else {
-                PulseWidgetCheckInHitTarget()
-            }
+            Color.clear
+                .accessibilityElement()
+                .accessibilityLabel("widget.accessibility.checked")
+                .accessibilityHidden(!snapshot.isCheckedToday)
+
+            PulseWidgetCheckInHitTarget(
+                isEnabled: !snapshot.isCheckedToday
+            )
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
     @ViewBuilder
     private func accessoryCircular(_ snapshot: PulseWidgetSnapshot) -> some View {
-        if snapshot.isCheckedToday {
+        ZStack {
             accessoryCircularContent(snapshot)
-                .accessibilityElement(children: .ignore)
-                .accessibilityLabel("widget.accessibility.checked")
-        } else {
-            ZStack {
-                accessoryCircularContent(snapshot)
-                    .invalidatableContent()
-                    .allowsHitTesting(false)
+                .allowsHitTesting(false)
+                .accessibilityHidden(true)
 
-                PulseWidgetCheckInHitTarget()
-            }
+            Color.clear
+                .accessibilityElement()
+                .accessibilityLabel("widget.accessibility.checked")
+                .accessibilityHidden(!snapshot.isCheckedToday)
+
+            PulseWidgetCheckInHitTarget(
+                isEnabled: !snapshot.isCheckedToday
+            )
         }
     }
 
@@ -472,20 +473,20 @@ private struct PulseLocalizedWidgetView: View {
 
     @ViewBuilder
     private func accessoryRectangular(_ snapshot: PulseWidgetSnapshot) -> some View {
-        if snapshot.isCheckedToday {
+        ZStack {
             accessoryRectangularContent(snapshot)
-                .accessibilityElement(children: .ignore)
-                .accessibilityLabel(Text(verbatim: accessorySummary(snapshot)))
-        } else {
-            ZStack {
-                accessoryRectangularContent(snapshot)
-                    .invalidatableContent()
-                    .allowsHitTesting(false)
+                .allowsHitTesting(false)
+                .accessibilityHidden(true)
 
-                PulseWidgetCheckInHitTarget(
-                    label: Text(verbatim: accessorySummary(snapshot))
-                )
-            }
+            Color.clear
+                .accessibilityElement()
+                .accessibilityLabel(Text(verbatim: accessorySummary(snapshot)))
+                .accessibilityHidden(!snapshot.isCheckedToday)
+
+            PulseWidgetCheckInHitTarget(
+                label: Text(verbatim: accessorySummary(snapshot)),
+                isEnabled: !snapshot.isCheckedToday
+            )
         }
     }
 
@@ -744,13 +745,18 @@ private struct PulseLocalizedWidgetView: View {
 
 private struct PulseWidgetCheckInHitTarget: View {
     let label: Text
+    let isEnabled: Bool
 
-    init(label: Text = Text("widget.action.check_in")) {
+    init(
+        label: Text = Text("widget.action.check_in"),
+        isEnabled: Bool
+    ) {
         self.label = label
+        self.isEnabled = isEnabled
     }
 
     var body: some View {
-        Button(intent: PulseCheckInIntent()) {
+        Button(intent: PulseWidgetCheckInIntent()) {
             Rectangle()
                 .fill(.clear)
                 .contentShape(Rectangle())
@@ -758,9 +764,11 @@ private struct PulseWidgetCheckInHitTarget: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .buttonStyle(.plain)
+        .disabled(!isEnabled)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(label)
         .accessibilityHint("widget.action.check_in.hint")
+        .accessibilityHidden(!isEnabled)
     }
 }
 
