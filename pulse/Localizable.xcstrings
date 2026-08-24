@@ -4316,6 +4316,22 @@
         }
       }
     },
+    "settings.watch.open_watch_app" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open Watch"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "打开 Watch App"
+          }
+        }
+      }
+    },
     "settings.watch.summary" : {
       "localizations" : {
         "en" : {

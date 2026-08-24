@@ -195,6 +195,14 @@ final class PulseAppModelTests: XCTestCase {
         XCTAssertEqual(context.model.watchConnectionStatus, .notInstalled)
     }
 
+    func testWatchConnectionStatusShowsOpenWatchAppActionOnlyWhenNeeded() {
+        XCTAssertTrue(PulseWatchConnectionStatus.notInstalled.showsOpenWatchAppAction)
+        XCTAssertTrue(PulseWatchConnectionStatus.unpaired.showsOpenWatchAppAction)
+        XCTAssertFalse(PulseWatchConnectionStatus.installed.showsOpenWatchAppAction)
+        XCTAssertFalse(PulseWatchConnectionStatus.activating.showsOpenWatchAppAction)
+        XCTAssertFalse(PulseWatchConnectionStatus.unsupported.showsOpenWatchAppAction)
+    }
+
     func testExternalSystemSurfaceCommitRefreshesAppAndWatchSnapshot() async throws {
         let context = try makeContext()
         await context.model.start()

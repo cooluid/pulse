@@ -4,6 +4,7 @@ struct WatchSettingsView: View {
     @Bindable var model: PulseAppModel
 
     @Environment(\.locale) private var locale
+    @Environment(\.openURL) private var openURL
     @Environment(\.pulseVisualTheme) private var visualTheme
 
     var body: some View {
@@ -29,6 +30,13 @@ struct WatchSettingsView: View {
                     .font(.footnote)
                     .foregroundStyle(PulseDesign.appMuted(for: visualTheme))
                     .fixedSize(horizontal: false, vertical: true)
+
+                if model.watchConnectionStatus.showsOpenWatchAppAction {
+                    Button("settings.watch.open_watch_app") {
+                        openURL(PulseWatchAppNavigation.watchAppURL)
+                    }
+                    .accessibilityIdentifier("settings.watch.open-watch-app")
+                }
             }
 
             Section {
@@ -87,6 +95,15 @@ extension PulseWatchConnectionStatus {
             "settings.watch.status.not_installed.detail"
         case .installed:
             "settings.watch.status.installed.detail"
+        }
+    }
+
+    var showsOpenWatchAppAction: Bool {
+        switch self {
+        case .unpaired, .notInstalled:
+            true
+        case .unsupported, .activating, .installed:
+            false
         }
     }
 }
