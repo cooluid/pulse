@@ -34,10 +34,10 @@ struct EditorialTodayContent<CheckInControl: View>: View {
 
             checkInControl
                 .frame(maxWidth: .infinity, alignment: .center)
-                .padding(.top, PulseDesign.spacing24)
+                .padding(.top, PulseDesign.editorialCheckInVerticalPadding)
 
             editorialWeekRail
-                .padding(.top, PulseDesign.spacing24)
+                .padding(.top, PulseDesign.editorialCheckInVerticalPadding)
 
             editorialRhythmStatus
                 .padding(.top, PulseDesign.spacing20)
@@ -304,70 +304,110 @@ struct EditorialPrimaryNavigation: View {
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    @Namespace private var selectionNamespace
 
     var body: some View {
-        GeometryReader { proxy in
-            let itemWidth = proxy.size.width / CGFloat(PulsePrimarySection.allCases.count)
-            HStack(spacing: 0) {
-                editorialTab(
-                    .today,
-                    title: "editorial.tab.today",
-                    width: itemWidth
-                )
-                editorialTab(
-                    .history,
-                    title: "editorial.tab.records",
-                    width: itemWidth
-                )
-            }
+        HStack(spacing: 0) {
+            editorialSegment(
+                .today,
+                title: "editorial.tab.today"
+            )
+            editorialSegment(
+                .history,
+                title: "editorial.tab.records"
+            )
         }
-        .frame(
-            height: dynamicTypeSize.isAccessibilitySize
-                ? PulseDesign.accessibilityNavigationMinimumHeight
-                : PulseDesign.primaryNavigationHeight
-        )
+        .padding(PulseDesign.editorialNavigationStripPadding)
+        .frame(maxWidth: .infinity)
+        .frame(height: stripHeight)
+        .background {
+            RoundedRectangle(
+                cornerRadius: PulseDesign.editorialNavigationStripCornerRadius,
+                style: .continuous
+            )
+            .fill(PulseDesign.surface)
+        }
+        .overlay {
+            RoundedRectangle(
+                cornerRadius: PulseDesign.editorialNavigationStripCornerRadius,
+                style: .continuous
+            )
+            .stroke(
+                PulseDesign.separator,
+                lineWidth: PulseDesign.thinLineWidth
+            )
+        }
         .padding(.horizontal, PulseDesign.horizontalPadding)
         .padding(.top, PulseDesign.spacing8)
-        .padding(.bottom, PulseDesign.spacing24)
+        .padding(.bottom, PulseDesign.editorialNavigationOuterVerticalPadding)
+        .frame(maxWidth: .infinity)
+        .fixedSize(horizontal: false, vertical: true)
         .background(PulseDesign.background)
-        .overlay(alignment: .top) {
-            Rectangle()
-                .fill(PulseDesign.separator)
-                .frame(height: PulseDesign.thinLineWidth)
-        }
     }
 
-    private func editorialTab(
-        _ section: PulsePrimarySection,
-        title: LocalizedStringKey,
-        width: CGFloat
-    ) -> some View {
-        Button {
-            guard selection != section else { return }
-            if reduceMotion {
-                selection = section
-            } else {
-                withAnimation(.easeInOut(duration: PulseDesign.primaryContentTransitionDuration)) {
-                    selection = section
-                }
-            }
-        } label: {
-            VStack(spacing: PulseDesign.spacing8) {
-                Text(title)
-                    .font(.caption.weight(selection == section ? .semibold : .regular))
-                    .foregroundStyle(
-                        selection == section ? PulseDesign.ink : PulseDesign.secondary
-                    )
+    private var stripHeight: CGFloat {
+        if dynamicTypeSize.isAccessibilitySize {
+            return PulseDesign.accessibilityNavigationMinimumHeight
+        }
+        return PulseDesign.editorialNavigationStripHeight
+    }
 
-                Rectangle()
-                    .fill(selection == section ? PulseDesign.ink : PulseDesign.separator)
-                    .frame(height: PulseDesign.emphasisLineWidth)
-            }
-            .frame(width: width)
-            .frame(minHeight: PulseDesign.minimumHitTarget)
+    private func editorialSegment(
+        _ section: PulsePrimarySection,
+        title: LocalizedStringKey
+    ) -> some View {
+        let isSelected = selection == section
+
+        return Button {
+            select(section)
+        } label: {
+            Text(title)
+                .font(
+                    .system(
+                        .subheadline,
+                        design: .serif
+                    )
+                    .weight(isSelected ? .semibold : .regular)
+                )
+                .foregroundStyle(isSelected ? PulseDesign.ink : PulseDesign.secondary)
+                .lineLimit(2)
+                .minimumScaleFactor(0.82)
+                .multilineTextAlignment(.center)
+                .frame(maxWidth: .infinity)
+                .frame(maxHeight: .infinity)
+                .contentShape(Rectangle())
+                .background {
+                    if isSelected {
+                        RoundedRectangle(
+                            cornerRadius: PulseDesign.editorialNavigationSegmentCornerRadius,
+                            style: .continuous
+                        )
+                        .fill(
+                            PulseDesign.ink.opacity(
+                                PulseDesign.editorialNavigationSelectedFillOpacity
+                            )
+                        )
+                        .matchedGeometryEffect(
+                            id: "editorial.navigation.selection",
+                            in: selectionNamespace
+                        )
+                    }
+                }
         }
         .buttonStyle(.plain)
-        .frame(maxWidth: .infinity)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .accessibilityIdentifier("primary.navigation.\(section.rawValue)")
+        .accessibilityAddTraits(isSelected ? .isSelected : [])
+    }
+
+    private func select(_ section: PulsePrimarySection) {
+        guard selection != section else { return }
+        guard !reduceMotion else {
+            selection = section
+            return
+        }
+        withAnimation(.easeInOut(duration: PulseDesign.primaryNavigationSelectionDuration)) {
+            selection = section
+        }
     }
 }

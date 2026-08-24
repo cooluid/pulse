@@ -116,8 +116,15 @@ enum PulseDesign {
     static let sunlitSurfaceShadowY: CGFloat = 8
     static let editorialCalendarDayCornerRadius: CGFloat = 4
     static let editorialCalendarCheckedOpacity = 0.14
+    static let editorialNavigationStripCornerRadius: CGFloat = 10
+    static let editorialNavigationSegmentCornerRadius: CGFloat = 7
+    static let editorialNavigationStripHeight: CGFloat = 52
+    static let editorialNavigationStripPadding: CGFloat = spacing4
+    static let editorialNavigationSelectedFillOpacity = 0.08
+    static let editorialNavigationOuterVerticalPadding: CGFloat = spacing12
     static let checkInInnerHalo: CGFloat = 18
     static let checkInOuterHalo: CGFloat = 36
+    static let editorialCheckInVerticalPadding: CGFloat = checkInOuterHalo + spacing16
 
     static let primaryNavigationMaxWidth: CGFloat = 440
     static let primaryNavigationHeight: CGFloat = 72

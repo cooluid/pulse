@@ -210,9 +210,9 @@ struct RootView: View {
                 + PulseDesign.spacing8
                 + PulseDesign.spacing12
         case .editorialJournal:
-            PulseDesign.primaryNavigationHeight
+            PulseDesign.editorialNavigationStripHeight
                 + PulseDesign.spacing8
-                + PulseDesign.spacing24
+                + PulseDesign.editorialNavigationOuterVerticalPadding
         }
     }
 
