@@ -14,7 +14,8 @@ struct VisualThemePickerView: View {
                     PulseVisualThemeChoice(
                         theme: theme,
                         isSelected: model.settings.visualTheme == theme,
-                        isLocked: PulseVisualThemeAccessPolicy
+                        isLocked:
+                            PulseVisualThemeAccessPolicy
                             .requiresEnhancement(theme)
                             && !model.featureAccess.hasEnhancement,
                         locale: locale
@@ -38,15 +39,6 @@ struct VisualThemePickerView: View {
         .navigationTitle(PulseLocalization.string("settings.visual_theme", locale: locale))
         .navigationBarTitleDisplayMode(.inline)
         .pulseSecondaryNavigation()
-        .overlay(alignment: .topLeading) {
-            Color.clear
-                .frame(width: 1, height: 1)
-                .accessibilityElement(children: .ignore)
-                .accessibilityLabel(
-                    PulseLocalization.string("settings.visual_theme", locale: locale)
-                )
-                .accessibilityIdentifier("settings.visual-theme.selector")
-        }
         .navigationDestination(isPresented: $showsStore) {
             EnhancementStoreView(model: model)
         }

@@ -36,14 +36,6 @@ struct EnhancementStoreView: View {
             for: .navigationBar
         )
         .toolbarBackground(.visible, for: .navigationBar)
-        .overlay(alignment: .topLeading) {
-            Color.clear
-                .frame(width: 1, height: 1)
-                .allowsHitTesting(false)
-                .accessibilityElement(children: .ignore)
-                .accessibilityLabel(visualTheme.localizedName(locale: locale))
-                .accessibilityIdentifier(storeThemeIdentifier)
-        }
         .safeAreaInset(edge: .bottom, spacing: 0) {
             purchaseAction
         }
@@ -203,14 +195,6 @@ struct EnhancementStoreView: View {
         }
     }
 
-    private var storeThemeIdentifier: String {
-        switch visualTheme {
-        case .editorialJournal: "store.theme.editorial-journal"
-        case .quietField: "store.theme.quiet-field"
-        case .sunlitDay: "store.theme.sunlit-day"
-        }
-    }
-
     private var quietHero: some View {
         HStack(alignment: .center, spacing: PulseDesign.spacing16) {
             VStack(alignment: .leading, spacing: PulseDesign.spacing12) {
@@ -236,10 +220,13 @@ struct EnhancementStoreView: View {
                 .accessibilityHidden(true)
         }
         .padding(PulseDesign.spacing20)
-        .background(PulseDesign.surface.opacity(0.90), in: RoundedRectangle(
-            cornerRadius: PulseDesign.storeHeroCornerRadius,
-            style: .continuous
-        ))
+        .background(
+            PulseDesign.surface.opacity(0.90),
+            in: RoundedRectangle(
+                cornerRadius: PulseDesign.storeHeroCornerRadius,
+                style: .continuous
+            )
+        )
         .overlay {
             RoundedRectangle(
                 cornerRadius: PulseDesign.storeHeroCornerRadius,
@@ -247,10 +234,12 @@ struct EnhancementStoreView: View {
             )
             .stroke(PulseDesign.separator.opacity(0.72), lineWidth: PulseDesign.thinLineWidth)
         }
-        .clipShape(RoundedRectangle(
-            cornerRadius: PulseDesign.storeHeroCornerRadius,
-            style: .continuous
-        ))
+        .clipShape(
+            RoundedRectangle(
+                cornerRadius: PulseDesign.storeHeroCornerRadius,
+                style: .continuous
+            )
+        )
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("store.hero")
     }
@@ -359,17 +348,17 @@ struct EnhancementStoreView: View {
 
     private var purchaseAction: some View {
         purchaseState
-        .frame(maxWidth: PulseDesign.screenMaxWidth, alignment: .leading)
-        .padding(.horizontal, PulseDesign.primaryNavigationHorizontalInset)
-        .padding(.vertical, PulseDesign.spacing8)
-        .frame(maxWidth: .infinity)
-        .fixedSize(horizontal: false, vertical: true)
-        .background(PulseDesign.appSurface(for: visualTheme))
-        .overlay(alignment: .top) {
-            Rectangle()
-                .fill(PulseDesign.appDivider(for: visualTheme))
-                .frame(height: PulseDesign.thinLineWidth)
-        }
+            .frame(maxWidth: PulseDesign.screenMaxWidth, alignment: .leading)
+            .padding(.horizontal, PulseDesign.primaryNavigationHorizontalInset)
+            .padding(.vertical, PulseDesign.spacing8)
+            .frame(maxWidth: .infinity)
+            .fixedSize(horizontal: false, vertical: true)
+            .background(PulseDesign.appSurface(for: visualTheme))
+            .overlay(alignment: .top) {
+                Rectangle()
+                    .fill(PulseDesign.appDivider(for: visualTheme))
+                    .frame(height: PulseDesign.thinLineWidth)
+            }
     }
 
     @ViewBuilder
@@ -385,13 +374,17 @@ struct EnhancementStoreView: View {
             switch operation {
             case .purchasing, .restoring:
                 ProgressView("store.processing")
-                    .frame(maxWidth: .infinity, minHeight: PulseDesign.storePurchaseButtonMinimumHeight)
+                    .frame(
+                        maxWidth: .infinity, minHeight: PulseDesign.storePurchaseButtonMinimumHeight
+                    )
                     .background(storeActionSurface, in: storeActionShape)
                     .accessibilityIdentifier("store.processing")
             case .pending:
                 Label("store.pending", systemImage: "hourglass")
                     .foregroundStyle(PulseDesign.appMuted(for: visualTheme))
-                    .frame(maxWidth: .infinity, minHeight: PulseDesign.storePurchaseButtonMinimumHeight)
+                    .frame(
+                        maxWidth: .infinity, minHeight: PulseDesign.storePurchaseButtonMinimumHeight
+                    )
                     .background(storeActionSurface, in: storeActionShape)
                     .accessibilityIdentifier("store.pending")
             }
@@ -407,7 +400,8 @@ struct EnhancementStoreView: View {
                     } label: {
                         Text(
                             String(
-                                format: PulseLocalization.string("store.buy_format", locale: locale),
+                                format: PulseLocalization.string(
+                                    "store.buy_format", locale: locale),
                                 product.displayPrice
                             )
                         )

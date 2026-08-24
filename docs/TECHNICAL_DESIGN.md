@@ -42,7 +42,7 @@ Watch 本地目录只接受 file URL，并在唯一入口标准化后使用。�
 
 WCSession 的 reply/error 回调由明确的非隔离 `@Sendable` 闭包接收，只把 `Data` 和不可变命令跨到 `MainActor`；一次性 completion 以锁保护并最多恢复一次 continuation。不得把在 `@MainActor` 方法中隐式继承隔离的普通闭包直接交给 WatchConnectivity 的私有工作队列，否则 Swift 6 会在进入闭包前触发 libdispatch 队列断言。
 
-Watch App 页级几何只由 `PulseWatchLayoutMetrics` 解析实际容器、safe area、可见区段和集中设计令牌；禁止设备型号/表径分支和页面内散落固定尺寸。标准字号使用无滚动的蓝色状态场：左侧动作/事实、右侧离散日轴、底部三层波面；Accessibility Dynamic Type 进入明确纵向滚动路径。iPhone `AppSettings.watchWaveMotionEnabled` 是波浪偏好唯一真源，经 `PulseWatchProjectSnapshot` 同步；Watch 端只消费快照，并与 Scene、Reduce Motion、低亮度共同裁决是否运行时间线。
+Watch 页面使用实际容器和 safe area 适配，不按设备型号复制业务路径。Accessibility Dynamic Type 下关键状态和操作必须可达。iPhone `AppSettings.watchWaveMotionEnabled` 是当前 Watch 动效偏好的唯一真源，经 `PulseWatchProjectSnapshot` 同步；Watch 端只消费快照，并与 Scene、Reduce Motion、低亮度共同裁决是否允许运动。具体几何和外观不属于技术合同。
 
 Home / Accessory Widget 使用普通 `PulseWidgetCheckInIntent: AppIntent`，直接在 Widget extension 进程提交 Repository，避免为一次本地签到冷启动容器 App；返回后只接受 WidgetKit 保证的自动 timeline reload，不主动重复请求。容器 App 在下次生命周期激活或 Watch 快照请求时从 Repository 重投影，不依赖 Widget 进程内通知。Live Activity 使用独立 `PulseLiveActivityCheckInIntent: LiveActivityIntent`，在 App 进程提交成功后才发送 `PulseExternalCheckInSignal` 并通过唯一 `PulseWidgetTimelineReloadCoordinator` 刷新两个正式 Widget kind。信号不携带、不持久化业务事实，也不承担成功裁决。App 内其他事实变化也只通过同一 coordinator 适配器刷新，不再散落 `WidgetCenter` 调用。
 
@@ -94,9 +94,9 @@ AppModel 同时建立 `recordsByDay` 与 `mediaByDay`。照片不参与 CheckInS
 
 公开隐私和支持正文只由 `/Users/fanr/Documents/work/coco-web` 持有；本仓 `site/` 只做正式 URL 跳转。反馈能力合入候选时必须同步权威隐私正文，但部署是独立发布门禁。
 
-## 9. 视觉与可访问性
+## 9. 外观工程与可访问性
 
-影像与记事作为内容层进入 App；不另造第二套签到事实。Today 保留签到主动作；History 保留月历、漏签和统计。三套界面主题共享记事查看/编辑与照片能力，只重画构图。操作使用系统 Button/确认、44pt 命中、Dynamic Type、VoiceOver、Reduce Motion 等价。外观以实现与人工截图为准。
+影像与记事作为内容层进入 App，不另造第二套签到事实。三套界面主题共享签到、记事、照片、月历、漏签和统计能力。关键操作、Dynamic Type、VoiceOver 与 Reduce Motion 必须可用；具体控件、命中区实现、构图和外观不由技术文档或自动化固定。
 
 ## 10. 证据边界
 

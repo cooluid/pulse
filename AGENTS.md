@@ -32,10 +32,17 @@
 - 同一项目、同一逻辑日最多一条签到。成功以持久化成功为准，不以动画或内存状态为准。
 - 中文产品名「一日一印」，英文「Pulse」。用户侧说「我的一件事」「签到」「高级功能」「今日照片」；「主承诺」「高阶权益」「入镜资产」是内部词。
 - 运行时文案只改 String Catalog。公开隐私/支持正文只在 `/Users/fanr/Documents/work/coco-web`；本仓 `site/` 只做正式 URL 跳转。
-- 颜色走 `design/brand-tokens.json`。外观可探索，人工截图验收；事实、隐私、无障碍、StoreKit 诚实不能用「自由发挥」绕过。
-- 尚未公开发布。旧设计若阻挡新的正确实现，直接清理或重构，不要为未上线路径保留兼容分支。
+- `design/brand-tokens.json` 只是当前颜色资产的工程入口，令牌可随设计自由增加、删除、改名或重做。外观只由当前实现和人工观感决定。
+- 尚未公开发布。设计可以直接重画，不为任何未上线画法保留兼容分支；任何视觉题材都不得被文档预先判定为正确、错误或设计债。
 
 未收集的数据类型、未附带字段、不后台收集、不做人脸推断、EXIF 剥离、尺寸上限：用测试锁定，不要用脚注向用户证明很干净。
+
+## 美术自由与测试边界
+
+- 项目文档不定义构图、配色、材质、图形题材、风格、参考、反参考、页面映射或“设计意图”。需要参考时，只服务当次任务，不沉淀成后续门禁。
+- 设计稿、当前 SwiftUI、截图和商店素材都是可替换实现，不是未来设计必须兼容的合同，也不需要文档逐项许可。
+- 自动化只守领域事实、功能可达、无障碍结果、隐私、交易诚实和系统硬限制。禁止测试锁定 SwiftUI 写法、View 层级、固定几何、像素、颜色值、视觉令牌清单、构图关系、素材题材或动效风格。
+- 截图和渲染附件只供人看，不做 golden image、像素差、构图哈希或审美 GO 门禁。视觉是否通过由人判断。
 
 ## 按任务读合同
 
@@ -46,7 +53,7 @@
 | 签到 / 记事 / 照片 / 删除 | [`docs/DOMAIN_CONTRACT.md`](./docs/DOMAIN_CONTRACT.md) |
 | 范围、收费、验收 | [`docs/PRODUCT_REQUIREMENTS.md`](./docs/PRODUCT_REQUIREMENTS.md)、[`docs/RELEASE_SCOPE_1_1.md`](./docs/RELEASE_SCOPE_1_1.md) |
 | 用户可见文字 | [`design/CONTENT_DESIGN_SPEC.md`](./design/CONTENT_DESIGN_SPEC.md) |
-| 外观 | [`design/BRAND_SPEC.md`](./design/BRAND_SPEC.md) |
+| 外观工程与人工验收边界 | [`design/BRAND_SPEC.md`](./design/BRAND_SPEC.md) |
 | Widget / 灵动岛 / 提醒 | [`docs/PULSE_RITUAL_CONTRACT.md`](./docs/PULSE_RITUAL_CONTRACT.md) |
 | 备份加密 | [`docs/DATA_ENCRYPTION_CONTRACT.md`](./docs/DATA_ENCRYPTION_CONTRACT.md) |
 | 当前是否可发布 | [`docs/IMPLEMENTATION_STATUS.md`](./docs/IMPLEMENTATION_STATUS.md) |

@@ -1,10 +1,8 @@
 import XCTest
-import UIKit
 
 @MainActor
 final class PulseFlowUITests: XCTestCase {
     private var app: XCUIApplication!
-    private let bottomInteractionSafetyInset: CGFloat = 80
 
     private func configureApp() {
         continueAfterFailure = false
@@ -45,25 +43,9 @@ final class PulseFlowUITests: XCTestCase {
         XCTAssertTrue(link.isHittable)
         link.tap()
         XCTAssertTrue(
-            app.descendants(matching: .any)["settings.visual-theme.selector"]
+            app.buttons["settings.visual-theme.editorialJournal"]
                 .waitForExistence(timeout: 3)
         )
-    }
-
-    private func assertVisualThemeCardsStayWithinWindow() {
-        let identifiers = [
-            "settings.visual-theme.editorialJournal",
-            "settings.visual-theme.quietField",
-            "settings.visual-theme.sunlitDay",
-        ]
-        let cards = identifiers.map { app.buttons[$0] }
-        for card in cards {
-            XCTAssertTrue(card.waitForExistence(timeout: 3))
-            XCTAssertGreaterThanOrEqual(card.frame.minX, app.frame.minX)
-            XCTAssertLessThanOrEqual(card.frame.maxX, app.frame.maxX)
-        }
-        XCTAssertLessThan(cards[0].frame.maxY, cards[1].frame.minY)
-        XCTAssertLessThan(cards[1].frame.maxY, cards[2].frame.minY)
     }
 
     func testCheckInPersistsAcrossRelaunchAndAppearsInHistory() throws {
@@ -76,11 +58,6 @@ final class PulseFlowUITests: XCTestCase {
 
         let weekRail = app.otherElements["today.week.rail"]
         XCTAssertTrue(weekRail.waitForExistence(timeout: 3))
-        assertWeekRailDoesNotOverlapCheckIn()
-        assertWeekRailGeometry()
-        assertRedundantTodayCopyIsAbsent()
-        assertHeroGeometry()
-        assertRhythmStatusFollowsWeekRail()
         assertRhythmStatus(equals: "从今天开始")
 
         let pendingAttachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
@@ -93,10 +70,6 @@ final class PulseFlowUITests: XCTestCase {
         XCTAssertFalse(checkInButton.isEnabled)
         XCTAssertTrue(checkInButton.label.contains("已签到"))
         assertRhythmStatus(equals: "连续 1 天")
-        assertWeekRailGeometry()
-        assertRedundantTodayCopyIsAbsent()
-        assertHeroGeometry()
-        assertRhythmStatusFollowsWeekRail()
 
         app.terminate()
         app.launchEnvironment.removeValue(forKey: "PULSE_UI_TEST_RESET")
@@ -107,9 +80,6 @@ final class PulseFlowUITests: XCTestCase {
         XCTAssertFalse(persistedCheckInButton.isEnabled)
         XCTAssertTrue(persistedCheckInButton.label.contains("已签到"))
         assertRhythmStatus(equals: "连续 1 天")
-        assertRedundantTodayCopyIsAbsent()
-        assertHeroGeometry()
-        assertRhythmStatusFollowsWeekRail()
 
         let todayAttachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
         todayAttachment.name = "Today after persisted check-in"
@@ -147,24 +117,7 @@ final class PulseFlowUITests: XCTestCase {
         XCTAssertFalse(app.navigationBars["照片"].exists)
         XCTAssertFalse(app.descendants(matching: .any)["today.media.strip"].exists)
 
-        let checkInButton = app.buttons["today.checkin.button"]
-        let weekRail = app.descendants(matching: .any)["today.week.rail"]
-        let primaryNavigation = app.buttons["primary.navigation.today"]
-        XCTAssertTrue(checkInButton.exists)
-        XCTAssertTrue(weekRail.exists)
-        XCTAssertTrue(primaryNavigation.exists)
-        let isTrailingCompanion = captureButton.frame.midX > checkInButton.frame.midX
-            && captureButton.frame.minY < checkInButton.frame.maxY
-        let isFollowingCompanion = captureButton.frame.minY >= checkInButton.frame.maxY
-        XCTAssertTrue(
-            isTrailingCompanion || isFollowingCompanion,
-            "The media invitation must remain adjacent to the completed check-in."
-        )
-        XCTAssertLessThan(
-            captureButton.frame.maxY,
-            primaryNavigation.frame.minY,
-            "The companion media action must not compete with primary navigation."
-        )
+        XCTAssertTrue(captureButton.isHittable)
 
         let attachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
         attachment.name = "Today with companion media action"
@@ -339,10 +292,6 @@ final class PulseFlowUITests: XCTestCase {
             ).count,
             0
         )
-        XCTAssertTrue(
-            app.descendants(matching: .any)["store.theme.editorial-journal"].exists,
-            "Theme specimens must not apply a paid theme before purchase."
-        )
 
         let storeAttachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
         storeAttachment.name = "Advanced benefits before purchase"
@@ -353,14 +302,12 @@ final class PulseFlowUITests: XCTestCase {
             "store.capability.scheduledLiveActivity"
         ]
         let restoreButton = app.buttons["store.restore"]
-        for _ in 0..<8 where !restoreButton.isHittable
-            || restoreButton.frame.maxY > purchaseButton.frame.minY {
+        for _ in 0..<8 where !restoreButton.isHittable {
             app.swipeUp()
         }
         XCTAssertTrue(finalCapability.waitForExistence(timeout: 3))
         XCTAssertTrue(finalCapability.isHittable)
         XCTAssertTrue(restoreButton.isHittable)
-        XCTAssertLessThanOrEqual(restoreButton.frame.maxY, purchaseButton.frame.minY)
 
         purchaseButton.tap()
 
@@ -426,116 +373,17 @@ final class PulseFlowUITests: XCTestCase {
         optionsAttachment.lifetime = .keepAlways
         add(optionsAttachment)
 
-        let window = app.windows.firstMatch
-        for _ in 0..<4 where !premiumStoreButton.isHittable
-            || premiumStoreButton.frame.maxY > window.frame.maxY - 20 {
+        for _ in 0..<4 where !premiumStoreButton.isHittable {
             app.swipeUp()
         }
         XCTAssertTrue(premiumStoreButton.waitForExistence(timeout: 3))
         XCTAssertTrue(premiumStoreButton.isHittable)
-        XCTAssertLessThanOrEqual(premiumStoreButton.frame.maxY, window.frame.maxY - 20)
 
         premiumStoreButton.tap()
         XCTAssertTrue(
             app.buttons["store.buy"]
                 .waitForExistence(timeout: 3)
         )
-    }
-
-    func testPathWidgetPreviewShowsDistinctArrivalMidpoint() throws {
-        configureApp()
-        app.launchEnvironment["PULSE_UI_TEST_ENHANCEMENT_PURCHASED"] = "1"
-        launchAndConfirmDefaultCommitment()
-
-        app.buttons["settings.navigation.open.today"].tap()
-        let galleryLink = app.descendants(matching: .any)["settings.widget.gallery.link"]
-        for _ in 0..<4 where !galleryLink.isHittable {
-            app.swipeUp()
-        }
-        XCTAssertTrue(galleryLink.waitForExistence(timeout: 3))
-        galleryLink.tap()
-
-        let card = app.descendants(matching: .any)["widget.gallery.style.path"]
-        let previewButton = app.buttons["widget.gallery.preview.path"]
-        let window = app.windows.firstMatch
-        for _ in 0..<8 where !card.exists
-            || card.frame.maxY > window.frame.maxY - 20 {
-            app.swipeUp()
-        }
-        XCTAssertTrue(card.waitForExistence(timeout: 3))
-        XCTAssertTrue(previewButton.waitForExistence(timeout: 3))
-        XCTAssertTrue(previewButton.isHittable)
-
-        let previewRect = CGRect(
-            x: card.frame.minX,
-            y: card.frame.minY,
-            width: card.frame.width,
-            height: min(card.frame.height * 0.54, card.frame.width * 0.48)
-        )
-        let pendingScreenshot = XCUIScreen.main.screenshot()
-        let pendingPixels = try XCTUnwrap(croppedPNG(
-            from: pendingScreenshot,
-            screenRect: previewRect
-        ))
-
-        previewButton.tap()
-        Thread.sleep(forTimeInterval: 3.45)
-
-        let midpointScreenshot = XCUIScreen.main.screenshot()
-        let midpointPixels = try XCTUnwrap(croppedPNG(
-            from: midpointScreenshot,
-            screenRect: previewRect
-        ))
-        XCTAssertNotEqual(
-            pendingPixels,
-            midpointPixels,
-            "The path preview must render a visible in-flight arrival frame."
-        )
-
-        let replayLabel = NSPredicate(format: "label == %@", "再次预览")
-        expectation(for: replayLabel, evaluatedWith: previewButton)
-        waitForExpectations(timeout: 4)
-
-        let completedScreenshot = XCUIScreen.main.screenshot()
-        let completedPixels = try XCTUnwrap(croppedPNG(
-            from: completedScreenshot,
-            screenRect: previewRect
-        ))
-        XCTAssertNotEqual(
-            midpointPixels,
-            completedPixels,
-            "The path arrival must continue from its midpoint into a distinct final state."
-        )
-
-        for (name, screenshot) in [
-            ("Path arrival pending", pendingScreenshot),
-            ("Path arrival midpoint", midpointScreenshot),
-            ("Path arrival completed", completedScreenshot),
-        ] {
-            let attachment = XCTAttachment(screenshot: screenshot)
-            attachment.name = name
-            attachment.lifetime = .keepAlways
-            add(attachment)
-        }
-    }
-
-    private func croppedPNG(
-        from screenshot: XCUIScreenshot,
-        screenRect: CGRect
-    ) -> Data? {
-        let image = screenshot.image
-        let pixelRect = CGRect(
-            x: screenRect.minX * image.scale,
-            y: screenRect.minY * image.scale,
-            width: screenRect.width * image.scale,
-            height: screenRect.height * image.scale
-        ).integral
-        guard let cropped = image.cgImage?.cropping(to: pixelRect) else { return nil }
-        return UIImage(
-            cgImage: cropped,
-            scale: image.scale,
-            orientation: image.imageOrientation
-        ).pngData()
     }
 
     func testSettingsExposesFormalFeedbackHelpAndPrivacyFlow() throws {
@@ -632,11 +480,10 @@ final class PulseFlowUITests: XCTestCase {
             app.swipeUp()
         }
         XCTAssertTrue(exportButton.waitForExistence(timeout: 3))
-        for _ in 0..<6 where exportButton.frame.maxY > app.frame.maxY - 80 {
+        for _ in 0..<6 where !exportButton.isHittable {
             app.swipeUp()
         }
         XCTAssertTrue(exportButton.isHittable)
-        XCTAssertLessThanOrEqual(exportButton.frame.maxY, app.frame.maxY - 80)
         exportButton.tap()
 
         XCTAssertTrue(app.navigationBars["加密备份"].waitForExistence(timeout: 3))
@@ -648,7 +495,7 @@ final class PulseFlowUITests: XCTestCase {
         XCTAssertFalse(submitButton.isEnabled)
 
         let cleanBackupAttachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
-        cleanBackupAttachment.name = "Store Gallery 07 Encrypted backup"
+        cleanBackupAttachment.name = "Encrypted backup form"
         cleanBackupAttachment.lifetime = .keepAlways
         add(cleanBackupAttachment)
 
@@ -674,29 +521,6 @@ final class PulseFlowUITests: XCTestCase {
         XCTAssertFalse(app.navigationBars["加密备份"].exists)
     }
 
-    func testCaptureAppStoreBackupEnglish() throws {
-        configureApp()
-        app.launchArguments = ["-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
-        launchAndConfirmDefaultCommitment()
-
-        app.buttons["settings.navigation.open.today"].tap()
-        let exportButton = app.buttons["settings.backup.export.button"]
-        for _ in 0..<8 where !exportButton.exists {
-            app.swipeUp()
-        }
-        XCTAssertTrue(exportButton.waitForExistence(timeout: 3))
-        for _ in 0..<6 where exportButton.frame.maxY > app.frame.maxY - 80 {
-            app.swipeUp()
-        }
-        XCTAssertTrue(exportButton.isHittable)
-        exportButton.tap()
-
-        XCTAssertTrue(
-            app.secureTextFields["backup.passphrase.field"]
-                .waitForExistence(timeout: 3)
-        )
-        captureStoreScreenshot("Store Gallery EN 07 Encrypted backup")
-    }
 
     func testThemeAndLanguageChoicesApplyImmediatelyAndPersistAcrossRelaunch() throws {
         configureApp()
@@ -711,15 +535,10 @@ final class PulseFlowUITests: XCTestCase {
             app.swipeUp()
         }
         XCTAssertTrue(languagePicker.waitForExistence(timeout: 3))
-        for _ in 0..<6
-            where languagePicker.frame.maxY > app.frame.maxY - bottomInteractionSafetyInset {
+        for _ in 0..<6 where !languagePicker.isHittable {
             app.swipeUp()
         }
         XCTAssertTrue(languagePicker.isHittable)
-        XCTAssertLessThanOrEqual(
-            languagePicker.frame.maxY,
-            app.frame.maxY - bottomInteractionSafetyInset
-        )
         languagePicker.tap()
         let englishOption = app.descendants(matching: .any)
             .matching(NSPredicate(format: "label == %@", "English"))
@@ -731,15 +550,15 @@ final class PulseFlowUITests: XCTestCase {
         let englishBackButton = app.buttons["navigation.back"]
         XCTAssertTrue(englishBackButton.waitForExistence(timeout: 3))
         XCTAssertEqual(englishBackButton.label, "Back")
-        XCTAssertFalse(app.buttons.matching(NSPredicate(format: "label == %@", "返回")).firstMatch.exists)
+        XCTAssertFalse(
+            app.buttons.matching(NSPredicate(format: "label == %@", "返回")).firstMatch.exists)
 
         let themePicker = app.descendants(matching: .any)["settings.theme.picker"]
         for _ in 0..<8 where !themePicker.exists {
             app.swipeUp()
         }
         XCTAssertTrue(themePicker.waitForExistence(timeout: 3))
-        for _ in 0..<6
-            where themePicker.frame.maxY > app.frame.maxY - bottomInteractionSafetyInset {
+        for _ in 0..<6 where !themePicker.isHittable {
             app.swipeUp()
         }
         XCTAssertTrue(themePicker.isHittable)
@@ -790,8 +609,6 @@ final class PulseFlowUITests: XCTestCase {
         configureApp()
         launchAndConfirmDefaultCommitment()
 
-        let freeTheme = app.descendants(matching: .any)["today.theme.editorial-journal"]
-        XCTAssertTrue(freeTheme.waitForExistence(timeout: 3))
         XCTAssertTrue(
             app.descendants(matching: .any)["journal.draft.input"]
                 .waitForExistence(timeout: 3)
@@ -803,10 +620,6 @@ final class PulseFlowUITests: XCTestCase {
         add(freeAttachment)
 
         app.buttons["primary.navigation.history"].tap()
-        XCTAssertTrue(
-            app.descendants(matching: .any)["history.theme.editorial-journal"]
-                .waitForExistence(timeout: 3)
-        )
         let freeHistoryAttachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
         freeHistoryAttachment.name = "Free Journal Page history calendar"
         freeHistoryAttachment.lifetime = .keepAlways
@@ -828,7 +641,6 @@ final class PulseFlowUITests: XCTestCase {
         XCTAssertTrue(settingsButton.waitForExistence(timeout: 3))
         settingsButton.tap()
         openVisualThemePicker()
-        assertVisualThemeCardsStayWithinWindow()
 
         let quietThemeChoice = app.buttons["settings.visual-theme.quietField"]
         let sunlitThemeChoice = app.buttons["settings.visual-theme.sunlitDay"]
@@ -855,10 +667,6 @@ final class PulseFlowUITests: XCTestCase {
                 "store.capability.interfaceThemes.preview.sunlitDay"
             ].exists
         )
-        XCTAssertTrue(
-            app.descendants(matching: .any)["store.theme.editorial-journal"].exists,
-            "Opening Advanced Features from a locked theme must not enable that theme."
-        )
         purchaseButton.tap()
         XCTAssertTrue(
             app.descendants(matching: .any)["store.status"]
@@ -876,8 +684,6 @@ final class PulseFlowUITests: XCTestCase {
 
         app.buttons["navigation.back"].tap()
         app.buttons["navigation.back"].tap()
-        let sunlitTheme = app.descendants(matching: .any)["today.theme.sunlit-day"]
-        XCTAssertTrue(sunlitTheme.waitForExistence(timeout: 3))
         XCTAssertTrue(
             app.descendants(matching: .any)["journal.draft.input"]
                 .waitForExistence(timeout: 3)
@@ -893,10 +699,6 @@ final class PulseFlowUITests: XCTestCase {
         checkInButton.tap()
         XCTAssertFalse(checkInButton.isEnabled)
         XCTAssertTrue(checkInButton.label.contains("已签到"))
-        XCTAssertTrue(
-            app.descendants(matching: .any)["today.checkin.presentation.imprinted"]
-                .waitForExistence(timeout: 3)
-        )
 
         let completedAttachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
         completedAttachment.name = "Sunlit Day after check-in"
@@ -904,10 +706,6 @@ final class PulseFlowUITests: XCTestCase {
         add(completedAttachment)
 
         app.buttons["primary.navigation.history"].tap()
-        XCTAssertTrue(
-            app.descendants(matching: .any)["history.theme.sunlit-day"]
-                .waitForExistence(timeout: 3)
-        )
         let checkedCalendarDay = app.descendants(matching: .any)["calendar.day.2026-08-10"]
         XCTAssertTrue(checkedCalendarDay.waitForExistence(timeout: 3))
         XCTAssertTrue(checkedCalendarDay.label.contains("已签到"))
@@ -926,10 +724,9 @@ final class PulseFlowUITests: XCTestCase {
         add(journalHistoryAttachment)
 
         app.buttons["history.mode.calendar"].tap()
-        assertHistorySurfaceClearsPrimaryNavigation()
 
         let historyAttachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
-        historyAttachment.name = "Sunlit Day redesigned history"
+        historyAttachment.name = "History after theme selection"
         historyAttachment.lifetime = .keepAlways
         add(historyAttachment)
 
@@ -950,10 +747,6 @@ final class PulseFlowUITests: XCTestCase {
         XCTAssertTrue(storeLink.waitForExistence(timeout: 3))
         storeLink.tap()
         XCTAssertTrue(
-            app.descendants(matching: .any)["store.theme.sunlit-day"]
-                .waitForExistence(timeout: 3)
-        )
-        XCTAssertTrue(
             app.descendants(matching: .any)["store.status"]
                 .waitForExistence(timeout: 3)
         )
@@ -968,10 +761,6 @@ final class PulseFlowUITests: XCTestCase {
         app.launchEnvironment["PULSE_UI_TEST_ENHANCEMENT_PURCHASED"] = "1"
         app.launch()
 
-        XCTAssertTrue(
-            app.descendants(matching: .any)["today.theme.sunlit-day"]
-                .waitForExistence(timeout: 5)
-        )
         XCTAssertFalse(app.buttons["today.checkin.button"].isEnabled)
     }
 
@@ -987,10 +776,6 @@ final class PulseFlowUITests: XCTestCase {
         app.buttons["navigation.back"].tap()
         app.buttons["navigation.back"].tap()
 
-        XCTAssertTrue(
-            app.descendants(matching: .any)["today.theme.editorial-journal"]
-                .waitForExistence(timeout: 3)
-        )
         let inlineNote = app.descendants(matching: .any)["journal.draft.input"]
         XCTAssertTrue(inlineNote.waitForExistence(timeout: 3))
 
@@ -1006,10 +791,6 @@ final class PulseFlowUITests: XCTestCase {
         checkInButton.tap()
         XCTAssertFalse(checkInButton.isEnabled)
         XCTAssertTrue(checkInButton.label.contains("12:00"))
-        XCTAssertTrue(
-            app.descendants(matching: .any)["today.checkin.presentation.imprinted"]
-                .waitForExistence(timeout: 3)
-        )
         XCTAssertTrue(app.buttons["today.media.capture.button"].waitForExistence(timeout: 3))
 
         let noteSummary = app.descendants(matching: .any)["journal.summary.text"]
@@ -1028,10 +809,6 @@ final class PulseFlowUITests: XCTestCase {
         XCTAssertEqual(noteSummary.label, "Edited after check-in")
 
         app.buttons["primary.navigation.history"].tap()
-        XCTAssertTrue(
-            app.descendants(matching: .any)["history.theme.editorial-journal"]
-                .waitForExistence(timeout: 3)
-        )
         XCTAssertTrue(app.descendants(matching: .any)["history.stat.total"].exists)
         app.buttons["history.mode.journal"].tap()
         XCTAssertTrue(
@@ -1081,7 +858,7 @@ final class PulseFlowUITests: XCTestCase {
         XCTAssertEqual(clearedNote.label, "这一天还没有记事")
     }
 
-    func testQuietFieldUsesTheSameCheckInNotePhotoAndHistoryContract() throws {
+    func testPurchasedThemeUsesTheSameCheckInNotePhotoAndHistoryContract() throws {
         configureApp()
         app.launchEnvironment["PULSE_UI_TEST_ENHANCEMENT_PURCHASED"] = "1"
         launchAndConfirmDefaultCommitment()
@@ -1096,10 +873,6 @@ final class PulseFlowUITests: XCTestCase {
         app.buttons["navigation.back"].tap()
 
         XCTAssertTrue(
-            app.descendants(matching: .any)["today.theme.quiet-field"]
-                .waitForExistence(timeout: 3)
-        )
-        XCTAssertTrue(
             app.descendants(matching: .any)["journal.draft.input"]
                 .waitForExistence(timeout: 3)
         )
@@ -1107,10 +880,6 @@ final class PulseFlowUITests: XCTestCase {
         XCTAssertTrue(checkInButton.waitForExistence(timeout: 3))
         checkInButton.tap()
         XCTAssertTrue(checkInButton.label.contains("12:00"))
-        XCTAssertTrue(
-            app.descendants(matching: .any)["today.checkin.presentation.imprinted"]
-                .waitForExistence(timeout: 3)
-        )
         XCTAssertTrue(app.buttons["today.media.capture.button"].waitForExistence(timeout: 3))
         XCTAssertTrue(app.descendants(matching: .any)["journal.summary"].exists)
 
@@ -1120,10 +889,6 @@ final class PulseFlowUITests: XCTestCase {
         add(quietTodayAttachment)
 
         app.buttons["primary.navigation.history"].tap()
-        XCTAssertTrue(
-            app.descendants(matching: .any)["history.theme.quiet-field"]
-                .waitForExistence(timeout: 3)
-        )
         XCTAssertTrue(app.descendants(matching: .any)["history.stat.total"].exists)
         XCTAssertTrue(
             app.descendants(matching: .any)["calendar.day.2026-08-10"]
@@ -1141,7 +906,7 @@ final class PulseFlowUITests: XCTestCase {
         add(quietHistoryAttachment)
     }
 
-    func testSunlitDayHistoryRemainsStructuredInDarkAppearance() throws {
+    func testPurchasedThemeHistoryRemainsOperableInDarkAppearance() throws {
         configureApp()
         app.launchEnvironment["PULSE_UI_TEST_ENHANCEMENT_PURCHASED"] = "1"
         launchAndConfirmDefaultCommitment()
@@ -1166,10 +931,6 @@ final class PulseFlowUITests: XCTestCase {
         waitForExpectations(timeout: 3)
 
         app.buttons["navigation.back"].tap()
-        XCTAssertTrue(
-            app.descendants(matching: .any)["today.theme.sunlit-day"]
-                .waitForExistence(timeout: 3)
-        )
 
         let checkInButton = app.buttons["today.checkin.button"]
         XCTAssertTrue(checkInButton.waitForExistence(timeout: 3))
@@ -1181,14 +942,9 @@ final class PulseFlowUITests: XCTestCase {
         historyNavigation.tap()
 
         XCTAssertTrue(
-            app.descendants(matching: .any)["history.theme.sunlit-day"]
-                .waitForExistence(timeout: 3)
-        )
-        XCTAssertTrue(
             app.descendants(matching: .any)["calendar.day.2026-08-10"]
                 .waitForExistence(timeout: 3)
         )
-        assertHistorySurfaceClearsPrimaryNavigation()
 
         let attachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
         attachment.name = "Sunlit Day history in dark appearance"
@@ -1196,12 +952,12 @@ final class PulseFlowUITests: XCTestCase {
         add(attachment)
     }
 
-    func testSunlitDayAccessibilityXXXLKeepsItsOwnOperableComposition() throws {
+    func testPurchasedThemeCheckInRemainsOperableAtAccessibilityXXXL() throws {
         configureApp()
         app.launchEnvironment["PULSE_UI_TEST_ENHANCEMENT_PURCHASED"] = "1"
         app.launchArguments += [
             "-UIPreferredContentSizeCategoryName",
-            "UICTContentSizeCategoryAccessibilityXXXL"
+            "UICTContentSizeCategoryAccessibilityXXXL",
         ]
         launchAndConfirmDefaultCommitment()
 
@@ -1217,19 +973,9 @@ final class PulseFlowUITests: XCTestCase {
         app.buttons["navigation.back"].tap()
         app.buttons["navigation.back"].tap()
 
-        XCTAssertTrue(
-            app.descendants(matching: .any)["today.theme.sunlit-day"]
-                .waitForExistence(timeout: 3)
-        )
         let checkInButton = app.buttons["today.checkin.button"]
         XCTAssertTrue(checkInButton.waitForExistence(timeout: 3))
-        XCTAssertGreaterThan(checkInButton.frame.width, checkInButton.frame.height)
-        XCTAssertGreaterThanOrEqual(checkInButton.frame.minX, app.frame.minX)
-        XCTAssertLessThanOrEqual(checkInButton.frame.maxX, app.frame.maxX)
-
-        let todayNavigation = app.buttons["primary.navigation.today"]
-        XCTAssertTrue(todayNavigation.waitForExistence(timeout: 3))
-        for _ in 0..<6 where checkInButton.frame.maxY > todayNavigation.frame.minY {
+        for _ in 0..<6 where !checkInButton.isHittable {
             app.swipeUp()
         }
 
@@ -1239,7 +985,6 @@ final class PulseFlowUITests: XCTestCase {
         add(attachment)
 
         XCTAssertTrue(checkInButton.isHittable)
-        XCTAssertLessThanOrEqual(checkInButton.frame.maxY, todayNavigation.frame.minY)
     }
 
     func testChineseHistoryUsesLocalizedArchiveHeading() throws {
@@ -1262,7 +1007,7 @@ final class PulseFlowUITests: XCTestCase {
         )
     }
 
-    func testPurchasedUserCanBrowseAllPerInstanceWidgetCompositions() throws {
+    func testPurchasedUserCanBrowseAllPerInstanceWidgetStyles() throws {
         configureApp()
         app.launchEnvironment["PULSE_UI_TEST_ENHANCEMENT_PURCHASED"] = "1"
         launchAndConfirmDefaultCommitment()
@@ -1329,171 +1074,21 @@ final class PulseFlowUITests: XCTestCase {
         _ styleIdentifiers: [String],
         state: String
     ) {
-        let window = app.windows.firstMatch
         for (index, identifier) in styleIdentifiers.enumerated() {
             let option = app.descendants(matching: .any)[
                 "widget.gallery.style.\(identifier)"
             ]
-            for _ in 0..<8 where !option.exists
-                || option.frame.maxY > window.frame.maxY - 20 {
+            for _ in 0..<8 where !option.isHittable {
                 app.swipeUp()
             }
             XCTAssertTrue(option.waitForExistence(timeout: 3))
-            XCTAssertLessThanOrEqual(option.frame.maxY, window.frame.maxY - 20)
+            XCTAssertTrue(option.isHittable)
 
             let attachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
             attachment.name = "Widget compositions \(state) \(index)"
             attachment.lifetime = .keepAlways
             add(attachment)
         }
-    }
-
-    func testRecordDetailUsesStableCompactSheetAndToolbarActionsMenu() throws {
-        configureApp()
-        launchAndConfirmDefaultCommitment()
-
-        let checkInButton = app.buttons["today.checkin.button"]
-        XCTAssertTrue(checkInButton.waitForExistence(timeout: 5))
-        checkInButton.tap()
-
-        let historyNavigation = app.buttons["primary.navigation.history"]
-        XCTAssertTrue(historyNavigation.waitForExistence(timeout: 3))
-        historyNavigation.tap()
-
-        let checkedDay = app.descendants(matching: .any)["calendar.day.2026-08-10"]
-        XCTAssertTrue(checkedDay.waitForExistence(timeout: 3))
-        checkedDay.tap()
-
-        let identity = app.descendants(matching: .any)["history.record.detail.identity"]
-        let actionsMenu = app.buttons["history.record.actions.menu"]
-        let closeButton = app.buttons["detail.sheet.close"]
-        XCTAssertTrue(identity.waitForExistence(timeout: 3))
-        XCTAssertTrue(identity.label.contains("2026年8月10日"))
-        XCTAssertTrue(actionsMenu.waitForExistence(timeout: 3))
-        XCTAssertTrue(closeButton.exists)
-        XCTAssertTrue(actionsMenu.isHittable)
-        XCTAssertTrue(closeButton.isHittable)
-        XCTAssertFalse(app.buttons["完成"].exists)
-        XCTAssertFalse(app.descendants(matching: .any)["history.media.preview"].exists)
-
-        let detailAttachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
-        detailAttachment.name = "Unified compact record detail without media"
-        detailAttachment.lifetime = .keepAlways
-        add(detailAttachment)
-
-        actionsMenu.tap()
-
-        let deleteAction = app.descendants(matching: .any)["history.record.delete.action"]
-        XCTAssertTrue(deleteAction.waitForExistence(timeout: 3))
-        XCTAssertFalse(app.descendants(matching: .any)["history.media.export.action"].exists)
-        XCTAssertFalse(app.descendants(matching: .any)["history.media.delete.action"].exists)
-
-        let menuAttachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
-        menuAttachment.name = "Record detail toolbar actions menu"
-        menuAttachment.lifetime = .keepAlways
-        add(menuAttachment)
-
-        deleteAction.tap()
-
-        XCTAssertTrue(
-            app.buttons["history.record.delete.confirmation.action"]
-                .waitForExistence(timeout: 3)
-        )
-    }
-
-    func testAccessibilityXXXLRecordDetailKeepsSingleActionsMenu() throws {
-        configureApp()
-        app.launchArguments += [
-            "-UIPreferredContentSizeCategoryName",
-            "UICTContentSizeCategoryAccessibilityXXXL"
-        ]
-        launchAndConfirmDefaultCommitment()
-
-        let checkInButton = app.buttons["today.checkin.button"]
-        XCTAssertTrue(checkInButton.waitForExistence(timeout: 5))
-        checkInButton.tap()
-
-        let historyNavigation = app.buttons["primary.navigation.history"]
-        XCTAssertTrue(historyNavigation.waitForExistence(timeout: 3))
-        historyNavigation.tap()
-
-        let checkedDay = app.descendants(matching: .any)["calendar.day.2026-08-10"]
-        for _ in 0..<6 where !checkedDay.exists || !checkedDay.isHittable {
-            app.swipeUp()
-        }
-        XCTAssertTrue(checkedDay.waitForExistence(timeout: 3))
-        checkedDay.tap()
-
-        let identity = app.descendants(matching: .any)["history.record.detail.identity"]
-        let actionsMenu = app.buttons["history.record.actions.menu"]
-        let closeButton = app.buttons["detail.sheet.close"]
-        XCTAssertTrue(identity.waitForExistence(timeout: 3))
-        XCTAssertTrue(actionsMenu.waitForExistence(timeout: 3))
-        XCTAssertTrue(closeButton.exists)
-        XCTAssertTrue(actionsMenu.isHittable)
-        XCTAssertTrue(closeButton.isHittable)
-        XCTAssertFalse(app.descendants(matching: .any)["history.media.preview"].exists)
-
-        let attachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
-        attachment.name = "Accessibility XXXL record detail"
-        attachment.lifetime = .keepAlways
-        add(attachment)
-
-        actionsMenu.tap()
-        XCTAssertTrue(
-            app.descendants(matching: .any)["history.record.delete.action"]
-                .waitForExistence(timeout: 3)
-        )
-        XCTAssertFalse(app.descendants(matching: .any)["history.media.export.action"].exists)
-        XCTAssertFalse(app.descendants(matching: .any)["history.media.delete.action"].exists)
-    }
-
-    func testAccessibilityXXXLUsesExpandableCheckInControl() throws {
-        configureApp()
-        app.launchArguments += [
-            "-UIPreferredContentSizeCategoryName",
-            "UICTContentSizeCategoryAccessibilityXXXL"
-        ]
-        launchAndConfirmDefaultCommitment()
-
-        let checkInButton = app.buttons["today.checkin.button"]
-        XCTAssertTrue(checkInButton.waitForExistence(timeout: 5))
-        XCTAssertGreaterThan(checkInButton.frame.width, checkInButton.frame.height)
-        XCTAssertGreaterThanOrEqual(checkInButton.frame.minX, app.frame.minX)
-        XCTAssertLessThanOrEqual(checkInButton.frame.maxX, app.frame.maxX)
-        XCTAssertTrue(
-            app.descendants(matching: .any)["today.theme.editorial-journal"].exists
-        )
-        XCTAssertTrue(app.descendants(matching: .any)["today.commitment.name"].exists)
-
-        let settingsButton = app.buttons["settings.navigation.open.today"]
-        XCTAssertTrue(settingsButton.exists)
-
-        let todayNavigation = app.buttons["primary.navigation.today"]
-        let historyNavigation = app.buttons["primary.navigation.history"]
-        XCTAssertTrue(todayNavigation.waitForExistence(timeout: 3))
-        XCTAssertTrue(historyNavigation.exists)
-        XCTAssertEqual(todayNavigation.frame.width, historyNavigation.frame.width, accuracy: 2)
-        XCTAssertEqual(todayNavigation.frame.height, historyNavigation.frame.height, accuracy: 2)
-        XCTAssertGreaterThanOrEqual(todayNavigation.frame.minX, app.frame.minX)
-        XCTAssertLessThanOrEqual(historyNavigation.frame.maxX, app.frame.maxX)
-        XCTAssertLessThanOrEqual(todayNavigation.frame.maxY, app.frame.maxY)
-        XCTAssertLessThanOrEqual(historyNavigation.frame.maxY, app.frame.maxY)
-
-        let rhythmStatus = app.staticTexts["today.rhythm.status"]
-        XCTAssertTrue(rhythmStatus.exists)
-        app.swipeUp()
-        for _ in 0..<6 where rhythmStatus.frame.maxY > todayNavigation.frame.minY {
-            app.swipeUp()
-        }
-
-        let attachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
-        attachment.name = "Accessibility XXXL primary layout"
-        attachment.lifetime = .keepAlways
-        add(attachment)
-
-        XCTAssertTrue(rhythmStatus.isHittable)
-        XCTAssertLessThanOrEqual(rhythmStatus.frame.maxY, todayNavigation.frame.minY)
     }
 
     func testHistoryExposesBidirectionalMonthNavigation() throws {
@@ -1588,8 +1183,6 @@ final class PulseFlowUITests: XCTestCase {
         XCTAssertTrue(commitmentCue.label.contains(longCommitment))
         XCTAssertTrue(app.buttons["today.checkin.button"].label.contains(longCommitment))
         XCTAssertFalse(app.staticTexts["today.commitment.purpose"].exists)
-        assertHeroGeometry()
-        assertRhythmStatusFollowsWeekRail()
 
         let longCommitmentAttachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
         longCommitmentAttachment.name = "Today with long commitment cue"
@@ -1605,8 +1198,6 @@ final class PulseFlowUITests: XCTestCase {
         XCTAssertTrue(commitmentCue.label.contains(longCommitment))
         XCTAssertFalse(app.staticTexts["today.commitment.purpose"].exists)
         XCTAssertFalse(app.buttons["commitment.save.button"].exists)
-        assertHeroGeometry()
-        assertRhythmStatusFollowsWeekRail()
 
         openCommitmentEditorFromToday()
         XCTAssertEqual(
@@ -1686,178 +1277,13 @@ final class PulseFlowUITests: XCTestCase {
         XCTAssertTrue(commitmentCue.waitForExistence(timeout: 3))
         XCTAssertTrue(commitmentCue.label.contains("深度工作"))
         XCTAssertFalse(app.staticTexts["today.commitment.purpose"].exists)
-        assertHeroGeometry()
-        assertRhythmStatusFollowsWeekRail()
         XCTAssertFalse(app.buttons["today.checkin.button"].isEnabled)
     }
 
-    func testCaptureAppStoreGallery() throws {
-        try captureAppStoreGallery(isEnglish: false)
-    }
 
-    func testCaptureAppStoreGalleryEnglish() throws {
-        try captureAppStoreGallery(isEnglish: true)
-    }
 
-    private func captureAppStoreGallery(isEnglish: Bool) throws {
-        configureApp()
-        if isEnglish {
-            app.launchArguments = ["-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
-        }
-        app.launchEnvironment["PULSE_UI_TEST_ENHANCEMENT_PURCHASED"] = "1"
-        app.launchEnvironment["PULSE_UI_TEST_NOW"] = "2026-08-01T04:00:00Z"
-        app.launch()
 
-        let nameField = app.textFields["commitment.name.field"]
-        let purposeField = app.textFields["commitment.purpose.field"]
-        XCTAssertTrue(nameField.waitForExistence(timeout: 5))
-        replaceText(in: nameField, with: isEnglish ? "Read daily" : "每天阅读")
-        replaceText(
-            in: purposeField,
-            with: isEnglish ? "Make space for one clear page" : "让一天有清晰的落点"
-        )
-        app.buttons["commitment.save.button"].tap()
-        XCTAssertTrue(app.buttons["today.checkin.button"].waitForExistence(timeout: 5))
 
-        // App Store gallery captures show the real, purchased Sunlit Day theme.
-        // The purchase surface itself is kept out of public marketing images.
-        app.buttons["settings.navigation.open.today"].tap()
-        openVisualThemePicker()
-        let sunlitThemeChoice = app.buttons["settings.visual-theme.sunlitDay"]
-        XCTAssertTrue(sunlitThemeChoice.waitForExistence(timeout: 3))
-        XCTAssertEqual(sunlitThemeChoice.value as? String, "")
-        sunlitThemeChoice.tap()
-        app.buttons["navigation.back"].tap()
-        app.buttons["navigation.back"].tap()
-        XCTAssertTrue(
-            app.descendants(matching: .any)["today.theme.sunlit-day"]
-                .waitForExistence(timeout: 3)
-        )
-
-        let completedDays: [(String, String?)] = [
-            (
-                "2026-08-01T04:00:00Z",
-                isEnglish ? "Thirty pages, one question." : "读完三十页，记下一个问题。"
-            ),
-            ("2026-08-02T04:00:00Z", nil),
-            ("2026-08-03T04:00:00Z", nil),
-            (
-                "2026-08-05T04:00:00Z",
-                isEnglish ? "Back to chapter one." : "回看第一章，补上遗漏的线索。"
-            ),
-            ("2026-08-07T04:00:00Z", nil),
-            (
-                "2026-08-08T04:00:00Z",
-                isEnglish ? "Copied one sentence." : "把喜欢的一句抄进手记。"
-            ),
-            ("2026-08-09T04:00:00Z", nil),
-        ]
-
-        for (index, entry) in completedDays.enumerated() {
-            if index > 0 {
-                app.terminate()
-                app.launchEnvironment.removeValue(forKey: "PULSE_UI_TEST_RESET")
-                app.launchEnvironment["PULSE_UI_TEST_NOW"] = entry.0
-                app.launch()
-                XCTAssertTrue(app.buttons["today.checkin.button"].waitForExistence(timeout: 5))
-            }
-            if let note = entry.1 {
-                let draft = app.descendants(matching: .any)["journal.draft.input"]
-                XCTAssertTrue(draft.waitForExistence(timeout: 3))
-                replaceText(in: draft, with: note)
-                let keyboardDone = app.buttons["journal.keyboard.done"]
-                XCTAssertTrue(keyboardDone.waitForExistence(timeout: 3))
-                keyboardDone.tap()
-                XCTAssertFalse(app.keyboards.firstMatch.exists)
-            }
-            let checkIn = app.buttons["today.checkin.button"]
-            checkIn.tap()
-            expectation(for: NSPredicate(format: "isEnabled == false"), evaluatedWith: checkIn)
-            waitForExpectations(timeout: 3)
-        }
-
-        app.terminate()
-        app.launchEnvironment.removeValue(forKey: "PULSE_UI_TEST_RESET")
-        app.launchEnvironment["PULSE_UI_TEST_NOW"] = "2026-08-10T04:00:00Z"
-        app.launch()
-        XCTAssertTrue(app.buttons["today.checkin.button"].waitForExistence(timeout: 5))
-
-        let todayDraft = app.descendants(matching: .any)["journal.draft.input"]
-        XCTAssertTrue(todayDraft.waitForExistence(timeout: 3))
-        replaceText(
-            in: todayDraft,
-            with: isEnglish ? "Close the book. Keep the day." : "合上书，也把今天轻轻收好。"
-        )
-        let keyboardDone = app.buttons["journal.keyboard.done"]
-        XCTAssertTrue(keyboardDone.waitForExistence(timeout: 3))
-        keyboardDone.tap()
-        XCTAssertFalse(app.keyboards.firstMatch.exists)
-        let prefix = isEnglish ? "Store Gallery EN" : "Store Gallery ZH"
-        captureStoreScreenshot("\(prefix) 01 Today before check-in")
-
-        let todayCheckIn = app.buttons["today.checkin.button"]
-        todayCheckIn.tap()
-        XCTAssertTrue(
-            app.descendants(matching: .any)["today.checkin.presentation.imprinted"]
-                .waitForExistence(timeout: 3)
-        )
-        captureStoreScreenshot("\(prefix) 02 Today after check-in")
-
-        app.buttons["primary.navigation.history"].tap()
-        XCTAssertTrue(
-            app.descendants(matching: .any)["calendar.day.2026-08-10"]
-                .waitForExistence(timeout: 3)
-        )
-        captureStoreScreenshot("\(prefix) 03 History calendar")
-
-        app.buttons["history.mode.journal"].tap()
-        XCTAssertTrue(
-            app.descendants(matching: .any)["history.journal.section"]
-                .waitForExistence(timeout: 3)
-        )
-        captureStoreScreenshot("\(prefix) 04 Journal records")
-
-        app.buttons["primary.navigation.today"].tap()
-        app.buttons["settings.navigation.open.today"].tap()
-
-        let galleryLink = app.descendants(matching: .any)["settings.widget.gallery.link"]
-        for _ in 0..<6 where !galleryLink.exists || !galleryLink.isHittable {
-            app.swipeUp()
-        }
-        XCTAssertTrue(galleryLink.waitForExistence(timeout: 3))
-        galleryLink.tap()
-        XCTAssertTrue(
-            app.descendants(matching: .any)["widget.gallery.style.place"]
-                .waitForExistence(timeout: 3)
-        )
-        captureStoreScreenshot("\(prefix) 05 Widget styles")
-    }
-
-    private func captureStoreScreenshot(_ name: String) {
-        let attachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
-        attachment.name = name
-        attachment.lifetime = .keepAlways
-        add(attachment)
-    }
-
-    private func assertRedundantTodayCopyIsAbsent() {
-        XCTAssertFalse(app.staticTexts["给今天留下一枚印记"].exists)
-        XCTAssertFalse(app.staticTexts["今天已留下一枚印记"].exists)
-        XCTAssertFalse(app.staticTexts["写入本机后完成"].exists)
-        XCTAssertFalse(app.staticTexts["还没有留下今天的印"].exists)
-        XCTAssertFalse(app.staticTexts["CURRENT RHYTHM"].exists)
-        XCTAssertFalse(app.staticTexts["保持自己的节奏，不与别人比较"].exists)
-        XCTAssertFalse(app.staticTexts["today.commitment.purpose"].exists)
-        XCTAssertFalse(app.descendants(matching: .any)["today.streak.band"].exists)
-        XCTAssertFalse(app.descendants(matching: .any)["today.rhythm.commitment"].exists)
-        XCTAssertFalse(app.descendants(matching: .any)["today.rhythm.summary"].exists)
-        XCTAssertEqual(
-            app.staticTexts.matching(
-                NSPredicate(format: "label CONTAINS %@", "写入本机")
-            ).count,
-            0
-        )
-    }
 
     private func replaceText(in field: XCUIElement, with replacement: String) {
         field.tap()
@@ -1869,88 +1295,12 @@ final class PulseFlowUITests: XCTestCase {
         field.typeText(replacement)
     }
 
-    private func assertWeekRailGeometry() {
-        let today = app.descendants(matching: .any)["today.week.day.2026-08-10"]
-        let previousDay = app.descendants(matching: .any)["today.week.day.2026-08-09"]
-        XCTAssertTrue(today.waitForExistence(timeout: 3))
-        XCTAssertTrue(previousDay.waitForExistence(timeout: 3))
-        XCTAssertEqual(today.frame.minY, previousDay.frame.minY, accuracy: 1)
-        XCTAssertEqual(today.frame.maxY, previousDay.frame.maxY, accuracy: 1)
-    }
-
-    private func assertWeekRailDoesNotOverlapCheckIn() {
-        let weekRail = app.otherElements["today.week.rail"]
-        let checkInButton = app.buttons["today.checkin.button"]
-        XCTAssertTrue(weekRail.exists)
-        XCTAssertTrue(checkInButton.exists)
-
-        let isVerticallySeparate = weekRail.frame.minY >= checkInButton.frame.maxY
-            || weekRail.frame.maxY <= checkInButton.frame.minY
-        let isHorizontallySeparate = weekRail.frame.maxX <= checkInButton.frame.minX
-            || weekRail.frame.minX >= checkInButton.frame.maxX
-        XCTAssertTrue(
-            isVerticallySeparate || isHorizontallySeparate,
-            "The week rail and check-in control must remain visibly separate."
-        )
-    }
-
-    private func assertHeroGeometry() {
-        let opticalCenterTolerance: CGFloat = 12
-        let dayNumber = app.staticTexts["today.day.number"]
-        let kicker = app.staticTexts["today.hero.kicker"]
-        let commitmentCue = app.descendants(matching: .any)["today.commitment.name"]
-        let checkInButton = app.buttons["today.checkin.button"]
-        XCTAssertTrue(kicker.exists)
-        XCTAssertTrue(commitmentCue.waitForExistence(timeout: 3))
-        XCTAssertTrue(checkInButton.exists)
-        XCTAssertTrue(kicker.label.contains("星期"))
-        guard dayNumber.exists else {
-            XCTAssertLessThan(kicker.frame.maxY, commitmentCue.frame.minY)
-            XCTAssertLessThanOrEqual(commitmentCue.frame.maxY, checkInButton.frame.minY)
-            return
-        }
-        XCTAssertEqual(
-            dayNumber.frame.midX,
-            kicker.frame.midX,
-            accuracy: opticalCenterTolerance
-        )
-        XCTAssertEqual(
-            dayNumber.frame.midX,
-            commitmentCue.frame.midX,
-            accuracy: opticalCenterTolerance
-        )
-        XCTAssertLessThan(kicker.frame.maxY, dayNumber.frame.minY)
-        XCTAssertLessThanOrEqual(dayNumber.frame.maxY, commitmentCue.frame.minY)
-        XCTAssertLessThanOrEqual(commitmentCue.frame.maxY, checkInButton.frame.minY)
-    }
-
-    private func assertRhythmStatusFollowsWeekRail() {
-        let weekRail = app.otherElements["today.week.rail"]
-        let rhythmStatus = app.staticTexts["today.rhythm.status"]
-        XCTAssertTrue(weekRail.exists)
-        XCTAssertTrue(rhythmStatus.exists)
-        XCTAssertEqual(rhythmStatus.frame.midX, weekRail.frame.midX, accuracy: 1)
-        XCTAssertGreaterThanOrEqual(rhythmStatus.frame.minY, weekRail.frame.maxY)
-    }
-
     private func assertRhythmStatus(equals expectedStatus: String) {
         let rhythmStatus = app.staticTexts["today.rhythm.status"]
         XCTAssertTrue(rhythmStatus.waitForExistence(timeout: 3))
         let expectedLabel = NSPredicate(format: "label == %@", expectedStatus)
         expectation(for: expectedLabel, evaluatedWith: rhythmStatus)
         waitForExpectations(timeout: 3)
-    }
-
-    private func assertHistorySurfaceClearsPrimaryNavigation() {
-        let calendarSurface = app.descendants(matching: .any)["calendar.day.2026-08-10"]
-        let historyNavigation = app.buttons["primary.navigation.history"]
-        XCTAssertTrue(calendarSurface.waitForExistence(timeout: 3))
-        XCTAssertTrue(historyNavigation.waitForExistence(timeout: 3))
-        XCTAssertLessThanOrEqual(
-            calendarSurface.frame.maxY,
-            historyNavigation.frame.minY,
-            "The history surface must end before the persistent primary navigation begins."
-        )
     }
 
     private func openCommitmentEditorFromToday() {

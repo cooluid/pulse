@@ -54,7 +54,7 @@ iPhone 只在以下条件全部成立时提交命令：协议版本受支持；�
 
 通过验证后，Repository 按命令 `occurredAt` 解析逻辑日并把它保存为 `checkedAt`，iPhone 接收时间保存为 `createdAt`。这允许真正发生在较早逻辑日、因设备失联而延迟送达的动作保留其真实日期；它不是补签，因为产品没有任意日期入口，命令在动作发生时已经以稳定 ID 写入配对 Watch 的 durable outbox。重复命令、Watch/iPhone/Widget/Live Activity 并发仍按同一 `recordKey` 幂等收敛；既有同日记录返回 `alreadyPresent`。
 
-Watch 只有收到 iPhone Repository 的创建或幂等回读回执后才能显示 `committed`。本地已入 outbox 但未收到回执为 `pendingSync`，不得使用实心完成印或成功触觉；拒绝与持久化失败均显示失败并保留明确重试路径。Watch 快照和 outbox 是可清理、可重建的跨设备传输状态，不是第二份签到历史。
+Watch 只有收到 iPhone Repository 的创建或幂等回读回执后才能进入 `committed`。本地已入 outbox 但未收到回执为 `pendingSync`，不得宣称已签到或触发成功反馈；拒绝与持久化失败均显示失败并保留明确重试路径。Watch 快照和 outbox 是可清理、可重建的跨设备传输状态，不是第二份签到历史。
 
 ## 3. 影像事务与独立性
 

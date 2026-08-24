@@ -1,5 +1,5 @@
-import SwiftUI
 import PulseCore
+import SwiftUI
 import UniformTypeIdentifiers
 
 private enum HistoryContentMode: String {
@@ -70,31 +70,10 @@ struct HistoryView: View {
                 }
             }
 
-            historyThemeMarker
         }
         .toolbar(.hidden, for: .navigationBar)
         .sheet(item: $selectedDay) { day in
             DayArchiveDetailView(day: day, model: model)
-        }
-    }
-
-    private var historyThemeMarker: some View {
-        Color.clear
-            .frame(width: 1, height: 1)
-            .allowsHitTesting(false)
-            .accessibilityElement(children: .ignore)
-            .accessibilityLabel(visualTheme.localizedName(locale: locale))
-            .accessibilityIdentifier(themeMarkerIdentifier)
-    }
-
-    private var themeMarkerIdentifier: String {
-        switch visualTheme {
-        case .quietField:
-            "history.theme.quiet-field"
-        case .editorialJournal:
-            "history.theme.editorial-journal"
-        case .sunlitDay:
-            "history.theme.sunlit-day"
         }
     }
 
@@ -558,8 +537,8 @@ struct HistoryView: View {
                 .foregroundStyle(PulseDesign.secondary)
 
                 Text(PulseFormatting.monthOnly(month, timeZone: timeZone, locale: locale))
-                .font(.largeTitle.bold())
-                .foregroundStyle(PulseDesign.ink)
+                    .font(.largeTitle.bold())
+                    .foregroundStyle(PulseDesign.ink)
             }
         }
         .accessibilityElement(children: .combine)
@@ -1381,10 +1360,13 @@ private struct DayArchiveDetailView: View {
         }
         .padding(PulseDesign.spacing16)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(PulseDesign.quietGreenSoft, in: RoundedRectangle(
-            cornerRadius: PulseDesign.spacing20,
-            style: .continuous
-        ))
+        .background(
+            PulseDesign.quietGreenSoft,
+            in: RoundedRectangle(
+                cornerRadius: PulseDesign.spacing20,
+                style: .continuous
+            )
+        )
         .accessibilityElement(children: .combine)
         .accessibilityIdentifier("history.record.detail.identity")
     }
@@ -1437,7 +1419,7 @@ private struct DayArchiveDetailView: View {
                     .fixedSize(horizontal: false, vertical: true)
                 } else {
                     Text("history.record_deleted_media_retained")
-                    .foregroundStyle(PulseDesign.sunlitMuted)
+                        .foregroundStyle(PulseDesign.sunlitMuted)
                         .fixedSize(horizontal: false, vertical: true)
                 }
             }

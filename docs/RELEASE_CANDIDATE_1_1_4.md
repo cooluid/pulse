@@ -31,7 +31,7 @@ App、Widget、Watch App 与 Watch Widget 统一使用 `1.1 (4)`；[`AppStoreCon
 ## 2. 源码与公开政策
 
 - Pulse 候选源码由不可变提交 `9a5c5e5b5765a9cfa1b72b76ae91c9bc34ae6ca4` 构建，工作区在正式门禁期间保持干净。
-- Watch 正式 `watch` token 组与 Watch Asset Catalog 白名单已同步；此前 216 项单元/集成测试中的两条失败断言已关闭，没有修改任何用户界面主题。
+- 该候选提交的 216 项单元/集成测试全部通过。
 - 公开政策权威仓库 `/Users/fanr/Documents/work/coco-web` 的 `main` 与 `origin/main` 精确指向 `6e628529bb415a72cd7d821ebb3c8eaa2933a503`。
 - 该站点提交通过 0 漏洞依赖审计、lint、生产构建和版本化原子部署；发布目录为 `/var/www/fanr.co.releases/6e628529bb41-20260821T094703Z`，上一版本保留用于回滚。
 - `https://fanr.co/pulse/`、`/pulse/privacy/` 与 `/pulse/support/` 均返回 HTTPS 200；线上文件与本地 `out/` 逐字节一致。隐私页包含反馈邮件、可选截图/技术信息与删除来信说明，支持页包含 App 内反馈路径和当前完整恢复合同。

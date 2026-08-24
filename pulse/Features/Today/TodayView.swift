@@ -118,7 +118,6 @@ struct TodayView: View {
                 }
             }
 
-            runtimePresentationMarkers
         }
         .toolbar(.hidden, for: .navigationBar)
         .fullScreenCover(isPresented: $showsCamera) {
@@ -188,39 +187,6 @@ struct TodayView: View {
             )
         case .quietField:
             quietFieldContent
-        }
-    }
-
-    private var runtimePresentationMarkers: some View {
-        ZStack(alignment: .topLeading) {
-            Color.clear
-                .frame(width: 1, height: 1)
-                .accessibilityElement(children: .ignore)
-                .accessibilityLabel(visualTheme.localizedName(locale: locale))
-                .accessibilityIdentifier(themeMarkerIdentifier)
-
-            if imprintRitualPhase == .imprinted {
-                Color.clear
-                    .frame(width: 1, height: 1)
-                    .accessibilityElement(children: .ignore)
-                    .accessibilityLabel(
-                        PulseLocalization.string("today.accessibility.checked", locale: locale)
-                    )
-                    .accessibilityIdentifier("today.checkin.presentation.imprinted")
-            }
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-        .allowsHitTesting(false)
-    }
-
-    private var themeMarkerIdentifier: String {
-        switch visualTheme {
-        case .quietField:
-            "today.theme.quiet-field"
-        case .editorialJournal:
-            "today.theme.editorial-journal"
-        case .sunlitDay:
-            "today.theme.sunlit-day"
         }
     }
 
@@ -703,22 +669,24 @@ struct TodayView: View {
 
     private var checkInControl: some View {
         let isChecked = model.todayRecord != nil
-        let controlFill = switch visualTheme {
-        case .sunlitDay:
-            PulseDesign.sunlitChrome
-        case .editorialJournal:
-            isChecked ? PulseDesign.grass : PulseDesign.action
-        case .quietField:
-            PulseDesign.quietGreen
-        }
-        let controlForeground = switch visualTheme {
-        case .sunlitDay:
-            PulseDesign.sunlitChromeForeground
-        case .editorialJournal:
-            isChecked ? PulseDesign.grassForeground : PulseDesign.actionForeground
-        case .quietField:
-            PulseDesign.quietOnGreen
-        }
+        let controlFill =
+            switch visualTheme {
+            case .sunlitDay:
+                PulseDesign.sunlitChrome
+            case .editorialJournal:
+                isChecked ? PulseDesign.grass : PulseDesign.action
+            case .quietField:
+                PulseDesign.quietGreen
+            }
+        let controlForeground =
+            switch visualTheme {
+            case .sunlitDay:
+                PulseDesign.sunlitChromeForeground
+            case .editorialJournal:
+                isChecked ? PulseDesign.grassForeground : PulseDesign.actionForeground
+            case .quietField:
+                PulseDesign.quietOnGreen
+            }
 
         return VStack(spacing: PulseDesign.spacing12) {
             checkInVisual(
@@ -751,8 +719,9 @@ struct TodayView: View {
             }
             .overlay(alignment: .bottomTrailing) {
                 if isChecked,
-                   !dynamicTypeSize.isAccessibilitySize,
-                   visualTheme != .sunlitDay {
+                    !dynamicTypeSize.isAccessibilitySize,
+                    visualTheme != .sunlitDay
+                {
                     mediaCompanionAction
                         .offset(
                             x: PulseDesign.mediaCompanionOffsetX,
@@ -783,8 +752,9 @@ struct TodayView: View {
             }
 
             if !isChecked,
-               !dynamicTypeSize.isAccessibilitySize,
-               visualTheme != .sunlitDay {
+                !dynamicTypeSize.isAccessibilitySize,
+                visualTheme != .sunlitDay
+            {
                 Text("today.check_in_hint_visible")
                     .font(.system(.caption, design: .rounded, weight: .semibold))
                     .foregroundStyle(
@@ -936,11 +906,11 @@ struct TodayView: View {
                         .scaleEffect(imprintGlyphScale)
                     }
                 }
-                    .frame(
-                        width: PulseDesign.sunlitCheckInGlyphDiameter,
-                        height: PulseDesign.sunlitCheckInGlyphDiameter
-                    )
-                    .accessibilityHidden(true)
+                .frame(
+                    width: PulseDesign.sunlitCheckInGlyphDiameter,
+                    height: PulseDesign.sunlitCheckInGlyphDiameter
+                )
+                .accessibilityHidden(true)
             }
             .padding(.horizontal, PulseDesign.spacing20)
             .frame(
@@ -1105,12 +1075,15 @@ struct TodayView: View {
                 .frame(width: 96, height: 60)
                 .scaleEffect(imprintGlyphScale)
 
-                Text(completedCheckInText ?? PulseLocalization.string("today.check_in", locale: locale))
-                    .font(.system(.headline, design: .rounded, weight: .black))
-                    .foregroundStyle(PulseDesign.quietOnGreen)
-                    .multilineTextAlignment(.center)
-                    .lineLimit(2)
-                    .minimumScaleFactor(0.82)
+                Text(
+                    completedCheckInText
+                        ?? PulseLocalization.string("today.check_in", locale: locale)
+                )
+                .font(.system(.headline, design: .rounded, weight: .black))
+                .foregroundStyle(PulseDesign.quietOnGreen)
+                .multilineTextAlignment(.center)
+                .lineLimit(2)
+                .minimumScaleFactor(0.82)
             }
             .transition(.opacity)
         }
@@ -1187,7 +1160,7 @@ struct TodayView: View {
                 completionSecondaryAnimation,
                 value: model.statistics.currentStreak
             )
-        .accessibilityIdentifier("today.rhythm.status")
+            .accessibilityIdentifier("today.rhythm.status")
     }
 
     @ViewBuilder
@@ -1320,7 +1293,8 @@ struct TodayView: View {
 
     private func requestCamera() {
         guard UIImagePickerController.isSourceTypeAvailable(.camera) else {
-            model.errorMessage = PulseLocalization.string("error.camera_unavailable", locale: locale)
+            model.errorMessage = PulseLocalization.string(
+                "error.camera_unavailable", locale: locale)
             return
         }
         switch AVCaptureDevice.authorizationStatus(for: .video) {
@@ -1338,7 +1312,8 @@ struct TodayView: View {
         case .denied, .restricted:
             showsCameraPermissionAlert = true
         @unknown default:
-            model.errorMessage = PulseLocalization.string("error.camera_unavailable", locale: locale)
+            model.errorMessage = PulseLocalization.string(
+                "error.camera_unavailable", locale: locale)
         }
     }
 

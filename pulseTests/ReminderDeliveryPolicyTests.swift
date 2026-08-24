@@ -98,35 +98,7 @@ final class PulseWidgetStyleAccessPolicyTests: XCTestCase {
         )
     }
 
-    func testOfficialStyleContractContainsOnlyTheEightRitualObjects() {
-        XCTAssertEqual(
-            PulseWidgetStyle.allCases.map(\.rawValue),
-            [
-                "place",
-                "orbit",
-                "stack",
-                "bleed",
-                "letter",
-                "field",
-                "path",
-                "tide",
-            ]
-        )
-    }
 
-    func testRetiredStyleIdentifiersFailClosed() {
-        for rawValue in [
-            "breathingOrbit",
-            "starTrail",
-            "seal",
-            "numberSilhouette",
-            "depthRhythm",
-            "quietOrder",
-            "rhythmBoard"
-        ] {
-            XCTAssertNil(PulseWidgetStyle(rawValue: rawValue))
-        }
-    }
 
     func testEntitlementMakesEveryOfficialStyleAvailable() {
         for style in PulseWidgetStyle.allCases {

@@ -18,11 +18,13 @@ enum PulseWidgetSharedRuntime {
         bundle: Bundle = .main,
         fileManager: FileManager = .default
     ) throws -> Context {
-        guard let identifier = bundle.object(
-            forInfoDictionaryKey: "PulseAppGroupIdentifier"
-        ) as? String,
-        identifier.hasPrefix("group."),
-        !identifier.contains("$(") else {
+        guard
+            let identifier = bundle.object(
+                forInfoDictionaryKey: "PulseAppGroupIdentifier"
+            ) as? String,
+            identifier.hasPrefix("group."),
+            !identifier.contains("$(")
+        else {
             throw RuntimeError.missingAppGroupIdentifier
         }
 
@@ -59,21 +61,7 @@ enum PulseWidgetSharedRuntime {
     }
 
     @discardableResult
-    static func checkIn(
-        bundle: Bundle = .main,
-        fileManager: FileManager = .default,
-        clock: any PulseClock = SystemPulseClock()
-    ) throws -> CheckInCommitReceipt {
-        let context = try makeContext(bundle: bundle, fileManager: fileManager)
-        return try checkIn(
-            at: context.location,
-            fileManager: fileManager,
-            clock: clock
-        )
-    }
-
-    @discardableResult
-    static func checkIn(
+    static func commitToday(
         at location: PulseStoreLocation,
         fileManager: FileManager = .default,
         clock: any PulseClock
@@ -81,7 +69,8 @@ enum PulseWidgetSharedRuntime {
         try requireExistingStore(at: location, fileManager: fileManager)
         let repository = try makeRepository(at: location, clock: clock)
         guard let habit = try repository.existingPrimaryHabit(),
-              habit.isIdentityConfirmed else {
+            habit.isIdentityConfirmed
+        else {
             throw RuntimeError.missingPrimaryHabit
         }
         return try repository.checkIn(habitID: habit.id, journalNote: nil)
@@ -95,14 +84,26 @@ enum PulseWidgetSharedRuntime {
         reminderScheduler: any ReminderScheduling = ReminderScheduler()
     ) async throws -> CheckInCommitReceipt {
         let context = try makeContext(bundle: bundle, fileManager: fileManager)
-        try requireExistingStore(at: context.location, fileManager: fileManager)
-        let repository = try makeRepository(at: context.location, clock: clock)
-        guard let habit = try repository.existingPrimaryHabit(),
-              habit.isIdentityConfirmed else {
-            throw RuntimeError.missingPrimaryHabit
-        }
+        return try await checkInAndCompleteTodayDelivery(
+            at: context.location,
+            fileManager: fileManager,
+            clock: clock,
+            reminderScheduler: reminderScheduler
+        )
+    }
 
-        let receipt = try repository.checkIn(habitID: habit.id, journalNote: nil)
+    @discardableResult
+    static func checkInAndCompleteTodayDelivery(
+        at location: PulseStoreLocation,
+        fileManager: FileManager = .default,
+        clock: any PulseClock,
+        reminderScheduler: any ReminderScheduling
+    ) async throws -> CheckInCommitReceipt {
+        let receipt = try commitToday(
+            at: location,
+            fileManager: fileManager,
+            clock: clock
+        )
         await reminderScheduler.completeCheckIn(for: receipt.logicalDay)
         return receipt
     }
