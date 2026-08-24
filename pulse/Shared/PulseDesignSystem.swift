@@ -1,8 +1,9 @@
 import Foundation
 import SwiftUI
 
-private struct PulseVisualThemeEnvironmentKey: EnvironmentKey {
-    static let defaultValue = PulseVisualTheme.quietField
+struct PulseVisualThemeEnvironmentKey: EnvironmentKey {
+    /// Uninjected trees must show the free theme, never a paid skin.
+    static let defaultValue = PulseVisualThemeAccessPolicy.freeTheme
 }
 
 extension EnvironmentValues {
