@@ -20,12 +20,21 @@ struct ImprintCameraView: UIViewControllerRepresentable {
         controller.sourceType = .camera
         controller.mediaTypes = [UTType.image.identifier]
         controller.cameraCaptureMode = .photo
+        controller.cameraDevice = Self.preferredCameraDevice(
+            frontCameraAvailable: UIImagePickerController.isCameraDeviceAvailable(.front)
+        )
         controller.allowsEditing = false
         controller.delegate = context.coordinator
         return controller
     }
 
     func updateUIViewController(_ uiViewController: UIImagePickerController, context: Context) {}
+
+    static func preferredCameraDevice(
+        frontCameraAvailable: Bool
+    ) -> UIImagePickerController.CameraDevice {
+        frontCameraAvailable ? .front : .rear
+    }
 
     final class Coordinator: NSObject, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
         let onCapture: (UIImage, ImprintCameraPosition) -> Void

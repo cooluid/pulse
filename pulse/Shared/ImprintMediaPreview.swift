@@ -217,6 +217,262 @@ struct ImprintMediaPreview: View {
     }
 }
 
+struct ImprintMediaPreviewButton: View {
+    let media: ImprintMediaSnapshot
+    let load: (ImprintMediaSnapshot) async throws -> Data
+    let accessibilityIdentifier: String
+    let onOpen: () -> Void
+
+    var body: some View {
+        Button(action: onOpen) {
+            ImprintMediaPreview(media: media, load: load)
+                .overlay(alignment: .bottomTrailing) {
+                    Image(systemName: "arrow.up.left.and.arrow.down.right")
+                        .font(.footnote.weight(.bold))
+                        .foregroundStyle(.white)
+                        .frame(
+                            width: PulseDesign.minimumHitTarget,
+                            height: PulseDesign.minimumHitTarget
+                        )
+                        .background(.black.opacity(0.62), in: Circle())
+                        .padding(PulseDesign.spacing8)
+                        .accessibilityHidden(true)
+                }
+        }
+        .buttonStyle(.plain)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("media.preview.accessibility")
+        .accessibilityHint("media.preview.open_fullscreen_hint")
+        .accessibilityIdentifier(accessibilityIdentifier)
+    }
+}
+
+struct ImprintMediaFullscreenViewer: View {
+    let media: ImprintMediaSnapshot
+    let load: (ImprintMediaSnapshot) async throws -> Data
+
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.dismiss) private var dismiss
+    @State private var state: OriginalLoadState = .loading
+    @State private var reloadSequence = 0
+
+    private static let logger = Logger(
+        subsystem: PulseRuntimeIdentity.bundleIdentifier,
+        category: "media-original-viewer"
+    )
+
+    private struct LoadIdentity: Hashable {
+        let mediaID: UUID
+        let originalRelativePath: String
+        let originalSHA256: String
+        let reloadSequence: Int
+    }
+
+    private enum OriginalLoadState {
+        case loading
+        case image(UIImage)
+        case failed
+    }
+
+    var body: some View {
+        ZStack {
+            Color.black.ignoresSafeArea()
+
+            switch state {
+            case .loading:
+                ProgressView()
+                    .tint(.white)
+                    .controlSize(.large)
+                    .accessibilityLabel("media.fullscreen.loading")
+            case .image(let image):
+                ZoomableImprintImage(image: image, animatesZoom: !reduceMotion)
+                    .ignoresSafeArea()
+                    .accessibilityElement(children: .ignore)
+                    .accessibilityLabel("media.preview.accessibility")
+                    .accessibilityHint("media.fullscreen.zoom_hint")
+            case .failed:
+                VStack(spacing: PulseDesign.spacing16) {
+                    Image(systemName: "photo.badge.exclamationmark")
+                        .font(.largeTitle)
+                        .accessibilityHidden(true)
+
+                    Text("media.preview.unavailable")
+                        .font(.headline)
+
+                    Button("action.retry") {
+                        reloadSequence += 1
+                    }
+                    .buttonStyle(.bordered)
+                    .tint(.white)
+                }
+                .foregroundStyle(.white)
+            }
+        }
+        .overlay(alignment: .topTrailing) {
+            Button {
+                dismiss()
+            } label: {
+                Image(systemName: "xmark")
+                    .font(.headline.weight(.bold))
+                    .foregroundStyle(.white)
+                    .frame(
+                        width: PulseDesign.detailActionHitSize,
+                        height: PulseDesign.detailActionHitSize
+                    )
+                    .background(.black.opacity(0.62), in: Circle())
+                    .overlay {
+                        Circle()
+                            .stroke(.white.opacity(0.28), lineWidth: PulseDesign.thinLineWidth)
+                    }
+            }
+            .accessibilityLabel("action.close")
+            .accessibilityIdentifier("media.fullscreen.close")
+            .padding(.trailing, PulseDesign.spacing16)
+            .safeAreaPadding(.top, PulseDesign.spacing8)
+        }
+        .statusBarHidden(true)
+        .task(
+            id: LoadIdentity(
+                mediaID: media.id,
+                originalRelativePath: media.originalRelativePath,
+                originalSHA256: media.sha256,
+                reloadSequence: reloadSequence
+            )
+        ) {
+            state = .loading
+            do {
+                let data = try await load(media)
+                try Task.checkCancellation()
+                guard let image = UIImage(data: data) else {
+                    Self.logger.error(
+                        "Failed to decode original for media \(media.id.uuidString, privacy: .public); bytes=\(data.count, privacy: .public)."
+                    )
+                    state = .failed
+                    return
+                }
+                state = .image(image)
+            } catch is CancellationError {
+                Self.logger.debug(
+                    "Cancelled original presentation for media \(media.id.uuidString, privacy: .public)."
+                )
+            } catch {
+                let error = error as NSError
+                Self.logger.error(
+                    "Failed to read original for media \(media.id.uuidString, privacy: .public); domain=\(error.domain, privacy: .public), code=\(error.code, privacy: .public)."
+                )
+                state = .failed
+            }
+        }
+    }
+}
+
+private struct ZoomableImprintImage: UIViewRepresentable {
+    let image: UIImage
+    let animatesZoom: Bool
+
+    func makeCoordinator() -> Coordinator {
+        Coordinator(animatesZoom: animatesZoom)
+    }
+
+    func makeUIView(context: Context) -> UIScrollView {
+        let scrollView = UIScrollView()
+        scrollView.backgroundColor = .black
+        scrollView.delegate = context.coordinator
+        scrollView.minimumZoomScale = 1
+        scrollView.maximumZoomScale = 5
+        scrollView.bouncesZoom = animatesZoom
+        scrollView.showsHorizontalScrollIndicator = false
+        scrollView.showsVerticalScrollIndicator = false
+        scrollView.decelerationRate = .fast
+        scrollView.contentInsetAdjustmentBehavior = .never
+
+        let imageView = UIImageView(image: image)
+        imageView.translatesAutoresizingMaskIntoConstraints = false
+        imageView.contentMode = .scaleAspectFit
+        imageView.backgroundColor = .black
+        scrollView.addSubview(imageView)
+        NSLayoutConstraint.activate([
+            imageView.leadingAnchor.constraint(equalTo: scrollView.contentLayoutGuide.leadingAnchor),
+            imageView.trailingAnchor.constraint(equalTo: scrollView.contentLayoutGuide.trailingAnchor),
+            imageView.topAnchor.constraint(equalTo: scrollView.contentLayoutGuide.topAnchor),
+            imageView.bottomAnchor.constraint(equalTo: scrollView.contentLayoutGuide.bottomAnchor),
+            imageView.widthAnchor.constraint(equalTo: scrollView.frameLayoutGuide.widthAnchor),
+            imageView.heightAnchor.constraint(equalTo: scrollView.frameLayoutGuide.heightAnchor)
+        ])
+
+        let doubleTap = UITapGestureRecognizer(
+            target: context.coordinator,
+            action: #selector(Coordinator.handleDoubleTap(_:))
+        )
+        doubleTap.numberOfTapsRequired = 2
+        scrollView.addGestureRecognizer(doubleTap)
+
+        context.coordinator.scrollView = scrollView
+        context.coordinator.imageView = imageView
+        return scrollView
+    }
+
+    func updateUIView(_ scrollView: UIScrollView, context: Context) {
+        context.coordinator.animatesZoom = animatesZoom
+        scrollView.bouncesZoom = animatesZoom
+        guard context.coordinator.imageView?.image !== image else { return }
+        context.coordinator.imageView?.image = image
+        scrollView.setZoomScale(scrollView.minimumZoomScale, animated: false)
+    }
+
+    final class Coordinator: NSObject, UIScrollViewDelegate {
+        weak var scrollView: UIScrollView?
+        weak var imageView: UIImageView?
+        var animatesZoom: Bool
+
+        init(animatesZoom: Bool) {
+            self.animatesZoom = animatesZoom
+        }
+
+        func viewForZooming(in scrollView: UIScrollView) -> UIView? {
+            imageView
+        }
+
+        func scrollViewDidZoom(_ scrollView: UIScrollView) {
+            let horizontalInset = max(0, (scrollView.bounds.width - scrollView.contentSize.width) / 2)
+            let verticalInset = max(0, (scrollView.bounds.height - scrollView.contentSize.height) / 2)
+            scrollView.contentInset = UIEdgeInsets(
+                top: verticalInset,
+                left: horizontalInset,
+                bottom: verticalInset,
+                right: horizontalInset
+            )
+        }
+
+        @objc func handleDoubleTap(_ recognizer: UITapGestureRecognizer) {
+            guard let scrollView, let imageView else { return }
+            if scrollView.zoomScale > scrollView.minimumZoomScale {
+                scrollView.setZoomScale(
+                    scrollView.minimumZoomScale,
+                    animated: animatesZoom
+                )
+                return
+            }
+
+            let zoomScale = min(2.5, scrollView.maximumZoomScale)
+            let point = recognizer.location(in: imageView)
+            let zoomSize = CGSize(
+                width: scrollView.bounds.width / zoomScale,
+                height: scrollView.bounds.height / zoomScale
+            )
+            scrollView.zoom(
+                to: CGRect(
+                    x: point.x - zoomSize.width / 2,
+                    y: point.y - zoomSize.height / 2,
+                    width: zoomSize.width,
+                    height: zoomSize.height
+                ),
+                animated: animatesZoom
+            )
+        }
+    }
+}
+
 struct ImprintMediaThumbnail: View {
     let media: ImprintMediaSnapshot
     let load: (ImprintMediaSnapshot) async throws -> Data

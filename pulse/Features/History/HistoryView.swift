@@ -846,6 +846,7 @@ private struct DayArchiveDetailView: View {
     @State private var showsPhotoExporter = false
     @State private var isPreparingPhotoExport = false
     @State private var showsJournalEditor = false
+    @State private var showsOriginal = false
 
     private enum DestructiveAction {
         case media(UUID)
@@ -869,9 +870,13 @@ private struct DayArchiveDetailView: View {
             }
 
             if let media {
-                ImprintMediaPreview(media: media, load: model.thumbnailData)
+                ImprintMediaPreviewButton(
+                    media: media,
+                    load: model.thumbnailData,
+                    accessibilityIdentifier: "history.media.preview",
+                    onOpen: { showsOriginal = true }
+                )
                     .frame(maxWidth: .infinity)
-                    .accessibilityIdentifier("history.media.preview")
             }
         } actions: {
             archiveActionsMenu
@@ -887,6 +892,11 @@ private struct DayArchiveDetailView: View {
         .sheet(isPresented: $showsJournalEditor) {
             if let record {
                 JournalNoteEditorSheet(record: record, model: model)
+            }
+        }
+        .fullScreenCover(isPresented: $showsOriginal) {
+            if let media {
+                ImprintMediaFullscreenViewer(media: media, load: model.originalData)
             }
         }
     }

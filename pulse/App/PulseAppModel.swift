@@ -437,6 +437,10 @@ final class PulseAppModel {
         try await mediaService.thumbnailData(for: item)
     }
 
+    func originalData(for item: ImprintMediaSnapshot) async throws -> Data {
+        try await mediaService.originalData(for: item)
+    }
+
     func originalDataForExport(for item: ImprintMediaSnapshot) async -> Data? {
         guard beginOperation(.exportMedia) else { return nil }
         defer { finishOperation() }

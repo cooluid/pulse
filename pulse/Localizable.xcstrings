@@ -3059,6 +3059,38 @@
         }
       }
     },
+    "media.fullscreen.loading" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Loading photo"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在载入照片"
+          }
+        }
+      }
+    },
+    "media.fullscreen.zoom_hint" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pinch or double-tap to zoom."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "双指或轻点两下来缩放。"
+          }
+        }
+      }
+    },
     "media.preview.accessibility" : {
       "localizations" : {
         "en" : {
@@ -3071,6 +3103,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "当天留存的私人照片"
+          }
+        }
+      }
+    },
+    "media.preview.open_fullscreen_hint" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opens the original photo full screen."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "打开原图全屏查看。"
           }
         }
       }

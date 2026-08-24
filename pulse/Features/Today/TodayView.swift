@@ -116,6 +116,7 @@ struct TodayView: View {
                 TodayMediaDetailSheet(
                     media: media,
                     load: model.thumbnailData,
+                    loadOriginal: model.originalData,
                     onRetake: {
                         showsTodayMediaDetail = false
                         Task { @MainActor in
@@ -1525,20 +1526,26 @@ private struct PulseCheckInIdleAura: View {
 private struct TodayMediaDetailSheet: View {
     let media: ImprintMediaSnapshot
     let load: (ImprintMediaSnapshot) async throws -> Data
+    let loadOriginal: (ImprintMediaSnapshot) async throws -> Data
     let onRetake: () -> Void
     let onDelete: () async -> Bool
 
     @Environment(\.dismiss) private var dismiss
     @State private var showsDeleteConfirmation = false
+    @State private var showsOriginal = false
 
     var body: some View {
         PulseDetailSheetScaffold(
             title: "today.media.title",
             detents: [.large]
         ) {
-            ImprintMediaPreview(media: media, load: load)
+            ImprintMediaPreviewButton(
+                media: media,
+                load: load,
+                accessibilityIdentifier: "today.media.preview",
+                onOpen: { showsOriginal = true }
+            )
                 .frame(maxWidth: .infinity)
-                .accessibilityIdentifier("today.media.preview")
         } actions: {
             PulseDetailActionsMenu(
                 accessibilityLabel: "media.actions",
@@ -1578,6 +1585,9 @@ private struct TodayMediaDetailSheet: View {
             } message: {
                 Text("media.delete_confirmation.message")
             }
+        }
+        .fullScreenCover(isPresented: $showsOriginal) {
+            ImprintMediaFullscreenViewer(media: media, load: loadOriginal)
         }
     }
 }
