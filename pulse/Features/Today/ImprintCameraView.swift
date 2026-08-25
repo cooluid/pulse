@@ -41,19 +41,25 @@ struct ImprintCameraView: UIViewControllerRepresentable {
         frontCameraAvailable ? .front : .rear
     }
 
+    @MainActor
     final class Coordinator: NSObject, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
         let onCapture: (UIImage, ImprintCameraPosition) -> Void
         let onCancel: () -> Void
         let onFailure: () -> Void
+        let cameraPosition: (UIImagePickerController) -> ImprintCameraPosition
 
         init(
             onCapture: @escaping (UIImage, ImprintCameraPosition) -> Void,
             onCancel: @escaping () -> Void,
-            onFailure: @escaping () -> Void
+            onFailure: @escaping () -> Void,
+            cameraPosition: @escaping (UIImagePickerController) -> ImprintCameraPosition = {
+                $0.cameraDevice == .front ? .front : .rear
+            }
         ) {
             self.onCapture = onCapture
             self.onCancel = onCancel
             self.onFailure = onFailure
+            self.cameraPosition = cameraPosition
         }
 
         func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
@@ -68,7 +74,15 @@ struct ImprintCameraView: UIViewControllerRepresentable {
                 onFailure()
                 return
             }
-            onCapture(image, picker.cameraDevice == .front ? .front : .rear)
+            do {
+                let materialized = try ImprintImageProcessor.materializeCameraCapture(image)
+                onCapture(
+                    materialized,
+                    cameraPosition(picker)
+                )
+            } catch {
+                onFailure()
+            }
         }
     }
 }

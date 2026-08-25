@@ -14,6 +14,20 @@ enum PulseAppError: Error, Equatable {
 
 enum PulseErrorPresentation {
     static func localizedMessage(for error: Error, locale: Locale) -> String? {
+        if let mediaError = error as? PulseMediaStorageError {
+            let key = switch mediaError {
+            case .invalidInput,
+                 .identityMismatch,
+                 .precommitVerificationFailed:
+                "error.media_invalid"
+            case .fileUnavailable:
+                "error.media_file_unavailable"
+            case .storageUnavailable:
+                "error.media_storage_unavailable"
+            }
+            return PulseLocalization.string(key, locale: locale)
+        }
+
         if let coreError = error as? PulseCoreError {
             if case .invalidHabitIdentity = coreError {
                 return String(
@@ -76,10 +90,6 @@ enum PulseErrorPresentation {
                 "error.backup_invalid"
             case .invalidMedia:
                 "error.media_invalid"
-            case .mediaFileUnavailable:
-                "error.media_file_unavailable"
-            case .mediaStorageUnavailable:
-                "error.media_storage_unavailable"
             }
             return PulseLocalization.string(key, locale: locale)
         }

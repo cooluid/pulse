@@ -75,18 +75,18 @@ final class ImprintMediaRepositoryTests: XCTestCase {
         let store = try PulseMediaFileStore(rootURL: root)
         let original = Data([0xff, 0xd8, 1, 2, 3, 0xff, 0xd9])
         let thumbnail = Data([0xff, 0xd8, 4, 0xff, 0xd9])
-        let keptFiles = try await store.install(
+        let keptFiles = try await store.installVerified(
             originalData: original,
             thumbnailData: thumbnail
         )
-        let orphanFiles = try await store.install(
+        let orphanFiles = try await store.installVerified(
             originalData: original,
             thumbnailData: thumbnail
         )
         let now = date(hour: 9)
         let kept = snapshot(files: keptFiles, original: original, now: now)
-        let storedOriginal = try await store.readOriginal(for: kept)
-        let storedThumbnail = try await store.readThumbnail(for: kept)
+        let storedOriginal = try await store.readCommittedOriginal(for: kept)
+        let storedThumbnail = try await store.readCommittedThumbnail(for: kept)
         XCTAssertEqual(storedOriginal, original)
         XCTAssertEqual(storedThumbnail, thumbnail)
 
@@ -103,34 +103,143 @@ final class ImprintMediaRepositoryTests: XCTestCase {
         )
     }
 
-    func testFileStoreRetriesACompletedMediaReadWhenFileIsTemporarilyUnavailable() async throws {
+    func testInstallVerificationRetriesTransientIdentityMismatchBeforeCommit() async throws {
         let root = FileManager.default.temporaryDirectory
-            .appendingPathComponent("PulseMediaTransientReadTests-\(UUID().uuidString)")
+            .appendingPathComponent("PulseMediaTransientInstallTests-\(UUID().uuidString)")
         addTeardownBlock { try? FileManager.default.removeItem(at: root) }
-        let store = try PulseMediaFileStore(rootURL: root)
+        let readCounter = MediaReadCounter()
+        let store = try PulseMediaFileStore(
+            rootURL: root,
+            readTransform: { context, relativePath, attempt, data in
+                guard case .precommitVerification = context,
+                      relativePath.hasPrefix("originals/") else {
+                    return data
+                }
+                readCounter.record()
+                return attempt < 2 ? Data(data.dropLast()) : data
+            },
+            retrySleeper: { _ in }
+        )
         let original = Data([0xff, 0xd8, 1, 2, 3, 0xff, 0xd9])
         let thumbnail = Data([0xff, 0xd8, 4, 0xff, 0xd9])
-        let files = try await store.install(
+        let files = try await store.installVerified(
             originalData: original,
             thumbnailData: thumbnail
         )
         let item = snapshot(files: files, original: original, now: date(hour: 9))
-        let thumbnailURL = root.appendingPathComponent(files.thumbnailRelativePath)
-        try FileManager.default.removeItem(at: thumbnailURL)
-        let restoreTask = Task.detached {
-            try await Task.sleep(nanoseconds: 20_000_000)
-            try thumbnail.write(to: thumbnailURL, options: [.atomic])
-        }
+        let storedOriginal = try await store.readCommittedOriginal(for: item)
+        let storedThumbnail = try await store.readCommittedThumbnail(for: item)
+
+        XCTAssertEqual(readCounter.value, 3)
+        XCTAssertEqual(storedOriginal, original)
+        XCTAssertEqual(storedThumbnail, thumbnail)
+    }
+
+    func testInstallVerificationFailureCleansEveryNewFile() async throws {
+        let root = FileManager.default.temporaryDirectory
+            .appendingPathComponent("PulseMediaFailedInstallTests-\(UUID().uuidString)")
+        addTeardownBlock { try? FileManager.default.removeItem(at: root) }
+        let store = try PulseMediaFileStore(
+            rootURL: root,
+            readTransform: { context, relativePath, _, data in
+                guard case .precommitVerification = context,
+                      relativePath.hasPrefix("originals/") else {
+                    return data
+                }
+                return Data(data.dropLast())
+            },
+            retrySleeper: { _ in }
+        )
 
         do {
-            let storedThumbnail = try await store.readThumbnail(for: item)
-            try await restoreTask.value
-
-            XCTAssertEqual(storedThumbnail, thumbnail)
+            _ = try await store.installVerified(
+                originalData: Data([0xff, 0xd8, 1, 2, 3, 0xff, 0xd9]),
+                thumbnailData: Data([0xff, 0xd8, 4, 0xff, 0xd9])
+            )
+            XCTFail("Expected precommit verification to fail.")
         } catch {
-            _ = try? await restoreTask.value
-            throw error
+            XCTAssertEqual(
+                error as? PulseMediaStorageError,
+                .precommitVerificationFailed(.identityMismatch)
+            )
         }
+
+        XCTAssertTrue(try FileManager.default.contentsOfDirectory(
+            atPath: root.appendingPathComponent("originals").path
+        ).isEmpty)
+        XCTAssertTrue(try FileManager.default.contentsOfDirectory(
+            atPath: root.appendingPathComponent("thumbnails").path
+        ).isEmpty)
+        XCTAssertTrue(try FileManager.default.contentsOfDirectory(
+            atPath: root.appendingPathComponent("staging").path
+        ).isEmpty)
+    }
+
+    func testCommittedReadRetriesOnlyFileUnavailability() async throws {
+        let root = FileManager.default.temporaryDirectory
+            .appendingPathComponent("PulseMediaCommittedRetryTests-\(UUID().uuidString)")
+        addTeardownBlock { try? FileManager.default.removeItem(at: root) }
+        let readCounter = MediaReadCounter()
+        let store = try PulseMediaFileStore(
+            rootURL: root,
+            readTransform: { context, relativePath, attempt, data in
+                guard case .committedRead = context,
+                      relativePath.hasPrefix("thumbnails/") else {
+                    return data
+                }
+                readCounter.record()
+                if attempt < 2 {
+                    throw PulseMediaStorageError.fileUnavailable
+                }
+                return data
+            },
+            retrySleeper: { _ in }
+        )
+        let original = Data([0xff, 0xd8, 1, 2, 3, 0xff, 0xd9])
+        let thumbnail = Data([0xff, 0xd8, 4, 0xff, 0xd9])
+        let files = try await store.installVerified(
+            originalData: original,
+            thumbnailData: thumbnail
+        )
+        let item = snapshot(files: files, original: original, now: date(hour: 9))
+        let storedThumbnail = try await store.readCommittedThumbnail(for: item)
+
+        XCTAssertEqual(storedThumbnail, thumbnail)
+        XCTAssertEqual(readCounter.value, 3)
+    }
+
+    func testCommittedIdentityMismatchDoesNotRetry() async throws {
+        let root = FileManager.default.temporaryDirectory
+            .appendingPathComponent("PulseMediaCommittedIntegrityTests-\(UUID().uuidString)")
+        addTeardownBlock { try? FileManager.default.removeItem(at: root) }
+        let readCounter = MediaReadCounter()
+        let store = try PulseMediaFileStore(
+            rootURL: root,
+            readTransform: { context, relativePath, _, data in
+                guard case .committedRead = context,
+                      relativePath.hasPrefix("thumbnails/") else {
+                    return data
+                }
+                readCounter.record()
+                return Data(data.dropLast())
+            },
+            retrySleeper: { _ in }
+        )
+        let original = Data([0xff, 0xd8, 1, 2, 3, 0xff, 0xd9])
+        let thumbnail = Data([0xff, 0xd8, 4, 0xff, 0xd9])
+        let files = try await store.installVerified(
+            originalData: original,
+            thumbnailData: thumbnail
+        )
+        let item = snapshot(files: files, original: original, now: date(hour: 9))
+
+        do {
+            _ = try await store.readCommittedThumbnail(for: item)
+            XCTFail("Expected committed identity validation to fail.")
+        } catch {
+            XCTAssertEqual(error as? PulseMediaStorageError, .identityMismatch)
+        }
+        XCTAssertEqual(readCounter.value, 1)
     }
 
     func testFileStoreRejectsThumbnailWhoseIdentityChanged() async throws {
@@ -140,7 +249,7 @@ final class ImprintMediaRepositoryTests: XCTestCase {
         let store = try PulseMediaFileStore(rootURL: root)
         let original = Data([0xff, 0xd8, 1, 2, 3, 0xff, 0xd9])
         let thumbnail = Data([0xff, 0xd8, 4, 0xff, 0xd9])
-        let files = try await store.install(
+        let files = try await store.installVerified(
             originalData: original,
             thumbnailData: thumbnail
         )
@@ -151,10 +260,10 @@ final class ImprintMediaRepositoryTests: XCTestCase {
         )
 
         do {
-            _ = try await store.readThumbnail(for: item)
+            _ = try await store.readCommittedThumbnail(for: item)
             XCTFail("Expected thumbnail identity validation to fail.")
         } catch {
-            XCTAssertEqual(error as? PulseCoreError, .invalidMedia)
+            XCTAssertEqual(error as? PulseMediaStorageError, .identityMismatch)
         }
     }
 
@@ -167,7 +276,7 @@ final class ImprintMediaRepositoryTests: XCTestCase {
         let store = try PulseMediaFileStore(rootURL: mediaRoot)
         let original = Data([0xff, 0xd8, 1, 2, 3, 0xff, 0xd9])
         let thumbnail = Data([0xff, 0xd8, 4, 0xff, 0xd9])
-        let files = try await store.install(
+        let files = try await store.installVerified(
             originalData: original,
             thumbnailData: thumbnail
         )
@@ -181,10 +290,10 @@ final class ImprintMediaRepositoryTests: XCTestCase {
         )
 
         do {
-            _ = try await store.readThumbnail(for: item)
+            _ = try await store.readCommittedThumbnail(for: item)
             XCTFail("Expected a symbolic-linked media file to be rejected.")
         } catch {
-            XCTAssertEqual(error as? PulseCoreError, .mediaFileUnavailable)
+            XCTAssertEqual(error as? PulseMediaStorageError, .fileUnavailable)
         }
         XCTAssertEqual(try Data(contentsOf: externalFile), thumbnail)
     }
@@ -212,7 +321,7 @@ final class ImprintMediaRepositoryTests: XCTestCase {
         )
 
         XCTAssertThrowsError(try PulseMediaFileStore(rootURL: mediaRoot)) { error in
-            XCTAssertEqual(error as? PulseCoreError, .mediaStorageUnavailable)
+            XCTAssertEqual(error as? PulseMediaStorageError, .storageUnavailable)
         }
     }
 
@@ -238,13 +347,13 @@ final class ImprintMediaRepositoryTests: XCTestCase {
         )
 
         do {
-            _ = try await store.install(
+            _ = try await store.installVerified(
                 originalData: Data([0xff, 0xd8, 1, 0xff, 0xd9]),
                 thumbnailData: Data([0xff, 0xd8, 2, 0xff, 0xd9])
             )
             XCTFail("Expected the replaced managed directory to be rejected.")
         } catch {
-            XCTAssertEqual(error as? PulseCoreError, .mediaStorageUnavailable)
+            XCTAssertEqual(error as? PulseMediaStorageError, .storageUnavailable)
         }
         XCTAssertTrue(try FileManager.default.contentsOfDirectory(atPath: externalOriginals.path).isEmpty)
     }
@@ -303,7 +412,7 @@ final class ImprintMediaRepositoryTests: XCTestCase {
     }
 
     private func snapshot(
-        files: InstalledImprintFiles,
+        files: VerifiedImprintFiles,
         original: Data,
         now: Date
     ) -> ImprintMediaSnapshot {
@@ -332,6 +441,23 @@ final class ImprintMediaRepositoryTests: XCTestCase {
         Calendar.pulseGregorian(timeZone: .gmt).date(
             from: DateComponents(year: 2026, month: 8, day: 12, hour: hour)
         )!
+    }
+}
+
+private final class MediaReadCounter: @unchecked Sendable {
+    private let lock = NSLock()
+    private var count = 0
+
+    var value: Int {
+        lock.lock()
+        defer { lock.unlock() }
+        return count
+    }
+
+    func record() {
+        lock.lock()
+        count += 1
+        lock.unlock()
     }
 }
 

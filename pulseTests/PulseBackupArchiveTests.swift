@@ -252,7 +252,7 @@ final class PulseBackupArchiveTests: XCTestCase {
                 fixture.payload,
                 to: fixture.root.appendingPathComponent("missing.pulsebackup"),
                 passphrase: passphrase
-            ) { _, _ in throw PulseCoreError.mediaFileUnavailable }
+            ) { _, _ in throw PulseMediaStorageError.fileUnavailable }
         )
     }
 

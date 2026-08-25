@@ -1,6 +1,6 @@
 # Pulse 1.1 测试与验收计划
 
-文档版本：2.7
+文档版本：2.8
 状态：Canonical Acceptance Plan
 更新时间：2026-08-25
 
@@ -22,8 +22,8 @@
 | Habit / 逻辑日 | 名称/说明规范化；Gregorian、时区、DST、稳定起始日；时区变更不改历史 |
 | Repository | 唯一主承诺、同日幂等、rollback、跨容器并发；记事签到时写入、外部先签到后补写、编辑、清空、非法输入不变更；签到/媒体独立删除和重新关联 |
 | Schema 1.1.1 | Habit / CheckInRecord / ImprintMedia 真实磁盘读写；精确 marker；实验性 1.1.0 与更旧 marker 失败关闭；无迁移分支 |
-| 媒体文件 | 安装前 staging、不可变小写 UUID 路径、路径穿越、文件及 `originals` / `thumbnails` / `staging` 中间目录符号链接拒绝、24 MiB/2 MiB 上限、正式文件提交前回读原图和缩略图并校验 byteCount + SHA-256、文件短暂不可读时有界恢复、身份不一致立即失败且不重试、孤儿审计、清除 |
-| 图片处理 | 方向归一、最大 4096、缩略图最大 720、JPEG 输出、元数据剥离、无效图片拒绝 |
+| 媒体文件 | 安装前 staging、不可变小写 UUID 路径、路径穿越、文件及 `originals` / `thumbnails` / `staging` 中间目录符号链接拒绝、24 MiB/2 MiB 上限、正式文件提交前回读原图和缩略图并校验 byteCount + SHA-256；提交前暂不可读或身份暂不一致有界恢复且失败清理全部新文件；已提交文件暂不可读可有界恢复，身份不一致立即失败；孤儿审计、清除 |
+| 图片处理 | Picker 回调内物化 App 自有直立位图；方向归一、最大 4096、缩略图最大 720、JPEG 输出、元数据剥离、无效图片拒绝 |
 | 归档 payload v3 | 唯一 UTType；container v2；PBKDF2 600k；随机 salt/nonce；分条目 AES-256-GCM；签到+记事+媒体 round-trip；显式记事空字段；原/缩略图身份；缺字段/缺失/额外/重复、篡改、截断、尾随、错误口令、未知版本、超限失败关闭；payload v1/v2 与 container v1 不读取 |
 | 恢复事务 | 全部解密/认证后才确认；文件先安装、数据库单次 replace；提交前失败回收新文件；提交后清理失败不得误删新文件；取消清理解密 staging |
 | AppModel | 操作互斥；单击签到；系统表面只消费提交回执的逻辑日；Repository 已提交后即使全量投影刷新失败也必须返回成功并显示“已保存但刷新失败”；记事更新不改签到/统计；长按先提交签到再请求相机；相机/媒体失败不撤销签到；跨日事件与激活事件在长操作结束后必须补执行；重置日志；完整备份 |
@@ -70,6 +70,8 @@ xcodebuild -project pulse.xcodeproj -scheme PulseWatch \
   -configuration Release -destination 'generic/platform=watchOS' \
   CODE_SIGNING_ALLOWED=NO build
 
+scripts/test_optimized_media.sh '<当前已安装的 iOS Simulator>'
+
 python3 scripts/build_brand_assets.py --check
 plutil -lint Config/Pulse-Info.plist
 git diff --check
@@ -93,12 +95,13 @@ git diff --check
 至少一台真实 iPhone 覆盖：
 
 1. 首次相机授权、已授权、拒绝、从系统设置恢复、取消；
-2. 后置/前置拍摄、横竖方向、重拍、删除、杀进程重启、跨日；
+2. 后置/前置拍摄、横竖方向、拍照后立即查看缩略图和原图、重拍、删除、杀进程重启、跨日；
 3. 低可用空间、写入中断、被系统终止、超大输入与损坏文件；
 4. 眼镜、暗光、逆光、多人、宠物、环境照片——1.1 应真实保存，不做容貌评价；
 5. 原图导出和包含全部媒体的加密归档，在另一清洁安装恢复并逐张核对；
 6. 删除签到保留照片、删除照片保留签到、清除全部数据无文件残留；
-7. App Group 首次解锁后的可读性，以及设备锁定时照片不会进入 Widget/Live Activity。
+7. App Group 首次解锁后的可读性，以及设备锁定时照片不会进入 Widget/Live Activity；
+8. 上传后的精确 TestFlight 构建连续拍摄并立即查看，不得以 Xcode 安装包替代；通过前不得选择为 App Review 构建。
 
 iPad 需覆盖无后置能力差异、横竖屏、分屏和文件导入/导出；没有相机的设备必须明确不可拍，不改用相册兜底。
 

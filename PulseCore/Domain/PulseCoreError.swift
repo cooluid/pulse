@@ -15,6 +15,4 @@ public enum PulseCoreError: Error, Equatable, Sendable {
     case unsupportedBackupPayloadVersion(Int)
     case invalidBackup
     case invalidMedia
-    case mediaFileUnavailable
-    case mediaStorageUnavailable
 }

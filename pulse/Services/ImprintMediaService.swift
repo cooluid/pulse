@@ -3,7 +3,7 @@ import OSLog
 import PulseCore
 import UIKit
 
-struct ProcessedImprintImage: @unchecked Sendable {
+struct ProcessedImprintImage: Sendable {
     let originalData: Data
     let thumbnailData: Data
     let pixelWidth: Int
@@ -13,6 +13,22 @@ struct ProcessedImprintImage: @unchecked Sendable {
 enum ImprintImageProcessor {
     static let maximumDimension: CGFloat = 4_096
     static let thumbnailMaximumDimension: CGFloat = 720
+
+    @MainActor
+    static func materializeCameraCapture(_ image: UIImage) throws -> UIImage {
+        guard image.size.width > 0, image.size.height > 0 else {
+            throw PulseCoreError.invalidMedia
+        }
+        let format = UIGraphicsImageRendererFormat()
+        format.scale = image.scale
+        format.opaque = true
+        let renderer = UIGraphicsImageRenderer(size: image.size, format: format)
+        return renderer.image { context in
+            UIColor.black.setFill()
+            context.fill(CGRect(origin: .zero, size: image.size))
+            image.draw(in: CGRect(origin: .zero, size: image.size))
+        }
+    }
 
     static func process(_ image: UIImage) throws -> ProcessedImprintImage {
         let upright = normalizedUprightImage(image)
@@ -100,13 +116,31 @@ final class ImprintMediaService {
         record: CheckInRecordSnapshot,
         cameraPosition: ImprintCameraPosition
     ) async throws -> ImprintMediaSnapshot {
-        let processed = try await Task.detached(priority: .userInitiated) {
-            try ImprintImageProcessor.process(image)
-        }.value
-        let installed = try await fileStore.install(
-            originalData: processed.originalData,
-            thumbnailData: processed.thumbnailData
-        )
+        let processed: ProcessedImprintImage
+        do {
+            processed = try await Task.detached(priority: .userInitiated) {
+                try ImprintImageProcessor.process(image)
+            }.value
+        } catch {
+            Self.logSaveFailure(stage: "encode", error: error)
+            throw error
+        }
+
+        let installed: VerifiedImprintFiles
+        do {
+            installed = try await fileStore.installVerified(
+                originalData: processed.originalData,
+                thumbnailData: processed.thumbnailData
+            )
+        } catch {
+            Self.logSaveFailure(
+                stage: "precommit_file_verification",
+                error: error,
+                originalByteCount: processed.originalData.count,
+                thumbnailByteCount: processed.thumbnailData.count
+            )
+            throw error
+        }
         let previous = try repository.allMedia(habitID: habit.id)
             .first { $0.logicalDay == record.logicalDay }
         let now = clock.now
@@ -131,9 +165,13 @@ final class ImprintMediaService {
             if let previous {
                 try? await fileStore.remove(previous)
             }
+            Self.logger.info(
+                "Media save committed; original_bytes=\(processed.originalData.count, privacy: .public); thumbnail_bytes=\(processed.thumbnailData.count, privacy: .public)."
+            )
             return result
         } catch {
             await fileStore.removeInstalledFiles(installed)
+            Self.logSaveFailure(stage: "repository_commit", error: error)
             throw error
         }
     }
@@ -144,11 +182,11 @@ final class ImprintMediaService {
     }
 
     func thumbnailData(for media: ImprintMediaSnapshot) async throws -> Data {
-        try await fileStore.readThumbnail(for: media)
+        try await fileStore.readCommittedThumbnail(for: media)
     }
 
     func originalData(for media: ImprintMediaSnapshot) async throws -> Data {
-        try await fileStore.readOriginal(for: media)
+        try await fileStore.readCommittedOriginal(for: media)
     }
 
     func storageByteCount() async throws -> Int64 {
@@ -172,7 +210,7 @@ final class ImprintMediaService {
     }
 
     func restore(_ decoded: PulseDecodedBackup) async throws -> HabitSnapshot {
-        var installedFiles: [InstalledImprintFiles] = []
+        var installedFiles: [VerifiedImprintFiles] = []
         var restoredMedia: [PulseBackupPayload.MediaPayload] = []
         let habit: HabitSnapshot
         do {
@@ -193,7 +231,7 @@ final class ImprintMediaService {
                     contentsOf: thumbnailURL,
                     options: [.mappedIfSafe]
                 )
-                let installed = try await fileStore.install(
+                let installed = try await fileStore.installVerified(
                     originalData: original,
                     thumbnailData: thumbnail
                 )
@@ -247,6 +285,35 @@ final class ImprintMediaService {
         }
         decoded.discard()
         return habit
+    }
+
+    private static func logSaveFailure(
+        stage: String,
+        error: Error,
+        originalByteCount: Int? = nil,
+        thumbnailByteCount: Int? = nil
+    ) {
+        let code: String
+        if let mediaError = error as? PulseMediaStorageError {
+            code = mediaError.diagnosticCode
+        } else if let coreError = error as? PulseCoreError {
+            code = switch coreError {
+            case .invalidMedia: "media.domain.invalid"
+            default: "media.domain.failure"
+            }
+        } else {
+            code = "media.unknown"
+        }
+
+        if let originalByteCount, let thumbnailByteCount {
+            logger.error(
+                "Media save failed; stage=\(stage, privacy: .public); code=\(code, privacy: .public); original_bytes=\(originalByteCount, privacy: .public); thumbnail_bytes=\(thumbnailByteCount, privacy: .public)."
+            )
+        } else {
+            logger.error(
+                "Media save failed; stage=\(stage, privacy: .public); code=\(code, privacy: .public)."
+            )
+        }
     }
 
     private func stagingURL(root: URL, relativePath: String) throws -> URL {

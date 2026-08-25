@@ -1,6 +1,6 @@
 # Pulse 1.1 技术设计
 
-文档版本：3.6
+文档版本：3.7
 状态：Canonical Implemented Contract
 更新时间：2026-08-25
 
@@ -58,9 +58,11 @@ App 建立 store；Widget 在 store 不存在时显示设置状态，不创建�
 
 ## 4. 媒体管线
 
-`UIImagePickerController` 是系统相机唯一入口；相机不可用或无权限明确失败，不改用相册。图片处理在用户发起的异步任务中统一规范为 JPEG 原图/缩略图并剥离元数据。
+`UIImagePickerController` 是系统相机唯一入口；相机不可用或无权限明确失败，不改用相册。Picker 回调内先把系统相机返回的 `UIImage` 渲染为 App 自有的直立位图，再关闭相机并进入异步处理；JPEG 原图/缩略图统一规范并剥离元数据。
 
-文件不可变写入顺序为 staging → originals/thumbnails → Repository；DB 永不指向未完成文件。重拍用新路径提交后删旧文件；DB 失败删新文件；崩溃遗留由启动审计清除。删除 metadata 后的文件清理失败同样由审计收敛。媒体读取一次性校验 size/SHA-256，确定性缺失或身份不一致立即失败，不做无状态延时重试；缩略图不建立无上限进程缓存。
+文件不可变写入顺序为 staging → originals/thumbnails → 提交前回读验证 → Repository；DB 永不指向未完成或未经验证的文件。提交前验证对暂不可读和身份暂不一致进行短暂、有界重读，最终匹配才返回 `VerifiedImprintFiles`；失败清理全部新文件。已提交媒体读取只对文件暂不可读进行有界重读，size/SHA-256 身份不一致立即失败。重拍用新路径提交后删旧文件；DB 失败删新文件；崩溃遗留由启动审计清除。删除 metadata 后的文件清理失败同样由审计收敛。缩略图不建立无上限进程缓存。
+
+`PulseMediaStorageError` 区分输入、存储、提交前验证、已提交文件缺失与身份不一致；媒体保存用隐私安全的稳定阶段码记录 encode / precommit verification / Repository commit，不记录照片内容、路径或 hash。
 
 AppModel 同时建立 `recordsByDay` 与 `mediaByDay`。照片不参与 CheckInStatistics，不出现在 Widget、Live Activity、通知或 Lock Screen。
 

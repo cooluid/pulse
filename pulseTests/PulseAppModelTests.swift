@@ -1,3 +1,4 @@
+import UIKit
 import XCTest
 @testable import PulseCore
 @testable import PulseWatchShared
@@ -132,6 +133,60 @@ final class PulseAppModelTests: XCTestCase {
             context.model.errorMessage,
             PulseLocalization.string(
                 "error.check_in_saved_refresh_failed",
+                locale: context.model.settings.locale
+            )
+        )
+    }
+
+    func testTodayMediaCommitsAndCanBeReadImmediately() async throws {
+        let context = try makeContext()
+        await context.model.start()
+        _ = await context.model.checkIn()
+        let initialHapticCount = context.haptics.successCount
+
+        let didSave = await context.model.saveTodayMedia(
+            image: makeTestImage(),
+            cameraPosition: .rear
+        )
+
+        let media = try XCTUnwrap(context.model.todayMedia)
+        let originalData = try await context.model.originalData(for: media)
+        let thumbnailData = try await context.model.thumbnailData(for: media)
+        XCTAssertTrue(didSave)
+        XCTAssertNotNil(UIImage(data: originalData))
+        XCTAssertNotNil(UIImage(data: thumbnailData))
+        XCTAssertEqual(context.model.statistics.totalCount, 1)
+        XCTAssertEqual(context.haptics.successCount, initialHapticCount + 1)
+    }
+
+    func testPrecommitVerificationFailureDoesNotCreateMediaFact() async throws {
+        let context = try makeContext(
+            mediaReadTransform: { context, relativePath, _, data in
+                guard case .precommitVerification = context,
+                      relativePath.hasPrefix("originals/") else {
+                    return data
+                }
+                return Data(data.dropLast())
+            }
+        )
+        await context.model.start()
+        _ = await context.model.checkIn()
+        let habit = try XCTUnwrap(context.model.habit)
+        let initialHapticCount = context.haptics.successCount
+
+        let didSave = await context.model.saveTodayMedia(
+            image: makeTestImage(),
+            cameraPosition: .rear
+        )
+
+        XCTAssertFalse(didSave)
+        XCTAssertNil(context.model.todayMedia)
+        XCTAssertTrue(try context.repository.allMedia(habitID: habit.id).isEmpty)
+        XCTAssertEqual(context.haptics.successCount, initialHapticCount)
+        XCTAssertEqual(
+            context.model.errorMessage,
+            PulseLocalization.string(
+                "error.media_invalid",
                 locale: context.model.settings.locale
             )
         )
@@ -522,6 +577,7 @@ final class PulseAppModelTests: XCTestCase {
         notificationPermission: NotificationPermissionState = .authorized,
         hasEnhancement: Bool = true,
         failsProjectionReadsAfterCheckIn: Bool = false,
+        mediaReadTransform: PulseMediaReadTransform? = nil,
         deliveryCapabilities: PulseReminderDeliveryCapabilities = .init(
             supportsScheduledLiveActivities: false,
             liveActivitiesEnabled: false
@@ -545,11 +601,20 @@ final class PulseAppModelTests: XCTestCase {
             withIntermediateDirectories: true
         )
         addTeardownBlock { try? FileManager.default.removeItem(at: workingDirectory) }
+        let mediaRoot = workingDirectory.appendingPathComponent("Media", isDirectory: true)
+        let mediaFileStore: PulseMediaFileStore
+        if let mediaReadTransform {
+            mediaFileStore = try PulseMediaFileStore(
+                rootURL: mediaRoot,
+                readTransform: mediaReadTransform,
+                retrySleeper: { _ in }
+            )
+        } else {
+            mediaFileStore = try PulseMediaFileStore(rootURL: mediaRoot)
+        }
         let mediaService = ImprintMediaService(
             repository: modelRepository,
-            fileStore: try PulseMediaFileStore(
-                rootURL: workingDirectory.appendingPathComponent("Media", isDirectory: true)
-            ),
+            fileStore: mediaFileStore,
             clock: clock
         )
         let suiteName = "PulseAppModelTests.\(UUID().uuidString)"
@@ -614,6 +679,19 @@ final class PulseAppModelTests: XCTestCase {
         Calendar.pulseGregorian(timeZone: timeZone).date(
             from: DateComponents(year: 2026, month: 8, day: day, hour: hour)
         )!
+    }
+
+    private func makeTestImage() -> UIImage {
+        let format = UIGraphicsImageRendererFormat()
+        format.scale = 1
+        format.opaque = true
+        return UIGraphicsImageRenderer(
+            size: CGSize(width: 320, height: 240),
+            format: format
+        ).image { context in
+            UIColor.systemGreen.setFill()
+            context.fill(CGRect(x: 0, y: 0, width: 320, height: 240))
+        }
     }
 }
 
