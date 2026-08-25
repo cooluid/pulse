@@ -800,6 +800,16 @@ final class PulseFlowUITests: XCTestCase {
 
         let editor = app.descendants(matching: .any)["journal.editor.input"]
         XCTAssertTrue(editor.waitForExistence(timeout: 3))
+        let editorDate = app.staticTexts["journal.editor.date"]
+        XCTAssertTrue(editorDate.waitForExistence(timeout: 3))
+        XCTAssertTrue(editorDate.label.contains("2026"))
+        XCTAssertTrue(editorDate.label.contains("8月10日"))
+
+        let editorAttachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
+        editorAttachment.name = "Daily Note editor with record date"
+        editorAttachment.lifetime = .keepAlways
+        add(editorAttachment)
+
         let save = app.buttons["journal.editor.save"]
         XCTAssertFalse(save.isEnabled)
         replaceText(in: editor, with: "Edited after check-in")
@@ -845,6 +855,9 @@ final class PulseFlowUITests: XCTestCase {
                 .first(where: \.isHittable)
         )
         detailEdit.tap()
+        let historicalEditorDate = app.staticTexts["journal.editor.date"]
+        XCTAssertTrue(historicalEditorDate.waitForExistence(timeout: 3))
+        XCTAssertTrue(historicalEditorDate.label.contains("8月10日"))
         let deleteNote = app.buttons["journal.delete.button"]
         XCTAssertTrue(deleteNote.waitForExistence(timeout: 3))
         deleteNote.tap()

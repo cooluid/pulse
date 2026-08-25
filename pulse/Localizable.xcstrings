@@ -2883,23 +2883,6 @@
         }
       }
     },
-    "journal.privacy" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Saved on this device, and included in encrypted backups."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "保存在这台设备上，加密备份时会一并带上。"
-          }
-        }
-      }
-    },
     "journal.section.title" : {
       "extractionState" : "manual",
       "localizations" : {

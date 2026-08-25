@@ -452,8 +452,11 @@ struct JournalNoteEditorSheet: View {
     @Bindable var model: PulseAppModel
     let recordID: UUID
     let originalNote: String?
+    let logicalDay: LogicalDay
+    let recordTimeZone: TimeZone
 
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @Environment(\.locale) private var locale
     @Environment(\.pulseVisualTheme) private var visualTheme
     @FocusState private var isEditorFocused: Bool
@@ -464,55 +467,51 @@ struct JournalNoteEditorSheet: View {
         self.model = model
         recordID = record.id
         originalNote = record.journalNote
+        logicalDay = record.logicalDay
+        recordTimeZone = record.timeZone
         _draftJournalNote = State(initialValue: record.journalNote ?? "")
     }
 
     var body: some View {
         NavigationStack {
-            Form {
-                Section {
-                    TextField(
-                        "journal.editor.placeholder",
-                        text: $draftJournalNote,
-                        axis: .vertical
+            ScrollView {
+                VStack(alignment: .leading, spacing: PulseDesign.spacing20) {
+                    Text(
+                        PulseFormatting.fullDate(
+                            logicalDay,
+                            timeZone: recordTimeZone,
+                            locale: locale
+                        )
                     )
-                    .lineLimit(4...8)
-                    .focused($isEditorFocused)
-                    .accessibilityIdentifier("journal.editor.input")
-                } footer: {
-                    VStack(alignment: .leading, spacing: PulseDesign.spacing4) {
-                        Text(characterCountText)
-                            .foregroundStyle(
-                                isDraftValid
-                                    ? PulseDesign.appMuted(for: visualTheme)
-                                    : PulseDesign.systemDestructive
-                            )
-                            .accessibilityIdentifier("journal.editor.count")
+                    .font(dateFont)
+                    .foregroundStyle(PulseDesign.appMuted(for: visualTheme))
+                    .fixedSize(horizontal: false, vertical: true)
+                    .accessibilityIdentifier("journal.editor.date")
 
-                        if !isDraftValid {
-                            Text(validationMessage)
-                                .foregroundStyle(PulseDesign.systemDestructive)
-                                .accessibilityIdentifier("journal.editor.validation")
-                        }
-                    }
-                }
-
-                Section {
-                    Text("journal.privacy")
-                        .font(.footnote)
-                        .foregroundStyle(PulseDesign.appMuted(for: visualTheme))
-                        .fixedSize(horizontal: false, vertical: true)
+                    editorSurface
 
                     if originalNote != nil {
-                        Button("journal.action.delete", role: .destructive) {
+                        Button(role: .destructive) {
                             showsDeleteConfirmation = true
+                        } label: {
+                            Label("journal.action.delete", systemImage: "trash")
+                                .frame(minHeight: PulseDesign.minimumHitTarget)
                         }
+                        .buttonStyle(.plain)
+                        .foregroundStyle(PulseDesign.systemDestructive)
                         .accessibilityIdentifier("journal.delete.button")
                     }
                 }
+                .frame(maxWidth: PulseDesign.mediaCardMaxWidth, alignment: .leading)
+                .padding(.horizontal, PulseDesign.spacing20)
+                .padding(.top, PulseDesign.spacing16)
+                .padding(.bottom, PulseDesign.spacing32)
+                .frame(maxWidth: .infinity, alignment: .top)
             }
-            .scrollContentBackground(.hidden)
+            .scrollDismissesKeyboard(.interactively)
+            .scrollBounceBehavior(.basedOnSize)
             .background(PulseScreenBackground())
+            .foregroundStyle(PulseDesign.appInk(for: visualTheme))
             .navigationTitle("journal.editor.title")
             .navigationBarTitleDisplayMode(.inline)
             .tint(PulseDesign.appAccent(for: visualTheme))
@@ -525,9 +524,15 @@ struct JournalNoteEditorSheet: View {
 
                 ToolbarItem(placement: .confirmationAction) {
                     Button("action.save") { save() }
-                        .disabled(!isDraftValid || !hasChanges)
+                        .foregroundStyle(
+                            canSave
+                                ? PulseDesign.appAccent(for: visualTheme)
+                                : PulseDesign.appMuted(for: visualTheme)
+                        )
+                        .disabled(!canSave)
                         .accessibilityIdentifier("journal.editor.save")
                 }
+
             }
             .confirmationDialog(
                 "journal.delete_confirmation.title",
@@ -546,6 +551,94 @@ struct JournalNoteEditorSheet: View {
         }
     }
 
+    private var editorSurface: some View {
+        VStack(alignment: .leading, spacing: PulseDesign.spacing12) {
+            TextField(
+                "journal.editor.placeholder",
+                text: $draftJournalNote,
+                axis: .vertical
+            )
+            .lineLimit(dynamicTypeSize.isAccessibilitySize ? 4...10 : 4...8)
+            .font(editorFont)
+            .foregroundStyle(PulseDesign.appInk(for: visualTheme))
+            .focused($isEditorFocused)
+            .accessibilityLabel("journal.section.title")
+            .accessibilityHint(validationMessage)
+            .accessibilityIdentifier("journal.editor.input")
+
+            if showsEditorFooter {
+                Spacer(minLength: PulseDesign.spacing12)
+
+                HStack(alignment: .firstTextBaseline, spacing: PulseDesign.spacing8) {
+                    if !isDraftValid {
+                        Text(validationMessage)
+                            .foregroundStyle(PulseDesign.systemDestructive)
+                            .fixedSize(horizontal: false, vertical: true)
+                            .accessibilityIdentifier("journal.editor.validation")
+                    }
+
+                    Spacer(minLength: 0)
+
+                    Text(characterCountText)
+                        .foregroundStyle(
+                            isDraftValid
+                                ? PulseDesign.appMuted(for: visualTheme)
+                                : PulseDesign.systemDestructive
+                        )
+                        .accessibilityIdentifier("journal.editor.count")
+                }
+                .font(.caption)
+            }
+        }
+        .padding(PulseDesign.spacing16)
+        .frame(
+            maxWidth: .infinity,
+            minHeight: dynamicTypeSize.isAccessibilitySize ? 260 : 220,
+            alignment: .topLeading
+        )
+        .background {
+            RoundedRectangle(
+                cornerRadius: PulseDesign.spacing20,
+                style: .continuous
+            )
+            .fill(PulseDesign.appSurface(for: visualTheme))
+        }
+        .overlay {
+            RoundedRectangle(
+                cornerRadius: PulseDesign.spacing20,
+                style: .continuous
+            )
+            .stroke(
+                PulseDesign.appDivider(for: visualTheme),
+                lineWidth: PulseDesign.thinLineWidth
+            )
+        }
+        .accessibilityElement(children: .contain)
+        .accessibilityIdentifier("journal.editor.surface")
+    }
+
+    private var dateFont: Font {
+        switch visualTheme {
+        case .editorialJournal:
+            .system(.headline, design: .serif).weight(.semibold)
+        case .quietField, .sunlitDay:
+            .system(.headline, design: .rounded).weight(.semibold)
+        }
+    }
+
+    private var editorFont: Font {
+        switch visualTheme {
+        case .editorialJournal:
+            .system(.body, design: .serif)
+        case .quietField, .sunlitDay:
+            .system(.body, design: .rounded)
+        }
+    }
+
+    private var showsEditorFooter: Bool {
+        !draftJournalNote.isEmpty || !isDraftValid
+    }
+
     private var canonicalDraft: String? {
         try? JournalNote.canonicalText(userInput: draftJournalNote)
     }
@@ -555,7 +648,11 @@ struct JournalNoteEditorSheet: View {
     }
 
     private var hasChanges: Bool {
-        isDraftValid && canonicalDraft != originalNote
+        canonicalDraft != originalNote
+    }
+
+    private var canSave: Bool {
+        isDraftValid && hasChanges
     }
 
     private var characterCountText: String {
@@ -581,7 +678,7 @@ struct JournalNoteEditorSheet: View {
     }
 
     private func save() {
-        guard isDraftValid, hasChanges else { return }
+        guard canSave else { return }
         Task {
             if await model.updateJournalNote(
                 recordID: recordID,

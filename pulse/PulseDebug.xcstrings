@@ -2,7 +2,7 @@
   "sourceLanguage" : "en",
   "strings" : {
     "debug.activity_lab.activity_disabled" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -19,7 +19,7 @@
       }
     },
     "debug.activity_lab.activity_enabled" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -36,7 +36,7 @@
       }
     },
     "debug.activity_lab.already_checked_in" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -53,7 +53,7 @@
       }
     },
     "debug.activity_lab.app_group" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -70,7 +70,7 @@
       }
     },
     "debug.activity_lab.app_identifier" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -87,7 +87,7 @@
       }
     },
     "debug.activity_lab.check_in_failed" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -104,7 +104,7 @@
       }
     },
     "debug.activity_lab.check_in_succeeded" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -121,7 +121,7 @@
       }
     },
     "debug.activity_lab.configuration_header" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -138,7 +138,7 @@
       }
     },
     "debug.activity_lab.diagnostics_header" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -155,7 +155,7 @@
       }
     },
     "debug.activity_lab.end_all" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -172,7 +172,7 @@
       }
     },
     "debug.activity_lab.identity_footer" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -189,7 +189,7 @@
       }
     },
     "debug.activity_lab.identity_header" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -206,7 +206,7 @@
       }
     },
     "debug.activity_lab.invalid_time_zone" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -223,7 +223,7 @@
       }
     },
     "debug.activity_lab.isolation_confirmed" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -240,7 +240,7 @@
       }
     },
     "debug.activity_lab.isolation_failed" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -257,7 +257,7 @@
       }
     },
     "debug.activity_lab.last_request" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -274,7 +274,7 @@
       }
     },
     "debug.activity_lab.lifecycle_active" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -291,7 +291,7 @@
       }
     },
     "debug.activity_lab.lifecycle_dismissed" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -308,7 +308,7 @@
       }
     },
     "debug.activity_lab.lifecycle_ended" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -325,7 +325,7 @@
       }
     },
     "debug.activity_lab.lifecycle_pending" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -342,7 +342,7 @@
       }
     },
     "debug.activity_lab.lifecycle_stale" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -359,7 +359,7 @@
       }
     },
     "debug.activity_lab.lifecycle_unknown" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -376,7 +376,7 @@
       }
     },
     "debug.activity_lab.logical_day" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -393,7 +393,7 @@
       }
     },
     "debug.activity_lab.no_activities" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -410,7 +410,7 @@
       }
     },
     "debug.activity_lab.phase_completed" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -427,7 +427,7 @@
       }
     },
     "debug.activity_lab.phase_pending" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -444,7 +444,7 @@
       }
     },
     "debug.activity_lab.preview_completed" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -461,7 +461,7 @@
       }
     },
     "debug.activity_lab.real_activity_footer" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -478,7 +478,7 @@
       }
     },
     "debug.activity_lab.real_activity_header" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -495,7 +495,7 @@
       }
     },
     "debug.activity_lab.real_check_in" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -512,7 +512,7 @@
       }
     },
     "debug.activity_lab.refresh" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -529,7 +529,7 @@
       }
     },
     "debug.activity_lab.requires_ios_26" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -546,7 +546,7 @@
       }
     },
     "debug.activity_lab.restore_pending" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -563,7 +563,7 @@
       }
     },
     "debug.activity_lab.scheduled_start" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -580,7 +580,7 @@
       }
     },
     "debug.activity_lab.start_after_thirty_seconds" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -597,7 +597,7 @@
       }
     },
     "debug.activity_lab.start_now" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -614,7 +614,7 @@
       }
     },
     "debug.activity_lab.state_footer" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -631,7 +631,7 @@
       }
     },
     "debug.activity_lab.state_header" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -648,7 +648,7 @@
       }
     },
     "debug.activity_lab.time_zone" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -665,7 +665,7 @@
       }
     },
     "debug.activity_lab.title" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -682,7 +682,7 @@
       }
     },
     "debug.activity_lab.unavailable" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -699,7 +699,7 @@
       }
     },
     "debug.activity_lab.url_scheme" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -716,7 +716,7 @@
       }
     },
     "debug.developer.section" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
