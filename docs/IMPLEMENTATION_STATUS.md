@@ -2,9 +2,9 @@
 
 更新时间：2026-08-25
 
-当前结论：**ENGINEERING CANDIDATE / HUMAN & SYSTEM DEVICE EVIDENCE PENDING / DISTRIBUTION NO-GO / PUBLIC RELEASE NO-GO**。
+当前结论：**ENGINEERING GO / DISTRIBUTION ARTIFACT GO / EXACT TESTFLIGHT & APP REVIEW PENDING / PUBLIC RELEASE NO-GO**。
 
-当前未提交工作树基于 `1ac22e2`，已通过自动化、Release Build 与 Analyze，但尚未冻结为不可变提交，也未生成与当前源码对应的签名 Archive、IPA 或 TestFlight 构建，因此不能复用其他提交的分发结论。
+Build 5 已冻结为不可变提交 `af918977434829f10db8bb66b511eee5a08efe8c`，并通过自动化、Release Build/Analyze、签名 Archive、App Store IPA 导出与完整产物审计。本轮没有上传 Apple；TestFlight Build 5、精确产物真机复测与 App Review 补件仍未完成。
 
 ## 当前生产基线
 
@@ -34,6 +34,8 @@
 - Release 包未包含 `ReminderActivityDebugView`、灵动岛测试台文案、UI-test 环境键或 Dev Bundle 标识。
 - redirect site 构建及 3 项正式 URL 跳转测试通过。
 - `git diff --check` 通过。
+- Apple Distribution Archive、IPA、四组件 profile/entitlements、dSYM UUID、Privacy manifest 与 Release 调试隔离审计通过；IPA SHA-256 为 `3fdeaccae5d5e20df2d6dd401c7c12eef90ba37d3d3e4c6504cea0a6972216cc`。
+- 产品负责人报告当前源码真机已不再复现“拍照后立即打开提示文件不可读”和“Widget 签到连续闪烁”；该观察仍需在 TestFlight Build 5 精确产物上复测。
 
 自动化验证功能、事实、无障碍结果和平台硬限制。
 
@@ -46,12 +48,13 @@ Simulator 测试日志仍包含未配对 Watch 的 `WCErrorCodeDeviceNotPaired`�
 - 恢复：多张原图归档在另一清洁安装完整恢复并逐张核对。
 - 系统与无障碍：真人 VoiceOver、Switch Control、最大 Dynamic Type、Reduce Motion、提高对比度、通知、真实 Widget、Live Activity / Dynamic Island 和 StoreKit Sandbox。
 - Apple Watch：真实配对设备的即时/后台传输、失联恢复、重启、飞行模式、跨午夜、重复/乱序命令、Always-On、VoiceOver、Reduce Motion、complication、Smart Stack 和电量。
-- 分发：当前源码对应的 Apple Distribution Archive、签名/entitlement/dSYM/Privacy manifest 审计、加密出口分类、App Store 隐私答案和 TestFlight 清洁安装。
+- 分发：Build 5 上传、Apple 处理、TestFlight 清洁安装、加密出口分类、App Store 隐私答案，以及被拒 Build 4 的替换与重新提交。
 - 人工：当前完整页面、系统表面和商店素材的人工验收。
 
 ## 下一步
 
 1. 在真实 iPhone、iPad 和配对 Watch 关闭设备与无障碍门禁。
 2. 回归真实通知、Widget、Live Activity 和 StoreKit Sandbox。
-3. 冻结当前源码后生成新的 Apple Distribution Archive 与 IPA，并重新审计产物。
-4. 完成 App Store Connect 加密出口、隐私答案和 TestFlight 清洁安装。
+3. 经用户确认后上传已审计的 Build 5；从 TestFlight 清洁安装精确产物并复测照片立即打开、Widget 单次签到、StoreKit ¥28 和核心流程。
+4. 使用 TestFlight Build 5 录制真机审核视频，补齐 Apple Guideline 2.1 要求的八项 App Review 信息，替换 Build 4 后重新提交。
+5. 完成 App Store Connect 加密出口与隐私答案复核。

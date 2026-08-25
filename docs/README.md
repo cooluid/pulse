@@ -17,7 +17,7 @@
 | [WIDGET_SHARED_STORE_CONTRACT.md](./WIDGET_SHARED_STORE_CONTRACT.md) | 定义基础 Widget、唯一 App Group store、跨进程签到、隐私与能力准入门禁 | 产品、开发、测试、发布负责人 |
 | [DATA_ENCRYPTION_CONTRACT.md](./DATA_ENCRYPTION_CONTRACT.md) | 定义设备内文件保护、加密备份容器、口令/KDF、失败语义与内购边界 | 产品、安全、开发、测试、发布负责人 |
 
-逐构建证据不承担产品合同职责：Build 1 的历史上传记录位于 [RELEASE_CANDIDATE_1_0_1.md](./RELEASE_CANDIDATE_1_0_1.md)，Build 2 加密基线证据位于 [RELEASE_CANDIDATE_1_0_2.md](./RELEASE_CANDIDATE_1_0_2.md)，当前 1.1 (4) 的本地分发候选证据位于 [RELEASE_CANDIDATE_1_1_4.md](./RELEASE_CANDIDATE_1_1_4.md)。当前结论始终以 [IMPLEMENTATION_STATUS.md](./IMPLEMENTATION_STATUS.md) 为准。
+逐构建证据不承担产品合同职责：Build 1 的历史上传记录位于 [RELEASE_CANDIDATE_1_0_1.md](./RELEASE_CANDIDATE_1_0_1.md)，Build 2 加密基线证据位于 [RELEASE_CANDIDATE_1_0_2.md](./RELEASE_CANDIDATE_1_0_2.md)，Build 4 的历史候选证据位于 [RELEASE_CANDIDATE_1_1_4.md](./RELEASE_CANDIDATE_1_1_4.md)，当前 1.1 (5) 的本地分发候选证据位于 [RELEASE_CANDIDATE_1_1_5.md](./RELEASE_CANDIDATE_1_1_5.md)。当前结论始终以 [IMPLEMENTATION_STATUS.md](./IMPLEMENTATION_STATUS.md) 为准。
 
 ## 优先级定义
 
