@@ -1,6 +1,6 @@
 # Pulse 1.1 (5) 发布候选与本地分发证据
 
-状态：**ENGINEERING GO / DISTRIBUTION UPLOAD RECEIVED / APPLE PROCESSING / EXACT TESTFLIGHT & APP REVIEW PENDING / PUBLIC RELEASE NO-GO**
+状态：**ENGINEERING GO / DISTRIBUTION BINARY COMPLETE / EXPORT COMPLIANCE MISSING / EXACT TESTFLIGHT & APP REVIEW PENDING / PUBLIC RELEASE NO-GO**
 
 生成日期：2026-08-25
 
@@ -8,7 +8,7 @@ Pulse 源码提交：`af918977434829f10db8bb66b511eee5a08efe8c`
 
 公开站点提交：`6e628529bb415a72cd7d821ebb3c8eaa2933a503`
 
-本文记录 Build 5 的不可变源码、自动化、公开 URL、Archive、IPA、签名审计和上传回执。Apple 已接收该构建并显示 `Processing`；这不等于处理完成、TestFlight 可安装或 App Review 已重新提交。
+本文记录 Build 5 的不可变源码、自动化、公开 URL、Archive、IPA、签名审计和上传回执。Apple 已完成二进制处理，但 TestFlight 状态为 `Missing Compliance`；这不等于可安装或 App Review 已重新提交。
 
 ## 1. 候选身份
 
@@ -102,15 +102,16 @@ IPA SHA-256：`3fdeaccae5d5e20df2d6dd401c7c12eef90ba37d3d3e4c6504cea0a6972216cc`
 ## 6. 加密与 App Store Connect
 
 - Build 5 继续让 `ITSAppUsesNonExemptEncryption` 缺省，未把未冻结的出口分类写进产物。
-- App Store Connect 仍需按 container v2 / payload v3 的 PBKDF2 + AES-GCM 实际用途完成加密出口判断。
+- App Store Connect 仍需按 container v2 / payload v3 的 PBKDF2 + AES-GCM 实际用途完成加密出口判断。Build 5 调用 Apple 提供的 CommonCrypto PBKDF2 与 CryptoKit AES-GCM，没有自研或非标准算法。
 - DSA 交易者资料于 2026-08-25 显示 `In Review`，与 App 二进制审核分开。
 - App 1.1 (4) 当前因 Guideline 2.1 `Information Needed` 处于 `Unresolved Issues`；Apple 要求真机录屏、测试设备、产品/访问/外部服务/地区/合规/内购说明。
-- Build 5 于 2026-08-25 18:00 上传成功；Xcode 返回 `Upload succeeded`，App Store Connect 已建立 `1.1 (5)` 记录并显示 `Processing`。
-- Build 5 尚未处理完成、未进入可安装 TestFlight 状态、未替换 Build 4，也未回复或重新提交审核。
+- Build 5 于 2026-08-25 18:00 上传成功；Xcode 返回 `Upload succeeded`，App Store Connect 已建立 `1.1 (5)` 并完成二进制处理。
+- TestFlight 当前显示 `Missing Compliance`。加密问卷第一题询问 App 实现的算法类型；本轮只读检查，没有选择或保存法律声明。
+- Build 5 尚未进入可安装 TestFlight 状态、未替换 Build 4，也未回复或重新提交审核。
 
 ## 7. 下一步
 
-1. 等待 Apple 将 Build 5 从 `Processing` 更新为 `Complete`；不得重复上传同一构建号。
+1. 按 Build 5 实际调用 Apple 系统加密的边界完成出口合规问卷；不得把“使用加密”误报成“自研算法”，也不得未经确认保存声明。
 2. 从 TestFlight 清洁安装 Build 5，复测两项已知 Bug、StoreKit ¥28 动态价格和核心流程。
 3. 使用 TestFlight Build 5 在最新系统真机录制从启动开始的核心功能、相机权限与一次买断流程。
 4. 将 Apple 要求的八项资料写入 App Review Notes 和回复，替换 Build 4 后再重新提交。

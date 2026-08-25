@@ -2,9 +2,9 @@
 
 更新时间：2026-08-25
 
-当前结论：**ENGINEERING GO / DISTRIBUTION UPLOAD RECEIVED / APPLE PROCESSING / EXACT TESTFLIGHT & APP REVIEW PENDING / PUBLIC RELEASE NO-GO**。
+当前结论：**ENGINEERING GO / DISTRIBUTION BINARY COMPLETE / EXPORT COMPLIANCE MISSING / EXACT TESTFLIGHT & APP REVIEW PENDING / PUBLIC RELEASE NO-GO**。
 
-Build 5 已冻结为不可变提交 `af918977434829f10db8bb66b511eee5a08efe8c`，并通过自动化、Release Build/Analyze、签名 Archive、App Store IPA 导出与完整产物审计。Xcode 于 2026-08-25 18:00 返回上传成功，App Store Connect 已建立 `1.1 (5)` 并显示 `Processing`；TestFlight Build 5、精确产物真机复测与 App Review 补件仍未完成。
+Build 5 已冻结为不可变提交 `af918977434829f10db8bb66b511eee5a08efe8c`，并通过自动化、Release Build/Analyze、签名 Archive、App Store IPA 导出与完整产物审计。Xcode 于 2026-08-25 18:00 返回上传成功，App Store Connect 已完成 `1.1 (5)` 二进制处理；TestFlight 当前因 `Missing Compliance` 不可安装，精确产物真机复测与 App Review 补件仍未完成。
 
 ## 当前生产基线
 
@@ -36,7 +36,7 @@ Build 5 已冻结为不可变提交 `af918977434829f10db8bb66b511eee5a08efe8c`�
 - `git diff --check` 通过。
 - Apple Distribution Archive、IPA、四组件 profile/entitlements、dSYM UUID、Privacy manifest 与 Release 调试隔离审计通过；IPA SHA-256 为 `3fdeaccae5d5e20df2d6dd401c7c12eef90ba37d3d3e4c6504cea0a6972216cc`。
 - 产品负责人报告当前源码真机已不再复现“拍照后立即打开提示文件不可读”和“Widget 签到连续闪烁”；该观察仍需在 TestFlight Build 5 精确产物上复测。
-- Build 5 上传工具返回 `Upload succeeded`；App Store Connect 当前状态为 `Processing`，尚未视为 Apple 处理完成。
+- Build 5 上传工具返回 `Upload succeeded`，App Store Connect 二进制状态为 `Complete`；TestFlight 构建状态为 `Missing Compliance`。
 
 自动化验证功能、事实、无障碍结果和平台硬限制。
 
@@ -49,13 +49,13 @@ Simulator 测试日志仍包含未配对 Watch 的 `WCErrorCodeDeviceNotPaired`�
 - 恢复：多张原图归档在另一清洁安装完整恢复并逐张核对。
 - 系统与无障碍：真人 VoiceOver、Switch Control、最大 Dynamic Type、Reduce Motion、提高对比度、通知、真实 Widget、Live Activity / Dynamic Island 和 StoreKit Sandbox。
 - Apple Watch：真实配对设备的即时/后台传输、失联恢复、重启、飞行模式、跨午夜、重复/乱序命令、Always-On、VoiceOver、Reduce Motion、complication、Smart Stack 和电量。
-- 分发：Build 5 的 Apple 处理完成、TestFlight 清洁安装、加密出口分类、App Store 隐私答案，以及被拒 Build 4 的替换与重新提交。
+- 分发：Build 5 加密出口问卷、TestFlight 清洁安装、App Store 隐私答案，以及被拒 Build 4 的替换与重新提交。
 - 人工：当前完整页面、系统表面和商店素材的人工验收。
 
 ## 下一步
 
 1. 在真实 iPhone、iPad 和配对 Watch 关闭设备与无障碍门禁。
 2. 回归真实通知、Widget、Live Activity 和 StoreKit Sandbox。
-3. 等待 Build 5 处理完成；从 TestFlight 清洁安装精确产物并复测照片立即打开、Widget 单次签到、StoreKit ¥28 和核心流程。
+3. 按 CommonCrypto PBKDF2 与 CryptoKit AES-GCM 的实际 Apple 系统加密边界完成 Build 5 出口合规问卷；从 TestFlight 清洁安装精确产物并复测照片立即打开、Widget 单次签到、StoreKit ¥28 和核心流程。
 4. 使用 TestFlight Build 5 录制真机审核视频，补齐 Apple Guideline 2.1 要求的八项 App Review 信息，替换 Build 4 后重新提交。
 5. 完成 App Store Connect 加密出口与隐私答案复核。
