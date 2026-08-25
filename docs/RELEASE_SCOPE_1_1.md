@@ -1,8 +1,8 @@
 # 一日一印（Pulse）1.1 发布范围合同
 
-文档版本：2.2
+文档版本：2.3
 状态：Canonical Release Contract
-更新时间：2026-08-19
+更新时间：2026-08-25
 
 ## 1. 发布目标
 
@@ -59,6 +59,7 @@ Pulse 1.1 把“每天可靠签到”升级为“每天留下一个可验证事�
 | Build Number | `4` |
 | SwiftData | 只接受 `PulseSchema 1.1.1` marker；实验性 1.1.0 与更旧内部安装明确要求清洁安装 |
 | 加密归档 | 只接受 container v2 / payload v3；payload v1/v2 与 container v1 明确报版本不支持 |
+| Watch 传输 / 本地状态 | 只接受协议 v2 / 本地状态 v2；旧内部状态与缺失字段明确拒绝 |
 | Bundle / App Group | `co.fanr.pulse` / `group.co.fanr.pulse` |
 | 最低系统 | iOS / iPadOS 18.0，watchOS 10.0 |
 

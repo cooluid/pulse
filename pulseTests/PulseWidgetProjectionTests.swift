@@ -109,6 +109,9 @@ final class PulseWidgetProjectionTests: XCTestCase {
                 .appendingPathComponent("pulse", isDirectory: true)
                 .appendingPathComponent("Localizable.xcstrings", isDirectory: false),
             projectRoot
+                .appendingPathComponent("pulse", isDirectory: true)
+                .appendingPathComponent("PulseDebug.xcstrings", isDirectory: false),
+            projectRoot
                 .appendingPathComponent("PulseWidgets", isDirectory: true)
                 .appendingPathComponent("Localizable.xcstrings", isDirectory: false),
             projectRoot

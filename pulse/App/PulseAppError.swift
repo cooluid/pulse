@@ -3,6 +3,8 @@ import PulseCore
 
 enum PulseAppError: Error, Equatable {
     case invalidSettings
+    case committedCheckInRefreshFailed
+    case committedChangeRefreshFailed
     case notificationPermissionDenied
     case liveActivitiesUnavailable
     case liveActivitySchedulingFailed
@@ -86,6 +88,10 @@ enum PulseErrorPresentation {
             let key = switch appError {
             case .invalidSettings:
                 "error.settings"
+            case .committedCheckInRefreshFailed:
+                "error.check_in_saved_refresh_failed"
+            case .committedChangeRefreshFailed:
+                "error.change_saved_refresh_failed"
             case .notificationPermissionDenied:
                 "error.notification_denied"
             case .liveActivitiesUnavailable:

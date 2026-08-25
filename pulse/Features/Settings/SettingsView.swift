@@ -443,14 +443,24 @@ struct SettingsView: View {
 
 #if DEBUG
     private var developerSection: some View {
-        Section("Developer") {
+        Section {
             NavigationLink {
                 ReminderActivityDebugView(model: model)
             } label: {
-                Label("灵动岛测试台", systemImage: "waveform.path.ecg.rectangle")
+                Label {
+                    Text(debugCopy("debug.activity_lab.title"))
+                } icon: {
+                    Image(systemName: "waveform.path.ecg.rectangle")
+                }
             }
             .accessibilityIdentifier("settings.debug.activity-lab.link")
+        } header: {
+            Text(debugCopy("debug.developer.section"))
         }
+    }
+
+    private func debugCopy(_ key: String) -> String {
+        PulseLocalization.string(key, table: "PulseDebug", locale: locale)
     }
 #endif
 

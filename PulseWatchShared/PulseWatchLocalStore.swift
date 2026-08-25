@@ -115,13 +115,23 @@ public final class PulseWatchLocalStore: @unchecked Sendable {
         }
     }
 
-    public func clear() throws {
+    public func clearSnapshot() throws {
+        lock.lock()
+        defer { lock.unlock() }
+        try coordinatedMutation { state in
+            state.snapshot = nil
+        }
+    }
+
+#if DEBUG
+    public func reset() throws {
         lock.lock()
         defer { lock.unlock() }
         try coordinatedMutation { state in
             state = PersistentState()
         }
     }
+#endif
 
     private func coordinatedRead() throws -> PersistentState {
         var coordinatorError: NSError?

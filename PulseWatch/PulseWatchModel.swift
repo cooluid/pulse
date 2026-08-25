@@ -42,7 +42,7 @@ enum PulseWatchBootstrap {
             .missed, .checked, .missed, .checked, .checked, .checked,
             isCommitted ? .checked : .todayPending,
         ]
-        try store.clear()
+        try store.reset()
         let projectID = UUID(uuidString: "7E4A69A5-2B20-4A18-9E10-0C225D52688F")!
         try store.save(snapshot: PulseWatchProjectSnapshot(
             projectID: projectID,

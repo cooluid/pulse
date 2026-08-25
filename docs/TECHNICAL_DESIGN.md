@@ -1,8 +1,8 @@
 # Pulse 1.1 技术设计
 
-文档版本：3.5
+文档版本：3.6
 状态：Canonical Implemented Contract
-更新时间：2026-08-24
+更新时间：2026-08-25
 
 ## 1. 基线
 
@@ -36,7 +36,7 @@ PulseWatch / Watch complication
 
 `SwiftDataPulseRepository` 是领域模型唯一写入者；签到时可原子写入可选记事，签到后只有 `updateJournalNote` 可修改。`PulseMediaFileStore` actor 是媒体路径、文件保护、安装、读取和孤儿审计唯一所有者；`ImprintMediaService` 只协调图像处理、不可变文件和 Repository 提交。页面不接触 SwiftData、路径或 codec。
 
-`PulseWatchShared` 是 iPhone、Watch App 与 Watch Widget 共用的唯一 Watch 协议、revision、codec 与本地状态合同。Watch 本地单文件状态只保存最新可重建快照、durable command outbox 和最后回执；使用跨进程协调和原子写入，不包含 SwiftData 模型。快照以 `nextDayBoundary` 统一失效，过期后只表达需要同步；坏快照、项目 revision 变化或回执乱序都不能隐式清除 outbox，命令只在匹配回执或用户明确重试/清除时收敛。所有快照、命令、回执和落盘状态均执行协议版本、项目/revision、时区、逻辑日、连续七日、完成一致性与唯一 operationID 语义校验。iPhone 即时消息与后台用户信息都进入同一个 `PulseAppModel.handleWatchCheckIn`，再调用 Repository 的正式 Watch 命令入口；Watch App 的刷新请求由 iPhone 直接从当前 Repository 重建快照，不存在 Widget/Watch 私写记录或按界面状态补造成功。
+`PulseWatchShared` 是 iPhone、Watch App 与 Watch Widget 共用的唯一 Watch 协议、revision、codec 与本地状态合同。首次公开基线为协议 v2 / 本地状态 v2，不兼容旧内部状态，也不为缺失字段补默认值。Watch 本地单文件状态只保存最新可重建快照、durable command outbox 和最后回执；使用跨进程协调和原子写入，不包含 SwiftData 模型。快照以 `nextDayBoundary` 统一失效，过期后只表达需要同步；空快照、坏快照、项目 revision 变化或回执乱序都不能隐式清除 outbox，命令只在匹配回执或用户明确重试/清除时收敛。所有快照、命令、回执和落盘状态均执行协议版本、项目/revision、时区、逻辑日、连续七日、完成一致性与唯一 operationID 语义校验。iPhone 即时消息与后台用户信息都进入同一个 `PulseAppModel.handleWatchCheckIn`，再调用 Repository 的正式 Watch 命令入口；Watch App 的刷新请求由 iPhone 直接从当前 Repository 重建快照，不存在 Widget/Watch 私写记录或按界面状态补造成功。
 
 Watch 本地目录只接受 file URL，并在唯一入口标准化后使用。系统 App Group URL 的对象身份不属于路径安全合同：物理 watchOS 返回的合法 URL 可能与其 `standardizedFileURL` 路径相同但对象比较不等，禁止以二者严格相等作为有效性门禁。App Group 根仍只由 `FileManager.containerURL(forSecurityApplicationGroupIdentifier:)` 提供，子目录只追加固定 `PulseWatch` 名称。
 
@@ -60,7 +60,7 @@ App 建立 store；Widget 在 store 不存在时显示设置状态，不创建�
 
 `UIImagePickerController` 是系统相机唯一入口；相机不可用或无权限明确失败，不改用相册。图片处理在用户发起的异步任务中统一规范为 JPEG 原图/缩略图并剥离元数据。
 
-文件不可变写入顺序为 staging → originals/thumbnails → Repository；DB 永不指向未完成文件。重拍用新路径提交后删旧文件；DB 失败删新文件；崩溃遗留由启动审计清除。删除 metadata 后的文件清理失败同样由审计收敛。
+文件不可变写入顺序为 staging → originals/thumbnails → Repository；DB 永不指向未完成文件。重拍用新路径提交后删旧文件；DB 失败删新文件；崩溃遗留由启动审计清除。删除 metadata 后的文件清理失败同样由审计收敛。媒体读取一次性校验 size/SHA-256，确定性缺失或身份不一致立即失败，不做无状态延时重试；缩略图不建立无上限进程缓存。
 
 AppModel 同时建立 `recordsByDay` 与 `mediaByDay`。照片不参与 CheckInStatistics，不出现在 Widget、Live Activity、通知或 Lock Screen。
 
@@ -72,7 +72,7 @@ AppModel 同时建立 `recordsByDay` 与 `mediaByDay`。照片不参与 CheckInS
 
 ## 6. 操作和失败语义
 
-`AppOperation` 串行化身份、签到、记事更新、删除、影像保存/删除、导出、恢复、清除和时区操作。记事更新不改变签到事实；签到成功与影像成功是两个状态，影像失败不逆转签到。Repository 保存失败 rollback；UI 只消费正式快照。
+`AppOperation` 串行化身份、签到、记事更新、删除、影像保存/删除、导出、恢复、清除和时区操作。记事更新不改变签到事实；签到成功与影像成功是两个状态，影像失败不逆转签到。Repository 保存失败 rollback；任何正式写入已经提交后，后续投影、空间统计或系统表面刷新失败只能显示“已保存但刷新失败”并进入重新载入，不得把已落盘结果改判为失败。UI 只消费正式快照。
 
 清除用 `maintenance.resetPending` 跨数据库、媒体、偏好与通知幂等恢复。启动把媒体引用缺失作为数据完整性失败，不用占位图或静默忽略冒充成功。
 
@@ -80,11 +80,13 @@ AppModel 同时建立 `recordsByDay` 与 `mediaByDay`。照片不参与 CheckInS
 
 `PulseEnhancementContract` 与 StoreKit 已验证 entitlement 是购买唯一来源；不保存 `isPro`。拍照、媒体和备份不读取权益。增强只控制静野/晴昼界面主题、额外 Widget 构图与可用设备的 scheduled Live Activity。`PulseVisualThemeAccessPolicy` 规定纸页手记为唯一免费默认，`enhancementThemes` 是收费主题的唯一枚举；主题写入只经 `PulseAppModel.requestVisualTheme`，权益未验证或撤销时失败关闭并统一回到纸页手记，不保留第二套购买状态。高级功能页按 `currentCapabilities` 展示不可交互同源标本，主题标本与设置预览共用 `PulseVisualThemeSpecimen`，购买页不得写入当前主题。
 
-提醒、语言与 Widget 共享事实沿用正式合同。App Group UserDefaults 只允许 `PulseSharedSettings` 管理 `interface.language`、`reminder.enabled` 与 `reminder.timeMinutes`；后两项由 App 的正式提醒协调器消费，不是 Widget 签到返回前的重建前置条件。Widget 签到成功只按逻辑日完成当天唯一投递，保留既有未来计划；不得保存签到、构图或权益副本。Home Screen 构图由 WidgetKit 逐实例配置持有，不存在全局 `widget.style`。`mediaInvitationEnabled` 是 App 本机设置，不进入共享事实或备份。
+提醒、语言与 Widget 共享事实沿用正式合同。App Group UserDefaults 只允许 `PulseSharedSettings` 管理 `interface.language`、`reminder.enabled` 与 `reminder.timeMinutes`；所有枚举、时间与布尔值按真实存储类型严格读取，损坏值失败关闭，不借助 `bool(forKey:)` 或 `integer(forKey:)` 静默转换。后两项由 App 的正式提醒协调器消费，不是 Widget 签到返回前的重建前置条件。Widget 签到成功只按逻辑日完成当天唯一投递，保留既有未来计划；不得保存签到、构图或权益副本。Home Screen 构图由 WidgetKit 逐实例配置持有，不存在全局 `widget.style`。`mediaInvitationEnabled` 是 App 本机设置，不进入共享事实或备份。
 
 ## 8. 帮助与反馈
 
 `PulseSupportContract` 是 App 内支持邮箱、帮助/隐私 URL、反馈最大长度与版本展示的唯一来源；旧 `PulseExternalLinks` 已删除。`PulseFeedbackDraft` 统一规范换行、裁剪首尾空白、拒绝空内容、超过 2000 个 Swift `Character` 和不支持的控制字符；页面不得静默截断。
+
+Debug 灵动岛测试台继续使用 String Catalog，但独占 `PulseDebug.xcstrings`；Release 配置明确排除该资源和 `#if DEBUG` 源码，生产包不得包含测试台文案、符号或入口。
 
 `FeedbackView` 只建立用户主动填写的邮件草稿：分类、正文、可选截图、可选技术信息。不放介绍段，也不在界面或邮件中列举未附带的数据。`PulseFeedbackDiagnostics` 从当前只读 AppModel 快照生成；开关默认打开、明细默认折叠，用户可展开查看或整组关闭。快照含 App/Bundle、系统与设备型号标识、界面、运行状态、逻辑日/时区、今日是否签到、记录/记事/媒体数量与占用、提醒权限/通道、权益和可用存储；不包含“我的一件事”正文、签到时间/历史明细、记事正文、媒体内容、备份、口令、广告标识符或设备 ID。关闭后主题与正文也不得残留任何诊断字段。
 

@@ -1,8 +1,8 @@
 # Pulse 系统入口与跨设备事实合同
 
-文档版本：4.0
+文档版本：4.1
 状态：Canonical Functional Contract
-更新日期：2026-08-24
+更新日期：2026-08-25
 
 本文定义 App、Widget、通知、Live Activity 和 Apple Watch 如何消费同一个签到事实。
 
@@ -68,6 +68,7 @@
 
 - `nextDayBoundary` 到达后旧快照进入需要同步，不能继续猜测今天。
 - 坏快照、旧 revision、时区变化或项目变化不得顺手删除 outbox。
+- 空快照只撤销可重建投影，不得删除尚未收到匹配回执的 outbox 命令。
 - Watch App 可以向 iPhone 请求当前 Repository 快照；complication 等待正式上下文更新。
 
 ### 6.3 签到命令
@@ -78,6 +79,7 @@ Watch 点击先创建不可变命令：稳定 `operationID`、项目 ID/revision
 - iPhone 验证协议、项目/revision、时区、未来时间和项目起始日后，才按 `occurredAt` 调用 Repository。
 - 重复、乱序和跨午夜命令按领域合同幂等裁决；Watch 不提供任意日期或补签入口。
 - 只有匹配的 iPhone Repository 回执才能让 Watch 进入已提交并清除 outbox。待同步、失败或拒绝不得冒充成功。
+- 当前首次公开基线使用 Watch 协议 v2 / 本地状态 v2；字段缺失、旧版本或未知版本明确拒绝，不补默认字段或试探解码。
 
 ### 6.4 生命周期与隐私
 

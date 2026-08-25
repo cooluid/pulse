@@ -206,7 +206,7 @@ final class PulseWatchConnectivityClient: NSObject {
             if let snapshot = envelope.snapshot {
                 try store.save(snapshot: snapshot)
             } else {
-                try store.clear()
+                try store.clearSnapshot()
             }
         } catch {
             // A malformed transport update must never delete the last valid

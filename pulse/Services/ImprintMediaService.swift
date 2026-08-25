@@ -79,7 +79,6 @@ final class ImprintMediaService {
     private let repository: any PulseRepositoryProtocol
     private let fileStore: PulseMediaFileStore
     private let clock: any PulseClock
-    private var thumbnailCache: [UUID: Data] = [:]
 
     init(
         repository: any PulseRepositoryProtocol,
@@ -130,10 +129,8 @@ final class ImprintMediaService {
         do {
             let result = try repository.upsertMedia(draft)
             if let previous {
-                thumbnailCache.removeValue(forKey: previous.id)
                 try? await fileStore.remove(previous)
             }
-            thumbnailCache[result.id] = processed.thumbnailData
             return result
         } catch {
             await fileStore.removeInstalledFiles(installed)
@@ -142,18 +139,12 @@ final class ImprintMediaService {
     }
 
     func delete(_ media: ImprintMediaSnapshot) async throws {
-        thumbnailCache.removeValue(forKey: media.id)
         try repository.deleteMedia(id: media.id)
         try? await fileStore.remove(media)
     }
 
     func thumbnailData(for media: ImprintMediaSnapshot) async throws -> Data {
-        if let cached = thumbnailCache[media.id] {
-            return cached
-        }
-        let data = try await fileStore.readThumbnail(for: media)
-        thumbnailCache[media.id] = data
-        return data
+        try await fileStore.readThumbnail(for: media)
     }
 
     func originalData(for media: ImprintMediaSnapshot) async throws -> Data {
@@ -165,7 +156,6 @@ final class ImprintMediaService {
     }
 
     func removeAllFiles() async throws {
-        thumbnailCache.removeAll()
         try await fileStore.removeAll()
     }
 

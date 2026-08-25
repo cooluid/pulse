@@ -442,68 +442,57 @@ struct ReminderActivityDebugView: View {
 }
 
 private enum ReminderActivityDebugCopy {
-    enum Key {
-        case title, isolationConfirmed, isolationFailed, appIdentifier, appGroup, urlScheme
-        case identityHeader, identityFooter, configurationHeader, logicalDay, timeZone
-        case unavailable, invalidTimeZone
-        case activityEnabled, activityDisabled, startNow, startAfterThirtySeconds
-        case scheduledStart, requiresIOS26, realActivityHeader, realActivityFooter
-        case previewCompleted, restorePending, realCheckIn, endAll, stateHeader, stateFooter
-        case alreadyCheckedIn, checkInFailed, checkInSucceeded
-        case noActivities, lastRequest, refresh, diagnosticsHeader
-        case phasePending, phaseCompleted
-        case lifecyclePending, lifecycleActive, lifecycleStale
-        case lifecycleEnded, lifecycleDismissed, lifecycleUnknown
+    enum Key: String {
+        case title = "debug.activity_lab.title"
+        case isolationConfirmed = "debug.activity_lab.isolation_confirmed"
+        case isolationFailed = "debug.activity_lab.isolation_failed"
+        case appIdentifier = "debug.activity_lab.app_identifier"
+        case appGroup = "debug.activity_lab.app_group"
+        case urlScheme = "debug.activity_lab.url_scheme"
+        case identityHeader = "debug.activity_lab.identity_header"
+        case identityFooter = "debug.activity_lab.identity_footer"
+        case configurationHeader = "debug.activity_lab.configuration_header"
+        case logicalDay = "debug.activity_lab.logical_day"
+        case timeZone = "debug.activity_lab.time_zone"
+        case unavailable = "debug.activity_lab.unavailable"
+        case invalidTimeZone = "debug.activity_lab.invalid_time_zone"
+        case activityEnabled = "debug.activity_lab.activity_enabled"
+        case activityDisabled = "debug.activity_lab.activity_disabled"
+        case startNow = "debug.activity_lab.start_now"
+        case startAfterThirtySeconds = "debug.activity_lab.start_after_thirty_seconds"
+        case scheduledStart = "debug.activity_lab.scheduled_start"
+        case requiresIOS26 = "debug.activity_lab.requires_ios_26"
+        case realActivityHeader = "debug.activity_lab.real_activity_header"
+        case realActivityFooter = "debug.activity_lab.real_activity_footer"
+        case previewCompleted = "debug.activity_lab.preview_completed"
+        case restorePending = "debug.activity_lab.restore_pending"
+        case realCheckIn = "debug.activity_lab.real_check_in"
+        case endAll = "debug.activity_lab.end_all"
+        case stateHeader = "debug.activity_lab.state_header"
+        case stateFooter = "debug.activity_lab.state_footer"
+        case alreadyCheckedIn = "debug.activity_lab.already_checked_in"
+        case checkInFailed = "debug.activity_lab.check_in_failed"
+        case checkInSucceeded = "debug.activity_lab.check_in_succeeded"
+        case noActivities = "debug.activity_lab.no_activities"
+        case lastRequest = "debug.activity_lab.last_request"
+        case refresh = "debug.activity_lab.refresh"
+        case diagnosticsHeader = "debug.activity_lab.diagnostics_header"
+        case phasePending = "debug.activity_lab.phase_pending"
+        case phaseCompleted = "debug.activity_lab.phase_completed"
+        case lifecyclePending = "debug.activity_lab.lifecycle_pending"
+        case lifecycleActive = "debug.activity_lab.lifecycle_active"
+        case lifecycleStale = "debug.activity_lab.lifecycle_stale"
+        case lifecycleEnded = "debug.activity_lab.lifecycle_ended"
+        case lifecycleDismissed = "debug.activity_lab.lifecycle_dismissed"
+        case lifecycleUnknown = "debug.activity_lab.lifecycle_unknown"
     }
 
     static func string(_ key: Key, locale: Locale) -> String {
-        let isChinese = locale.language.languageCode == .chinese
-        let value: (zh: String, en: String)
-        switch key {
-        case .title: value = ("灵动岛测试台", "Dynamic Island Lab")
-        case .isolationConfirmed: value = ("Debug 数据与正式版隔离", "Debug data is isolated from production")
-        case .isolationFailed: value = ("身份异常，已禁用全部测试操作", "Identity mismatch; all test actions are disabled")
-        case .appIdentifier: value = ("App 标识", "App identifier")
-        case .appGroup: value = ("App Group", "App Group")
-        case .urlScheme: value = ("URL Scheme", "URL scheme")
-        case .identityHeader: value = ("运行身份", "Runtime identity")
-        case .identityFooter: value = ("如果这里出现正式版标识，请停止测试；这表示构建配置发生回归。", "Stop testing if a production identifier appears here; the build configuration has regressed.")
-        case .configurationHeader: value = ("测试参数", "Test configuration")
-        case .logicalDay: value = ("逻辑日期", "Logical day")
-        case .timeZone: value = ("时区", "Time zone")
-        case .unavailable: value = ("尚未加载", "Not loaded")
-        case .invalidTimeZone: value = ("无效时区", "Invalid time zone")
-        case .activityEnabled: value = ("系统已允许实时活动", "Live Activities are enabled")
-        case .activityDisabled: value = ("系统未允许实时活动", "Live Activities are disabled")
-        case .startNow: value = ("立即启动真实活动", "Start real activity now")
-        case .startAfterThirtySeconds: value = ("30 秒后由系统启动", "Ask the system to start in 30 seconds")
-        case .scheduledStart: value = ("系统定时启动", "System-scheduled start")
-        case .requiresIOS26: value = ("需要 iOS 26", "Requires iOS 26")
-        case .realActivityHeader: value = ("真实 ActivityKit", "Real ActivityKit")
-        case .realActivityFooter: value = ("立即启动验证真实系统表面；30 秒启动验证 iOS 26 的系统定时交付。系统决定灵动岛与锁屏的最终展示时机。", "Start now to verify real system surfaces. The 30-second option verifies iOS 26 system-scheduled delivery. The system decides when the Dynamic Island and Lock Screen are presented.")
-        case .previewCompleted: value = ("仅切换为完成态", "Switch to completed appearance only")
-        case .restorePending: value = ("恢复待签到态", "Restore pending appearance")
-        case .realCheckIn: value = ("执行真实签到链路", "Run authoritative check-in")
-        case .endAll: value = ("结束全部 Dev 活动", "End all Dev activities")
-        case .stateHeader: value = ("状态与业务链路", "State and business flow")
-        case .stateFooter: value = ("“完成态”只验证视觉；“真实签到”会写入 Dev 数据库、更新 Widget，并按正式规则结束当天活动。", "The completed state is visual-only. Authoritative check-in writes to the Dev database, updates widgets, and ends today's activity using production rules.")
-        case .alreadyCheckedIn: value = ("今天已在 Dev 数据中签到；如需重测真实链路，请重置 Dev 数据。", "Today is already checked in within Dev data. Reset Dev data to test the real flow again.")
-        case .checkInFailed: value = ("真实签到未完成，请检查 App 内错误提示。", "Authoritative check-in did not complete. Check the in-app error.")
-        case .checkInSucceeded: value = ("真实签到完成；活动应先显示完成态，再按正式规则结束。", "Authoritative check-in completed. The activity should show completion briefly, then end under production rules.")
-        case .noActivities: value = ("当前没有该 Dev App 创建的活动。", "No activities were created by this Dev app.")
-        case .lastRequest: value = ("最近请求时间", "Last requested start")
-        case .refresh: value = ("刷新活动状态", "Refresh activity state")
-        case .diagnosticsHeader: value = ("诊断", "Diagnostics")
-        case .phasePending: value = ("待签到", "Pending")
-        case .phaseCompleted: value = ("已完成", "Completed")
-        case .lifecyclePending: value = ("等待系统启动", "Waiting for system")
-        case .lifecycleActive: value = ("活动中", "Active")
-        case .lifecycleStale: value = ("已过期", "Stale")
-        case .lifecycleEnded: value = ("已结束", "Ended")
-        case .lifecycleDismissed: value = ("已移除", "Dismissed")
-        case .lifecycleUnknown: value = ("未知", "Unknown")
-        }
-        return isChinese ? value.zh : value.en
+        PulseLocalization.string(
+            key.rawValue,
+            table: "PulseDebug",
+            locale: locale
+        )
     }
 }
 #endif

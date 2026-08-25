@@ -111,6 +111,32 @@ final class PulseAppModelTests: XCTestCase {
         XCTAssertEqual(context.scheduler.completedLiveActivityDays, [context.model.today!])
     }
 
+    func testCommittedCheckInIsNotReclassifiedWhenProjectionRefreshFails() async throws {
+        let context = try makeContext(failsProjectionReadsAfterCheckIn: true)
+        await context.model.start()
+        let habit = try XCTUnwrap(context.model.habit)
+        let initialWidgetReloadCount = context.widgetReloader.reloadCount
+
+        let receipt = await context.model.checkIn()
+
+        XCTAssertEqual(receipt?.disposition, .created)
+        XCTAssertEqual(try context.repository.allRecords(habitID: habit.id).count, 1)
+        XCTAssertEqual(context.model.loadState, .failed)
+        XCTAssertEqual(context.haptics.successCount, 1)
+        XCTAssertEqual(context.widgetReloader.reloadCount, initialWidgetReloadCount + 1)
+        XCTAssertEqual(
+            context.scheduler.completedLiveActivityDays,
+            [receipt?.logicalDay].compactMap { $0 }
+        )
+        XCTAssertEqual(
+            context.model.errorMessage,
+            PulseLocalization.string(
+                "error.check_in_saved_refresh_failed",
+                locale: context.model.settings.locale
+            )
+        )
+    }
+
     func testWatchCommandCommitsThroughRepositoryAndPublishesConfirmedSnapshot() async throws {
         let context = try makeContext()
         await context.model.start()
@@ -145,6 +171,37 @@ final class PulseAppModelTests: XCTestCase {
             true
         )
         XCTAssertEqual(context.scheduler.completedLiveActivityDays, [context.model.today!])
+    }
+
+    func testWatchReceivesCommittedReceiptWhenPhoneProjectionRefreshFails() async throws {
+        let context = try makeContext(failsProjectionReadsAfterCheckIn: true)
+        await context.model.start()
+        let didConfirmIdentity = await context.model.updateHabitIdentity(
+            name: "Test Habit",
+            purpose: nil
+        )
+        XCTAssertTrue(didConfirmIdentity)
+        let habit = try XCTUnwrap(context.model.habit)
+        let command = PulseWatchCheckInCommand(
+            projectID: habit.id,
+            projectRevision: PulseWatchProjectRevision.make(
+                projectID: habit.id,
+                startLogicalDay: habit.startLogicalDay.storageValue,
+                timeZoneIdentifier: habit.timeZoneIdentifier
+            ),
+            occurredAt: context.clock.now,
+            projectTimeZoneIdentifierSnapshot: habit.timeZoneIdentifier
+        )
+
+        let receipt = await context.model.handleWatchCheckIn(command)
+
+        guard case .committed(let logicalDay, _, let disposition) = receipt?.outcome else {
+            return XCTFail("A persisted Watch command must remain committed.")
+        }
+        XCTAssertEqual(disposition, .created)
+        XCTAssertEqual(logicalDay, habit.logicalDay(at: context.clock.now).storageValue)
+        XCTAssertEqual(try context.repository.allRecords(habitID: habit.id).count, 1)
+        XCTAssertEqual(context.model.loadState, .failed)
     }
 
     func testWatchSnapshotRequestReadsTheCurrentRepositoryFact() async throws {
@@ -464,6 +521,7 @@ final class PulseAppModelTests: XCTestCase {
     private func makeContext(
         notificationPermission: NotificationPermissionState = .authorized,
         hasEnhancement: Bool = true,
+        failsProjectionReadsAfterCheckIn: Bool = false,
         deliveryCapabilities: PulseReminderDeliveryCapabilities = .init(
             supportsScheduledLiveActivities: false,
             liveActivitiesEnabled: false
@@ -477,6 +535,9 @@ final class PulseAppModelTests: XCTestCase {
                 try HabitIdentity(userName: "Test Habit", userPurpose: nil)
             )
         )
+        let modelRepository: any PulseRepositoryProtocol = failsProjectionReadsAfterCheckIn
+            ? PostCommitProjectionFailingRepository(base: repository)
+            : repository
         let workingDirectory = FileManager.default.temporaryDirectory
             .appendingPathComponent("PulseAppModelTests-\(UUID().uuidString)", isDirectory: true)
         try FileManager.default.createDirectory(
@@ -485,7 +546,7 @@ final class PulseAppModelTests: XCTestCase {
         )
         addTeardownBlock { try? FileManager.default.removeItem(at: workingDirectory) }
         let mediaService = ImprintMediaService(
-            repository: repository,
+            repository: modelRepository,
             fileStore: try PulseMediaFileStore(
                 rootURL: workingDirectory.appendingPathComponent("Media", isDirectory: true)
             ),
@@ -512,7 +573,7 @@ final class PulseAppModelTests: XCTestCase {
         let widgetReloader = TestWidgetTimelineReloader()
         let watchConnectivity = TestWatchConnectivity()
         let model = PulseAppModel(
-            repository: repository,
+            repository: modelRepository,
             mediaService: mediaService,
             archiveWorkingDirectoryURL: workingDirectory.appendingPathComponent(
                 "ArchiveWork",
@@ -564,6 +625,86 @@ private struct TestContext {
     let haptics: TestHaptics
     let widgetReloader: TestWidgetTimelineReloader
     let watchConnectivity: TestWatchConnectivity
+}
+
+@MainActor
+private final class PostCommitProjectionFailingRepository: PulseRepositoryProtocol {
+    private let base: SwiftDataPulseRepository
+    private var rejectsProjectionReads = false
+
+    init(base: SwiftDataPulseRepository) {
+        self.base = base
+    }
+
+    func existingPrimaryHabit() throws -> HabitSnapshot? {
+        try base.existingPrimaryHabit()
+    }
+
+    func primaryHabit(systemTimeZone: TimeZone) throws -> HabitSnapshot {
+        try base.primaryHabit(systemTimeZone: systemTimeZone)
+    }
+
+    func allRecords(habitID: UUID) throws -> [CheckInRecordSnapshot] {
+        guard !rejectsProjectionReads else { throw ProjectionFailure.unavailable }
+        return try base.allRecords(habitID: habitID)
+    }
+
+    func allMedia(habitID: UUID) throws -> [ImprintMediaSnapshot] {
+        try base.allMedia(habitID: habitID)
+    }
+
+    func updateIdentity(habitID: UUID, identity: HabitIdentity) throws -> HabitSnapshot {
+        try base.updateIdentity(habitID: habitID, identity: identity)
+    }
+
+    func checkIn(habitID: UUID, journalNote: String?) throws -> CheckInCommitReceipt {
+        let receipt = try base.checkIn(habitID: habitID, journalNote: journalNote)
+        rejectsProjectionReads = true
+        return receipt
+    }
+
+    func checkIn(
+        watchCommand: PulseWatchCheckInCommand
+    ) throws(PulseWatchRejectionReason) -> CheckInCommitReceipt {
+        let receipt = try base.checkIn(watchCommand: watchCommand)
+        rejectsProjectionReads = true
+        return receipt
+    }
+
+    func updateJournalNote(
+        recordID: UUID,
+        journalNote: String?
+    ) throws -> CheckInRecordSnapshot {
+        try base.updateJournalNote(recordID: recordID, journalNote: journalNote)
+    }
+
+    func delete(recordID: UUID) throws {
+        try base.delete(recordID: recordID)
+    }
+
+    func upsertMedia(_ draft: ImprintMediaDraft) throws -> ImprintMediaSnapshot {
+        try base.upsertMedia(draft)
+    }
+
+    func deleteMedia(id: UUID) throws {
+        try base.deleteMedia(id: id)
+    }
+
+    func updateTimeZone(habitID: UUID, identifier: String) throws {
+        try base.updateTimeZone(habitID: habitID, identifier: identifier)
+    }
+
+    func resetAll(systemTimeZone: TimeZone) throws -> HabitSnapshot {
+        try base.resetAll(systemTimeZone: systemTimeZone)
+    }
+
+    func replaceAll(with payload: PulseBackupPayload) throws -> HabitSnapshot {
+        try base.replaceAll(with: payload)
+    }
+
+    private enum ProjectionFailure: Error {
+        case unavailable
+    }
 }
 
 @MainActor

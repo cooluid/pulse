@@ -1,6 +1,9 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "error.camera_capture_failed" : {"extractionState":"manual","localizations":{"en":{"stringUnit":{"state":"translated","value":"The camera did not return a photo. Please try again."}},"zh-Hans":{"stringUnit":{"state":"translated","value":"相机未返回照片，请重试。"}}}},
+    "error.change_saved_refresh_failed" : {"extractionState":"manual","localizations":{"en":{"stringUnit":{"state":"translated","value":"The change was saved, but the screen could not refresh. Reload to continue."}},"zh-Hans":{"stringUnit":{"state":"translated","value":"更改已保存，但页面未能刷新。请重新载入后继续。"}}}},
+    "error.check_in_saved_refresh_failed" : {"extractionState":"manual","localizations":{"en":{"stringUnit":{"state":"translated","value":"Your check-in was saved, but the screen could not refresh. Reload to continue."}},"zh-Hans":{"stringUnit":{"state":"translated","value":"签到已保存，但页面未能刷新。请重新载入后继续。"}}}},
     "accessibility.date_status_format" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -6108,9 +6111,7 @@
         }
       }
     },
-    "widget.placeholder.commitment" : {
-
-    },
+    "widget.placeholder.commitment" : {"extractionState":"manual","localizations":{"en":{"stringUnit":{"state":"translated","value":"My one thing"}},"zh-Hans":{"stringUnit":{"state":"translated","value":"我的一件事"}}}},
     "widget.state.checked" : {
       "extractionState" : "manual",
       "localizations" : {

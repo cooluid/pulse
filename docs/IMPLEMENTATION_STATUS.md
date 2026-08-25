@@ -1,10 +1,10 @@
 # Pulse 1.1 实现与验收状态
 
-更新时间：2026-08-24
+更新时间：2026-08-25
 
 当前结论：**ENGINEERING CANDIDATE / HUMAN & SYSTEM DEVICE EVIDENCE PENDING / DISTRIBUTION NO-GO / PUBLIC RELEASE NO-GO**。
 
-当前工作树已通过自动化、Release Build 与 Analyze，但尚未生成与当前源码对应的签名 Archive、IPA 或 TestFlight 构建，因此不能复用其他提交的分发结论。
+当前未提交工作树基于 `1ac22e2`，已通过自动化、Release Build 与 Analyze，但尚未冻结为不可变提交，也未生成与当前源码对应的签名 Archive、IPA 或 TestFlight 构建，因此不能复用其他提交的分发结论。
 
 ## 当前生产基线
 
@@ -15,22 +15,29 @@
 - 媒体使用受保护的 originals、thumbnails 和 staging 目录；路径、文件身份、完整性和孤儿由统一管线验证。
 - 加密归档只接受 container v2 / payload v3。
 - App Group UserDefaults 只管理共享语言和提醒设置，不保存签到、统计、样式或权益副本。
+- UserDefaults 枚举、时间与布尔值按真实存储类型读取，损坏值失败关闭；用户明确重置设置时只清除损坏的重置日志，不破坏有效恢复日志。
 - StoreKit 已验证交易与 `PulseEnhancementContract.currentCapabilities` 是高级功能唯一来源。
-- Watch 只保存可重建快照、durable outbox 和回执；iPhone Repository 仍是签到唯一真源。
+- Watch 使用协议 v2 / 本地状态 v2，只保存可重建快照、durable outbox 和回执；空快照不清 outbox，旧内部状态和缺失字段明确拒绝，iPhone Repository 仍是签到唯一真源。
+- Repository 已提交的写操作不会被后续投影刷新失败改判；界面明确显示“已保存但刷新失败”并要求重新载入。
+- 媒体读取一次校验 size/SHA-256，不做无状态重试，也不建立无上限缩略图缓存。
 
 ## 当前验证
 
 环境：macOS 26.6、Xcode 26.4（17E192）、iPhone 17 Pro / iOS 26.4 Simulator。
 
-- 178 项单元/集成测试全部通过。
+- 183 项单元/集成测试全部通过。
 - 24 项 Simulator UI 功能测试全部通过。
 - Release 全 target Build 通过，包含 iPhone App、Home Screen Widget、Watch App 与 Watch Widget。
 - Release Analyze 通过。
 - 74 项生成资产检查通过。
-- 五份 String Catalog 和 `brand-tokens.json` 解析通过。
+- 六份源码 String Catalog 和 `brand-tokens.json` 解析通过；Debug 专用 `PulseDebug.xcstrings` 已验证中英文完整，并确认不进入 Release 包。
+- Release 包未包含 `ReminderActivityDebugView`、灵动岛测试台文案、UI-test 环境键或 Dev Bundle 标识。
+- redirect site 构建及 3 项正式 URL 跳转测试通过。
 - `git diff --check` 通过。
 
 自动化验证功能、事实、无障碍结果和平台硬限制。
+
+Simulator 测试日志仍包含未配对 Watch 的 `WCErrorCodeDeviceNotPaired`、iOS 26.4 Runtime 的重复 Accessibility bundle 诊断，以及 Xcode 的 `DebuggerVersionStore` 工具链诊断；它们没有对应的编译 warning、测试失败或 Release/Analyze 诊断，不作为源码问题隐藏，也不替代真实配对设备门禁。
 
 ## 仍未关闭
 

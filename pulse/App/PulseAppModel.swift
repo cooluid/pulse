@@ -257,23 +257,27 @@ final class PulseAppModel {
         defer { finishOperation() }
 
         await Task.yield()
+        let receipt: CheckInCommitReceipt
         do {
-            let receipt = try repository.checkIn(
+            receipt = try repository.checkIn(
                 habitID: habit.id,
                 journalNote: journalNote
             )
-            try loadSnapshot()
-            if settings.hapticsEnabled, receipt.disposition == .created {
-                hapticFeedback.notifySuccess()
-            }
-            widgetTimelineReloader.reloadDailyImprint()
-            await reminderScheduler.completeCheckIn(for: receipt.logicalDay)
-            scheduleDateBoundaryRefresh()
-            return receipt
         } catch {
             present(error)
             return nil
         }
+
+        _ = refreshProjectionAfterCommittedOperation(
+            failure: .committedCheckInRefreshFailed
+        )
+        if settings.hapticsEnabled, receipt.disposition == .created {
+            hapticFeedback.notifySuccess()
+        }
+        widgetTimelineReloader.reloadDailyImprint()
+        await reminderScheduler.completeCheckIn(for: receipt.logicalDay)
+        scheduleDateBoundaryRefresh()
+        return receipt
     }
 
     func handleWatchCheckIn(
@@ -290,41 +294,46 @@ final class PulseAppModel {
         do {
             receipt = try repository.checkIn(watchCommand: command)
         } catch {
-            try? loadSnapshot()
+            do {
+                try loadSnapshot()
+            } catch {
+                loadState = .failed
+                present(error)
+            }
             return watchRejectionReceipt(for: command, reason: error)
         }
-        do {
-            try loadSnapshot()
-            widgetTimelineReloader.reloadDailyImprint()
-            await reminderScheduler.completeCheckIn(for: receipt.logicalDay)
-            scheduleDateBoundaryRefresh()
-            let disposition: PulseWatchCommitDisposition = switch receipt.disposition {
-            case .created: .created
-            case .alreadyPresent: .alreadyPresent
-            }
-            return PulseWatchCheckInReceipt(
-                operationID: command.operationID,
-                projectID: command.projectID,
-                projectRevision: command.projectRevision,
-                outcome: .committed(
-                    logicalDay: receipt.logicalDay.storageValue,
-                    checkedAt: receipt.checkedAt,
-                    disposition: disposition
-                ),
-                acknowledgedAt: clock.now
-            )
-        } catch {
-            return watchRejectionReceipt(
-                for: command,
-                reason: .persistenceFailure
-            )
+        _ = refreshProjectionAfterCommittedOperation(
+            failure: .committedCheckInRefreshFailed
+        )
+        widgetTimelineReloader.reloadDailyImprint()
+        await reminderScheduler.completeCheckIn(for: receipt.logicalDay)
+        scheduleDateBoundaryRefresh()
+        let disposition: PulseWatchCommitDisposition = switch receipt.disposition {
+        case .created: .created
+        case .alreadyPresent: .alreadyPresent
         }
+        return PulseWatchCheckInReceipt(
+            operationID: command.operationID,
+            projectID: command.projectID,
+            projectRevision: command.projectRevision,
+            outcome: .committed(
+                logicalDay: receipt.logicalDay.storageValue,
+                checkedAt: receipt.checkedAt,
+                disposition: disposition
+            ),
+            acknowledgedAt: clock.now
+        )
     }
 
     func setWatchWaveMotionEnabled(_ enabled: Bool) {
         guard settings.watchWaveMotionEnabled != enabled else { return }
         settings.watchWaveMotionEnabled = enabled
-        publishCurrentWatchSnapshot()
+        do {
+            try publishCurrentWatchSnapshot()
+        } catch {
+            loadState = .failed
+            present(PulseAppError.committedChangeRefreshFailed)
+        }
     }
 
     private func watchRejectionReceipt(
@@ -349,13 +358,13 @@ final class PulseAppModel {
                 habitID: habit.id,
                 identity: identity
             )
-            try loadSnapshot()
-            widgetTimelineReloader.reloadDailyImprint()
-            return true
         } catch {
             present(error)
             return false
         }
+        _ = refreshProjectionAfterCommittedOperation()
+        widgetTimelineReloader.reloadDailyImprint()
+        return true
     }
 
     func updateJournalNote(recordID: UUID, journalNote: String?) async -> Bool {
@@ -366,12 +375,12 @@ final class PulseAppModel {
                 recordID: recordID,
                 journalNote: journalNote
             )
-            try loadSnapshot()
-            return true
         } catch {
             present(error)
             return false
         }
+        _ = refreshProjectionAfterCommittedOperation()
+        return true
     }
 
     func delete(recordID: UUID) async -> Bool {
@@ -379,14 +388,16 @@ final class PulseAppModel {
         defer { finishOperation() }
         do {
             try repository.delete(recordID: recordID)
-            try loadSnapshot()
-            widgetTimelineReloader.reloadDailyImprint()
-            await enqueueReminderReconciliation().value
-            return true
         } catch {
             present(error)
             return false
         }
+        let refreshed = refreshProjectionAfterCommittedOperation()
+        widgetTimelineReloader.reloadDailyImprint()
+        if refreshed {
+            await enqueueReminderReconciliation().value
+        }
+        return true
     }
 
     func saveTodayMedia(
@@ -404,16 +415,23 @@ final class PulseAppModel {
                 record: record,
                 cameraPosition: cameraPosition
             )
-            try loadSnapshot()
-            mediaStorageByteCount = try await mediaService.storageByteCount()
-            if settings.hapticsEnabled {
-                hapticFeedback.notifySuccess()
-            }
-            return true
         } catch {
             present(error)
             return false
         }
+        let refreshed = refreshProjectionAfterCommittedOperation()
+        if refreshed {
+            do {
+                mediaStorageByteCount = try await mediaService.storageByteCount()
+            } catch {
+                loadState = .failed
+                present(PulseAppError.committedChangeRefreshFailed)
+            }
+        }
+        if settings.hapticsEnabled {
+            hapticFeedback.notifySuccess()
+        }
+        return true
     }
 
     func deleteMedia(id: UUID) async -> Bool {
@@ -424,13 +442,20 @@ final class PulseAppModel {
         defer { finishOperation() }
         do {
             try await mediaService.delete(item)
-            try loadSnapshot()
-            mediaStorageByteCount = try await mediaService.storageByteCount()
-            return true
         } catch {
             present(error)
             return false
         }
+        let refreshed = refreshProjectionAfterCommittedOperation()
+        if refreshed {
+            do {
+                mediaStorageByteCount = try await mediaService.storageByteCount()
+            } catch {
+                loadState = .failed
+                present(PulseAppError.committedChangeRefreshFailed)
+            }
+        }
+        return true
     }
 
     func thumbnailData(for item: ImprintMediaSnapshot) async throws -> Data {
@@ -599,15 +624,17 @@ final class PulseAppModel {
         defer { finishOperation() }
         do {
             try repository.updateTimeZone(habitID: habit.id, identifier: identifier)
-            try loadSnapshot()
-            await enqueueReminderReconciliation().value
-            scheduleDateBoundaryRefresh()
-            widgetTimelineReloader.reloadDailyImprint()
-            return true
         } catch {
             present(error)
             return false
         }
+        let refreshed = refreshProjectionAfterCommittedOperation()
+        if refreshed {
+            await enqueueReminderReconciliation().value
+            scheduleDateBoundaryRefresh()
+        }
+        widgetTimelineReloader.reloadDailyImprint()
+        return true
     }
 
     func makeBackupExport(passphrase: String) async throws -> PulseBackupExport {
@@ -690,17 +717,19 @@ final class PulseAppModel {
         defer { finishOperation() }
         do {
             habit = try await mediaService.restore(decoded)
-            selectedMonth = nil
-            try loadSnapshot()
-            await enqueueReminderReconciliation().value
-            navigationResetToken = UUID()
-            scheduleDateBoundaryRefresh()
-            widgetTimelineReloader.reloadDailyImprint()
-            return true
         } catch {
             present(error)
             return false
         }
+        selectedMonth = nil
+        let refreshed = refreshProjectionAfterCommittedOperation()
+        if refreshed {
+            await enqueueReminderReconciliation().value
+            scheduleDateBoundaryRefresh()
+        }
+        navigationResetToken = UUID()
+        widgetTimelineReloader.reloadDailyImprint()
+        return true
     }
 
     func moveSelectedMonth(by offset: Int) {
@@ -767,6 +796,16 @@ final class PulseAppModel {
             uniqueKeysWithValues: fetchedRecords.map { ($0.logicalDay, $0) }
         )
         let resolvedCheckedDays = Set(resolvedRecordsByDay.keys)
+        let watchSnapshot: PulseWatchProjectSnapshot? = if currentHabit.isIdentityConfirmed {
+            try PulseWatchSnapshotProjector.makeSnapshot(
+                habit: currentHabit,
+                records: fetchedRecords,
+                waveMotionEnabled: settings.watchWaveMotionEnabled,
+                at: referenceNow
+            )
+        } else {
+            nil
+        }
 
         habit = currentHabit
         records = fetchedRecords
@@ -785,11 +824,7 @@ final class PulseAppModel {
         if wasShowingCurrentMonth {
             selectedMonth = resolvedToday.firstDayOfMonth()
         }
-        if currentHabit.isIdentityConfirmed {
-            publishCurrentWatchSnapshot()
-        } else {
-            watchConnectivity.publish(nil)
-        }
+        watchConnectivity.publish(watchSnapshot)
     }
 
     private func makeCurrentWatchSnapshot() throws -> PulseWatchProjectSnapshot? {
@@ -805,11 +840,21 @@ final class PulseAppModel {
         )
     }
 
-    private func publishCurrentWatchSnapshot() {
+    private func publishCurrentWatchSnapshot() throws {
+        watchConnectivity.publish(try makeCurrentWatchSnapshot())
+    }
+
+    @discardableResult
+    private func refreshProjectionAfterCommittedOperation(
+        failure: PulseAppError = .committedChangeRefreshFailed
+    ) -> Bool {
         do {
-            watchConnectivity.publish(try makeCurrentWatchSnapshot())
+            try loadSnapshot()
+            return true
         } catch {
-            watchConnectivity.publish(nil)
+            loadState = .failed
+            present(failure)
+            return false
         }
     }
 

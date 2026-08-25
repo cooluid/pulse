@@ -1,3 +1,4 @@
+import CoreFoundation
 import Foundation
 
 public enum PulseInterfaceLanguage: String, CaseIterable, Codable, Identifiable, Sendable {
@@ -21,6 +22,8 @@ public enum PulseSharedSettingsError: Error, Equatable, Sendable {
     case invalidAppGroupIdentifier
     case unavailableSuite
     case invalidStoredLanguage(String)
+    case invalidStoredReminderEnabled(String)
+    case invalidStoredReminderTimeType(String)
     case invalidStoredReminderTime(Int)
 }
 
@@ -71,7 +74,7 @@ public struct PulseSharedSettings {
     public func load() throws -> Snapshot {
         Snapshot(
             language: try loadLanguage(),
-            reminderEnabled: loadReminderEnabled(),
+            reminderEnabled: try loadReminderEnabled(),
             reminderTime: try loadReminderTime()
         )
     }
@@ -107,20 +110,33 @@ public struct PulseSharedSettings {
         return language
     }
 
-    private func loadReminderEnabled() -> Bool {
-        guard defaults.object(forKey: StorageKey.reminderEnabled) != nil else {
+    private func loadReminderEnabled() throws -> Bool {
+        guard let storedValue = defaults.object(forKey: StorageKey.reminderEnabled) else {
             return Self.defaultReminderEnabled
         }
-        return defaults.bool(forKey: StorageKey.reminderEnabled)
+        guard let number = storedValue as? NSNumber,
+              CFGetTypeID(number) == CFBooleanGetTypeID() else {
+            throw PulseSharedSettingsError.invalidStoredReminderEnabled(
+                String(describing: storedValue)
+            )
+        }
+        return number.boolValue
     }
 
     private func loadReminderTime() throws -> PulseReminderTime {
-        guard defaults.object(forKey: StorageKey.reminderTimeMinutes) != nil else {
+        guard let storedValue = defaults.object(forKey: StorageKey.reminderTimeMinutes) else {
             return Self.defaultReminderTime
         }
-        let storedValue = defaults.integer(forKey: StorageKey.reminderTimeMinutes)
-        guard let time = PulseReminderTime(minutesFromMidnight: storedValue) else {
-            throw PulseSharedSettingsError.invalidStoredReminderTime(storedValue)
+        guard let number = storedValue as? NSNumber,
+              CFGetTypeID(number) != CFBooleanGetTypeID(),
+              !CFNumberIsFloatType(number) else {
+            throw PulseSharedSettingsError.invalidStoredReminderTimeType(
+                String(describing: storedValue)
+            )
+        }
+        let minutes = number.intValue
+        guard let time = PulseReminderTime(minutesFromMidnight: minutes) else {
+            throw PulseSharedSettingsError.invalidStoredReminderTime(minutes)
         }
         return time
     }

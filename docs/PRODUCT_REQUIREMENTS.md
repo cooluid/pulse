@@ -1,6 +1,6 @@
 # 一日一印（Pulse）日签到产品需求
 
-文档版本：3.3<br>
+文档版本：3.4<br>
 状态：Canonical Product Contract
 适用范围：Pulse 1.1 本地优先、单用户、单一主承诺、可选每日记事与今日入镜、iPhone 伴侣型 Watch
 
@@ -64,7 +64,7 @@ MVP 的目标不是搭建任务平台，而是让以下闭环稳定成立：
 - “备注”为可选单句说明，不参与签到、统计或提醒判断。
 - 首次确认不请求通知、评分、网络或其他系统权限。
 - 未成功保存前不得进入主界面；保存失败保留输入并显示诚实错误。
-- 从旧版本迁移或导入尚未确认的身份时，使用已有名称预填并要求确认，不重建项目或记录。
+- 从正式加密备份恢复尚未确认的身份时，使用已有名称预填并要求确认，不重建项目或记录。
 
 ### 4.2 今日页
 
@@ -172,7 +172,7 @@ MVP 的目标不是搭建任务平台，而是让以下闭环稳定成立：
 
 ### 5.3 P2：后续候选，不属于 MVP 承诺
 
-- 隐私锁；基础 Widget 已受控进入 1.0，后续仅评估不改变事实语义的高级 Widget / Control / Shortcuts，详细边界以 [WIDGET_SHARED_STORE_CONTRACT.md](./WIDGET_SHARED_STORE_CONTRACT.md) 为准；
+- 隐私锁；基础 Widget 已进入 1.1 正式范围，后续仅评估不改变事实语义的高级 Widget / Control / Shortcuts，详细边界以 [WIDGET_SHARED_STORE_CONTRACT.md](./WIDGET_SHARED_STORE_CONTRACT.md) 为准；
 - 签到成功后的其他跨系统反馈候选；
 - 与签到事实分离的轻量回响和缺席说明，不形成补签；
 - Apple Watch 的 28/90/365 日高级节律、印期、年轮和往年今日抽象回看，Shortcuts 和其他高级系统入口；

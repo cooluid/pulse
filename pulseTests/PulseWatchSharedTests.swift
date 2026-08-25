@@ -121,6 +121,31 @@ final class PulseWatchSharedTests: XCTestCase {
         )
     }
 
+    func testClearingRebuildableSnapshotPreservesDurableOutbox() throws {
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent(
+            "PulseWatchSharedTests-\(UUID().uuidString)",
+            isDirectory: true
+        )
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let store = try PulseWatchLocalStore(directoryURL: directory)
+        let snapshot = makeSnapshot()
+        let command = PulseWatchCheckInCommand(
+            projectID: snapshot.projectID,
+            projectRevision: snapshot.projectRevision,
+            occurredAt: snapshot.generatedAt,
+            projectTimeZoneIdentifierSnapshot: snapshot.projectTimeZoneIdentifier
+        )
+        try store.save(snapshot: snapshot)
+        try store.enqueue(command)
+
+        try store.clearSnapshot()
+
+        let projection = try store.projection()
+        XCTAssertNil(projection.snapshot)
+        XCTAssertEqual(projection.pendingCommands, [command])
+        XCTAssertEqual(projection.displayState(at: snapshot.generatedAt), .pendingSync)
+    }
+
     func testExpiredSnapshotNeedsSyncInsteadOfProjectingYesterdayAsToday() throws {
         let snapshot = makeSnapshot()
         let projection = PulseWatchLocalProjection(
@@ -245,7 +270,7 @@ final class PulseWatchSharedTests: XCTestCase {
         }
     }
 
-    func testSnapshotDecoderDefaultsWaveMotionForExistingLocalState() throws {
+    func testSnapshotDecoderRejectsMissingWaveMotionSetting() throws {
         let envelope = PulseWatchSnapshotEnvelope(
             snapshot: makeSnapshot(),
             generatedAt: Date(timeIntervalSince1970: 1_786_334_400)
@@ -258,11 +283,33 @@ final class PulseWatchSharedTests: XCTestCase {
         snapshot.removeValue(forKey: "waveMotionEnabled")
         json["snapshot"] = snapshot
 
-        let decoded = try PulseWatchCodec.decodeSnapshotEnvelope(
-            from: JSONSerialization.data(withJSONObject: json)
+        XCTAssertThrowsError(
+            try PulseWatchCodec.decodeSnapshotEnvelope(
+                from: JSONSerialization.data(withJSONObject: json)
+            )
         )
+    }
 
-        XCTAssertEqual(decoded.snapshot?.waveMotionEnabled, true)
+    func testLocalStoreRejectsOldInternalStateVersion() throws {
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent(
+            "PulseWatchSharedTests-\(UUID().uuidString)",
+            isDirectory: true
+        )
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let store = try PulseWatchLocalStore(directoryURL: directory)
+        try store.save(snapshot: makeSnapshot())
+        let stateURL = directory.appendingPathComponent(
+            PulseWatchContract.localStateFilename
+        )
+        var json = try XCTUnwrap(
+            JSONSerialization.jsonObject(with: Data(contentsOf: stateURL)) as? [String: Any]
+        )
+        json["version"] = PulseWatchContract.localStateVersion - 1
+        try JSONSerialization.data(withJSONObject: json).write(to: stateURL, options: .atomic)
+
+        XCTAssertThrowsError(try store.projection()) { error in
+            XCTAssertEqual(error as? PulseWatchLocalStoreError, .incompatibleState)
+        }
     }
 
     func testCommandIdentitySurvivesProtocolRejectionForAFormalReceipt() throws {

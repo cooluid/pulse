@@ -151,6 +151,51 @@ final class AppSettingsTests: XCTestCase {
         defaults.removePersistentDomain(forName: suiteName)
     }
 
+    func testInvalidPersistedBooleansFailInsteadOfBeingCoerced() throws {
+        let localSuiteName = "AppSettingsTests.LocalBool.\(UUID().uuidString)"
+        let localDefaults = try XCTUnwrap(UserDefaults(suiteName: localSuiteName))
+        localDefaults.set(2, forKey: AppSettings.StorageKey.watchWaveMotionEnabled)
+        XCTAssertThrowsError(try makeSettings(defaults: localDefaults))
+        localDefaults.removePersistentDomain(forName: localSuiteName)
+
+        let integerSuiteName = "AppSettingsTests.Integer.\(UUID().uuidString)"
+        let integerDefaults = try XCTUnwrap(UserDefaults(suiteName: integerSuiteName))
+        integerDefaults.set("2", forKey: AppSettings.StorageKey.weekStart)
+        XCTAssertThrowsError(try makeSettings(defaults: integerDefaults))
+        integerDefaults.removePersistentDomain(forName: integerSuiteName)
+
+        let sharedSuiteName = "AppSettingsTests.SharedBool.\(UUID().uuidString)"
+        let sharedDefaults = try XCTUnwrap(UserDefaults(suiteName: sharedSuiteName))
+        sharedDefaults.set(
+            "not-a-boolean",
+            forKey: PulseSharedSettings.StorageKey.reminderEnabled
+        )
+        XCTAssertThrowsError(try makeSettings(defaults: sharedDefaults)) { error in
+            XCTAssertEqual(
+                error as? PulseAppError,
+                .invalidSettings
+            )
+        }
+        sharedDefaults.removePersistentDomain(forName: sharedSuiteName)
+
+        let timeSuiteName = "AppSettingsTests.ReminderTimeType.\(UUID().uuidString)"
+        let timeDefaults = try XCTUnwrap(UserDefaults(suiteName: timeSuiteName))
+        timeDefaults.set(
+            "480",
+            forKey: PulseSharedSettings.StorageKey.reminderTimeMinutes
+        )
+        XCTAssertThrowsError(try makeSettings(defaults: timeDefaults))
+        timeDefaults.removePersistentDomain(forName: timeSuiteName)
+
+        let journalSuiteName = "AppSettingsTests.ResetJournal.\(UUID().uuidString)"
+        let journalDefaults = try XCTUnwrap(UserDefaults(suiteName: journalSuiteName))
+        journalDefaults.set("pending", forKey: AppSettings.StorageKey.resetPending)
+        XCTAssertThrowsError(try makeSettings(defaults: journalDefaults))
+        AppSettings.discardCorruptedResetJournal(defaults: journalDefaults)
+        XCTAssertFalse(try makeSettings(defaults: journalDefaults).isResetPending)
+        journalDefaults.removePersistentDomain(forName: journalSuiteName)
+    }
+
     func testReminderConfigurationUsesTheSharedTypedAuthority() throws {
         let suiteName = "AppSettingsTests.Reminder.\(UUID().uuidString)"
         let defaults = try XCTUnwrap(UserDefaults(suiteName: suiteName))

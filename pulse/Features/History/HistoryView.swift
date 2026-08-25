@@ -886,7 +886,10 @@ private struct DayArchiveDetailView: View {
             document: photoDocument,
             contentType: .jpeg,
             defaultFilename: "pulse-\(day.storageValue).jpg"
-        ) { _ in
+        ) { result in
+            if case .failure(let error) = result {
+                model.errorMessage = error.localizedDescription
+            }
             photoDocument = nil
         }
         .sheet(isPresented: $showsJournalEditor) {

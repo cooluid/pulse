@@ -103,12 +103,27 @@ struct TodayView: View {
         }
         .toolbar(.hidden, for: .navigationBar)
         .fullScreenCover(isPresented: $showsCamera) {
-            ImprintCameraView { image, position in
-                showsCamera = false
-                Task { _ = await model.saveTodayMedia(image: image, cameraPosition: position) }
-            } onCancel: {
-                showsCamera = false
-            }
+            ImprintCameraView(
+                onCapture: { image, position in
+                    showsCamera = false
+                    Task {
+                        _ = await model.saveTodayMedia(
+                            image: image,
+                            cameraPosition: position
+                        )
+                    }
+                },
+                onCancel: {
+                    showsCamera = false
+                },
+                onFailure: {
+                    showsCamera = false
+                    model.errorMessage = PulseLocalization.string(
+                        "error.camera_capture_failed",
+                        locale: locale
+                    )
+                }
+            )
             .ignoresSafeArea()
         }
         .sheet(isPresented: $showsTodayMediaDetail) {

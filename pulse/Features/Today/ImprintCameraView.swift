@@ -6,9 +6,14 @@ import UniformTypeIdentifiers
 struct ImprintCameraView: UIViewControllerRepresentable {
     let onCapture: (UIImage, ImprintCameraPosition) -> Void
     let onCancel: () -> Void
+    let onFailure: () -> Void
 
     func makeCoordinator() -> Coordinator {
-        Coordinator(onCapture: onCapture, onCancel: onCancel)
+        Coordinator(
+            onCapture: onCapture,
+            onCancel: onCancel,
+            onFailure: onFailure
+        )
     }
 
     func makeUIViewController(context: Context) -> UIImagePickerController {
@@ -39,13 +44,16 @@ struct ImprintCameraView: UIViewControllerRepresentable {
     final class Coordinator: NSObject, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
         let onCapture: (UIImage, ImprintCameraPosition) -> Void
         let onCancel: () -> Void
+        let onFailure: () -> Void
 
         init(
             onCapture: @escaping (UIImage, ImprintCameraPosition) -> Void,
-            onCancel: @escaping () -> Void
+            onCancel: @escaping () -> Void,
+            onFailure: @escaping () -> Void
         ) {
             self.onCapture = onCapture
             self.onCancel = onCancel
+            self.onFailure = onFailure
         }
 
         func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
@@ -57,7 +65,7 @@ struct ImprintCameraView: UIViewControllerRepresentable {
             didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey: Any]
         ) {
             guard let image = info[.originalImage] as? UIImage else {
-                onCancel()
+                onFailure()
                 return
             }
             onCapture(image, picker.cameraDevice == .front ? .front : .rear)

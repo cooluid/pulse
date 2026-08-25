@@ -2,8 +2,8 @@ import CryptoKit
 import Foundation
 
 public enum PulseWatchContract {
-    public static let protocolVersion = 1
-    public static let localStateVersion = 1
+    public static let protocolVersion = 2
+    public static let localStateVersion = 2
     public static let localDirectoryName = "PulseWatch"
     public static let localStateFilename = "pulse-watch-state.json"
     public static let snapshotContextKey = "pulse.watch.snapshot"
@@ -105,10 +105,7 @@ public struct PulseWatchProjectSnapshot: Codable, Equatable, Sendable {
         todayLogicalDay = try container.decode(String.self, forKey: .todayLogicalDay)
         isCheckedToday = try container.decode(Bool.self, forKey: .isCheckedToday)
         checkedAt = try container.decodeIfPresent(Date.self, forKey: .checkedAt)
-        waveMotionEnabled = try container.decodeIfPresent(
-            Bool.self,
-            forKey: .waveMotionEnabled
-        ) ?? true
+        waveMotionEnabled = try container.decode(Bool.self, forKey: .waveMotionEnabled)
         sevenDayPulse = try container.decode(
             [PulseWatchDaySnapshot].self,
             forKey: .sevenDayPulse

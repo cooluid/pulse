@@ -4,17 +4,23 @@ import XCTest
 
 @MainActor
 final class ImprintCameraViewTests: XCTestCase {
-    func testFrontCameraIsPreferredWhenAvailable() {
-        XCTAssertEqual(
-            ImprintCameraView.preferredCameraDevice(frontCameraAvailable: true),
-            .front
+    func testMissingCapturedImageReportsFailureInsteadOfCancellation() {
+        var didCancel = false
+        var didFail = false
+        let coordinator = ImprintCameraView.Coordinator(
+            onCapture: { _, _ in
+                XCTFail("A missing image must not be reported as a capture.")
+            },
+            onCancel: { didCancel = true },
+            onFailure: { didFail = true }
         )
-    }
 
-    func testRearCameraIsUsedWhenFrontCameraIsUnavailable() {
-        XCTAssertEqual(
-            ImprintCameraView.preferredCameraDevice(frontCameraAvailable: false),
-            .rear
+        coordinator.imagePickerController(
+            UIImagePickerController(),
+            didFinishPickingMediaWithInfo: [:]
         )
+
+        XCTAssertFalse(didCancel)
+        XCTAssertTrue(didFail)
     }
 }

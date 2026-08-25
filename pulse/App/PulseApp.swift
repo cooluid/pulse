@@ -160,6 +160,7 @@ private enum PulseBootstrap {
         AppSettings.clearStoredValues(
             sharedSettings: sharedSettings
         )
+        AppSettings.discardCorruptedResetJournal()
     }
 
     @MainActor

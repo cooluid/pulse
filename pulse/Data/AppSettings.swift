@@ -1,3 +1,4 @@
+import CoreFoundation
 import Foundation
 import Observation
 import PulseCore
@@ -215,7 +216,10 @@ final class AppSettings {
         } catch {
             throw PulseAppError.invalidSettings
         }
-        guard let loadedWeekStart = WeekStart(rawValue: defaults.integer(forKey: StorageKey.weekStart)),
+        guard let loadedWeekStart = WeekStart(rawValue: try Self.loadInteger(
+            defaults: defaults,
+            key: StorageKey.weekStart
+        )),
               let loadedTheme = AppTheme(rawValue: defaults.string(forKey: StorageKey.theme) ?? "")
         else {
             throw PulseAppError.invalidSettings
@@ -225,15 +229,32 @@ final class AppSettings {
         ) else {
             throw PulseAppError.invalidSettings
         }
+        let loadedHapticsEnabled = try Self.loadBoolean(
+            defaults: defaults,
+            key: StorageKey.hapticsEnabled
+        )
+        let loadedMediaInvitationEnabled = try Self.loadBoolean(
+            defaults: defaults,
+            key: StorageKey.mediaInvitationEnabled
+        )
+        let loadedWatchWaveMotionEnabled = try Self.loadBoolean(
+            defaults: defaults,
+            key: StorageKey.watchWaveMotionEnabled
+        )
+        _ = try Self.loadBoolean(
+            defaults: defaults,
+            key: StorageKey.resetPending,
+            defaultValue: false
+        )
 
-        hapticsEnabled = defaults.bool(forKey: StorageKey.hapticsEnabled)
+        hapticsEnabled = loadedHapticsEnabled
         reminderEnabled = sharedSnapshot.reminderEnabled
         reminderTime = sharedSnapshot.reminderTime
         weekStart = loadedWeekStart
         theme = loadedTheme
         visualTheme = loadedVisualTheme
-        mediaInvitationEnabled = defaults.bool(forKey: StorageKey.mediaInvitationEnabled)
-        watchWaveMotionEnabled = defaults.bool(forKey: StorageKey.watchWaveMotionEnabled)
+        mediaInvitationEnabled = loadedMediaInvitationEnabled
+        watchWaveMotionEnabled = loadedWatchWaveMotionEnabled
         language = sharedSnapshot.language
         isLoading = false
     }
@@ -288,9 +309,46 @@ final class AppSettings {
         sharedSettings.reset()
     }
 
+    static func discardCorruptedResetJournal(defaults: UserDefaults = .standard) {
+        guard let storedValue = defaults.object(forKey: StorageKey.resetPending) else {
+            return
+        }
+        guard let number = storedValue as? NSNumber,
+              CFGetTypeID(number) == CFBooleanGetTypeID() else {
+            defaults.removeObject(forKey: StorageKey.resetPending)
+            return
+        }
+    }
+
     private func persist(_ key: String, value: Any) {
         guard !isLoading else { return }
         defaults.set(value, forKey: key)
+    }
+
+    private static func loadBoolean(
+        defaults: UserDefaults,
+        key: String,
+        defaultValue: Bool? = nil
+    ) throws -> Bool {
+        guard let storedValue = defaults.object(forKey: key) else {
+            guard let defaultValue else { throw PulseAppError.invalidSettings }
+            return defaultValue
+        }
+        guard let number = storedValue as? NSNumber,
+              CFGetTypeID(number) == CFBooleanGetTypeID() else {
+            throw PulseAppError.invalidSettings
+        }
+        return number.boolValue
+    }
+
+    private static func loadInteger(defaults: UserDefaults, key: String) throws -> Int {
+        guard let storedValue = defaults.object(forKey: key),
+              let number = storedValue as? NSNumber,
+              CFGetTypeID(number) != CFBooleanGetTypeID(),
+              !CFNumberIsFloatType(number) else {
+            throw PulseAppError.invalidSettings
+        }
+        return number.intValue
     }
 
 }

@@ -1,8 +1,8 @@
 # Pulse 1.1 测试与验收计划
 
-文档版本：2.5
+文档版本：2.6
 状态：Canonical Acceptance Plan
-更新时间：2026-08-20
+更新时间：2026-08-25
 
 ## 1. 证据边界
 
@@ -22,14 +22,14 @@
 | Habit / 逻辑日 | 名称/说明规范化；Gregorian、时区、DST、稳定起始日；时区变更不改历史 |
 | Repository | 唯一主承诺、同日幂等、rollback、跨容器并发；记事签到时写入、外部先签到后补写、编辑、清空、非法输入不变更；签到/媒体独立删除和重新关联 |
 | Schema 1.1.1 | Habit / CheckInRecord / ImprintMedia 真实磁盘读写；精确 marker；实验性 1.1.0 与更旧 marker 失败关闭；无迁移分支 |
-| 媒体文件 | 安装前 staging、不可变小写 UUID 路径、路径穿越、文件及 `originals` / `thumbnails` / `staging` 中间目录符号链接拒绝、24 MiB/2 MiB 上限、原图和缩略图 byteCount + SHA-256、孤儿审计、清除 |
+| 媒体文件 | 安装前 staging、不可变小写 UUID 路径、路径穿越、文件及 `originals` / `thumbnails` / `staging` 中间目录符号链接拒绝、24 MiB/2 MiB 上限、原图和缩略图 byteCount + SHA-256、身份不一致立即失败且无无状态重试、孤儿审计、清除 |
 | 图片处理 | 方向归一、最大 4096、缩略图最大 720、JPEG 输出、元数据剥离、无效图片拒绝 |
 | 归档 payload v3 | 唯一 UTType；container v2；PBKDF2 600k；随机 salt/nonce；分条目 AES-256-GCM；签到+记事+媒体 round-trip；显式记事空字段；原/缩略图身份；缺字段/缺失/额外/重复、篡改、截断、尾随、错误口令、未知版本、超限失败关闭；payload v1/v2 与 container v1 不读取 |
 | 恢复事务 | 全部解密/认证后才确认；文件先安装、数据库单次 replace；提交前失败回收新文件；提交后清理失败不得误删新文件；取消清理解密 staging |
-| AppModel | 操作互斥；单击签到；系统表面只消费提交回执的逻辑日；记事更新不改签到/统计；长按先提交签到再请求相机；相机/媒体失败不撤销签到；跨日事件与激活事件在长操作结束后必须补执行；重置日志；完整备份 |
-| Settings / Store | 今日入镜邀请、空间、主题、语言、提醒；独立高阶权益页；StoreKit 动态价格；类型化能力目录；独立 Widget 画廊；重置后清理；损坏偏好失败关闭 |
+| AppModel | 操作互斥；单击签到；系统表面只消费提交回执的逻辑日；Repository 已提交后即使全量投影刷新失败也必须返回成功并显示“已保存但刷新失败”；记事更新不改签到/统计；长按先提交签到再请求相机；相机/媒体失败不撤销签到；跨日事件与激活事件在长操作结束后必须补执行；重置日志；完整备份 |
+| Settings / Store | 今日入镜邀请、空间、主题、语言、提醒；独立高阶权益页；StoreKit 动态价格；类型化能力目录；独立 Widget 画廊；重置后清理；损坏枚举、时间、布尔偏好与重置日志严格失败关闭，用户明确重置设置后可恢复 |
 | Widget / 系统表面 | 只读 Habit + CheckInRecord；不查询或暴露 ImprintMedia；AppIntent 幂等签到；语言/样式/权益双边检查 |
-| Apple Watch | 协议版本、project revision、时区/未来时间/起始日拒绝；系统 file URL 标准化；快照在 nextDayBoundary 失效；坏快照与项目变化不删除 outbox；即时/后台双路径同一 operationID；重复/乱序回执；App Intent 精确动作时间与异步激活；跨午夜真实 occurredAt 归属；Watch/iPhone/Widget 并发仍单记录；pendingSync 不冒充成功 |
+| Apple Watch | 协议 v2 / 本地状态 v2、缺字段/旧版本拒绝、project revision、时区/未来时间/起始日拒绝；系统 file URL 标准化；快照在 nextDayBoundary 失效；空快照、坏快照与项目变化不删除 outbox；iPhone 已提交后投影刷新失败仍返回 committed；即时/后台双路径同一 operationID；重复/乱序回执；App Intent 精确动作时间与异步激活；跨午夜真实 occurredAt 归属；Watch/iPhone/Widget 并发仍单记录；pendingSync 不冒充成功 |
 | 本地化/无障碍 | 简中/英文完整字符串；格式参数；日期 Locale；照片/按钮/进度有 VoiceOver 语义；状态不只靠颜色 |
 | 资产 | 当前资产可解码、生成器输出完整且幂等、AppIcon 满足系统文件要求 |
 
@@ -40,6 +40,7 @@
 - 签到成功后出现今日入镜邀请；关闭邀请后不出现，已有照片仍可管理。
 - 无相机的 Simulator 明确报不可用，不打开相册作隐式兜底。
 - History 可打开“仅签到 / 签到+影像 / 仅影像”详情；两种删除确认独立。
+- 原图导出失败必须显示系统返回的真实错误；相机回调缺少图片时显示拍摄失败，不得冒充用户取消。
 - 静野、纸页手记、晴昼均可查看和编辑记事；纸页手记签到前输入可原子保存，签到后可再编辑；Widget 先签到后仍可补写；三主题都保留照片、月历、漏签和统计。
 - Settings 显示媒体空间、完整加密备份与照片数量恢复确认；高阶权益购买和 Widget 构图选择使用各自独立页面。
 - Settings 使用“反馈与建议 / 帮助中心 / 隐私政策”三个明确入口，不保留旧“产品支持”混合入口。反馈验证问题/建议分类、空内容、2000/2001 字、换行与 Emoji、诊断可展开查看且关闭后完全移除、邮件未配置、取消、保存草稿、进入系统发送队列和失败。界面和邮件正文不列举未附带数据。诊断可含逻辑日、今日布尔状态与数量规模，但不得包含“我的一件事”正文、签到时间/历史明细、记事正文、媒体内容、备份、口令或设备 ID。
@@ -81,7 +82,7 @@ git diff --check
 - `PulseSupportContract` 是 App 内支持邮箱、帮助/隐私 URL、反馈长度和版本展示的唯一来源；生产源码不得保留 `PulseExternalLinks`、第二支持邮箱、隐藏反馈上传或第三方反馈 SDK。公开隐私正文必须说明用户主动邮件与可选技术信息；App Store Connect 隐私答案按最终行为复核。界面和邮件不靠否定清单证明未收集。
 - App Store Connect 按支持邮件的实际行为复核 Customer Support / Other User Content、Photos or Videos、Other Diagnostic Data 与 Product Interaction；不得因提交频率低或用户主动就自动继续回答“未收集”。用途只允许 App Functionality / Customer Support，不跟踪；是否与用户关联按发件地址与实际留存方式保守回答。
 - App Store Connect 按 container v2 / payload v3 的实际 PBKDF2 + AES-GCM 用途完成加密出口判断；分类冻结前 App / Widget Info.plist 均不预填 `ITSAppUsesNonExemptEncryption`，不得把历史 Build 2 的豁免答案外推到 1.1。
-- Debug App 必须显示“一日一印 Dev”并使用 `co.fanr.pulse.dev`、Debug Widget 使用 `co.fanr.pulse.dev.widgets`、Debug App Group 使用 `group.co.fanr.pulse.dev`、URL Scheme 使用 `pulse-dev`；Debug 不加载生产 `InfoPlist.xcstrings`，防止本地化名称重新覆盖 Dev 标识。Release 继续且只使用对应生产身份。Debug 灵动岛测试台源码与 Settings 入口必须由 `#if DEBUG` 关闭，Release 产物不得包含 `ReminderActivityDebugView` 或“灵动岛测试台”；
+- Debug App 必须显示“一日一印 Dev”并使用 `co.fanr.pulse.dev`、Debug Widget 使用 `co.fanr.pulse.dev.widgets`、Debug App Group 使用 `group.co.fanr.pulse.dev`、URL Scheme 使用 `pulse-dev`；Debug 不加载生产 `InfoPlist.xcstrings`，防止本地化名称重新覆盖 Dev 标识。Release 继续且只使用对应生产身份。Debug 灵动岛测试台源码与 Settings 入口必须由 `#if DEBUG` 关闭，文案只来自 `PulseDebug.xcstrings`；Release 配置必须排除该 Catalog，产物不得包含 `ReminderActivityDebugView` 或“灵动岛测试台”；
 - `NSCameraUsageDescription` 简中/英文均存在；
 - 生产源码没有 schema v1、archive v1 decoder、旧 Repository、旧 FileDocument、绝对媒体路径或第二个媒体目录；
 - `ArchiveWork` 启动即清理崩溃遗留并使用 Data Protection；
