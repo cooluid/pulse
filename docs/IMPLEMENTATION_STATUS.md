@@ -19,7 +19,7 @@ Build 5 已冻结为不可变提交 `af918977434829f10db8bb66b511eee5a08efe8c`�
 - StoreKit 已验证交易与 `PulseEnhancementContract.currentCapabilities` 是高级功能唯一来源。
 - Watch 使用协议 v2 / 本地状态 v2，只保存可重建快照、durable outbox 和回执；空快照不清 outbox，旧内部状态和缺失字段明确拒绝，iPhone Repository 仍是签到唯一真源。
 - Repository 已提交的写操作不会被后续投影刷新失败改判；界面明确显示“已保存但刷新失败”并要求重新载入。
-- 媒体读取一次校验 size/SHA-256，不做无状态重试，也不建立无上限缩略图缓存。
+- 媒体正式文件在 Repository 提交前回读并校验 size/SHA-256；文件短暂不可读时进行有界恢复，身份不一致立即失败，不建立无上限缩略图缓存。
 
 ## 当前验证
 

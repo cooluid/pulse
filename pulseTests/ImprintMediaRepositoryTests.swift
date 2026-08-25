@@ -103,6 +103,36 @@ final class ImprintMediaRepositoryTests: XCTestCase {
         )
     }
 
+    func testFileStoreRetriesACompletedMediaReadWhenFileIsTemporarilyUnavailable() async throws {
+        let root = FileManager.default.temporaryDirectory
+            .appendingPathComponent("PulseMediaTransientReadTests-\(UUID().uuidString)")
+        addTeardownBlock { try? FileManager.default.removeItem(at: root) }
+        let store = try PulseMediaFileStore(rootURL: root)
+        let original = Data([0xff, 0xd8, 1, 2, 3, 0xff, 0xd9])
+        let thumbnail = Data([0xff, 0xd8, 4, 0xff, 0xd9])
+        let files = try await store.install(
+            originalData: original,
+            thumbnailData: thumbnail
+        )
+        let item = snapshot(files: files, original: original, now: date(hour: 9))
+        let thumbnailURL = root.appendingPathComponent(files.thumbnailRelativePath)
+        try FileManager.default.removeItem(at: thumbnailURL)
+        let restoreTask = Task.detached {
+            try await Task.sleep(nanoseconds: 20_000_000)
+            try thumbnail.write(to: thumbnailURL, options: [.atomic])
+        }
+
+        do {
+            let storedThumbnail = try await store.readThumbnail(for: item)
+            try await restoreTask.value
+
+            XCTAssertEqual(storedThumbnail, thumbnail)
+        } catch {
+            _ = try? await restoreTask.value
+            throw error
+        }
+    }
+
     func testFileStoreRejectsThumbnailWhoseIdentityChanged() async throws {
         let root = FileManager.default.temporaryDirectory
             .appendingPathComponent("PulseMediaIntegrityTests-\(UUID().uuidString)", isDirectory: true)

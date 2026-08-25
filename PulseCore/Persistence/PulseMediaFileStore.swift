@@ -13,6 +13,12 @@ public struct InstalledImprintFiles: Equatable, Sendable {
 public actor PulseMediaFileStore {
     public static let maximumOriginalBytes = 24 * 1_024 * 1_024
     public static let maximumThumbnailBytes = 2 * 1_024 * 1_024
+    private static let transientReadRetryDelays: [UInt64] = [
+        0,
+        40_000_000,
+        80_000_000,
+        120_000_000
+    ]
 
     private let rootURL: URL
     private let originalsURL: URL
@@ -40,7 +46,7 @@ public actor PulseMediaFileStore {
         originalData: Data,
         thumbnailData: Data,
         storageID: UUID = UUID()
-    ) throws -> InstalledImprintFiles {
+    ) async throws -> InstalledImprintFiles {
         guard !originalData.isEmpty,
               originalData.count <= Self.maximumOriginalBytes,
               !thumbnailData.isEmpty,
@@ -64,6 +70,7 @@ public actor PulseMediaFileStore {
         try Self.prepareDirectory(transactionURL, fileManager: fileManager)
         let stagedOriginal = transactionURL.appendingPathComponent("original.jpg")
         let stagedThumbnail = transactionURL.appendingPathComponent("thumbnail.jpg")
+        var installedURLs: [URL] = []
 
         do {
             try originalData.write(to: stagedOriginal, options: [.atomic])
@@ -78,59 +85,78 @@ public actor PulseMediaFileStore {
                 throw PulseCoreError.mediaStorageUnavailable
             }
             try fileManager.moveItem(at: stagedOriginal, to: finalOriginal)
-            do {
-                try fileManager.moveItem(at: stagedThumbnail, to: finalThumbnail)
-            } catch {
-                try? fileManager.removeItem(at: finalOriginal)
-                throw error
-            }
-            try? fileManager.removeItem(at: transactionURL)
-            return InstalledImprintFiles(
+            installedURLs.append(finalOriginal)
+            try fileManager.moveItem(at: stagedThumbnail, to: finalThumbnail)
+            installedURLs.append(finalThumbnail)
+            let installed = InstalledImprintFiles(
                 originalRelativePath: originalRelativePath,
                 thumbnailRelativePath: thumbnailRelativePath,
                 byteCount: Int64(originalData.count),
                 thumbnailByteCount: Int64(thumbnailData.count),
-                sha256: SHA256.hash(data: originalData)
-                    .map { String(format: "%02x", $0) }
-                    .joined(),
-                thumbnailSHA256: SHA256.hash(data: thumbnailData)
-                    .map { String(format: "%02x", $0) }
-                    .joined()
+                sha256: Self.sha256Hex(originalData),
+                thumbnailSHA256: Self.sha256Hex(thumbnailData)
             )
+            _ = try await readWithTransientRetry {
+                try readValidated(
+                    relativePath: installed.originalRelativePath,
+                    maximumBytes: Self.maximumOriginalBytes,
+                    expectedByteCount: installed.byteCount,
+                    expectedSHA256: installed.sha256
+                )
+            }
+            _ = try await readWithTransientRetry {
+                try readValidated(
+                    relativePath: installed.thumbnailRelativePath,
+                    maximumBytes: Self.maximumThumbnailBytes,
+                    expectedByteCount: installed.thumbnailByteCount,
+                    expectedSHA256: installed.thumbnailSHA256
+                )
+            }
+            try? fileManager.removeItem(at: transactionURL)
+            return installed
         } catch {
+            for url in installedURLs {
+                try? fileManager.removeItem(at: url)
+            }
             try? fileManager.removeItem(at: transactionURL)
             throw error
         }
     }
 
-    public func readThumbnail(for media: ImprintMediaSnapshot) throws -> Data {
-        try readThumbnailValidated(for: media)
-    }
-
-    public func readOriginal(for media: ImprintMediaSnapshot) throws -> Data {
-        try readOriginalValidated(for: media)
-    }
-
-    private func readThumbnailValidated(for media: ImprintMediaSnapshot) throws -> Data {
-        let data = try readFile(
-            relativePath: media.thumbnailRelativePath,
-            maximumBytes: Self.maximumThumbnailBytes
-        )
-        let hash = SHA256.hash(data: data).map { String(format: "%02x", $0) }.joined()
-        guard hash == media.thumbnailSHA256,
-              Int64(data.count) == media.thumbnailByteCount else {
-            throw PulseCoreError.invalidMedia
+    public func readThumbnail(for media: ImprintMediaSnapshot) async throws -> Data {
+        try await readWithTransientRetry {
+            try readValidated(
+                relativePath: media.thumbnailRelativePath,
+                maximumBytes: Self.maximumThumbnailBytes,
+                expectedByteCount: media.thumbnailByteCount,
+                expectedSHA256: media.thumbnailSHA256
+            )
         }
-        return data
     }
 
-    private func readOriginalValidated(for media: ImprintMediaSnapshot) throws -> Data {
+    public func readOriginal(for media: ImprintMediaSnapshot) async throws -> Data {
+        try await readWithTransientRetry {
+            try readValidated(
+                relativePath: media.originalRelativePath,
+                maximumBytes: Self.maximumOriginalBytes,
+                expectedByteCount: media.byteCount,
+                expectedSHA256: media.sha256
+            )
+        }
+    }
+
+    private func readValidated(
+        relativePath: String,
+        maximumBytes: Int,
+        expectedByteCount: Int64,
+        expectedSHA256: String
+    ) throws -> Data {
         let data = try readFile(
-            relativePath: media.originalRelativePath,
-            maximumBytes: Self.maximumOriginalBytes
+            relativePath: relativePath,
+            maximumBytes: maximumBytes
         )
-        let hash = SHA256.hash(data: data).map { String(format: "%02x", $0) }.joined()
-        guard hash == media.sha256, Int64(data.count) == media.byteCount else {
+        guard Int64(data.count) == expectedByteCount,
+              Self.sha256Hex(data) == expectedSHA256 else {
             throw PulseCoreError.invalidMedia
         }
         return data
@@ -230,7 +256,12 @@ public actor PulseMediaFileStore {
 
     private func readFile(relativePath: String, maximumBytes: Int) throws -> Data {
         let url = try resolvedURL(for: relativePath)
-        let attributes = try fileManager.attributesOfItem(atPath: url.path)
+        let attributes: [FileAttributeKey: Any]
+        do {
+            attributes = try fileManager.attributesOfItem(atPath: url.path)
+        } catch {
+            throw PulseCoreError.mediaFileUnavailable
+        }
         guard !Self.isSymbolicLink(url, fileManager: fileManager),
               attributes[.type] as? FileAttributeType == .typeRegular,
               let fileSize = attributes[.size] as? NSNumber,
@@ -240,7 +271,35 @@ public actor PulseMediaFileStore {
         }
         // Backup encryption zeroizes plaintext media after use. A mapped Data value can
         // point at a read-only file mapping, so it must not cross that mutable boundary.
-        return try Data(contentsOf: url)
+        do {
+            return try Data(contentsOf: url)
+        } catch {
+            throw PulseCoreError.mediaFileUnavailable
+        }
+    }
+
+    private func readWithTransientRetry(
+        _ operation: () throws -> Data
+    ) async throws -> Data {
+        for (attempt, delay) in Self.transientReadRetryDelays.enumerated() {
+            if delay > 0 {
+                try await Task.sleep(nanoseconds: delay)
+            }
+            do {
+                return try operation()
+            } catch let error as PulseCoreError
+                where error == .mediaFileUnavailable
+                    && attempt < Self.transientReadRetryDelays.count - 1 {
+                continue
+            }
+        }
+        throw PulseCoreError.mediaFileUnavailable
+    }
+
+    private static func sha256Hex(_ data: Data) -> String {
+        SHA256.hash(data: data)
+            .map { String(format: "%02x", $0) }
+            .joined()
     }
 
     private func resolvedURL(for relativePath: String) throws -> URL {
