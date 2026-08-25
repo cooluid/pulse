@@ -46,6 +46,7 @@ public struct PulseStoreLocation: Equatable, Sendable {
 
 public struct PulseStoreLocator {
     private let applicationGroupContainerProvider: (String) -> URL?
+    private let applicationSupportDirectoryProvider: () -> URL
 
     public init(fileManager: FileManager = .default) {
         applicationGroupContainerProvider = { identifier in
@@ -53,12 +54,19 @@ public struct PulseStoreLocator {
                 forSecurityApplicationGroupIdentifier: identifier
             )
         }
+        applicationSupportDirectoryProvider = {
+            fileManager.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
+        }
     }
 
     init(
-        applicationGroupContainerProvider: @escaping (String) -> URL?
+        applicationGroupContainerProvider: @escaping (String) -> URL?,
+        applicationSupportDirectoryProvider: @escaping () -> URL = {
+            FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
+        }
     ) {
         self.applicationGroupContainerProvider = applicationGroupContainerProvider
+        self.applicationSupportDirectoryProvider = applicationSupportDirectoryProvider
     }
 
     public func appGroupLocation(identifier: String) throws -> PulseStoreLocation {
@@ -84,4 +92,18 @@ public struct PulseStoreLocator {
             .appendingPathComponent(PulseStoreContract.productDirectoryName, isDirectory: true)
         return try PulseStoreLocation(directoryURL: directoryURL)
     }
+
+    /// App-private media root. Photos are consumed only by the main app.
+    public func applicationMediaDirectoryURL() throws -> URL {
+        let directoryURL = applicationSupportDirectoryProvider()
+            .appendingPathComponent(PulseStoreContract.productDirectoryName, isDirectory: true)
+            .appendingPathComponent(PulseStoreContract.mediaDirectoryName, isDirectory: true)
+            .standardizedFileURL
+        guard directoryURL.isFileURL,
+              directoryURL.path != "/" else {
+            throw PulseStoreLocationError.invalidDirectoryURL
+        }
+        return directoryURL
+    }
+
 }

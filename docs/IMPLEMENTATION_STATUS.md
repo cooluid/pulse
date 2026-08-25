@@ -12,14 +12,14 @@ Build 5 已冻结为不可变提交 `af918977434829f10db8bb66b511eee5a08efe8c`�
 - `SwiftDataPulseRepository` 独占 Habit、CheckInRecord 与 ImprintMedia 写入；页面和系统表面消费不可变快照。
 - `CheckInRecord` 是签到、统计、今天状态和月历唯一真源；记事是其可编辑注释；`ImprintMedia` 是独立影像事实。
 - 唯一 store 是 App Group `Library/Application Support/Pulse/Pulse.store`，schema marker 为 `1.1.1`。
-- 媒体使用受保护的 originals、thumbnails 和 staging 目录；路径、文件身份、完整性和孤儿由统一管线验证。
+- 媒体使用 App 私有受保护的 originals、thumbnails 和 staging 目录；路径、文件身份、完整性和孤儿由统一管线验证。
 - 加密归档只接受 container v2 / payload v3。
 - App Group UserDefaults 只管理共享语言和提醒设置，不保存签到、统计、样式或权益副本。
 - UserDefaults 枚举、时间与布尔值按真实存储类型读取，损坏值失败关闭；用户明确重置设置时只清除损坏的重置日志，不破坏有效恢复日志。
 - StoreKit 已验证交易与 `PulseEnhancementContract.currentCapabilities` 是高级功能唯一来源。
 - Watch 使用协议 v2 / 本地状态 v2，只保存可重建快照、durable outbox 和回执；空快照不清 outbox，旧内部状态和缺失字段明确拒绝，iPhone Repository 仍是签到唯一真源。
 - Repository 已提交的写操作不会被后续投影刷新失败改判；界面明确显示“已保存但刷新失败”并要求重新载入。
-- 媒体正式文件在 Repository 提交前回读并校验 size/SHA-256；提交前暂不可读或身份暂不一致进行有界恢复，已提交文件身份不一致立即失败，不建立无上限缩略图缓存。
+- 媒体正式文件位于 App 私有容器，并在 Repository 提交前回读校验 size/SHA-256；提交前暂不可读或身份暂不一致进行有界恢复，已提交文件身份不一致立即失败，不建立无上限缩略图缓存。
 
 ## 当前验证
 

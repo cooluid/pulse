@@ -29,9 +29,10 @@ public actor PulseMediaFileStore {
     public static let maximumThumbnailBytes = 2 * 1_024 * 1_024
     private static let transientReadRetryDelays: [UInt64] = [
         0,
-        40_000_000,
-        80_000_000,
-        120_000_000
+        50_000_000,
+        100_000_000,
+        200_000_000,
+        400_000_000
     ]
 
     private let rootURL: URL
@@ -74,6 +75,79 @@ public actor PulseMediaFileStore {
         try Self.prepareDirectory(originalsURL, fileManager: fileManager)
         try Self.prepareDirectory(thumbnailsURL, fileManager: fileManager)
         try Self.prepareDirectory(stagingURL, fileManager: fileManager)
+    }
+
+    public static func migrateLegacyMediaIfNeeded(
+        from legacyRootURL: URL,
+        to destinationRootURL: URL,
+        referencedMedia: [ImprintMediaSnapshot],
+        fileManager: FileManager = .default
+    ) throws {
+        let legacyRoot = legacyRootURL.standardizedFileURL
+        let destinationRoot = destinationRootURL.standardizedFileURL
+        guard legacyRoot.isFileURL,
+              destinationRoot.isFileURL,
+              legacyRoot.lastPathComponent == PulseStoreContract.mediaDirectoryName,
+              destinationRoot.lastPathComponent == PulseStoreContract.mediaDirectoryName,
+              legacyRoot.deletingLastPathComponent().lastPathComponent
+                == PulseStoreContract.productDirectoryName,
+              destinationRoot.deletingLastPathComponent().lastPathComponent
+                == PulseStoreContract.productDirectoryName,
+              legacyRoot.path != "/",
+              destinationRoot.path != "/",
+              legacyRoot.path != destinationRoot.path else {
+            throw PulseMediaStorageError.storageUnavailable
+        }
+        if isSymbolicLink(legacyRoot, fileManager: fileManager) {
+            throw PulseMediaStorageError.storageUnavailable
+        }
+        guard fileManager.fileExists(atPath: legacyRoot.path) else { return }
+        try requireSafeDirectory(legacyRoot, fileManager: fileManager)
+        for name in ["originals", "thumbnails", "staging"] {
+            let directory = legacyRoot.appendingPathComponent(name, isDirectory: true)
+            if isSymbolicLink(directory, fileManager: fileManager) {
+                throw PulseMediaStorageError.storageUnavailable
+            }
+            if fileManager.fileExists(atPath: directory.path) {
+                try requireSafeDirectory(directory, fileManager: fileManager)
+            }
+        }
+        try prepareDirectory(destinationRoot, fileManager: fileManager)
+        try prepareDirectory(
+            destinationRoot.appendingPathComponent("originals", isDirectory: true),
+            fileManager: fileManager
+        )
+        try prepareDirectory(
+            destinationRoot.appendingPathComponent("thumbnails", isDirectory: true),
+            fileManager: fileManager
+        )
+        try prepareDirectory(
+            destinationRoot.appendingPathComponent("staging", isDirectory: true),
+            fileManager: fileManager
+        )
+
+        for media in referencedMedia {
+            try migrateReferencedFile(
+                relativePath: media.originalRelativePath,
+                expectedByteCount: media.byteCount,
+                expectedSHA256: media.sha256,
+                maximumBytes: maximumOriginalBytes,
+                from: legacyRoot,
+                to: destinationRoot,
+                fileManager: fileManager
+            )
+            try migrateReferencedFile(
+                relativePath: media.thumbnailRelativePath,
+                expectedByteCount: media.thumbnailByteCount,
+                expectedSHA256: media.thumbnailSHA256,
+                maximumBytes: maximumThumbnailBytes,
+                from: legacyRoot,
+                to: destinationRoot,
+                fileManager: fileManager
+            )
+        }
+
+        try fileManager.removeItem(at: legacyRoot)
     }
 
     public func installVerified(
@@ -122,6 +196,19 @@ public actor PulseMediaFileStore {
             installedURLs.append(finalOriginal)
             try fileManager.moveItem(at: stagedThumbnail, to: finalThumbnail)
             installedURLs.append(finalThumbnail)
+
+            // Reject incomplete installation before the full precommit identity read.
+            try Self.requireInstalledFile(
+                at: finalOriginal,
+                expectedByteCount: originalData.count,
+                fileManager: fileManager
+            )
+            try Self.requireInstalledFile(
+                at: finalThumbnail,
+                expectedByteCount: thumbnailData.count,
+                fileManager: fileManager
+            )
+
             let installed = VerifiedImprintFiles(
                 originalRelativePath: originalRelativePath,
                 thumbnailRelativePath: thumbnailRelativePath,
@@ -318,13 +405,19 @@ public actor PulseMediaFileStore {
               fileSize.int64Value <= Int64(maximumBytes) else {
             throw PulseMediaStorageError.fileUnavailable
         }
-        // Backup encryption zeroizes plaintext media after use. A mapped Data value can
-        // point at a read-only file mapping, so it must not cross that mutable boundary.
+        // Use an explicit full read and verify it matches the size observed before reading.
+        let data: Data
         do {
-            return try Data(contentsOf: url)
+            let handle = try FileHandle(forReadingFrom: url)
+            defer { try? handle.close() }
+            data = try handle.readToEnd() ?? Data()
         } catch {
             throw PulseMediaStorageError.fileUnavailable
         }
+        guard Int64(data.count) == fileSize.int64Value else {
+            throw PulseMediaStorageError.fileUnavailable
+        }
+        return data
     }
 
     private static func isRetryable(
@@ -351,6 +444,147 @@ public actor PulseMediaFileStore {
             .identityMismatch
         default:
             nil
+        }
+    }
+
+    private static func requireInstalledFile(
+        at url: URL,
+        expectedByteCount: Int,
+        fileManager: FileManager
+    ) throws {
+        let attributes: [FileAttributeKey: Any]
+        do {
+            attributes = try fileManager.attributesOfItem(atPath: url.path)
+        } catch {
+            throw PulseMediaStorageError.storageUnavailable
+        }
+        guard !isSymbolicLink(url, fileManager: fileManager),
+              attributes[.type] as? FileAttributeType == .typeRegular,
+              let fileSize = attributes[.size] as? NSNumber,
+              fileSize.int64Value == Int64(expectedByteCount) else {
+            throw PulseMediaStorageError.storageUnavailable
+        }
+    }
+
+    private static func migrateReferencedFile(
+        relativePath: String,
+        expectedByteCount: Int64,
+        expectedSHA256: String,
+        maximumBytes: Int,
+        from sourceRoot: URL,
+        to destinationRoot: URL,
+        fileManager: FileManager
+    ) throws {
+        let sourceURL = try migrationURL(
+            root: sourceRoot,
+            relativePath: relativePath
+        )
+        let destinationURL = try migrationURL(
+            root: destinationRoot,
+            relativePath: relativePath
+        )
+
+        if fileManager.fileExists(atPath: destinationURL.path) {
+            let existing = try migrationData(
+                at: destinationURL,
+                maximumBytes: maximumBytes,
+                fileManager: fileManager
+            )
+            try requireIdentity(
+                existing,
+                expectedByteCount: expectedByteCount,
+                expectedSHA256: expectedSHA256
+            )
+            try protect(destinationURL, fileManager: fileManager)
+            return
+        }
+
+        let source = try migrationData(
+            at: sourceURL,
+            maximumBytes: maximumBytes,
+            fileManager: fileManager
+        )
+        try requireIdentity(
+            source,
+            expectedByteCount: expectedByteCount,
+            expectedSHA256: expectedSHA256
+        )
+
+        do {
+            try source.write(to: destinationURL, options: [.atomic])
+            try protect(destinationURL, fileManager: fileManager)
+            let copied = try migrationData(
+                at: destinationURL,
+                maximumBytes: maximumBytes,
+                fileManager: fileManager
+            )
+            try requireIdentity(
+                copied,
+                expectedByteCount: expectedByteCount,
+                expectedSHA256: expectedSHA256
+            )
+        } catch {
+            try? fileManager.removeItem(at: destinationURL)
+            throw error
+        }
+    }
+
+    private static func migrationURL(
+        root: URL,
+        relativePath: String
+    ) throws -> URL {
+        guard PulseMediaPath.isValidStoredPath(relativePath) else {
+            throw PulseMediaStorageError.identityMismatch
+        }
+        let resolved = root.appendingPathComponent(relativePath).standardizedFileURL
+        let rootPrefix = root.path.hasSuffix("/") ? root.path : root.path + "/"
+        guard resolved.path.hasPrefix(rootPrefix) else {
+            throw PulseMediaStorageError.identityMismatch
+        }
+        return resolved
+    }
+
+    private static func migrationData(
+        at url: URL,
+        maximumBytes: Int,
+        fileManager: FileManager
+    ) throws -> Data {
+        let attributes: [FileAttributeKey: Any]
+        do {
+            attributes = try fileManager.attributesOfItem(atPath: url.path)
+        } catch {
+            throw PulseMediaStorageError.fileUnavailable
+        }
+        guard !isSymbolicLink(url, fileManager: fileManager),
+              attributes[.type] as? FileAttributeType == .typeRegular,
+              let fileSize = attributes[.size] as? NSNumber,
+              fileSize.int64Value > 0,
+              fileSize.int64Value <= Int64(maximumBytes) else {
+            throw PulseMediaStorageError.fileUnavailable
+        }
+        do {
+            let handle = try FileHandle(forReadingFrom: url)
+            defer { try? handle.close() }
+            let data = try handle.readToEnd() ?? Data()
+            guard Int64(data.count) == fileSize.int64Value else {
+                throw PulseMediaStorageError.fileUnavailable
+            }
+            return data
+        } catch let error as PulseMediaStorageError {
+            throw error
+        } catch {
+            throw PulseMediaStorageError.fileUnavailable
+        }
+    }
+
+    private static func requireIdentity(
+        _ data: Data,
+        expectedByteCount: Int64,
+        expectedSHA256: String
+    ) throws {
+        guard Int64(data.count) == expectedByteCount,
+              sha256Hex(data) == expectedSHA256 else {
+            throw PulseMediaStorageError.identityMismatch
         }
     }
 

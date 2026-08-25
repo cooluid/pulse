@@ -60,12 +60,11 @@ private enum PulseBootstrap {
                 clock: clock,
                 primaryHabitProvisioning: .createIfMissing(initialIdentity)
             )
-            let mediaFileStore = try PulseMediaFileStore(
-                rootURL: store.workingDirectoryURL.appendingPathComponent(
-                    PulseStoreContract.mediaDirectoryName,
-                    isDirectory: true
-                )
+            let mediaRootURL = try runtimeMediaDirectoryURL(
+                for: store,
+                repository: repository
             )
+            let mediaFileStore = try PulseMediaFileStore(rootURL: mediaRootURL)
             let archiveWorkingDirectoryURL = store.workingDirectoryURL.appendingPathComponent(
                 PulseStoreContract.archiveWorkingDirectoryName,
                 isDirectory: true
@@ -204,6 +203,59 @@ private enum PulseBootstrap {
             identifier: PulseRuntimeIdentity.appGroupIdentifier
         )
         return .disk(name: PulseStoreContract.storeName, location: sharedLocation)
+    }
+
+    @MainActor
+    private static func runtimeMediaDirectoryURL(
+        for store: RuntimeStore,
+        repository: SwiftDataPulseRepository
+    ) throws -> URL {
+        switch store {
+        case .inMemory(_, let workingDirectoryURL):
+            return workingDirectoryURL.appendingPathComponent(
+                PulseStoreContract.mediaDirectoryName,
+                isDirectory: true
+            )
+        case .disk(let name, let location):
+            // Production shares only the store. Widget and Watch never consume media, so
+            // photo files remain in the main app's private container.
+            guard name == PulseStoreContract.storeName else {
+                return location.mediaDirectoryURL
+            }
+            let locator = PulseStoreLocator()
+            let mediaDirectoryURL = try locator.applicationMediaDirectoryURL()
+            let referencedMedia: [ImprintMediaSnapshot]
+            if let habit = try repository.existingPrimaryHabit() {
+                referencedMedia = try repository.allMedia(habitID: habit.id)
+            } else {
+                referencedMedia = []
+            }
+            do {
+                try PulseMediaFileStore.migrateLegacyMediaIfNeeded(
+                    from: location.mediaDirectoryURL,
+                    to: mediaDirectoryURL,
+                    referencedMedia: referencedMedia
+                )
+            } catch {
+                let code: String
+                if let mediaError = error as? PulseMediaStorageError {
+                    code = switch mediaError {
+                    case .fileUnavailable: "media.migration.file_unavailable"
+                    case .identityMismatch: "media.migration.identity_mismatch"
+                    case .storageUnavailable: "media.migration.storage_unavailable"
+                    case .invalidInput: "media.migration.invalid_input"
+                    case .precommitVerificationFailed: "media.migration.verification_failed"
+                    }
+                } else {
+                    code = "media.migration.unknown"
+                }
+                logger.error(
+                    "Media migration failed; code=\(code, privacy: .public)."
+                )
+                throw error
+            }
+            return mediaDirectoryURL
+        }
     }
 }
 

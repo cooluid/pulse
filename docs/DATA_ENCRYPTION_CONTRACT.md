@@ -1,12 +1,12 @@
 # Pulse 1.1 数据保护与加密归档合同
 
-版本：2.1
+版本：2.2
 状态：Canonical Contract
-更新时间：2026-08-17
+更新时间：2026-08-25
 
 ## 1. 安全目标
 
-- App Group 的 SwiftData store、sidecar、媒体与归档工作目录统一使用 `NSFileProtectionCompleteUntilFirstUserAuthentication`。
+- App Group 的 SwiftData store、sidecar 与归档工作目录，以及 App 私有媒体目录，统一使用 `NSFileProtectionCompleteUntilFirstUserAuthentication`。
 - 用户导出的 `.pulsebackup` 离开设备后仍具备机密性、完整性、条目身份和格式认证。
 - 错误口令、篡改、截断、尾随、未知版本/算法、超限、路径穿越、缺失或额外媒体条目全部失败关闭，且不先修改当前数据。
 - 不保存口令、派生密钥或明文归档，不提供默认密码、找回、后门或降级 decoder。
@@ -15,7 +15,7 @@
 
 ## 2. 本地文件保护
 
-`Pulse.store` 与 `Media/{originals,thumbnails,staging}` 是唯一持久化位置。图片不进入 UserDefaults、Widget 快照或第二数据库。选择“首次解锁后可用”是为了 Widget 在首次解锁后的后台读取签到；真实照片仍只由 App 打开。
+`Pulse.store`（App Group）与 App 私有容器中的 `Media/{originals,thumbnails,staging}` 是唯一持久化位置。图片不进入 UserDefaults、Widget 快照或第二数据库。Store 使用“首次解锁后可用”是为了 Widget 在首次解锁后的后台读取签到；真实照片只由 App 打开，因此媒体目录使用 App 私有容器，不扩大到 Widget 可访问的 App Group。
 
 App 与 Widget 不声明 `com.apple.developer.default-data-protection`。iOS 在该 entitlement 缺省时采用 `NSFileProtectionCompleteUntilFirstUserAuthentication`；Pulse 同时在 store 目录、SQLite sidecar、媒体与归档工作文件上显式施加同一级别。不得重新加入一个与 provisioning profile 绑定、可能把默认值升级为 `NSFileProtectionComplete` 的重复 entitlement，否则设备锁定时的 Widget、提醒计划和后台持久化会与产品运行模型冲突。
 

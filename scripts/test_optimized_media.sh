@@ -16,6 +16,7 @@ xcodebuild test \
   -only-testing:pulseTests/ImprintImageProcessorTests \
   -only-testing:pulseTests/ImprintMediaRepositoryTests \
   -only-testing:pulseTests/PulseAppModelTests \
+  -only-testing:pulseTests/PulseStoreLocationTests \
   SWIFT_OPTIMIZATION_LEVEL=-O \
   SWIFT_COMPILATION_MODE=wholemodule \
   CODE_SIGNING_ALLOWED=NO

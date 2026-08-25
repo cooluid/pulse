@@ -51,7 +51,7 @@ Home / Accessory Widget 使用普通 `PulseWidgetCheckInIntent: AppIntent`，直
 - 唯一 store：App Group `Library/Application Support/Pulse/Pulse.store`。
 - 唯一 schema：`PulseSchema 1.1.1`，模型为 Habit / CheckInRecord / ImprintMedia；记事是 CheckInRecord 的可空字段，不新建第二日事实。
 - 精确 `.pulse-schema-version == 1.1.1` marker；实验性 `1.1.0` 与更旧内部 store 不自动轻量迁移或双开。
-- 媒体目录：`Media/originals`、`Media/thumbnails`、`Media/staging`；归档工作目录 `ArchiveWork`。
+- 媒体目录：App 私有 `Application Support/Pulse/Media/{originals,thumbnails,staging}`；App Group 旧媒体只在全部引用复制并按 size/SHA-256 验证完成后删除旧目录。归档工作目录 `ArchiveWork` 仍在 App Group。
 - 目录和文件都执行 Data Protection；拒绝 symlink 和非规范相对路径。
 
 App 建立 store；Widget 在 store 不存在时显示设置状态，不创建第二空库。首次公开 1.1 后再建立显式迁移计划。
@@ -60,7 +60,7 @@ App 建立 store；Widget 在 store 不存在时显示设置状态，不创建�
 
 `UIImagePickerController` 是系统相机唯一入口；相机不可用或无权限明确失败，不改用相册。Picker 回调内先把系统相机返回的 `UIImage` 渲染为 App 自有的直立位图，再关闭相机并进入异步处理；JPEG 原图/缩略图统一规范并剥离元数据。
 
-文件不可变写入顺序为 staging → originals/thumbnails → 提交前回读验证 → Repository；DB 永不指向未完成或未经验证的文件。提交前验证对暂不可读和身份暂不一致进行短暂、有界重读，最终匹配才返回 `VerifiedImprintFiles`；失败清理全部新文件。已提交媒体读取只对文件暂不可读进行有界重读，size/SHA-256 身份不一致立即失败。重拍用新路径提交后删旧文件；DB 失败删新文件；崩溃遗留由启动审计清除。删除 metadata 后的文件清理失败同样由审计收敛。缩略图不建立无上限进程缓存。
+文件不可变写入顺序为 App 私有 staging → originals/thumbnails → 提交前回读验证 → Repository；DB 永不指向未完成或未经验证的文件。提交前验证对暂不可读和身份暂不一致进行短暂、有界重读，最终匹配才返回 `VerifiedImprintFiles`；失败清理全部新文件。已提交媒体读取只对文件暂不可读进行有界重读，size/SHA-256 身份不一致立即失败。重拍用新路径提交后删旧文件；DB 失败删新文件；崩溃遗留由启动审计清除。删除 metadata 后的文件清理失败同样由审计收敛。缩略图不建立无上限进程缓存。
 
 `PulseMediaStorageError` 区分输入、存储、提交前验证、已提交文件缺失与身份不一致；媒体保存用隐私安全的稳定阶段码记录 encode / precommit verification / Repository commit，不记录照片内容、路径或 hash。
 

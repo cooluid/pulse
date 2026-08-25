@@ -137,7 +137,7 @@ final class ImprintMediaRepositoryTests: XCTestCase {
 
     func testInstallVerificationFailureCleansEveryNewFile() async throws {
         let root = FileManager.default.temporaryDirectory
-            .appendingPathComponent("PulseMediaFailedInstallTests-\(UUID().uuidString)")
+            .appendingPathComponent("PulseMediaFailedVerificationTests-\(UUID().uuidString)")
         addTeardownBlock { try? FileManager.default.removeItem(at: root) }
         let store = try PulseMediaFileStore(
             rootURL: root,
@@ -170,6 +170,76 @@ final class ImprintMediaRepositoryTests: XCTestCase {
         XCTAssertTrue(try FileManager.default.contentsOfDirectory(
             atPath: root.appendingPathComponent("thumbnails").path
         ).isEmpty)
+        XCTAssertTrue(try FileManager.default.contentsOfDirectory(
+            atPath: root.appendingPathComponent("staging").path
+        ).isEmpty)
+    }
+
+    func testInstallVerifiesMultiMegabytePayload() async throws {
+        let root = FileManager.default.temporaryDirectory
+            .appendingPathComponent("PulseMediaLargeInstallTests-\(UUID().uuidString)")
+        addTeardownBlock { try? FileManager.default.removeItem(at: root) }
+        let store = try PulseMediaFileStore(rootURL: root)
+        var original = Data(repeating: 0x5a, count: 2_164_482)
+        original[0] = 0xff
+        original[1] = 0xd8
+        original[original.count - 2] = 0xff
+        original[original.count - 1] = 0xd9
+        var thumbnail = Data(repeating: 0xa5, count: 60_778)
+        thumbnail[0] = 0xff
+        thumbnail[1] = 0xd8
+        thumbnail[thumbnail.count - 2] = 0xff
+        thumbnail[thumbnail.count - 1] = 0xd9
+
+        let files = try await store.installVerified(
+            originalData: original,
+            thumbnailData: thumbnail
+        )
+        let item = snapshot(files: files, original: original, now: date(hour: 9))
+        let storedOriginal = try await store.readCommittedOriginal(for: item)
+        let storedThumbnail = try await store.readCommittedThumbnail(for: item)
+
+        XCTAssertEqual(storedOriginal, original)
+        XCTAssertEqual(storedThumbnail, thumbnail)
+    }
+
+    func testInstallFailureWhenDestinationExistsCleansPartialInstall() async throws {
+        let root = FileManager.default.temporaryDirectory
+            .appendingPathComponent("PulseMediaFailedInstallTests-\(UUID().uuidString)")
+        addTeardownBlock { try? FileManager.default.removeItem(at: root) }
+        let store = try PulseMediaFileStore(rootURL: root)
+        let storageID = UUID()
+        let original = Data([0xff, 0xd8, 1, 2, 3, 0xff, 0xd9])
+        let thumbnail = Data([0xff, 0xd8, 4, 0xff, 0xd9])
+        _ = try await store.installVerified(
+            originalData: original,
+            thumbnailData: thumbnail,
+            storageID: storageID
+        )
+
+        do {
+            _ = try await store.installVerified(
+                originalData: Data([0xff, 0xd8, 9, 0xff, 0xd9]),
+                thumbnailData: Data([0xff, 0xd8, 8, 0xff, 0xd9]),
+                storageID: storageID
+            )
+            XCTFail("Expected a duplicate destination install to fail.")
+        } catch {
+            XCTAssertEqual(error as? PulseMediaStorageError, .storageUnavailable)
+        }
+
+        XCTAssertEqual(
+            try FileManager.default.contentsOfDirectory(
+                atPath: root.appendingPathComponent("originals").path
+            ).count,
+            1
+        )
+        XCTAssertEqual(
+            try FileManager.default.contentsOfDirectory(
+                atPath: root.appendingPathComponent("thumbnails").path
+            ).count,
+            1
+        )
         XCTAssertTrue(try FileManager.default.contentsOfDirectory(
             atPath: root.appendingPathComponent("staging").path
         ).isEmpty)

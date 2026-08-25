@@ -1,3 +1,4 @@
+import CryptoKit
 import XCTest
 @testable import PulseCore
 
@@ -53,6 +54,154 @@ final class PulseStoreLocationTests: XCTestCase {
             location.storeURL.path,
             "/private/group-container/Library/Application Support/Pulse/Pulse.store"
         )
+    }
+
+    func testApplicationMediaDirectoryUsesAppSupportNotAppGroup() throws {
+        let supportRoot = URL(fileURLWithPath: "/private/app-support", isDirectory: true)
+        let locator = PulseStoreLocator(
+            applicationGroupContainerProvider: { _ in
+                URL(fileURLWithPath: "/private/group-container", isDirectory: true)
+            },
+            applicationSupportDirectoryProvider: { supportRoot }
+        )
+
+        let mediaURL = try locator.applicationMediaDirectoryURL()
+
+        XCTAssertEqual(
+            mediaURL.path,
+            "/private/app-support/Pulse/Media"
+        )
+    }
+
+    func testMediaMigrationCopiesAndVerifiesEveryReferencedFileBeforeRemovingLegacyRoot() throws {
+        let root = FileManager.default.temporaryDirectory
+            .appendingPathComponent("PulseMediaMigration-\(UUID().uuidString)", isDirectory: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let legacy = root.appendingPathComponent("group/Pulse/Media", isDirectory: true)
+        let destination = root.appendingPathComponent("app/Pulse/Media", isDirectory: true)
+        let legacyOriginals = legacy.appendingPathComponent("originals", isDirectory: true)
+        let legacyThumbnails = legacy.appendingPathComponent("thumbnails", isDirectory: true)
+        try FileManager.default.createDirectory(
+            at: legacyOriginals,
+            withIntermediateDirectories: true
+        )
+        try FileManager.default.createDirectory(
+            at: legacyThumbnails,
+            withIntermediateDirectories: true
+        )
+        let storageID = UUID()
+        let original = Data([0xff, 0xd8, 1, 2, 3, 0xff, 0xd9])
+        let thumbnail = Data([0xff, 0xd8, 4, 0xff, 0xd9])
+        let media = mediaSnapshot(
+            storageID: storageID,
+            original: original,
+            thumbnail: thumbnail
+        )
+        try original.write(to: legacy.appendingPathComponent(media.originalRelativePath))
+        try thumbnail.write(to: legacy.appendingPathComponent(media.thumbnailRelativePath))
+
+        try PulseMediaFileStore.migrateLegacyMediaIfNeeded(
+            from: legacy,
+            to: destination,
+            referencedMedia: [media]
+        )
+
+        XCTAssertFalse(FileManager.default.fileExists(atPath: legacy.path))
+        XCTAssertEqual(
+            try Data(contentsOf: destination.appendingPathComponent(media.originalRelativePath)),
+            original
+        )
+        XCTAssertEqual(
+            try Data(contentsOf: destination.appendingPathComponent(media.thumbnailRelativePath)),
+            thumbnail
+        )
+    }
+
+    func testMediaMigrationPreservesSourceWhenDestinationIdentityConflicts() throws {
+        let root = FileManager.default.temporaryDirectory
+            .appendingPathComponent("PulseMediaMigrationConflict-\(UUID().uuidString)")
+        defer { try? FileManager.default.removeItem(at: root) }
+        let legacy = root.appendingPathComponent("group/Pulse/Media", isDirectory: true)
+        let destination = root.appendingPathComponent("app/Pulse/Media", isDirectory: true)
+        let storageID = UUID()
+        let original = Data([0xff, 0xd8, 1, 2, 3, 0xff, 0xd9])
+        let thumbnail = Data([0xff, 0xd8, 4, 0xff, 0xd9])
+        let media = mediaSnapshot(
+            storageID: storageID,
+            original: original,
+            thumbnail: thumbnail
+        )
+        try FileManager.default.createDirectory(
+            at: legacy.appendingPathComponent("originals"),
+            withIntermediateDirectories: true
+        )
+        try FileManager.default.createDirectory(
+            at: legacy.appendingPathComponent("thumbnails"),
+            withIntermediateDirectories: true
+        )
+        try FileManager.default.createDirectory(
+            at: destination.appendingPathComponent("originals"),
+            withIntermediateDirectories: true
+        )
+        try original.write(to: legacy.appendingPathComponent(media.originalRelativePath))
+        try thumbnail.write(to: legacy.appendingPathComponent(media.thumbnailRelativePath))
+        let conflicting = Data([0xff, 0xd8, 9, 9, 9, 0xff, 0xd9])
+        try conflicting.write(
+            to: destination.appendingPathComponent(media.originalRelativePath)
+        )
+
+        XCTAssertThrowsError(
+            try PulseMediaFileStore.migrateLegacyMediaIfNeeded(
+                from: legacy,
+                to: destination,
+                referencedMedia: [media]
+            )
+        ) { error in
+            XCTAssertEqual(error as? PulseMediaStorageError, .identityMismatch)
+        }
+
+        XCTAssertTrue(FileManager.default.fileExists(atPath: legacy.path))
+        XCTAssertEqual(
+            try Data(contentsOf: legacy.appendingPathComponent(media.originalRelativePath)),
+            original
+        )
+        XCTAssertEqual(
+            try Data(contentsOf: destination.appendingPathComponent(media.originalRelativePath)),
+            conflicting
+        )
+    }
+
+    func testMediaMigrationRejectsLegacyDirectorySymlinks() throws {
+        let root = FileManager.default.temporaryDirectory
+            .appendingPathComponent("PulseMediaMigrationSymlink-\(UUID().uuidString)")
+        defer { try? FileManager.default.removeItem(at: root) }
+        let legacy = root.appendingPathComponent("group/Pulse/Media", isDirectory: true)
+        let destination = root.appendingPathComponent("app/Pulse/Media", isDirectory: true)
+        let external = root.appendingPathComponent("external", isDirectory: true)
+        try FileManager.default.createDirectory(
+            at: legacy,
+            withIntermediateDirectories: true
+        )
+        try FileManager.default.createDirectory(
+            at: external,
+            withIntermediateDirectories: true
+        )
+        try FileManager.default.createSymbolicLink(
+            at: legacy.appendingPathComponent("originals", isDirectory: true),
+            withDestinationURL: external
+        )
+
+        XCTAssertThrowsError(
+            try PulseMediaFileStore.migrateLegacyMediaIfNeeded(
+                from: legacy,
+                to: destination,
+                referencedMedia: []
+            )
+        ) { error in
+            XCTAssertEqual(error as? PulseMediaStorageError, .storageUnavailable)
+        }
+        XCTAssertTrue(FileManager.default.fileExists(atPath: legacy.path))
+        XCTAssertTrue(FileManager.default.fileExists(atPath: external.path))
     }
 
     func testAppGroupLocationRejectsInvalidIdentifierWithoutCallingProvider() {
@@ -172,5 +321,42 @@ final class PulseStoreLocationTests: XCTestCase {
         )
 
         XCTAssertEqual(protectedPaths, Set([root.path, store.path, sidecar.path]))
+    }
+
+    private func mediaSnapshot(
+        storageID: UUID,
+        original: Data,
+        thumbnail: Data
+    ) -> ImprintMediaSnapshot {
+        let now = Date(timeIntervalSince1970: 1_750_000_000)
+        return ImprintMediaSnapshot(
+            id: UUID(),
+            habitID: UUID(),
+            recordID: nil,
+            logicalDay: LogicalDay(year: 2026, month: 8, day: 25),
+            capturedAt: now,
+            createdAt: now,
+            modifiedAt: now,
+            originalRelativePath: PulseMediaPath.make(
+                directory: .originals,
+                storageID: storageID
+            ),
+            thumbnailRelativePath: PulseMediaPath.make(
+                directory: .thumbnails,
+                storageID: storageID
+            ),
+            mediaType: "image/jpeg",
+            byteCount: Int64(original.count),
+            thumbnailByteCount: Int64(thumbnail.count),
+            pixelWidth: 1_200,
+            pixelHeight: 1_600,
+            sha256: SHA256.hash(data: original)
+                .map { String(format: "%02x", $0) }
+                .joined(),
+            thumbnailSHA256: SHA256.hash(data: thumbnail)
+                .map { String(format: "%02x", $0) }
+                .joined(),
+            cameraPosition: .rear
+        )
     }
 }

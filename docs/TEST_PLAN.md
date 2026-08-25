@@ -22,7 +22,7 @@
 | Habit / 逻辑日 | 名称/说明规范化；Gregorian、时区、DST、稳定起始日；时区变更不改历史 |
 | Repository | 唯一主承诺、同日幂等、rollback、跨容器并发；记事签到时写入、外部先签到后补写、编辑、清空、非法输入不变更；签到/媒体独立删除和重新关联 |
 | Schema 1.1.1 | Habit / CheckInRecord / ImprintMedia 真实磁盘读写；精确 marker；实验性 1.1.0 与更旧 marker 失败关闭；无迁移分支 |
-| 媒体文件 | 安装前 staging、不可变小写 UUID 路径、路径穿越、文件及 `originals` / `thumbnails` / `staging` 中间目录符号链接拒绝、24 MiB/2 MiB 上限、正式文件提交前回读原图和缩略图并校验 byteCount + SHA-256；提交前暂不可读或身份暂不一致有界恢复且失败清理全部新文件；已提交文件暂不可读可有界恢复，身份不一致立即失败；孤儿审计、清除 |
+| 媒体文件 | App 私有 staging、不可变小写 UUID 路径、路径穿越、文件及 `originals` / `thumbnails` / `staging` 中间目录符号链接拒绝、24 MiB/2 MiB 上限、正式文件提交前回读原图和缩略图并校验 byteCount + SHA-256；提交前暂不可读或身份暂不一致有界恢复且失败清理全部新文件；已提交文件暂不可读可有界恢复，身份不一致立即失败；App Group 旧媒体复制并全量验证成功后才删除旧目录；孤儿审计、清除 |
 | 图片处理 | Picker 回调内物化 App 自有直立位图；方向归一、最大 4096、缩略图最大 720、JPEG 输出、元数据剥离、无效图片拒绝 |
 | 归档 payload v3 | 唯一 UTType；container v2；PBKDF2 600k；随机 salt/nonce；分条目 AES-256-GCM；签到+记事+媒体 round-trip；显式记事空字段；原/缩略图身份；缺字段/缺失/额外/重复、篡改、截断、尾随、错误口令、未知版本、超限失败关闭；payload v1/v2 与 container v1 不读取 |
 | 恢复事务 | 全部解密/认证后才确认；文件先安装、数据库单次 replace；提交前失败回收新文件；提交后清理失败不得误删新文件；取消清理解密 staging |
