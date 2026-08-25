@@ -56,7 +56,7 @@ Pulse 1.1 把“每天可靠签到”升级为“每天留下一个可验证事�
 | 参数 | 1.1 合同 |
 | --- | --- |
 | Marketing Version | `1.1` |
-| Build Number | `6` |
+| Build Number | `7` |
 | SwiftData | 只接受 `PulseSchema 1.1.1` marker；实验性 1.1.0 与更旧内部安装明确要求清洁安装 |
 | 加密归档 | 只接受 container v2 / payload v3；payload v1/v2 与 container v1 明确报版本不支持 |
 | Watch 传输 / 本地状态 | 只接受协议 v2 / 本地状态 v2；旧内部状态与缺失字段明确拒绝 |
