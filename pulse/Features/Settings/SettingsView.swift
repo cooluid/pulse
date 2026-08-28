@@ -101,7 +101,7 @@ struct SettingsView: View {
                             .frame(width: PulseDesign.spacing12, height: PulseDesign.spacing12)
                             .accessibilityHidden(true)
 
-                        Text(model.settings.visualTheme.localizedName(locale: locale))
+                        Text(model.resolvedVisualTheme.localizedName(locale: locale))
                             .foregroundStyle(PulseDesign.appMuted(for: visualTheme))
                     }
                 }

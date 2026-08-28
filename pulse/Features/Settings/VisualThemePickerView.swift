@@ -13,7 +13,7 @@ struct VisualThemePickerView: View {
                 ForEach(PulseVisualTheme.allCases) { theme in
                     PulseVisualThemeChoice(
                         theme: theme,
-                        isSelected: model.settings.visualTheme == theme,
+                        isSelected: model.resolvedVisualTheme == theme,
                         isLocked:
                             PulseVisualThemeAccessPolicy
                             .requiresEnhancement(theme)

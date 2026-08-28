@@ -41,13 +41,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Pulse uses the camera to take today’s photo."
+            "value" : "Use the camera to take a photo for today’s check-in, for example to capture a moment from your day."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "用于拍摄今日照片。"
+            "value" : "用于为今日签到拍摄照片，例如记录当天的一刻。"
           }
         }
       }

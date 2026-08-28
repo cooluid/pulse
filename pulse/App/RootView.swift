@@ -17,8 +17,9 @@ struct RootView: View {
             case .loading:
                 ProgressView("app.loading")
                     .controlSize(.large)
+                    .tint(.secondary)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .background(PulseScreenBackground())
+                    .background(Color(uiColor: .systemBackground))
             case .ready:
                 if model.habit?.isIdentityConfirmed == true {
                     primaryInterface

@@ -118,14 +118,21 @@ final class PulseAppModel {
             }
         }
         watchConnectivity.start()
-        featureAccess.accessDidChange = { [weak self] hasEnhancement in
+        featureAccess.accessDidChange = { [weak self] _ in
             guard let self else { return }
-            self.reconcileVisualThemeAccess(
-                hasEnhancementEntitlement: hasEnhancement,
-                presentsNotice: true
-            )
             self.widgetTimelineReloader.reloadDailyImprint()
-            _ = self.enqueueReminderReconciliation()
+            if self.loadState == .ready {
+                _ = self.enqueueReminderReconciliation()
+            }
+        }
+        featureAccess.accessWasRevoked = { [weak self] in
+            guard let self,
+                  PulseVisualThemeAccessPolicy.requiresEnhancement(
+                    self.settings.visualTheme
+                  ) else {
+                return
+            }
+            self.themeAccessNoticePresented = true
         }
     }
 
@@ -202,18 +209,17 @@ final class PulseAppModel {
     func start() async {
         loadState = .loading
         let featureAccessTask = Task { @MainActor [featureAccess] in
-            await featureAccess.start()
+            await featureAccess.prepareForLaunch()
         }
         if settings.isResetPending {
-            loadState = await resetAllData() ? .ready : .failed
+            loadState = await resetAllData() ? .loading : .failed
         } else {
-            await reload(reconcileReminders: false)
+            await reload(reconcileReminders: false, marksReady: false)
         }
         await featureAccessTask.value
-        reconcileVisualThemeAccess(
-            hasEnhancementEntitlement: featureAccess.hasEnhancement,
-            presentsNotice: true
-        )
+        featureAccess.loadProductInBackground()
+        guard loadState != .failed else { return }
+        loadState = .ready
         if loadState == .ready {
             await auditMediaStorage()
             await enqueueReminderReconciliation().value
@@ -221,6 +227,7 @@ final class PulseAppModel {
     }
 
     func handleSceneActivation() async {
+        guard loadState != .loading else { return }
         guard operation == nil else {
             sceneActivationPending = true
             return
@@ -228,10 +235,6 @@ final class PulseAppModel {
         sceneActivationPending = false
         await reload(reconcileReminders: false)
         await featureAccess.refresh()
-        reconcileVisualThemeAccess(
-            hasEnhancementEntitlement: featureAccess.hasEnhancement,
-            presentsNotice: true
-        )
         if loadState == .ready {
             await auditMediaStorage()
             await enqueueReminderReconciliation().value
@@ -764,10 +767,15 @@ final class PulseAppModel {
         recordsByDay[day]
     }
 
-    private func reload(reconcileReminders: Bool) async {
+    private func reload(
+        reconcileReminders: Bool,
+        marksReady: Bool = true
+    ) async {
         do {
             try loadSnapshot()
-            loadState = .ready
+            if marksReady {
+                loadState = .ready
+            }
             notificationPermission = await reminderScheduler.permissionState()
             if reconcileReminders {
                 await enqueueReminderReconciliation().value
@@ -939,22 +947,6 @@ final class PulseAppModel {
         sceneActivationPending = false
         Task { @MainActor [weak self] in
             await self?.handleSceneActivation()
-        }
-    }
-
-    private func reconcileVisualThemeAccess(
-        hasEnhancementEntitlement: Bool,
-        presentsNotice: Bool
-    ) {
-        guard !PulseVisualThemeAccessPolicy.isAvailable(
-            settings.visualTheme,
-            hasEnhancementEntitlement: hasEnhancementEntitlement
-        ) else {
-            return
-        }
-        settings.visualTheme = PulseVisualThemeAccessPolicy.freeTheme
-        if presentsNotice {
-            themeAccessNoticePresented = true
         }
     }
 

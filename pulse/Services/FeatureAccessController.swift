@@ -101,13 +101,17 @@ final class FeatureAccessController {
     @ObservationIgnored private let client: any StoreKitAccessClient
     @ObservationIgnored private let listensForTransactionUpdates: Bool
     @ObservationIgnored private var transactionUpdatesTask: Task<Void, Never>?
+    @ObservationIgnored private var productLoadTask: Task<Void, Never>?
+    @ObservationIgnored private var entitlementRefreshRevision = 0
 
     private(set) var productState: StoreProductLoadState = .loading
     private(set) var product: StoreProductPresentation?
     private(set) var operation: StorePurchaseOperation?
     private(set) var hasEnhancement = false
+    private(set) var entitlementIsResolved = false
 
     @ObservationIgnored var accessDidChange: (@MainActor (Bool) -> Void)?
+    @ObservationIgnored var accessWasRevoked: (@MainActor () -> Void)?
 
     init(
         client: any StoreKitAccessClient = StoreKit2AccessClient(),
@@ -119,15 +123,38 @@ final class FeatureAccessController {
 
     deinit {
         transactionUpdatesTask?.cancel()
+        productLoadTask?.cancel()
     }
 
     func start() async {
+        await prepareForLaunch()
+        await refreshProduct()
+    }
+
+    func prepareForLaunch() async {
         startObservingTransactionsIfNeeded()
-        await refresh()
+        await refreshEntitlement()
+    }
+
+    func loadProductInBackground() {
+        guard productLoadTask == nil else { return }
+        productLoadTask = Task { @MainActor [weak self] in
+            guard let self else { return }
+            await self.refreshProduct()
+            self.productLoadTask = nil
+        }
     }
 
     func refresh() async {
         await refreshEntitlement()
+        if let productLoadTask {
+            await productLoadTask.value
+            return
+        }
+        await refreshProduct()
+    }
+
+    private func refreshProduct() async {
         productState = .loading
         do {
             product = try await client.loadProduct(
@@ -181,15 +208,22 @@ final class FeatureAccessController {
     }
 
     private func refreshEntitlement() async {
+        entitlementRefreshRevision += 1
+        let revision = entitlementRefreshRevision
         let entitlement = await client.hasCurrentEntitlement(
             identifier: PulseEnhancementContract.productIdentifier
         )
-        guard entitlement != hasEnhancement else { return }
+        guard revision == entitlementRefreshRevision else { return }
+        let wasResolved = entitlementIsResolved
+        let previousEntitlement = hasEnhancement
+        entitlementIsResolved = true
         hasEnhancement = entitlement
         if entitlement {
             operation = nil
         }
-        accessDidChange?(entitlement)
+        if !wasResolved || previousEntitlement != entitlement {
+            accessDidChange?(entitlement)
+        }
     }
 
     private func startObservingTransactionsIfNeeded() {
@@ -197,11 +231,16 @@ final class FeatureAccessController {
         transactionUpdatesTask = Task { @MainActor [weak self] in
             for await result in Transaction.updates {
                 guard !Task.isCancelled, let self else { return }
+                var wasRevoked = false
                 if case .verified(let transaction) = result,
                    transaction.productID == PulseEnhancementContract.productIdentifier {
+                    wasRevoked = transaction.revocationDate != nil
                     await transaction.finish()
                 }
                 await self.refreshEntitlement()
+                if wasRevoked {
+                    self.accessWasRevoked?()
+                }
             }
         }
     }

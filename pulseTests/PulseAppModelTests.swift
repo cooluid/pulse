@@ -41,17 +41,15 @@ final class PulseAppModelTests: XCTestCase {
         XCTAssertEqual(context.model.resolvedVisualTheme, .sunlitDay)
     }
 
-    func testUnavailablePersistedPaidThemeIsExplicitlyResetOnStart() async throws {
+    func testUnavailablePersistedPaidThemeRemainsPreferredWithoutFalseNotice() async throws {
         let context = try makeContext(hasEnhancement: false)
         context.model.settings.visualTheme = .sunlitDay
 
         XCTAssertEqual(context.model.resolvedVisualTheme, .editorialJournal)
         await context.model.start()
 
-        XCTAssertEqual(context.model.settings.visualTheme, .editorialJournal)
+        XCTAssertEqual(context.model.settings.visualTheme, .sunlitDay)
         XCTAssertEqual(context.model.resolvedVisualTheme, .editorialJournal)
-        XCTAssertTrue(context.model.themeAccessNoticePresented)
-        context.model.dismissThemeAccessNotice()
         XCTAssertFalse(context.model.themeAccessNoticePresented)
     }
 
