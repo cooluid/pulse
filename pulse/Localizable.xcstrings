@@ -1,9 +1,6 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
-    "error.camera_capture_failed" : {"extractionState":"manual","localizations":{"en":{"stringUnit":{"state":"translated","value":"The camera did not return a photo. Please try again."}},"zh-Hans":{"stringUnit":{"state":"translated","value":"相机未返回照片，请重试。"}}}},
-    "error.change_saved_refresh_failed" : {"extractionState":"manual","localizations":{"en":{"stringUnit":{"state":"translated","value":"The change was saved, but the screen could not refresh. Reload to continue."}},"zh-Hans":{"stringUnit":{"state":"translated","value":"更改已保存，但页面未能刷新。请重新载入后继续。"}}}},
-    "error.check_in_saved_refresh_failed" : {"extractionState":"manual","localizations":{"en":{"stringUnit":{"state":"translated","value":"Your check-in was saved, but the screen could not refresh. Reload to continue."}},"zh-Hans":{"stringUnit":{"state":"translated","value":"签到已保存，但页面未能刷新。请重新载入后继续。"}}}},
     "accessibility.date_status_format" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -147,22 +144,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "今天还未签到"
-          }
-        }
-      }
-    },
-    "app.loading" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Loading…"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "正在加载…"
           }
         }
       }
@@ -869,6 +850,23 @@
         }
       }
     },
+    "error.camera_capture_failed" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The camera did not return a photo. Please try again."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "相机未返回照片，请重试。"
+          }
+        }
+      }
+    },
     "error.camera_unavailable" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -886,6 +884,23 @@
         }
       }
     },
+    "error.change_saved_refresh_failed" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The change was saved, but the screen could not refresh. Reload to continue."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "更改已保存，但页面未能刷新。请重新载入后继续。"
+          }
+        }
+      }
+    },
     "error.check_in_invalid" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -899,6 +914,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "本次签到没有保存，请重试。"
+          }
+        }
+      }
+    },
+    "error.check_in_saved_refresh_failed" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your check-in was saved, but the screen could not refresh. Reload to continue."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "签到已保存，但页面未能刷新。请重新载入后继续。"
           }
         }
       }
@@ -4142,6 +4174,22 @@
         }
       }
     },
+    "settings.watch.open_watch_app" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open Watch"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "打开 Watch App"
+          }
+        }
+      }
+    },
     "settings.watch.preview.check_in" : {
       "localizations" : {
         "en" : {
@@ -4346,22 +4394,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "这台设备无法使用 Apple Watch。"
-          }
-        }
-      }
-    },
-    "settings.watch.open_watch_app" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Open Watch"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "打开 Watch App"
           }
         }
       }
@@ -6094,7 +6126,23 @@
         }
       }
     },
-    "widget.placeholder.commitment" : {"extractionState":"manual","localizations":{"en":{"stringUnit":{"state":"translated","value":"My one thing"}},"zh-Hans":{"stringUnit":{"state":"translated","value":"我的一件事"}}}},
+    "widget.placeholder.commitment" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "My one thing"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "我的一件事"
+          }
+        }
+      }
+    },
     "widget.state.checked" : {
       "extractionState" : "manual",
       "localizations" : {

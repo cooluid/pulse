@@ -15,11 +15,9 @@ struct RootView: View {
         Group {
             switch model.loadState {
             case .loading:
-                ProgressView("app.loading")
-                    .controlSize(.large)
-                    .tint(.secondary)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .background(Color(uiColor: .systemBackground))
+                Color(uiColor: .systemBackground)
+                    .ignoresSafeArea()
+                    .accessibilityHidden(true)
             case .ready:
                 if model.habit?.isIdentityConfirmed == true {
                     primaryInterface

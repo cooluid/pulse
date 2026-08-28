@@ -51,7 +51,7 @@
 	<key>LSSupportsOpeningDocumentsInPlace</key>
 	<true/>
 	<key>NSCameraUsageDescription</key>
-	<string>Use the camera to take a photo for today’s check-in, for example to capture a moment from your day.</string>
+	<string>用于为今日签到拍摄照片，例如记录当天的一刻。</string>
 	<key>NSSupportsLiveActivities</key>
 	<true/>
 	<key>PulseAppGroupIdentifier</key>
