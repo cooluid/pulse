@@ -3,6 +3,7 @@ import PulseCore
 import WidgetKit
 
 enum PulseWidgetEntryState {
+    case placeholder
     case ready(PulseWidgetSnapshot, PulseWidgetStyle)
     case enhancementRequired
     case needsOpenApp

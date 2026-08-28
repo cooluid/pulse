@@ -124,7 +124,7 @@ private struct PulseWidgetProvider: AppIntentTimelineProvider {
     func placeholder(in context: Context) -> PulseWidgetEntry {
         PulseWidgetEntry(
             date: .now,
-            state: .ready(.placeholder, PulseWidgetStyleAccessPolicy.freeStyle),
+            state: .placeholder,
             language: .system
         )
     }
@@ -134,7 +134,11 @@ private struct PulseWidgetProvider: AppIntentTimelineProvider {
         in context: Context
     ) async -> PulseWidgetEntry {
         if context.isPreview {
-            return placeholder(in: context)
+            return PulseWidgetEntry(
+                date: .now,
+                state: .ready(.placeholder, configuration.style),
+                language: .system
+            )
         }
         let hasEnhancement = await PulseStoreKitEntitlementReader.hasCurrentEntitlement(
             for: PulseEnhancementContract.productIdentifier
@@ -223,6 +227,9 @@ private struct PulseLocalizedWidgetView: View {
     var body: some View {
         Group {
             switch entry.state {
+            case .placeholder:
+                Color.clear
+                    .accessibilityHidden(true)
             case .ready(let snapshot, let style):
                 readyView(snapshot, style: style)
             case .enhancementRequired:
