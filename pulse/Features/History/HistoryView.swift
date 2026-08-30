@@ -86,6 +86,8 @@ struct HistoryView: View {
             standardHistoryContent
         case .quietField:
             quietHistoryContent
+        case .moonTide, .prismLedger:
+            standardHistoryContent
         }
     }
 
@@ -356,6 +358,8 @@ struct HistoryView: View {
             PulseDesign.background
         case .sunlitDay:
             PulseDesign.sunlitChromeForeground
+        case .moonTide, .prismLedger:
+            PulseDesign.appAccentForeground(for: visualTheme)
         }
     }
 
@@ -928,7 +932,70 @@ private struct DayArchiveDetailView: View {
             sunlitDetailIdentity
         case .quietField:
             quietArchiveIdentity
+        case .moonTide, .prismLedger:
+            chromaticArchiveIdentity
         }
+    }
+
+    private var chromaticArchiveIdentity: some View {
+        HStack(alignment: .top, spacing: PulseDesign.spacing16) {
+            PulseBrandMark(size: PulseDesign.minimumHitTarget)
+
+            VStack(alignment: .leading, spacing: PulseDesign.spacing4) {
+                Text(
+                    PulseFormatting.fullDate(
+                        day,
+                        timeZone: model.timeZone ?? .autoupdatingCurrent,
+                        locale: locale
+                    )
+                )
+                .font(.system(.title3, design: .rounded, weight: .bold))
+                .foregroundStyle(PulseDesign.appInk(for: visualTheme))
+                .fixedSize(horizontal: false, vertical: true)
+
+                if let record {
+                    Text(
+                        String(
+                            format: PulseLocalization.string(
+                                "history.checked_at",
+                                locale: locale
+                            ),
+                            PulseFormatting.time(
+                                record.checkedAt,
+                                timeZone: record.timeZone,
+                                locale: locale
+                            )
+                        )
+                    )
+                    .foregroundStyle(PulseDesign.appMuted(for: visualTheme))
+                    .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+        }
+        .padding(PulseDesign.spacing16)
+        .background(
+            PulseDesign.appSurface(for: visualTheme).opacity(0.90),
+            in: RoundedRectangle(
+                cornerRadius: visualTheme == .moonTide
+                    ? PulseDesign.primaryNavigationCornerRadius
+                    : PulseDesign.spacing16,
+                style: .continuous
+            )
+        )
+        .overlay {
+            RoundedRectangle(
+                cornerRadius: visualTheme == .moonTide
+                    ? PulseDesign.primaryNavigationCornerRadius
+                    : PulseDesign.spacing16,
+                style: .continuous
+            )
+            .stroke(
+                PulseDesign.appDivider(for: visualTheme),
+                lineWidth: PulseDesign.thinLineWidth
+            )
+        }
+        .accessibilityElement(children: .combine)
+        .accessibilityIdentifier("history.archive.identity")
     }
 
     private var quietArchiveIdentity: some View {

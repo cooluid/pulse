@@ -80,7 +80,7 @@ AppModel 同时建立 `recordsByDay` 与 `mediaByDay`。照片不参与 CheckInS
 
 ## 7. 权益、提醒与系统表面
 
-`PulseEnhancementContract` 与 StoreKit 已验证 entitlement 是购买唯一来源；不保存 `isPro`。拍照、媒体和备份不读取权益。增强只控制静野/晴昼界面主题、额外 Widget 构图与可用设备的 scheduled Live Activity。`PulseVisualThemeAccessPolicy` 规定纸页手记为唯一免费默认，`enhancementThemes` 是收费主题的唯一枚举；主题写入只经 `PulseAppModel.requestVisualTheme`，权益未验证或撤销时失败关闭并统一回到纸页手记，不保留第二套购买状态。高级功能页按 `currentCapabilities` 展示不可交互同源标本，主题标本与设置预览共用 `PulseVisualThemeSpecimen`，购买页不得写入当前主题。
+`PulseEnhancementContract` 与 StoreKit 已验证 entitlement 是购买唯一来源；不保存 `isPro`。拍照、媒体和备份不读取权益。增强只控制静野/晴昼/月汐/棱镜刻度界面主题、额外 Widget 构图与可用设备的 scheduled Live Activity。`PulseVisualThemeAccessPolicy` 规定纸页手记为唯一免费默认，`enhancementThemes` 是收费主题的唯一枚举；主题写入只经 `PulseAppModel.requestVisualTheme`，权益未验证或撤销时失败关闭并统一回到纸页手记，不保留第二套购买状态。高级功能页按 `currentCapabilities` 展示不可交互同源标本，主题标本与设置预览共用 `PulseVisualThemeSpecimen`，购买页不得写入当前主题。
 
 提醒、语言与 Widget 共享事实沿用正式合同。App Group UserDefaults 只允许 `PulseSharedSettings` 管理 `interface.language`、`reminder.enabled` 与 `reminder.timeMinutes`；所有枚举、时间与布尔值按真实存储类型严格读取，损坏值失败关闭，不借助 `bool(forKey:)` 或 `integer(forKey:)` 静默转换。后两项由 App 的正式提醒协调器消费，不是 Widget 签到返回前的重建前置条件。Widget 签到成功只按逻辑日完成当天唯一投递，保留既有未来计划；不得保存签到、构图或权益副本。Home Screen 构图由 WidgetKit 逐实例配置持有，不存在全局 `widget.style`。`mediaInvitationEnabled` 是 App 本机设置，不进入共享事实或备份。
 
@@ -100,7 +100,7 @@ Debug 灵动岛测试台继续使用 String Catalog，但独占 `PulseDebug.xcst
 
 ## 9. 外观工程与可访问性
 
-影像与记事作为内容层进入 App，不另造第二套签到事实。三套界面主题共享签到、记事、照片、月历、漏签和统计能力。关键操作、Dynamic Type、VoiceOver 与 Reduce Motion 必须可用。
+影像与记事作为内容层进入 App，不另造第二套签到事实。五套界面主题共享签到、记事、照片、月历、漏签和统计能力。关键操作、Dynamic Type、VoiceOver 与 Reduce Motion 必须可用。
 
 ## 10. 证据边界
 

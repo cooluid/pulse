@@ -49,6 +49,27 @@ enum PulseDesign {
     static let action = Color("PulseAction")
     static let actionForeground = Color("PulseActionForeground")
     static let ink = Color("PulseInk")
+    static let moonAccent = Color("PulseMoonAccent")
+    static let moonAccentForeground = Color("PulseMoonAccentForeground")
+    static let moonAccentSoft = Color("PulseMoonAccentSoft")
+    static let moonCanvas = Color("PulseMoonCanvas")
+    static let moonCanvasDeep = Color("PulseMoonCanvasDeep")
+    static let moonCoral = Color("PulseMoonCoral")
+    static let moonDivider = Color("PulseMoonDivider")
+    static let moonDiscInk = Color("PulseMoonDiscInk")
+    static let moonInk = Color("PulseMoonInk")
+    static let moonMuted = Color("PulseMoonMuted")
+    static let moonSurface = Color("PulseMoonSurface")
+    static let prismAccent = Color("PulsePrismAccent")
+    static let prismAccentForeground = Color("PulsePrismAccentForeground")
+    static let prismAccentSoft = Color("PulsePrismAccentSoft")
+    static let prismCanvas = Color("PulsePrismCanvas")
+    static let prismCanvasDeep = Color("PulsePrismCanvasDeep")
+    static let prismCoral = Color("PulsePrismCoral")
+    static let prismDivider = Color("PulsePrismDivider")
+    static let prismInk = Color("PulsePrismInk")
+    static let prismMuted = Color("PulsePrismMuted")
+    static let prismSurface = Color("PulsePrismSurface")
     static let secondary = Color("PulseSecondary")
     static let separator = Color("PulseSeparator")
     static let field = Color("PulseField")
@@ -142,6 +163,8 @@ enum PulseDesign {
     static let sunlitNavigationShadowY: CGFloat = 4
     static let accessibilityNavigationMinimumHeight: CGFloat = 88
     static let accessibilityNavigationGlyphMaximum: CGFloat = 48
+    static let ledgerNavigationHeight: CGFloat = 76
+    static let ledgerNavigationGlyph: CGFloat = minimumHitTarget
 
     static let calendarDayVisualSize: CGFloat = 34
     static let calendarDayHitSize: CGFloat = minimumHitTarget
@@ -320,6 +343,30 @@ enum PulseDesign {
                 accentForeground: quietOnGreen,
                 accentSoft: quietGreenSoft
             )
+        case .moonTide:
+            PulseThemePalette(
+                canvas: moonCanvas,
+                canvasDeep: moonCanvasDeep,
+                surface: moonSurface,
+                ink: moonInk,
+                muted: moonMuted,
+                divider: moonDivider,
+                accent: moonAccent,
+                accentForeground: moonAccentForeground,
+                accentSoft: moonAccentSoft
+            )
+        case .prismLedger:
+            PulseThemePalette(
+                canvas: prismCanvas,
+                canvasDeep: prismCanvasDeep,
+                surface: prismSurface,
+                ink: prismInk,
+                muted: prismMuted,
+                divider: prismDivider,
+                accent: prismAccent,
+                accentForeground: prismAccentForeground,
+                accentSoft: prismAccentSoft
+            )
         }
     }
 
@@ -335,6 +382,10 @@ enum PulseDesign {
             sunlitAccent
         case .quietField:
             quietGreen
+        case .moonTide:
+            moonAccent
+        case .prismLedger:
+            prismAccent
         }
     }
 
@@ -383,6 +434,12 @@ struct PulseScreenBackground: View {
         case .quietField:
             PulseDesign.quietCanvas
                 .ignoresSafeArea()
+        case .moonTide:
+            PulseDesign.moonCanvas
+                .ignoresSafeArea()
+        case .prismLedger:
+            PulseDesign.prismCanvas
+                .ignoresSafeArea()
         }
     }
 }
@@ -420,7 +477,49 @@ struct PulseFieldBackground: View {
             editorialField
         case .quietField:
             quietField
+        case .moonTide:
+            moonTideField
+        case .prismLedger:
+            prismLedgerField
         }
+    }
+
+    private var moonTideField: some View {
+        TimelineView(.animation(
+            minimumInterval: PulseDesign.ambientFieldMinimumInterval,
+            paused: !allowsAmbientMotion
+        )) { timeline in
+            GeometryReader { proxy in
+                let phase = ambientPhase(at: timeline.date)
+                PulseMoonTideFieldCanvas(
+                    size: proxy.size,
+                    phase: phase,
+                    showsPrism: presentation == .today
+                )
+            }
+        }
+        .ignoresSafeArea()
+        .allowsHitTesting(false)
+        .accessibilityHidden(true)
+    }
+
+    private var prismLedgerField: some View {
+        TimelineView(.animation(
+            minimumInterval: PulseDesign.ambientFieldMinimumInterval,
+            paused: !allowsAmbientMotion
+        )) { timeline in
+            GeometryReader { proxy in
+                let phase = ambientPhase(at: timeline.date)
+                PulsePrismLedgerFieldCanvas(
+                    size: proxy.size,
+                    phase: phase,
+                    showsGrid: presentation == .today
+                )
+            }
+        }
+        .ignoresSafeArea()
+        .allowsHitTesting(false)
+        .accessibilityHidden(true)
     }
 
     private var quietField: some View {
@@ -514,6 +613,90 @@ struct PulseFieldBackground: View {
             .truncatingRemainder(dividingBy: PulseDesign.ambientFieldCycleDuration)
             / PulseDesign.ambientFieldCycleDuration
         return progress * 2 * .pi
+    }
+}
+
+private struct PulseMoonTideFieldCanvas: View {
+    let size: CGSize
+    let phase: Double
+    let showsPrism: Bool
+
+    var body: some View {
+        ZStack {
+            Image("PulseMoonTideBackground")
+                .resizable()
+                .scaledToFill()
+                .frame(width: size.width, height: size.height)
+                .offset(y: CGFloat(sin(phase)) * 3)
+                .clipped()
+
+            PulseDesign.moonCanvas.opacity(showsPrism ? 0.18 : 0.38)
+        }
+        .frame(width: size.width, height: size.height)
+        .clipped()
+    }
+}
+
+private struct PulsePrismLedgerFieldCanvas: View {
+    let size: CGSize
+    let phase: Double
+    let showsGrid: Bool
+
+    var body: some View {
+        ZStack {
+            PulseDesign.prismCanvas
+
+            if showsGrid {
+                Canvas { context, canvas in
+                    let step = max(56, min(canvas.width, canvas.height) * 0.12)
+                    var x: CGFloat = 0
+                    while x <= canvas.width {
+                        var line = Path()
+                        line.move(to: CGPoint(x: x, y: 0))
+                        line.addLine(to: CGPoint(x: x, y: canvas.height))
+                        context.stroke(
+                            line,
+                            with: .color(PulseDesign.prismDivider.opacity(0.24)),
+                            lineWidth: PulseDesign.thinLineWidth
+                        )
+                        x += step
+                    }
+
+                    var y: CGFloat = 0
+                    while y <= canvas.height {
+                        var line = Path()
+                        line.move(to: CGPoint(x: 0, y: y))
+                        line.addLine(to: CGPoint(x: canvas.width, y: y))
+                        context.stroke(
+                            line,
+                            with: .color(PulseDesign.prismDivider.opacity(0.24)),
+                            lineWidth: PulseDesign.thinLineWidth
+                        )
+                        y += step
+                    }
+                }
+            }
+
+            RoundedRectangle(cornerRadius: 36, style: .continuous)
+                .fill(PulseDesign.prismCanvasDeep.opacity(0.62))
+                .frame(width: size.width * 0.32, height: size.height * 1.18)
+                .rotationEffect(.degrees(-18 + sin(phase) * 0.35))
+                .offset(x: size.width * 0.24, y: -size.height * 0.12)
+
+            RoundedRectangle(cornerRadius: 36, style: .continuous)
+                .fill(PulseDesign.prismAccent.opacity(0.18))
+                .frame(width: size.width * 0.24, height: size.height * 0.88)
+                .rotationEffect(.degrees(58 + cos(phase) * 0.30))
+                .offset(x: size.width * 0.28, y: size.height * 0.10)
+
+            RoundedRectangle(cornerRadius: 28, style: .continuous)
+                .fill(PulseDesign.prismCoral.opacity(0.20))
+                .frame(width: size.width * 0.20, height: size.height * 0.42)
+                .rotationEffect(.degrees(-12))
+                .offset(x: size.width * 0.42, y: size.height * 0.24)
+        }
+        .frame(width: size.width, height: size.height)
+        .clipped()
     }
 }
 
@@ -1000,6 +1183,37 @@ struct PulseBrandMark: View {
                 }
                 .frame(width: size, height: size)
                 .accessibilityHidden(true)
+        case .moonTide:
+            Circle()
+                .fill(PulseDesign.moonSurface)
+                .overlay {
+                    Image("PulseMark")
+                        .resizable()
+                        .renderingMode(.template)
+                        .foregroundStyle(PulseDesign.moonAccent)
+                        .padding(size * 0.08)
+                }
+                .overlay {
+                    Circle()
+                        .stroke(
+                            PulseDesign.moonAccent.opacity(0.46),
+                            lineWidth: PulseDesign.thinLineWidth
+                        )
+                }
+                .frame(width: size, height: size)
+                .accessibilityHidden(true)
+        case .prismLedger:
+            Circle()
+                .fill(PulseDesign.prismInk)
+                .overlay {
+                    Image("PulseMark")
+                        .resizable()
+                        .renderingMode(.template)
+                        .foregroundStyle(PulseDesign.prismSurface)
+                        .padding(size * 0.08)
+                }
+                .frame(width: size, height: size)
+                .accessibilityHidden(true)
         }
     }
 }
@@ -1039,11 +1253,7 @@ struct PulseAppHeader: View {
                             minHeight: PulseDesign.minimumHitTarget
                         )
                         .background {
-                            if visualTheme == .quietField {
-                                Circle().fill(PulseDesign.quietGreenSoft)
-                            } else if visualTheme == .sunlitDay {
-                                Circle().fill(PulseDesign.sunlitSurface)
-                            }
+                            headerSettingsBackground
                         }
                 }
                 .accessibilityLabel("settings.navigation_title")
@@ -1051,7 +1261,7 @@ struct PulseAppHeader: View {
             } else {
                 NavigationLink(value: PulseNavigationDestination.settings) {
                     Group {
-                        if visualTheme == .quietField || visualTheme == .sunlitDay {
+                        if visualTheme != .editorialJournal {
                             Image(systemName: "gearshape")
                                 .font(.subheadline.weight(.bold))
                         } else {
@@ -1069,11 +1279,7 @@ struct PulseAppHeader: View {
                         minHeight: PulseDesign.minimumHitTarget
                     )
                     .background {
-                        if visualTheme == .quietField {
-                            Circle().fill(PulseDesign.quietGreenSoft)
-                        } else if visualTheme == .sunlitDay {
-                            Circle().fill(PulseDesign.sunlitSurface)
-                        }
+                        headerSettingsBackground
                     }
                 }
                 .accessibilityLabel("settings.navigation_title")
@@ -1084,6 +1290,29 @@ struct PulseAppHeader: View {
         .frame(minHeight: PulseDesign.topBarHeight)
         .padding(.horizontal, PulseDesign.horizontalPadding)
         .frame(maxWidth: .infinity)
+    }
+
+    @ViewBuilder
+    private var headerSettingsBackground: some View {
+        switch visualTheme {
+        case .quietField:
+            Circle().fill(PulseDesign.quietGreenSoft)
+        case .sunlitDay:
+            Circle().fill(PulseDesign.sunlitSurface)
+        case .moonTide:
+            Circle()
+                .fill(PulseDesign.moonSurface)
+                .overlay {
+                    Circle().stroke(
+                        PulseDesign.moonDivider,
+                        lineWidth: PulseDesign.thinLineWidth
+                    )
+                }
+        case .prismLedger:
+            Circle().fill(PulseDesign.prismAccentSoft)
+        case .editorialJournal:
+            Color.clear
+        }
     }
 }
 

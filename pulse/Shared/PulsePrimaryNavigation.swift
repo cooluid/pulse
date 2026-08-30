@@ -30,7 +30,81 @@ struct PulsePrimaryNavigation: View {
             EditorialPrimaryNavigation(selection: $selection)
         case .quietField:
             quietNavigation
+        case .moonTide, .prismLedger:
+            ledgerNavigation
         }
+    }
+
+    private var ledgerNavigation: some View {
+        HStack(spacing: 0) {
+            ledgerNavigationButton(for: .today)
+            ledgerNavigationButton(for: .history)
+        }
+        .frame(maxWidth: .infinity)
+        .frame(
+            height: dynamicTypeSize.isAccessibilitySize
+                ? PulseDesign.accessibilityNavigationMinimumHeight
+                : PulseDesign.ledgerNavigationHeight
+        )
+        .background(PulseDesign.appChromeBackground(for: visualTheme))
+        .overlay(alignment: .top) {
+            Rectangle()
+                .fill(PulseDesign.appDivider(for: visualTheme))
+                .frame(height: PulseDesign.thinLineWidth)
+        }
+    }
+
+    private func ledgerNavigationButton(for section: PulsePrimarySection) -> some View {
+        let isSelected = selection == section
+
+        return Button {
+            select(section)
+        } label: {
+            VStack(spacing: PulseDesign.spacing8) {
+                ZStack {
+                    Circle()
+                        .fill(
+                            isSelected
+                                ? PulseDesign.appSurface(for: visualTheme)
+                                : Color.clear
+                        )
+                    Circle()
+                        .stroke(
+                            isSelected
+                                ? PulseDesign.appAccent(for: visualTheme)
+                                : PulseDesign.appDivider(for: visualTheme),
+                            lineWidth: isSelected
+                                ? PulseDesign.emphasisLineWidth
+                                : PulseDesign.thinLineWidth
+                        )
+
+                    navigationGlyphContent(for: section)
+                }
+                .frame(width: resolvedLedgerGlyphDiameter, height: resolvedLedgerGlyphDiameter)
+
+                Text(section == .today ? "tab.today" : "tab.history")
+                    .font(.system(.caption, design: .rounded, weight: .bold))
+                    .lineLimit(1)
+            }
+            .foregroundStyle(
+                isSelected
+                    ? PulseDesign.appInk(for: visualTheme)
+                    : PulseDesign.appMuted(for: visualTheme)
+            )
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background {
+                if isSelected {
+                    PulseDesign.appAccentSoft(for: visualTheme).opacity(
+                        visualTheme == .moonTide ? 0.34 : 0.72
+                    )
+                }
+            }
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityIdentifier("primary.navigation.\(section.rawValue)")
+        .accessibilityValue(isSelected ? Text(subtitleKey(for: section)) : Text(verbatim: ""))
+        .accessibilityAddTraits(isSelected ? .isSelected : [])
     }
 
     private var quietNavigation: some View {
@@ -201,6 +275,12 @@ struct PulsePrimaryNavigation: View {
                 PulseDesign.sunlitNavigationGlyphAccessibilityMaximum
             )
             : sunlitGlyphDiameter
+    }
+
+    private var resolvedLedgerGlyphDiameter: CGFloat {
+        dynamicTypeSize.isAccessibilitySize
+            ? PulseDesign.accessibilityNavigationGlyphMaximum
+            : PulseDesign.ledgerNavigationGlyph
     }
 
     private var sizedNavigation: some View {

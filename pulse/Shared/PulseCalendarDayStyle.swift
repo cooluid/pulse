@@ -51,7 +51,7 @@ extension PulseDesign {
             switch theme {
             case .editorialJournal:
                 calendarDayVisualSize
-            case .quietField, .sunlitDay:
+            case .quietField, .sunlitDay, .moonTide, .prismLedger:
                 calendarDayVisualSize + spacing4
             }
         }
@@ -64,6 +64,10 @@ extension PulseDesign {
                 .rounded(sunlitCalendarDayCornerRadius)
             case .editorialJournal:
                 .rounded(editorialCalendarDayCornerRadius)
+            case .moonTide:
+                .rounded(spacing12)
+            case .prismLedger:
+                .rounded(spacing8)
             }
         }
 
@@ -102,6 +106,17 @@ extension PulseDesign {
                 status == .checked
                     ? editorialAccent.opacity(editorialCalendarCheckedOpacity)
                     : .clear
+            case .moonTide, .prismLedger:
+                switch status {
+                case .checked:
+                    appAccent(for: theme)
+                case .todayPending:
+                    appSurface(for: theme)
+                case .missed:
+                    appAccentSoft(for: theme).opacity(0.50)
+                case .future, .beforeHabit:
+                    .clear
+                }
             }
         }
 
@@ -139,6 +154,17 @@ extension PulseDesign {
                 case .beforeHabit:
                     secondary.opacity(calendarBeforeHabitOpacity)
                 }
+            case .moonTide, .prismLedger:
+                switch status {
+                case .checked:
+                    appAccentForeground(for: theme)
+                case .missed, .future:
+                    appMuted(for: theme)
+                case .todayPending:
+                    appInk(for: theme)
+                case .beforeHabit:
+                    appMuted(for: theme).opacity(calendarBeforeHabitOpacity)
+                }
             }
         }
 
@@ -150,6 +176,8 @@ extension PulseDesign {
                 sunlitChrome
             case .editorialJournal:
                 editorialAccent
+            case .moonTide, .prismLedger:
+                appAccent(for: theme)
             }
         }
 
@@ -164,6 +192,8 @@ extension PulseDesign {
                 status == .checked ? sunlitAccent : sunlitChrome
             case .editorialJournal:
                 editorialAccent
+            case .moonTide, .prismLedger:
+                appAccent(for: theme)
             }
         }
 

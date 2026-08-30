@@ -93,6 +93,54 @@ struct PulseVisualThemeSpecimen: View {
             .padding(PulseDesign.spacing16)
             .foregroundStyle(PulseDesign.sunlitInk)
             .frame(maxWidth: .infinity)
+        case .moonTide:
+            VStack(alignment: .leading, spacing: PulseDesign.spacing12) {
+                HStack {
+                    Text(verbatim: "31")
+                        .font(.system(.title2, design: .rounded, weight: .bold))
+                        .monospacedDigit()
+                    Spacer(minLength: 0)
+                    Circle()
+                        .stroke(PulseDesign.moonAccent, lineWidth: PulseDesign.emphasisLineWidth)
+                        .frame(width: PulseDesign.spacing20, height: PulseDesign.spacing20)
+                }
+
+                Capsule()
+                    .fill(PulseDesign.moonSurface)
+                    .frame(height: PulseDesign.spacing32)
+                    .overlay(alignment: .trailing) {
+                        Circle()
+                            .stroke(PulseDesign.moonAccent, lineWidth: PulseDesign.emphasisLineWidth)
+                            .padding(PulseDesign.spacing4)
+                    }
+            }
+            .padding(PulseDesign.spacing16)
+            .foregroundStyle(PulseDesign.moonInk)
+            .frame(maxWidth: .infinity)
+        case .prismLedger:
+            VStack(alignment: .leading, spacing: PulseDesign.spacing12) {
+                HStack(alignment: .firstTextBaseline) {
+                    Text(verbatim: "31")
+                        .font(.system(.title2, design: .rounded, weight: .black))
+                        .monospacedDigit()
+                    Spacer(minLength: 0)
+                    Circle()
+                        .fill(PulseDesign.prismCoral)
+                        .frame(width: PulseDesign.spacing12, height: PulseDesign.spacing12)
+                }
+
+                RoundedRectangle(cornerRadius: PulseDesign.spacing12, style: .continuous)
+                    .fill(PulseDesign.prismAccent)
+                    .frame(height: PulseDesign.spacing32)
+                    .overlay(alignment: .trailing) {
+                        Circle()
+                            .fill(PulseDesign.prismSurface)
+                            .padding(PulseDesign.spacing4)
+                    }
+            }
+            .padding(PulseDesign.spacing16)
+            .foregroundStyle(PulseDesign.prismInk)
+            .frame(maxWidth: .infinity)
         }
     }
 }

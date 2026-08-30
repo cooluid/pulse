@@ -132,7 +132,7 @@ struct CalendarDayCell: View {
 
     private func statusGlyphFont(_ style: PulseDesign.CalendarDayStyle) -> Font {
         switch visualTheme {
-        case .sunlitDay:
+        case .sunlitDay, .moonTide, .prismLedger:
             .system(size: PulseDesign.calendarAccessoryGlyphSize, weight: .bold)
         case .quietField, .editorialJournal:
             .system(.caption2, design: style.fontDesign, weight: .bold)

@@ -327,7 +327,11 @@ private struct ConfiguredRootView: View {
         RootView(model: model)
             .environment(\.locale, settings.locale)
             .environment(\.pulseVisualTheme, model.resolvedVisualTheme)
-            .preferredColorScheme(settings.theme.preferredColorScheme)
+            .preferredColorScheme(
+                model.resolvedVisualTheme == .moonTide
+                    ? .dark
+                    : settings.theme.preferredColorScheme
+            )
     }
 }
 

@@ -43,6 +43,8 @@ enum PulseVisualTheme: String, CaseIterable, Identifiable, Sendable {
     case editorialJournal
     case quietField
     case sunlitDay
+    case moonTide
+    case prismLedger
 
     var id: String { rawValue }
 
@@ -54,6 +56,10 @@ enum PulseVisualTheme: String, CaseIterable, Identifiable, Sendable {
             PulseLocalization.string("settings.visual_theme.quiet_field", locale: locale)
         case .sunlitDay:
             PulseLocalization.string("settings.visual_theme.sunlit_day", locale: locale)
+        case .moonTide:
+            PulseLocalization.string("settings.visual_theme.moon_tide", locale: locale)
+        case .prismLedger:
+            PulseLocalization.string("settings.visual_theme.prism_ledger", locale: locale)
         }
     }
 
@@ -72,6 +78,16 @@ enum PulseVisualTheme: String, CaseIterable, Identifiable, Sendable {
         case .sunlitDay:
             PulseLocalization.string(
                 "settings.visual_theme.sunlit_day.detail",
+                locale: locale
+            )
+        case .moonTide:
+            PulseLocalization.string(
+                "settings.visual_theme.moon_tide.detail",
+                locale: locale
+            )
+        case .prismLedger:
+            PulseLocalization.string(
+                "settings.visual_theme.prism_ledger.detail",
                 locale: locale
             )
         }

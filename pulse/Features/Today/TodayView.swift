@@ -185,6 +185,8 @@ struct TodayView: View {
             )
         case .quietField:
             quietFieldContent
+        case .moonTide, .prismLedger:
+            chromaticContent
         }
     }
 
@@ -257,6 +259,73 @@ struct TodayView: View {
                     .padding(.top, PulseDesign.spacing16)
             }
             .padding(.bottom, PulseDesign.spacing24)
+        }
+    }
+
+    @ViewBuilder
+    private var chromaticContent: some View {
+        if usesRegularWidthLayout {
+            HStack(alignment: .center, spacing: PulseDesign.regularWidthColumnGap) {
+                VStack(spacing: 0) {
+                    chromaticDayHero
+                    checkInControl
+                        .padding(.top, PulseDesign.checkInHeroSpacing)
+                        .zIndex(2)
+                }
+                .frame(maxWidth: .infinity)
+
+                VStack(spacing: 0) {
+                    weekRail
+                    chromaticRhythmStatus
+                        .padding(.top, PulseDesign.spacing24)
+                    todayJournalSection
+                        .padding(.top, PulseDesign.spacing20)
+                }
+                .frame(maxWidth: .infinity)
+            }
+        } else {
+            VStack(spacing: 0) {
+                chromaticDayHero
+                checkInControl
+                    .padding(
+                        .top,
+                        visualTheme == .moonTide ? 0 : PulseDesign.spacing8
+                    )
+                    .zIndex(2)
+                todayJournalSection
+                    .padding(
+                        .top,
+                        visualTheme == .moonTide
+                            ? (model.todayRecord == nil
+                                ? PulseDesign.spacing12
+                                : PulseDesign.spacing8)
+                            : PulseDesign.spacing20
+                    )
+                weekRail
+                    .padding(
+                        .top,
+                        visualTheme == .moonTide
+                            ? (model.todayRecord == nil
+                                ? PulseDesign.spacing16
+                                : PulseDesign.spacing8)
+                            : PulseDesign.spacing24
+                    )
+                chromaticRhythmStatus
+                    .padding(
+                        .top,
+                        visualTheme == .moonTide
+                            ? (model.todayRecord == nil
+                                ? PulseDesign.spacing8
+                                : PulseDesign.spacing4)
+                            : PulseDesign.spacing16
+                    )
+            }
+            .padding(
+                .bottom,
+                visualTheme == .moonTide
+                    ? PulseDesign.spacing12
+                    : PulseDesign.spacing24
+            )
         }
     }
 
@@ -435,6 +504,120 @@ struct TodayView: View {
         .accessibilityElement(children: .contain)
     }
 
+    private var chromaticDayHero: some View {
+        VStack(alignment: .leading, spacing: PulseDesign.spacing12) {
+            if let today = model.today, let timeZone = model.timeZone {
+                let weekday = PulseFormatting.fullWeekday(
+                    today,
+                    timeZone: timeZone,
+                    locale: locale
+                )
+
+                Group {
+                    if dynamicTypeSize.isAccessibilitySize {
+                        VStack(alignment: .leading, spacing: PulseDesign.spacing8) {
+                            chromaticDayNumber(today)
+                            chromaticDateDetails(
+                                weekday: weekday,
+                                yearAndMonth: PulseFormatting.numericYearAndMonth(
+                                    today,
+                                    timeZone: timeZone
+                                )
+                            )
+                        }
+                    } else {
+                        HStack(alignment: .lastTextBaseline, spacing: PulseDesign.spacing20) {
+                            chromaticDayNumber(today)
+                            chromaticDateDetails(
+                                weekday: weekday,
+                                yearAndMonth: PulseFormatting.numericYearAndMonth(
+                                    today,
+                                    timeZone: timeZone
+                                )
+                            )
+                            .padding(.bottom, PulseDesign.spacing8)
+                            Spacer(minLength: 0)
+                        }
+                    }
+                }
+                .accessibilityElement(children: .contain)
+                .accessibilityIdentifier("today.hero.kicker")
+
+                if let commitmentName = model.habit?.name {
+                    VStack(alignment: .leading, spacing: PulseDesign.spacing4) {
+                        Text("today.commitment.cue")
+                            .font(.caption.weight(.semibold))
+                            .foregroundStyle(PulseDesign.appAccent(for: visualTheme))
+
+                        Text(commitmentName)
+                            .font(
+                                .system(
+                                    dynamicTypeSize.isAccessibilitySize ? .title3 : .title2,
+                                    design: visualTheme == .moonTide ? .rounded : .default,
+                                    weight: .bold
+                                )
+                            )
+                            .foregroundStyle(PulseDesign.appInk(for: visualTheme))
+                            .lineLimit(dynamicTypeSize.isAccessibilitySize ? 3 : 2)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .accessibilityElement(children: .ignore)
+                    .accessibilityLabel(
+                        String(
+                            format: PulseLocalization.string(
+                                "today.commitment.accessibility_format",
+                                locale: locale
+                            ),
+                            commitmentName
+                        )
+                    )
+                    .accessibilityIdentifier("today.commitment.name")
+                }
+            }
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.horizontal, PulseDesign.spacing8)
+        .padding(.top, PulseDesign.spacing16)
+        .padding(.bottom, PulseDesign.spacing8)
+        .frame(minHeight: PulseDesign.sunlitTodayHeroMinimumHeight, alignment: .top)
+        .accessibilityElement(children: .contain)
+    }
+
+    private func chromaticDayNumber(_ today: LogicalDay) -> some View {
+        Text(today.day, format: .number)
+            .font(
+                .system(
+                    size: dynamicTypeSize.isAccessibilitySize
+                        ? min(resolvedSunlitDayNumberSize, 112)
+                        : resolvedSunlitDayNumberSize,
+                    weight: visualTheme == .moonTide ? .bold : .black,
+                    design: visualTheme == .moonTide ? .rounded : .default
+                )
+            )
+            .monospacedDigit()
+            .tracking(PulseDesign.sunlitDayNumberTracking)
+            .fixedSize(horizontal: true, vertical: false)
+            .foregroundStyle(PulseDesign.appInk(for: visualTheme))
+            .accessibilityIdentifier("today.day.number")
+    }
+
+    private func chromaticDateDetails(
+        weekday: String,
+        yearAndMonth: String
+    ) -> some View {
+        VStack(alignment: .leading, spacing: PulseDesign.spacing4) {
+            Text(weekday)
+                .font(.system(.title3, design: .rounded, weight: .bold))
+                .foregroundStyle(PulseDesign.appInk(for: visualTheme))
+
+            Text(yearAndMonth)
+                .font(.caption.bold())
+                .monospacedDigit()
+                .foregroundStyle(PulseDesign.appMuted(for: visualTheme))
+        }
+    }
+
     private func dayNumber(_ today: LogicalDay) -> some View {
         Text(today.day, format: .number)
             .font(.system(size: resolvedDayNumberSize, weight: .black, design: .rounded))
@@ -505,9 +688,117 @@ struct TodayView: View {
     private var weekRail: some View {
         if visualTheme == .sunlitDay {
             sunlitWeekRail
+        } else if visualTheme == .moonTide || visualTheme == .prismLedger {
+            chromaticWeekRail
         } else {
             quietWeekRail
         }
+    }
+
+    private var chromaticWeekRail: some View {
+        ZStack(alignment: .bottom) {
+            GeometryReader { proxy in
+                Path { path in
+                    let y = proxy.size.height - (PulseDesign.sunlitWeekMarkSize * 0.55)
+                    path.move(to: CGPoint(x: 0, y: y))
+                    path.addCurve(
+                        to: CGPoint(x: proxy.size.width, y: y),
+                        control1: CGPoint(
+                            x: proxy.size.width * 0.30,
+                            y: y + (visualTheme == .moonTide ? 8 : 0)
+                        ),
+                        control2: CGPoint(
+                            x: proxy.size.width * 0.68,
+                            y: y - (visualTheme == .moonTide ? 8 : 0)
+                        )
+                    )
+                }
+                .stroke(
+                    PulseDesign.appDivider(for: visualTheme),
+                    style: StrokeStyle(
+                        lineWidth: visualTheme == .moonTide
+                            ? PulseDesign.emphasisLineWidth
+                            : PulseDesign.thinLineWidth,
+                        lineCap: .round
+                    )
+                )
+            }
+            .accessibilityHidden(true)
+
+            HStack(alignment: .top, spacing: 0) {
+                ForEach(model.recentDays) { item in
+                    chromaticWeekRailDay(item)
+                        .frame(maxWidth: .infinity)
+                }
+            }
+        }
+        .frame(maxWidth: .infinity)
+        .frame(height: 52)
+        .accessibilityElement(children: .contain)
+        .accessibilityIdentifier("today.week.rail")
+    }
+
+    private func chromaticWeekRailDay(_ item: CalendarDayItem) -> some View {
+        let isChecked = item.status == .checked
+        let isToday = item.day == model.today
+
+        return VStack(spacing: PulseDesign.spacing8) {
+            if let timeZone = model.timeZone {
+                Text(
+                    PulseFormatting.shortWeekday(
+                        item.day,
+                        timeZone: timeZone,
+                        locale: locale
+                    )
+                )
+                .font(.system(.caption2, design: .rounded, weight: isToday ? .bold : .regular))
+                .foregroundStyle(
+                    isToday
+                        ? PulseDesign.appInk(for: visualTheme)
+                        : PulseDesign.appMuted(for: visualTheme)
+                )
+            }
+
+            ZStack {
+                Circle()
+                    .fill(
+                        isChecked
+                            ? PulseDesign.appAccent(for: visualTheme)
+                            : PulseDesign.appChromeBackground(for: visualTheme)
+                    )
+                Circle()
+                    .stroke(
+                        isToday
+                            ? PulseDesign.appAccent(for: visualTheme)
+                            : PulseDesign.appDivider(for: visualTheme),
+                        lineWidth: isToday
+                            ? PulseDesign.emphasisLineWidth
+                            : PulseDesign.thinLineWidth
+                    )
+
+                if isChecked {
+                    Image(systemName: "checkmark")
+                        .font(.system(size: 8, weight: .bold))
+                        .foregroundStyle(PulseDesign.appAccentForeground(for: visualTheme))
+                } else if isToday {
+                    Text(item.day.day, format: .number)
+                        .font(.system(size: 8, weight: .bold))
+                        .foregroundStyle(PulseDesign.appInk(for: visualTheme))
+                } else {
+                    Image(systemName: "minus")
+                        .font(.system(size: 8, weight: .medium))
+                        .foregroundStyle(PulseDesign.appMuted(for: visualTheme))
+                }
+            }
+            .frame(
+                width: PulseDesign.sunlitWeekMarkSize + PulseDesign.spacing4,
+                height: PulseDesign.sunlitWeekMarkSize + PulseDesign.spacing4
+            )
+        }
+        .animation(completionSecondaryAnimation, value: item.status)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(weekDayAccessibilityLabel(item))
+        .accessibilityIdentifier("today.week.day.\(item.day.storageValue)")
     }
 
     private var quietWeekRail: some View {
@@ -665,6 +956,12 @@ struct TodayView: View {
         .accessibilityIdentifier("today.week.day.\(item.day.storageValue)")
     }
 
+    private var usesWideCheckInControl: Bool {
+        visualTheme == .sunlitDay
+            || visualTheme == .moonTide
+            || visualTheme == .prismLedger
+    }
+
     private var checkInControl: some View {
         let isChecked = model.todayRecord != nil
         let controlFill =
@@ -675,6 +972,10 @@ struct TodayView: View {
                 isChecked ? PulseDesign.grass : PulseDesign.action
             case .quietField:
                 PulseDesign.quietGreen
+            case .moonTide:
+                PulseDesign.moonSurface
+            case .prismLedger:
+                PulseDesign.prismAccent
             }
         let controlForeground =
             switch visualTheme {
@@ -684,6 +985,10 @@ struct TodayView: View {
                 isChecked ? PulseDesign.grassForeground : PulseDesign.actionForeground
             case .quietField:
                 PulseDesign.quietOnGreen
+            case .moonTide:
+                PulseDesign.moonInk
+            case .prismLedger:
+                PulseDesign.prismAccentForeground
             }
 
         return VStack(spacing: PulseDesign.spacing12) {
@@ -718,12 +1023,16 @@ struct TodayView: View {
             .overlay(alignment: .bottomTrailing) {
                 if isChecked,
                     !dynamicTypeSize.isAccessibilitySize,
-                    visualTheme != .sunlitDay
+                    (!usesWideCheckInControl || visualTheme == .moonTide)
                 {
                     mediaCompanionAction
                         .offset(
-                            x: PulseDesign.mediaCompanionOffsetX,
-                            y: PulseDesign.mediaCompanionOffsetY
+                            x: visualTheme == .moonTide
+                                ? PulseDesign.spacing32 + PulseDesign.spacing24
+                                : PulseDesign.mediaCompanionOffsetX,
+                            y: visualTheme == .moonTide
+                                ? -PulseDesign.spacing8
+                                : PulseDesign.mediaCompanionOffsetY
                         )
                 }
             }
@@ -739,7 +1048,7 @@ struct TodayView: View {
                 value: model.isSaving
             )
 
-            if isChecked, visualTheme == .sunlitDay {
+            if isChecked, usesWideCheckInControl, visualTheme != .moonTide {
                 HStack {
                     Spacer(minLength: 0)
                     mediaCompanionAction
@@ -751,7 +1060,7 @@ struct TodayView: View {
 
             if !isChecked,
                 !dynamicTypeSize.isAccessibilitySize,
-                visualTheme != .sunlitDay
+                !usesWideCheckInControl
             {
                 Text("today.check_in_hint_visible")
                     .font(.system(.caption, design: .rounded, weight: .semibold))
@@ -951,6 +1260,95 @@ struct TodayView: View {
                 )
             )
             .animation(completionSecondaryAnimation, value: isChecked)
+        } else if visualTheme == .moonTide {
+            ZStack {
+                Image("PulseMoonTideDisc")
+                    .resizable()
+                    .scaledToFit()
+                    .accessibilityHidden(true)
+
+                moonCheckInStatusContent
+                    .padding(.horizontal, PulseDesign.spacing32)
+            }
+            .frame(width: 208, height: 208)
+            .overlay {
+                Circle()
+                    .stroke(
+                        PulseDesign.moonAccent.opacity(PulseDesign.completionRippleOpacity),
+                        lineWidth: PulseDesign.emphasisLineWidth
+                    )
+                    .scaleEffect(
+                        completionRippleExpanded
+                            ? PulseDesign.completionRippleEndScale
+                            : PulseDesign.completionRippleStartScale
+                    )
+                    .opacity(completionRippleVisible ? 1 : 0)
+            }
+            .contentShape(Circle())
+            .animation(completionSecondaryAnimation, value: isChecked)
+        } else if visualTheme == .prismLedger {
+            HStack(spacing: PulseDesign.spacing16) {
+                chromaticCheckInStatusContent
+
+                Spacer(minLength: 0)
+
+                ZStack {
+                    Circle()
+                        .fill(PulseDesign.prismAccentSoft)
+                    Circle()
+                        .stroke(
+                            PulseDesign.prismAccent,
+                            lineWidth: PulseDesign.emphasisLineWidth
+                        )
+
+                    if isChecked {
+                        Image(systemName: "checkmark")
+                            .font(.headline.weight(.black))
+                            .foregroundStyle(PulseDesign.prismAccent)
+                    } else {
+                        PulseImprintGlyph(
+                            isSolid: false,
+                            foreground: PulseDesign.prismAccent
+                        )
+                        .padding(PulseDesign.spacing12)
+                        .scaleEffect(imprintGlyphScale)
+                    }
+                }
+                .frame(
+                    width: PulseDesign.sunlitCheckInGlyphDiameter,
+                    height: PulseDesign.sunlitCheckInGlyphDiameter
+                )
+                .accessibilityHidden(true)
+            }
+            .padding(.horizontal, PulseDesign.spacing20)
+            .frame(
+                maxWidth: PulseDesign.sunlitCheckInMaximumWidth,
+                minHeight: PulseDesign.sunlitCheckInMinimumHeight
+            )
+            .background(
+                fill,
+                in: RoundedRectangle(
+                    cornerRadius: PulseDesign.spacing16,
+                    style: .continuous
+                )
+            )
+            .overlay {
+                RoundedRectangle(
+                    cornerRadius: PulseDesign.spacing16,
+                    style: .continuous
+                )
+                .stroke(
+                    PulseDesign.prismAccentForeground.opacity(0.18),
+                    lineWidth: PulseDesign.thinLineWidth
+                )
+            }
+            .contentShape(
+                RoundedRectangle(
+                    cornerRadius: PulseDesign.spacing16,
+                    style: .continuous
+                )
+            )
+            .animation(completionSecondaryAnimation, value: isChecked)
         } else {
             ZStack {
                 Circle()
@@ -1059,6 +1457,69 @@ struct TodayView: View {
     }
 
     @ViewBuilder
+    private var chromaticCheckInStatusContent: some View {
+        if imprintRitualPhase == .saving, model.isSaving && showsSavingIndicator {
+            ProgressView()
+                .controlSize(.large)
+                .tint(chromaticCheckInForeground)
+        } else {
+            VStack(alignment: .leading, spacing: PulseDesign.spacing4) {
+                Text(model.todayRecord == nil ? "today.check_in_hint_visible" : "tab.today")
+                    .font(.caption.bold())
+                    .foregroundStyle(chromaticCheckInForeground.opacity(0.68))
+
+                Text(
+                    completedCheckInText
+                        ?? PulseLocalization.string("today.check_in_action", locale: locale)
+                )
+                .font(.system(.headline, design: .rounded, weight: .bold))
+                .foregroundStyle(chromaticCheckInForeground)
+                .lineLimit(2)
+                .minimumScaleFactor(0.78)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .transition(.opacity)
+        }
+    }
+
+    @ViewBuilder
+    private var moonCheckInStatusContent: some View {
+        if imprintRitualPhase == .saving, model.isSaving && showsSavingIndicator {
+            ProgressView()
+                .controlSize(.large)
+                .tint(PulseDesign.moonAccentForeground)
+        } else {
+            let textColor = model.todayRecord == nil
+                ? PulseDesign.moonAccentForeground
+                : PulseDesign.moonDiscInk
+
+            VStack(spacing: PulseDesign.spacing8) {
+                Text(model.todayRecord == nil ? "today.check_in_hint_visible" : "tab.today")
+                    .font(.caption.bold())
+                    .foregroundStyle(textColor.opacity(0.68))
+
+                Text(
+                    completedCheckInText
+                        ?? PulseLocalization.string("today.check_in_action", locale: locale)
+                )
+                .font(.system(.headline, design: .rounded, weight: .black))
+                .foregroundStyle(textColor)
+                .multilineTextAlignment(.center)
+                .lineLimit(2)
+                .minimumScaleFactor(0.76)
+            }
+            .blendMode(model.todayRecord == nil ? .normal : .multiply)
+            .transition(.opacity)
+        }
+    }
+
+    private var chromaticCheckInForeground: Color {
+        visualTheme == .moonTide
+            ? PulseDesign.moonAccentForeground
+            : PulseDesign.prismAccentForeground
+    }
+
+    @ViewBuilder
     private var quietCheckInStatusContent: some View {
         if imprintRitualPhase == .saving, model.isSaving && showsSavingIndicator {
             ProgressView()
@@ -1161,6 +1622,37 @@ struct TodayView: View {
             .accessibilityIdentifier("today.rhythm.status")
     }
 
+    private var chromaticRhythmStatus: some View {
+        Text(rhythmStatusText)
+            .font(.system(.footnote, design: .rounded, weight: .bold))
+            .monospacedDigit()
+            .foregroundStyle(PulseDesign.appInk(for: visualTheme))
+            .padding(.horizontal, PulseDesign.spacing16)
+            .frame(minHeight: PulseDesign.spacing32)
+            .background(
+                PulseDesign.appAccentSoft(for: visualTheme).opacity(
+                    visualTheme == .moonTide ? 0.54 : 0.88
+                ),
+                in: Capsule()
+            )
+            .overlay {
+                Capsule()
+                    .stroke(
+                        PulseDesign.appDivider(for: visualTheme),
+                        lineWidth: PulseDesign.thinLineWidth
+                    )
+            }
+            .fixedSize(horizontal: false, vertical: true)
+            .frame(maxWidth: .infinity, alignment: .center)
+            .multilineTextAlignment(.center)
+            .contentTransition(.numericText(value: Double(model.statistics.currentStreak)))
+            .animation(
+                completionSecondaryAnimation,
+                value: model.statistics.currentStreak
+            )
+            .accessibilityIdentifier("today.rhythm.status")
+    }
+
     @ViewBuilder
     private var todayJournalSection: some View {
         if let record = model.todayRecord {
@@ -1172,7 +1664,7 @@ struct TodayView: View {
                 text: $draftJournalNote,
                 isFocused: $isJournalFocused,
                 isDisabled: model.isSaving,
-                showsHeader: visualTheme != .sunlitDay
+                showsHeader: !usesWideCheckInControl
             )
         }
     }
@@ -1238,6 +1730,7 @@ struct TodayView: View {
         case .sunlitDay: PulseDesign.sunlitInk
         case .editorialJournal: PulseDesign.action
         case .quietField: PulseDesign.quietInk
+        case .moonTide, .prismLedger: PulseDesign.appInk(for: visualTheme)
         }
     }
 
@@ -1246,6 +1739,7 @@ struct TodayView: View {
         case .sunlitDay: PulseDesign.sunlitSurface
         case .editorialJournal: PulseDesign.surface
         case .quietField: PulseDesign.quietSurface
+        case .moonTide, .prismLedger: PulseDesign.appSurface(for: visualTheme)
         }
     }
 
@@ -1254,6 +1748,7 @@ struct TodayView: View {
         case .sunlitDay: PulseDesign.sunlitAccent
         case .editorialJournal: PulseDesign.grass
         case .quietField: PulseDesign.quietGreen
+        case .moonTide, .prismLedger: PulseDesign.appAccent(for: visualTheme)
         }
     }
 

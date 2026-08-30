@@ -212,6 +212,8 @@ struct RootView: View {
             PulseDesign.editorialNavigationStripHeight
                 + PulseDesign.spacing8
                 + PulseDesign.editorialNavigationOuterVerticalPadding
+        case .moonTide, .prismLedger:
+            PulseDesign.ledgerNavigationHeight
         }
     }
 

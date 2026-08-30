@@ -48,9 +48,7 @@ struct JournalNoteSummary: View {
         switch visualTheme {
         case .editorialJournal:
             .system(.body, design: .serif)
-        case .quietField:
-            .system(.body, design: .rounded)
-        case .sunlitDay:
+        case .quietField, .sunlitDay, .moonTide, .prismLedger:
             .system(.body, design: .rounded)
         }
     }
@@ -67,6 +65,9 @@ struct JournalNoteSummary: View {
         case .quietField:
             PulseQuietSpeechBubbleShape()
                 .fill(PulseDesign.quietSurface.opacity(PulseDesign.quietJournalSurfaceOpacity))
+        case .moonTide, .prismLedger:
+            RoundedRectangle(cornerRadius: PulseDesign.spacing20, style: .continuous)
+                .fill(PulseDesign.appSurface(for: visualTheme).opacity(0.90))
         }
     }
 
@@ -81,6 +82,12 @@ struct JournalNoteSummary: View {
         case .quietField:
             PulseQuietSpeechBubbleShape()
                 .stroke(PulseDesign.quietDivider, lineWidth: PulseDesign.thinLineWidth)
+        case .moonTide, .prismLedger:
+            RoundedRectangle(cornerRadius: PulseDesign.spacing20, style: .continuous)
+                .stroke(
+                    PulseDesign.appDivider(for: visualTheme),
+                    lineWidth: PulseDesign.thinLineWidth
+                )
         }
     }
 }
@@ -169,9 +176,7 @@ struct JournalDraftComposer: View {
         switch visualTheme {
         case .editorialJournal:
             .system(.body, design: .serif)
-        case .quietField:
-            .system(.body, design: .rounded)
-        case .sunlitDay:
+        case .quietField, .sunlitDay, .moonTide, .prismLedger:
             .system(.body, design: .rounded)
         }
     }
@@ -208,6 +213,9 @@ struct JournalDraftComposer: View {
             Color.clear
         case .sunlitDay:
             PulseSunlitSurfaceFill()
+        case .moonTide, .prismLedger:
+            RoundedRectangle(cornerRadius: PulseDesign.spacing20, style: .continuous)
+                .fill(PulseDesign.appSurface(for: visualTheme).opacity(0.90))
         }
     }
 
@@ -226,6 +234,12 @@ struct JournalDraftComposer: View {
             }
         case .sunlitDay:
             Color.clear
+        case .moonTide, .prismLedger:
+            RoundedRectangle(cornerRadius: PulseDesign.spacing20, style: .continuous)
+                .stroke(
+                    PulseDesign.appDivider(for: visualTheme),
+                    lineWidth: PulseDesign.thinLineWidth
+                )
         }
     }
 }
@@ -336,7 +350,7 @@ struct JournalHistorySection: View {
         switch visualTheme {
         case .editorialJournal:
             .system(.title2, design: .serif).weight(.bold)
-        case .quietField, .sunlitDay:
+        case .quietField, .sunlitDay, .moonTide, .prismLedger:
             visualTheme == .quietField
                 ? .system(.title3, design: .rounded, weight: .black)
                 : .system(.title3, design: .rounded, weight: .black)
@@ -346,8 +360,8 @@ struct JournalHistorySection: View {
     private var bodyFont: Font {
         switch visualTheme {
         case .editorialJournal: .system(.body, design: .serif)
-        case .quietField: .system(.body, design: .rounded)
-        case .sunlitDay: .system(.body, design: .rounded)
+        case .quietField, .sunlitDay, .moonTide, .prismLedger:
+            .system(.body, design: .rounded)
         }
     }
 
@@ -398,8 +412,8 @@ private struct JournalHistoryEntryRow: View {
     private var noteFont: Font {
         switch visualTheme {
         case .editorialJournal: .system(.body, design: .serif)
-        case .quietField: .system(.body, design: .rounded)
-        case .sunlitDay: .system(.body, design: .rounded)
+        case .quietField, .sunlitDay, .moonTide, .prismLedger:
+            .system(.body, design: .rounded)
         }
     }
 
@@ -411,6 +425,8 @@ private struct JournalHistoryEntryRow: View {
             PulseDesign.editorialAccent
         case .sunlitDay:
             PulseDesign.sunlitMuted
+        case .moonTide, .prismLedger:
+            PulseDesign.appAccent(for: visualTheme)
         }
     }
 
@@ -425,6 +441,9 @@ private struct JournalHistoryEntryRow: View {
                 .fill(PulseDesign.quietSurface.opacity(PulseDesign.journalHistorySurfaceOpacity))
         } else if visualTheme == .sunlitDay {
             PulseSunlitSurfaceFill(cornerRadius: PulseDesign.spacing20)
+        } else if visualTheme == .moonTide || visualTheme == .prismLedger {
+            RoundedRectangle(cornerRadius: PulseDesign.spacing16, style: .continuous)
+                .fill(PulseDesign.appSurface(for: visualTheme).opacity(0.90))
         }
     }
 
@@ -435,6 +454,12 @@ private struct JournalHistoryEntryRow: View {
                 .stroke(PulseDesign.quietDivider, lineWidth: PulseDesign.thinLineWidth)
         } else if visualTheme == .sunlitDay {
             Color.clear
+        } else if visualTheme == .moonTide || visualTheme == .prismLedger {
+            RoundedRectangle(cornerRadius: PulseDesign.spacing16, style: .continuous)
+                .stroke(
+                    PulseDesign.appDivider(for: visualTheme),
+                    lineWidth: PulseDesign.thinLineWidth
+                )
         } else {
             VStack(spacing: 0) {
                 Spacer(minLength: 0)
@@ -621,7 +646,7 @@ struct JournalNoteEditorSheet: View {
         switch visualTheme {
         case .editorialJournal:
             .system(.headline, design: .serif).weight(.semibold)
-        case .quietField, .sunlitDay:
+        case .quietField, .sunlitDay, .moonTide, .prismLedger:
             .system(.headline, design: .rounded).weight(.semibold)
         }
     }
@@ -630,7 +655,7 @@ struct JournalNoteEditorSheet: View {
         switch visualTheme {
         case .editorialJournal:
             .system(.body, design: .serif)
-        case .quietField, .sunlitDay:
+        case .quietField, .sunlitDay, .moonTide, .prismLedger:
             .system(.body, design: .rounded)
         }
     }

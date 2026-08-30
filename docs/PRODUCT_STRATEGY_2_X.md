@@ -26,7 +26,7 @@ Pulse 服务一个长期任务：可靠记录每天是否完成“我的一件�
 
 当前永久 entitlement 只控制已交付的可选增强：
 
-- 静野与晴昼界面主题；
+- 静野、晴昼、月汐与棱镜刻度界面主题；
 - 七个额外 Home Screen Widget 样式；
 - 支持系统上的 scheduled Live Activity。
 

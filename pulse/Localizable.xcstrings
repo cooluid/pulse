@@ -4058,6 +4058,74 @@
         }
       }
     },
+    "settings.visual_theme.moon_tide" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Moon Tide"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "月汐"
+          }
+        }
+      }
+    },
+    "settings.visual_theme.moon_tide.detail" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deep indigo, quiet tide lines, and a clear luminous imprint."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "深靛夜色、缓慢潮线与清晰冷光落印。"
+          }
+        }
+      }
+    },
+    "settings.visual_theme.prism_ledger" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Prism Ledger"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "棱镜刻度"
+          }
+        }
+      }
+    },
+    "settings.visual_theme.prism_ledger.detail" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cool violet paper, crisp type, and restrained spectral layers."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "冷紫纸面、清晰排版与克制的光谱层次。"
+          }
+        }
+      }
+    },
     "settings.visual_theme.quiet_field" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -4954,13 +5022,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Unlock Quiet Field and Sunlit Day across Today, History, Settings, and Advanced Features."
+            "value" : "Unlock Quiet Field, Sunlit Day, Moon Tide, and Prism Ledger across Today, History, Settings, and Advanced Features."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "解锁静野与晴昼，并统一应用到今天、记录、设置和高级功能页面。"
+            "value" : "解锁静野、晴昼、月汐与棱镜刻度，并统一应用到今天、记录、设置和高级功能页面。"
           }
         }
       }
@@ -4971,13 +5039,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Two Additional Interface Themes"
+            "value" : "Four Additional Interface Themes"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "两套额外界面主题"
+            "value" : "四套额外界面主题"
           }
         }
       }
@@ -5022,13 +5090,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Quiet Field, Sunlit Day, seven widget styles, and Firefly Halo for Lock Screen and Dynamic Island."
+            "value" : "Quiet Field, Sunlit Day, Moon Tide, Prism Ledger, seven widget styles, and Firefly Halo for Lock Screen and Dynamic Island."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "静野、晴昼、七种小组件样式，以及用于锁屏与灵动岛的萤火日晕。"
+            "value" : "静野、晴昼、月汐、棱镜刻度、七种小组件样式，以及用于锁屏与灵动岛的萤火日晕。"
           }
         }
       }
@@ -5056,13 +5124,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Two themes. Seven compositions. One Firefly Halo."
+            "value" : "Four themes. Seven compositions. One Firefly Halo."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "两套主题。七种构图。一个萤火日晕。"
+            "value" : "四套主题。七种构图。一个萤火日晕。"
           }
         }
       }

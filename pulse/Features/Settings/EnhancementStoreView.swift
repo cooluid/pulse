@@ -192,7 +192,59 @@ struct EnhancementStoreView: View {
             quietHero
         case .quietField:
             playfulQuietHero
+        case .moonTide, .prismLedger:
+            chromaticHero
         }
+    }
+
+    private var chromaticHero: some View {
+        HStack(alignment: .center, spacing: PulseDesign.spacing16) {
+            VStack(alignment: .leading, spacing: PulseDesign.spacing12) {
+                Label("store.lifetime_badge", systemImage: "checkmark.seal.fill")
+                    .font(.caption.weight(.bold))
+                    .foregroundStyle(PulseDesign.appAccentForeground(for: visualTheme))
+                    .padding(.horizontal, PulseDesign.spacing12)
+                    .padding(.vertical, PulseDesign.spacing8)
+                    .background(PulseDesign.appAccent(for: visualTheme), in: Capsule())
+
+                Text("store.hero.tagline")
+                    .font(.system(.title2, design: .rounded, weight: .black))
+                    .foregroundStyle(PulseDesign.appInk(for: visualTheme))
+                    .fixedSize(horizontal: false, vertical: true)
+
+                Text("store.hero.scope")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(PulseDesign.appMuted(for: visualTheme))
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+
+            PulseBrandMark(size: PulseDesign.storeBrandMarkSize)
+                .accessibilityHidden(true)
+        }
+        .padding(PulseDesign.spacing20)
+        .background(
+            PulseDesign.appSurface(for: visualTheme).opacity(0.90),
+            in: RoundedRectangle(
+                cornerRadius: visualTheme == .moonTide
+                    ? PulseDesign.primaryNavigationCornerRadius
+                    : PulseDesign.spacing16,
+                style: .continuous
+            )
+        )
+        .overlay {
+            RoundedRectangle(
+                cornerRadius: visualTheme == .moonTide
+                    ? PulseDesign.primaryNavigationCornerRadius
+                    : PulseDesign.spacing16,
+                style: .continuous
+            )
+            .stroke(
+                PulseDesign.appDivider(for: visualTheme),
+                lineWidth: PulseDesign.thinLineWidth
+            )
+        }
+        .accessibilityElement(children: .contain)
+        .accessibilityIdentifier("store.hero")
     }
 
     private var quietHero: some View {
