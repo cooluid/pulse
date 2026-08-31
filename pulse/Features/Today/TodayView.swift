@@ -1,5 +1,6 @@
 import AVFoundation
 import PulseCore
+import StoreKit
 import SwiftUI
 import UIKit
 
@@ -51,6 +52,8 @@ struct TodayView: View {
     @Environment(\.locale) private var locale
     @Environment(\.openURL) private var openURL
     @Environment(\.pulseVisualTheme) private var visualTheme
+    @Environment(\.requestReview) private var requestReview
+    @Environment(\.scenePhase) private var scenePhase
     @ScaledMetric(relativeTo: .largeTitle) private var dayNumberSize = PulseDesign.dayNumberBaseSize
     @ScaledMetric(relativeTo: .largeTitle) private var sunlitDayNumberSize =
         PulseDesign.sunlitDayNumberBaseSize
@@ -66,6 +69,7 @@ struct TodayView: View {
     @State private var showsTodayMediaDetail = false
     @State private var showsTodayJournalEditor = false
     @State private var draftJournalNote = ""
+    @State private var reviewRequestSequence = 0
     @FocusState private var isJournalFocused: Bool
 
     var body: some View {
@@ -167,6 +171,9 @@ struct TodayView: View {
         }
         .onChange(of: model.todayRecord?.id) { _, _ in
             synchronizeJournalDraft()
+        }
+        .task(id: reviewRequestSequence) {
+            await requestAppStoreReviewIfAppropriate()
         }
     }
 
@@ -1766,6 +1773,9 @@ struct TodayView: View {
             switch receipt.disposition {
             case .created:
                 completionAnimationSequence += 1
+                if !thenOpenCamera {
+                    reviewRequestSequence += 1
+                }
             case .alreadyPresent:
                 resetRitualPresentation(phase: .imprinted)
             }
@@ -1774,6 +1784,38 @@ struct TodayView: View {
                 requestCamera()
             }
         }
+    }
+
+    private func requestAppStoreReviewIfAppropriate() async {
+        guard reviewRequestSequence > 0 else { return }
+#if DEBUG
+        guard ProcessInfo.processInfo.environment["PULSE_UI_TEST_STORE_ID"] == nil else {
+            return
+        }
+#endif
+        do {
+            try await Task.sleep(for: PulseReviewRequestPolicy.presentationDelay)
+        } catch {
+            return
+        }
+        guard !Task.isCancelled,
+              isActive,
+              scenePhase == .active,
+              model.loadState == .ready,
+              model.operation == nil,
+              model.errorMessage == nil,
+              model.todayRecord != nil,
+              imprintRitualPhase == .imprinted,
+              !showsCamera,
+              !showsCameraPermissionAlert,
+              !showsTodayMediaDetail,
+              !showsTodayJournalEditor,
+              model.settings.reserveReviewRequestMilestone(
+                totalCheckInCount: model.statistics.totalCount
+              ) != nil else {
+            return
+        }
+        requestReview()
     }
 
     private var isJournalDraftValid: Bool {

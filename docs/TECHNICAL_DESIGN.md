@@ -1,8 +1,8 @@
 # Pulse 1.1 技术设计
 
-文档版本：3.7
+文档版本：3.8
 状态：Canonical Implemented Contract
-更新时间：2026-08-25
+更新时间：2026-08-31
 
 ## 1. 基线
 
@@ -101,6 +101,8 @@ Debug 灵动岛测试台继续使用 String Catalog，但独占 `PulseDebug.xcst
 ## 9. 外观工程与可访问性
 
 影像与记事作为内容层进入 App，不另造第二套签到事实。五套界面主题共享签到、记事、照片、月历、漏签和统计能力。关键操作、Dynamic Type、VoiceOver 与 Reduce Motion 必须可用。
+
+App Store 评价使用 `PulseReviewRequestPolicy` 与唯一 `PulseAppStoreContract`。累计签到达到 7 / 30 / 100 次后，只在 iPhone App 内一次 `.created` 签到完成、落印表现结束、App 仍在前台且没有相机、Sheet、Alert、错误或其他操作时调用 SwiftUI `RequestReviewAction`；长按拍照、Widget、Watch、启动和外部同步不触发。里程碑尝试记录只保存在 App 本机 `UserDefaults`，不进入 App Group、Repository、备份或诊断；达到较高里程碑时同时消费更低里程碑，避免升级后补弹。设置主动入口直接打开 App Store `action=write-review` URL，不把不保证出现的系统请求绑定到按钮。
 
 ## 10. 证据边界
 

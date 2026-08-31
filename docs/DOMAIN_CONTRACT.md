@@ -107,4 +107,4 @@ Widget/AppIntent 只消费 Habit/CheckInRecord 的签到字段，不读记事或
 
 ## 7. 公开基线
 
-Pulse 尚未公开发布，`PulseSchema 1.1.1` 与 backup container v2 / payload v3 是首次公开候选的干净基线。任何不是精确 `1.1.1` marker 的旧内部 store 都启动失败并要求清洁安装；不迁移实验性 `1.1.0`。1.1 首次公开发布后，未来版本必须从这个基线显式迁移，不得再次断代。
+Pulse `1.1 (9)` 已于 2026-08-30 公开发布，`PulseSchema 1.1.1` 与 backup container v2 / payload v3 已成为公开基线。任何未来 schema 或归档格式变化都必须从这个基线显式迁移；实验性 `1.1.0` 与公开前内部格式仍不属于兼容输入，不得再次断代。

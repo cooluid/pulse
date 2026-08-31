@@ -159,11 +159,13 @@ final class AppSettings {
         static let resetPending = "maintenance.resetPending"
         static let mediaInvitationEnabled = "settings.mediaInvitationEnabled"
         static let watchWaveMotionEnabled = "settings.watchWaveMotionEnabled"
+        static let reviewRequestMilestones = "engagement.reviewRequestMilestones"
     }
 
     @ObservationIgnored private let defaults: UserDefaults
     @ObservationIgnored private let sharedSettings: PulseSharedSettings
     @ObservationIgnored private var isLoading = true
+    @ObservationIgnored private var attemptedReviewRequestMilestones: Set<Int>
 
     var hapticsEnabled: Bool {
         didSet { persist(StorageKey.hapticsEnabled, value: hapticsEnabled) }
@@ -225,6 +227,7 @@ final class AppSettings {
             StorageKey.visualTheme: PulseVisualThemeAccessPolicy.freeTheme.rawValue,
             StorageKey.mediaInvitationEnabled: true,
             StorageKey.watchWaveMotionEnabled: true,
+            StorageKey.reviewRequestMilestones: [Int](),
         ])
         let sharedSnapshot: PulseSharedSettings.Snapshot
         do {
@@ -257,6 +260,10 @@ final class AppSettings {
             defaults: defaults,
             key: StorageKey.watchWaveMotionEnabled
         )
+        let loadedReviewRequestMilestones = try Self.loadIntegerSet(
+            defaults: defaults,
+            key: StorageKey.reviewRequestMilestones
+        )
         _ = try Self.loadBoolean(
             defaults: defaults,
             key: StorageKey.resetPending,
@@ -271,12 +278,30 @@ final class AppSettings {
         visualTheme = loadedVisualTheme
         mediaInvitationEnabled = loadedMediaInvitationEnabled
         watchWaveMotionEnabled = loadedWatchWaveMotionEnabled
+        attemptedReviewRequestMilestones = loadedReviewRequestMilestones
         language = sharedSnapshot.language
         isLoading = false
     }
 
     func setReminderEnabled(_ enabled: Bool) {
         reminderEnabled = enabled
+    }
+
+    func reserveReviewRequestMilestone(totalCheckInCount: Int) -> Int? {
+        guard let milestone = PulseReviewRequestPolicy.nextMilestone(
+            totalCheckInCount: totalCheckInCount,
+            attemptedMilestones: attemptedReviewRequestMilestones
+        ) else {
+            return nil
+        }
+        attemptedReviewRequestMilestones.formUnion(
+            PulseReviewRequestPolicy.consumedMilestones(through: milestone)
+        )
+        defaults.set(
+            attemptedReviewRequestMilestones.sorted(),
+            forKey: StorageKey.reviewRequestMilestones
+        )
+        return milestone
     }
 
     func reset() {
@@ -294,6 +319,7 @@ final class AppSettings {
         visualTheme = PulseVisualThemeAccessPolicy.freeTheme
         mediaInvitationEnabled = true
         watchWaveMotionEnabled = true
+        attemptedReviewRequestMilestones = []
         language = .system
         isLoading = false
     }
@@ -321,6 +347,7 @@ final class AppSettings {
             StorageKey.visualTheme,
             StorageKey.mediaInvitationEnabled,
             StorageKey.watchWaveMotionEnabled,
+            StorageKey.reviewRequestMilestones,
         ].forEach(defaults.removeObject(forKey:))
         sharedSettings.reset()
     }
@@ -365,6 +392,26 @@ final class AppSettings {
             throw PulseAppError.invalidSettings
         }
         return number.intValue
+    }
+
+    private static func loadIntegerSet(
+        defaults: UserDefaults,
+        key: String
+    ) throws -> Set<Int> {
+        guard let storedValues = defaults.array(forKey: key) else {
+            throw PulseAppError.invalidSettings
+        }
+        var values: Set<Int> = []
+        for storedValue in storedValues {
+            guard let number = storedValue as? NSNumber,
+                  CFGetTypeID(number) != CFBooleanGetTypeID(),
+                  !CFNumberIsFloatType(number),
+                  number.intValue >= 0 else {
+                throw PulseAppError.invalidSettings
+            }
+            values.insert(number.intValue)
+        }
+        return values
     }
 
 }

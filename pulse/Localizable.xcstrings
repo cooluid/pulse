@@ -3564,6 +3564,22 @@
         }
       }
     },
+    "settings.rate_app" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rate Pulse on the App Store"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在 App Store 评价"
+          }
+        }
+      }
+    },
     "settings.reminder.delivery.disabled" : {
       "extractionState" : "manual",
       "localizations" : {

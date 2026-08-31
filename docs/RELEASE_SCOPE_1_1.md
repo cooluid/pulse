@@ -1,14 +1,14 @@
 # 一日一印（Pulse）1.1 发布范围合同
 
-文档版本：2.3
+文档版本：2.4
 状态：Canonical Release Contract
-更新时间：2026-08-25
+更新时间：2026-08-31
 
 ## 1. 发布目标
 
 Pulse 1.1 把“每天可靠签到”升级为“每天留下一个可验证事实和一块私人记忆”。签到是唯一统计事实；短记事是其可编辑注释，影像是独立私人事实。三者都必须本地优先、可删除、可完整加密备份，不以社交、打卡证明或人脸评分为目标。
 
-本版本仍为首次公开发布前的唯一开发基线。工程不保留 1.0 SwiftData schema、备份 v1、旧类名、兼容 decoder 或双轨消费者；历史 TestFlight Build 1/2 只保留为历史证据，不能代表 1.1。
+`1.1 (9)` 已于 2026-08-30 成为首次公开基线。工程不恢复 1.0 SwiftData schema、备份 v1、旧类名、兼容 decoder 或双轨消费者；当前 Build 10 开发线必须从公开的 1.1 数据与协议基线继续演进。
 
 ## 2. 1.1 正式范围
 
@@ -25,6 +25,7 @@ Pulse 1.1 把“每天可靠签到”升级为“每天留下一个可验证事�
 - 免费基础提醒、一次买断高阶权益、八种逐实例 Home Screen Widget 构图（待落之处免费，星环 / 叠印 / 数影 / 手札 / 静场 / 来路 / 潮痕收费）与 iOS 26 scheduled Live Activity，沿用正式权益合同。正式产品枚举只由 `PulseWidgetStyle` 与 String Catalog 持有，外观只由共享 `PulseWidgetHomeRenderer` 持有。
 - English / 简体中文、纸页手记免费默认主题、静野/晴昼付费主题、Dynamic Type、VoiceOver、Reduce Motion、iPhone/iPad 正式布局。
 - 设置中的正式“帮助与反馈”信息架构：原生反馈与建议页、独立帮助中心和隐私政策入口；用户在系统邮件编辑器中检查并主动发送，App 不建立账号、反馈数据库、第三方 SDK 或后台上报。
+- App 内评价只使用 StoreKit 系统评分请求和设置“关于”中的 App Store 主动评价链接。系统请求仅在 iPhone App 内真实签到提交成功、累计签到达到 7 / 30 / 100 次且当前任务已经结束后尝试；不使用自定义评分弹窗、满意度分流、五星文案或奖励。
 - watchOS 10+ iPhone 伴侣 App、complication 与 Smart Stack 签到。iPhone 设置提供 Apple Watch 入口、配对/安装状态与当前动效开关；设置随正式快照进入 Watch，并服从 Reduce Motion / Always-On。Watch 本地只保存可重建快照、durable command outbox 和最后回执；即时消息与后台用户信息复用同一 `operationID` 和 iPhone Repository 写入路径。`pendingSync` 不得冒充成功，基础 Watch 能力永久免费。
 
 ## 3. 收费边界
@@ -56,18 +57,19 @@ Pulse 1.1 把“每天可靠签到”升级为“每天留下一个可验证事�
 | 参数 | 1.1 合同 |
 | --- | --- |
 | Marketing Version | `1.1` |
-| Build Number | `8` |
+| 已公开 Build | `9`（2026-08-30） |
+| 当前开发 Build | `10` |
 | SwiftData | 只接受 `PulseSchema 1.1.1` marker；实验性 1.1.0 与更旧内部安装明确要求清洁安装 |
 | 加密归档 | 只接受 container v2 / payload v3；payload v1/v2 与 container v1 明确报版本不支持 |
 | Watch 传输 / 本地状态 | 只接受协议 v2 / 本地状态 v2；旧内部状态与缺失字段明确拒绝 |
 | Bundle / App Group | `co.fanr.pulse` / `group.co.fanr.pulse` |
 | 最低系统 | iOS / iPadOS 18.0，watchOS 10.0 |
 
-首次公开发布 1.1 后，这一 schema 与 container v2 / payload v3 归档才成为必须长期迁移的公开基线。
+`1.1 (9)` 发布后，schema 1.1.1、container v2 / payload v3 与 Watch 协议 v2 / 本地状态 v2 已成为必须长期迁移的公开基线。
 
 ## 7. 发布门禁
 
-工程实现不以“必须先有 30 名用户”作为开工或合并条件，也不要求等公开上线后才完善功能。发布前必须完成：
+工程实现不以“必须先有 30 名用户”作为开工或合并条件。后续每次发布前必须完成：
 
 1. 自动化覆盖记事校验/编辑/删除、Widget 先签到、主题切换、影像独立性、重拍事务、低空间/文件失败、孤儿审计、清除、payload v3 完整归档、错误口令/篡改/缺字段/缺条目失败关闭。
 2. 真实 iPhone 验证相机授权、前后镜头、取消、重拍、后台/重启、低存储和照片保护；模拟器不能替代真实相机。

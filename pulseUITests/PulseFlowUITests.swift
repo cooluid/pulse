@@ -404,6 +404,16 @@ final class PulseFlowUITests: XCTestCase {
         XCTAssertTrue(app.descendants(matching: .any)["settings.help-center.link"].exists)
         let privacyLink = app.descendants(matching: .any)["settings.privacy_policy.link"]
         XCTAssertTrue(privacyLink.waitForExistence(timeout: 3))
+        let rateAppLink = app.descendants(matching: .any)["settings.rate-app.link"]
+        for _ in 0..<4 where !rateAppLink.exists {
+            app.swipeUp()
+        }
+        XCTAssertTrue(rateAppLink.waitForExistence(timeout: 3))
+
+        for _ in 0..<4 where !feedbackLink.isHittable {
+            app.swipeDown()
+        }
+        XCTAssertTrue(feedbackLink.isHittable)
 
         feedbackLink.tap()
         XCTAssertTrue(app.navigationBars["反馈与建议"].waitForExistence(timeout: 3))

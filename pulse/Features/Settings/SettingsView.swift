@@ -413,6 +413,10 @@ struct SettingsView: View {
                 "settings.version",
                 value: PulseAppMetadata.current.displayVersion
             )
+            Link(destination: PulseAppStoreContract.writeReviewURL) {
+                Label("settings.rate_app", systemImage: "star")
+            }
+            .accessibilityIdentifier("settings.rate-app.link")
             LabeledContent(
                 "settings.storage",
                 value: PulseLocalization.string("settings.storage.local", locale: locale)

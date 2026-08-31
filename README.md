@@ -6,7 +6,7 @@
 
 ## 当前状态
 
-- 产品阶段：核心功能进入发布前工程收口；外观可继续迭代、人工验收。自动化结果见实现状态，真机、通知、最终视觉与分发仍是独立门禁
+- 产品阶段：`1.1 (9)` 已于 2026-08-30 公开发布；当前 `main` 为 `1.1 (10)` 开发线。新功能的自动化、真机、视觉与下一次分发仍分别验收
 - 共享业务 framework：`PulseCore`（领域、schema、Repository 与导入导出）、`PulseWatchShared`（Watch 协议与本地状态）
 - 共享 UI 源目录：`PulseWidgetUI`（Home Screen Widget / Live Activity）、`PulseWatchUI`（Watch App / complication），分别编译进对应 extension 与容器 App
 - App target：`pulse`（iPhone / iPad 主应用）

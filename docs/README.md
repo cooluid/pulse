@@ -17,7 +17,7 @@
 | [WIDGET_SHARED_STORE_CONTRACT.md](./WIDGET_SHARED_STORE_CONTRACT.md) | 定义基础 Widget、唯一 App Group store、跨进程签到、隐私与能力准入门禁 | 产品、开发、测试、发布负责人 |
 | [DATA_ENCRYPTION_CONTRACT.md](./DATA_ENCRYPTION_CONTRACT.md) | 定义设备内文件保护、加密备份容器、口令/KDF、失败语义与内购边界 | 产品、安全、开发、测试、发布负责人 |
 
-逐构建证据不承担产品合同职责：Build 1 的历史上传记录位于 [RELEASE_CANDIDATE_1_0_1.md](./RELEASE_CANDIDATE_1_0_1.md)，Build 2 加密基线证据位于 [RELEASE_CANDIDATE_1_0_2.md](./RELEASE_CANDIDATE_1_0_2.md)，Build 4 的历史候选证据位于 [RELEASE_CANDIDATE_1_1_4.md](./RELEASE_CANDIDATE_1_1_4.md)，当前 1.1 (5) 的本地分发候选证据位于 [RELEASE_CANDIDATE_1_1_5.md](./RELEASE_CANDIDATE_1_1_5.md)。当前结论始终以 [IMPLEMENTATION_STATUS.md](./IMPLEMENTATION_STATUS.md) 为准。
+逐构建证据不承担产品合同职责：Build 1/2/4/5 的历史候选证据保留在对应 `RELEASE_CANDIDATE_*` 文件；首次公开的 `1.1 (9)` 事实与源码追踪缺口记录在 [RELEASE_BASELINE_1_1_9.md](./RELEASE_BASELINE_1_1_9.md)。当前结论始终以 [IMPLEMENTATION_STATUS.md](./IMPLEMENTATION_STATUS.md) 为准。
 
 ## 优先级定义
 
@@ -34,9 +34,9 @@
 - 历史、首页和统计全部从持久化签到记录派生。
 - 首版固定一个签到时区和 00:00 日界线，系统时区变化不会自动改写历史。
 
-## 发布前仍需确认
+## 后续版本仍需确认
 
-功能范围已在 `RELEASE_SCOPE_1_1.md` 冻结。以下发布身份与验收项必须在对外发布前关闭：
+`1.1 (9)` 已经公开。当前开发线的每次新构建仍必须关闭以下门禁：
 
 1. 当前最低系统版本统一为 18.0；发布前必须完成 iOS / iPadOS 18 可用最旧运行时与对应真机覆盖，不能只验证较新系统。
 2. 1.1 已选择本地优先、iOS Data Protection 与包含照片的口令加密备份恢复；发布文案必须明确卸载和密码不可找回边界，CloudKit 不进入 1.1。
