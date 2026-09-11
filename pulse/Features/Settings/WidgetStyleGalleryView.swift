@@ -8,6 +8,7 @@ struct WidgetStyleGalleryView: View {
     @Environment(\.locale) private var locale
     @Environment(\.pulseVisualTheme) private var visualTheme
     @State private var showsStore = false
+    @State private var usesMediumMetrics = true
 
     var body: some View {
         ZStack {
@@ -23,6 +24,7 @@ struct WidgetStyleGalleryView: View {
                             ForEach(PulseWidgetStyle.allCases) { style in
                                 PulseWidgetStyleCard(
                                     style: style,
+                                    usesMediumMetrics: usesMediumMetrics,
                                     snapshot: snapshot,
                                     isLocked: PulseWidgetStyleAccessPolicy
                                         .requiresEnhancement(style)
@@ -53,20 +55,18 @@ struct WidgetStyleGalleryView: View {
     }
 
     private var galleryIntroduction: some View {
-        VStack(alignment: .leading, spacing: PulseDesign.spacing8) {
-            Text("widget.gallery.introduction.title")
-                .font(.title3.weight(.semibold))
-                .foregroundStyle(PulseDesign.appInk(for: visualTheme))
+        VStack(alignment: .leading, spacing: 16) {
             Text("widget.gallery.introduction.message")
                 .font(.footnote)
                 .foregroundStyle(PulseDesign.appMuted(for: visualTheme))
                 .fixedSize(horizontal: false, vertical: true)
-            Label("widget.gallery.preview.notice", systemImage: "play.circle")
-                .font(.caption)
-                .foregroundStyle(PulseDesign.appMuted(for: visualTheme))
-                .fixedSize(horizontal: false, vertical: true)
+            Picker("widget.gallery.size", selection: $usesMediumMetrics) {
+                Text("widget.gallery.size.small").tag(false)
+                Text("widget.gallery.size.medium").tag(true)
+            }
+            .pickerStyle(.segmented)
+            .accessibilityIdentifier("widget.gallery.size")
         }
-        .padding(.horizontal, PulseDesign.spacing4)
     }
 
     private var columns: [GridItem] {
@@ -78,6 +78,7 @@ struct WidgetStyleGalleryView: View {
 
 private struct PulseWidgetStyleCard: View {
     let style: PulseWidgetStyle
+    let usesMediumMetrics: Bool
     let snapshot: PulseWidgetSnapshot
     let isLocked: Bool
     let onOpenStore: () -> Void
@@ -92,32 +93,13 @@ private struct PulseWidgetStyleCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: PulseDesign.spacing12) {
             GeometryReader { proxy in
-                let gap = PulseDesign.spacing8
-                let previewHeight = max(
-                    1,
-                    (proxy.size.width - gap) / (1 + PulseDesign.widgetMediumAspectRatio)
-                )
-
-                HStack(spacing: gap) {
-                    PulseWidgetStylePreview(
-                        style: style,
-                        snapshot: presentedSnapshot,
-                        usesMediumMetrics: false
-                    )
-                    .frame(width: previewHeight, height: previewHeight)
-
-                    PulseWidgetStylePreview(
-                        style: style,
-                        snapshot: presentedSnapshot,
-                        usesMediumMetrics: true
-                    )
-                    .frame(
-                        width: previewHeight * PulseDesign.widgetMediumAspectRatio,
-                        height: previewHeight
-                    )
-                }
+                let width = usesMediumMetrics ? min(338, proxy.size.width) : min(158, proxy.size.width)
+                PulseWidgetStylePreview(style: style, snapshot: presentedSnapshot,
+                                        usesMediumMetrics: usesMediumMetrics)
+                    .frame(width: width, height: usesMediumMetrics ? width / PulseDesign.widgetMediumAspectRatio : width)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
-            .aspectRatio(PulseDesign.widgetPreviewPairAspectRatio, contentMode: .fit)
+            .frame(height: 158)
 
             HStack(alignment: .firstTextBaseline) {
                 Text(style.localizedName(locale: locale))
@@ -135,31 +117,10 @@ private struct PulseWidgetStyleCard: View {
                 .foregroundStyle(PulseDesign.appMuted(for: visualTheme))
                 .fixedSize(horizontal: false, vertical: true)
         }
-        .padding(PulseDesign.spacing12)
-        .background {
-            RoundedRectangle(
-                cornerRadius: PulseDesign.widgetGalleryCardCornerRadius,
-                style: .continuous
-            )
-            .fill(PulseDesign.appSurface(for: visualTheme).opacity(0.90))
+        .padding(.vertical, 16)
+        .overlay(alignment: .bottom) {
+            Rectangle().fill(PulseDesign.appDivider(for: visualTheme)).frame(height: 1)
         }
-        .overlay {
-            RoundedRectangle(
-                cornerRadius: PulseDesign.widgetGalleryCardCornerRadius,
-                style: .continuous
-            )
-            .stroke(
-                isLocked
-                    ? PulseDesign.appAccentSoft(for: visualTheme)
-                    : PulseDesign.appDivider(for: visualTheme).opacity(0.72),
-                lineWidth: PulseDesign.thinLineWidth
-            )
-        }
-        .shadow(color: PulseDesign.shadow.opacity(0.05), radius: 12, y: 5)
-        .contentShape(RoundedRectangle(
-            cornerRadius: PulseDesign.widgetGalleryCardCornerRadius,
-            style: .continuous
-        ))
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("widget.gallery.style.\(style.rawValue)")
         .onChange(of: snapshot.isCheckedToday) { _, _ in

@@ -20,8 +20,9 @@ struct JournalNoteSummary: View {
                 Button(record.journalNote == nil ? "journal.action.add" : "journal.action.edit") {
                     onEdit()
                 }
-                .font(.subheadline.weight(.semibold))
-                .foregroundStyle(PulseDesign.appAccent(for: visualTheme))
+                .font(.subheadline.weight(.medium))
+                .foregroundStyle(PulseDesign.appInk(for: visualTheme))
+                .frame(minHeight: 44)
                 .accessibilityIdentifier("journal.edit.button")
             }
 
@@ -32,14 +33,13 @@ struct JournalNoteSummary: View {
                         ? PulseDesign.appMuted(for: visualTheme)
                         : PulseDesign.appInk(for: visualTheme)
                 )
-                .italic(record.journalNote == nil && visualTheme == .editorialJournal)
+
                 .fixedSize(horizontal: false, vertical: true)
                 .accessibilityIdentifier("journal.summary.text")
         }
         .padding(PulseDesign.spacing16)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(noteBackground)
-        .overlay(noteBorder)
+        .modifier(PulseJournalPanel(theme: visualTheme))
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("journal.summary")
     }
@@ -53,43 +53,6 @@ struct JournalNoteSummary: View {
         }
     }
 
-    @ViewBuilder
-    private var noteBackground: some View {
-        switch visualTheme {
-        case .sunlitDay:
-            PulseSunlitSurfaceFill()
-        case .editorialJournal:
-            Rectangle().fill(
-                PulseDesign.surface.opacity(PulseDesign.editorialJournalSurfaceOpacity)
-            )
-        case .quietField:
-            PulseQuietSpeechBubbleShape()
-                .fill(PulseDesign.quietSurface.opacity(PulseDesign.quietJournalSurfaceOpacity))
-        case .moonTide, .prismLedger:
-            RoundedRectangle(cornerRadius: PulseDesign.spacing20, style: .continuous)
-                .fill(PulseDesign.appSurface(for: visualTheme).opacity(0.90))
-        }
-    }
-
-    @ViewBuilder
-    private var noteBorder: some View {
-        switch visualTheme {
-        case .sunlitDay:
-            Color.clear
-        case .editorialJournal:
-            Rectangle()
-                .stroke(PulseDesign.editorialAccent, lineWidth: PulseDesign.thinLineWidth)
-        case .quietField:
-            PulseQuietSpeechBubbleShape()
-                .stroke(PulseDesign.quietDivider, lineWidth: PulseDesign.thinLineWidth)
-        case .moonTide, .prismLedger:
-            RoundedRectangle(cornerRadius: PulseDesign.spacing20, style: .continuous)
-                .stroke(
-                    PulseDesign.appDivider(for: visualTheme),
-                    lineWidth: PulseDesign.thinLineWidth
-                )
-        }
-    }
 }
 
 struct JournalDraftComposer: View {
@@ -105,13 +68,18 @@ struct JournalDraftComposer: View {
     var body: some View {
         VStack(alignment: .leading, spacing: PulseDesign.spacing12) {
             if showsHeader {
-                Label("journal.section.title", systemImage: "square.and.pencil")
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(PulseDesign.appInk(for: visualTheme))
+                HStack {
+                    Label("journal.section.title", systemImage: "square.and.pencil")
+                        .font(.subheadline.weight(.medium))
+                        .foregroundStyle(PulseDesign.appInk(for: visualTheme))
+                    Spacer()
+                    Text("journal.optional").font(.caption)
+                        .foregroundStyle(PulseDesign.appMuted(for: visualTheme))
+                }
             }
 
             TextField(
-                "journal.draft.placeholder",
+                "",
                 text: $text,
                 axis: .vertical
             )
@@ -120,6 +88,7 @@ struct JournalDraftComposer: View {
             .foregroundStyle(PulseDesign.appInk(for: visualTheme))
             .disabled(isDisabled)
             .focused($isFocused)
+            .accessibilityLabel("journal.section.title")
             .accessibilityIdentifier("journal.draft.input")
             .toolbar {
                 ToolbarItemGroup(placement: .keyboard) {
@@ -150,16 +119,13 @@ struct JournalDraftComposer: View {
             }
             .font(.caption2)
         }
-        .padding(visualTheme == .editorialJournal ? 0 : PulseDesign.spacing16)
+        .padding(PulseDesign.spacing16)
         .frame(
             maxWidth: .infinity,
-            minHeight: visualTheme == .quietField
-                ? PulseDesign.journalDraftMinimumHeight
-                : nil,
+            minHeight: PulseDesign.journalDraftMinimumHeight,
             alignment: .leading
         )
-        .background(draftBackground)
-        .overlay(draftBorder)
+        .modifier(PulseJournalPanel(theme: visualTheme))
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("journal.draft")
     }
@@ -203,43 +169,39 @@ struct JournalDraftComposer: View {
         )
     }
 
-    @ViewBuilder
-    private var draftBackground: some View {
-        switch visualTheme {
-        case .quietField:
-            PulseQuietSpeechBubbleShape()
-                .fill(PulseDesign.quietSurface.opacity(PulseDesign.quietJournalSurfaceOpacity))
-        case .editorialJournal:
-            Color.clear
-        case .sunlitDay:
-            PulseSunlitSurfaceFill()
-        case .moonTide, .prismLedger:
-            RoundedRectangle(cornerRadius: PulseDesign.spacing20, style: .continuous)
-                .fill(PulseDesign.appSurface(for: visualTheme).opacity(0.90))
-        }
+}
+
+private struct PulseJournalPanel: ViewModifier {
+    let theme: PulseVisualTheme
+
+    func body(content: Content) -> some View {
+        content
+            .background {
+                if theme != .moonTide {
+                    RoundedRectangle(cornerRadius: radius)
+                        .fill(PulseDesign.appSurface(for: theme))
+                }
+            }
+            .overlay {
+                if theme == .editorialJournal || theme == .moonTide {
+                    VStack {
+                        Rectangle().fill(PulseDesign.appDivider(for: theme)).frame(height: 1)
+                        Spacer(minLength: 0)
+                        Rectangle().fill(PulseDesign.appDivider(for: theme)).frame(height: 1)
+                    }
+                } else {
+                    RoundedRectangle(cornerRadius: radius)
+                        .stroke(PulseDesign.appDivider(for: theme), lineWidth: 1)
+                }
+            }
     }
 
-    @ViewBuilder
-    private var draftBorder: some View {
-        switch visualTheme {
-        case .quietField:
-            PulseQuietSpeechBubbleShape()
-                .stroke(PulseDesign.quietDivider, lineWidth: PulseDesign.thinLineWidth)
-        case .editorialJournal:
-            VStack(spacing: 0) {
-                Spacer(minLength: 0)
-                Rectangle()
-                    .fill(PulseDesign.separator)
-                    .frame(height: PulseDesign.thinLineWidth)
-            }
-        case .sunlitDay:
-            Color.clear
-        case .moonTide, .prismLedger:
-            RoundedRectangle(cornerRadius: PulseDesign.spacing20, style: .continuous)
-                .stroke(
-                    PulseDesign.appDivider(for: visualTheme),
-                    lineWidth: PulseDesign.thinLineWidth
-                )
+    private var radius: CGFloat {
+        switch theme {
+        case .editorialJournal, .moonTide: 0
+        case .quietField: 24
+        case .sunlitDay: 10
+        case .prismLedger: 4
         }
     }
 }

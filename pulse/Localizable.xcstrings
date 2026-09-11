@@ -4063,13 +4063,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Editorial type, ruled structure, and a focused writing rhythm."
+            "value" : "Book-like typography and a hand-stamped mark."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "编辑排版、纸面分隔与专注书写节奏。"
+            "value" : "书页排版与一枚手工印章。"
           }
         }
       }
@@ -4097,13 +4097,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Deep indigo, quiet tide lines, and a clear luminous imprint."
+            "value" : "Deep blue space and a gently closing lunar ring."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "深靛夜色、缓慢潮线与清晰冷光落印。"
+            "value" : "深蓝留白与缓缓合拢的月环。"
           }
         }
       }
@@ -4131,13 +4131,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Cool violet paper, crisp type, and restrained spectral layers."
+            "value" : "Precise squares and fine tick marks."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "冷紫纸面、清晰排版与克制的光谱层次。"
+            "value" : "方形结构与细密刻度。"
           }
         }
       }
@@ -4165,13 +4165,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Warm paper, a gentle field companion, and rounded forms."
+            "value" : "Soft paper and an unfolding leaf."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "暖纸底色、静野伙伴与柔和圆润的构图。"
+            "value" : "柔和纸面与舒展的叶芽。"
           }
         }
       }
@@ -4199,13 +4199,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Layered daylight, crisp contrast, and one decisive action."
+            "value" : "A calendar page with bright sunburst details."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "分层日光、清晰对比与唯一突出的主动作。"
+            "value" : "日历分区与明快的日光刻线。"
           }
         }
       }
@@ -4635,13 +4635,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "The sun leans west; shadows count the hours for the silent grass. When green crosses the paper’s edge, the day gains depth."
+            "value" : "Light and shade frame today’s date."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "日头一路西斜，影子替沉默的草数着时辰。等绿意越过纸边，这一天便有了深浅。"
+            "value" : "深浅分界，衬出今日日期。"
           }
         }
       }
@@ -4669,13 +4669,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "A sound falls away; its echo widens into silence. The empty field holds its center for today."
+            "value" : "Concentric rings around a single point."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "一声落下，余响一圈圈走远。场子空着，只替今天守住最中心的位置。"
+            "value" : "由一点展开的同心圆。"
           }
         }
       }
@@ -4703,13 +4703,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "A sheet lies open, a few words scattered across it. Somehow, the afternoon stretches on."
+            "value" : "Ruled paper, like a short letter."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "信纸摊开，字疏疏落落，下午却显得很长。"
+            "value" : "横线与纸页，像一封简短的手札。"
           }
         }
       }
@@ -4737,13 +4737,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Toward dawn, the stars recede one by one. One remains on the ring, waiting for today to fall into place."
+            "value" : "An open ring and a small orbiting dot."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "天快亮时，群星一颗颗退远。只有这一颗留在环上，等今天归位。"
+            "value" : "星环与一枚小小的圆点。"
           }
         }
       }
@@ -4771,13 +4771,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "A fine path winds in from the hills, carrying days of wind and rain. By the time it reaches today, only your step is missing."
+            "value" : "A fine line connects recent check-ins."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "一线从远山蜿蜒而来，沿途收下几日风雨。到了今天，它只差你这一步。"
+            "value" : "一条细线，连接近期签到。"
           }
         }
       }
@@ -4822,13 +4822,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Night still clings to the grass as morning clears the hill. A small clearing at the center waits for today’s check-in."
+            "value" : "A quiet place for today."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "草尖还留着昨夜，晨光已越过远处的坡。中间那一小处空白，正等今天签到。"
+            "value" : "为今天留一处空白。"
           }
         }
       }
@@ -4856,13 +4856,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "The pages lie quietly stacked, each edge holding a trace of light. One imprint, and the day takes on weight."
+            "value" : "Layered paper for today’s mark."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "纸页叠得很静，边角各自含着一点光。一枚印落下，今天便有了重量。"
+            "value" : "层叠纸页，收下今天的一印。"
           }
         }
       }
@@ -4890,13 +4890,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Once the tide has come and gone, light on the sand can tell morning from evening. The day finds its rhythm there."
+            "value" : "A tide line carries today’s mark."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "潮水走过一遭，沙上的光便有了早晚，一天也跟着有了节奏。"
+            "value" : "一线潮水，留下今日的痕迹。"
           }
         }
       }
@@ -5443,13 +5443,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Complete Today’s Check-in"
+            "value" : "Check in"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "完成今日签到"
+            "value" : "签到"
           }
         }
       }
@@ -5927,13 +5927,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Each widget can use a different style. On the Home Screen, touch and hold a widget, then choose Edit Widget."
+            "value" : "Touch and hold a widget on the Home Screen, then choose Edit Widget to change its style."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "每个小组件都可以单独选择样式。请在主屏幕长按小组件，然后选择“编辑小组件”。"
+            "value" : "在主屏幕长按小组件，选择“编辑小组件”更换样式。"
           }
         }
       }
@@ -6257,6 +6257,74 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "今天还未签到"
+          }
+        }
+      }
+    },
+    "journal.optional" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "可选"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Optional"
+          }
+        }
+      }
+    },
+    "widget.gallery.size" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "小组件尺寸"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Widget size"
+          }
+        }
+      }
+    },
+    "widget.gallery.size.small" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "小号"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Small"
+          }
+        }
+      }
+    },
+    "widget.gallery.size.medium" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "中号"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Medium"
           }
         }
       }

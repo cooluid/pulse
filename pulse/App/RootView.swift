@@ -198,24 +198,7 @@ struct RootView: View {
             : estimatedPrimaryNavigationHeight
     }
 
-    private var estimatedPrimaryNavigationHeight: CGFloat {
-        switch visualTheme {
-        case .quietField:
-            PulseDesign.primaryNavigationHeight + (PulseDesign.spacing8 * 2)
-        case .sunlitDay:
-            PulseDesign.sunlitNavigationGlyph
-                + PulseDesign.spacing8
-                + PulseDesign.spacing16
-                + PulseDesign.spacing8
-                + PulseDesign.spacing12
-        case .editorialJournal:
-            PulseDesign.editorialNavigationStripHeight
-                + PulseDesign.spacing8
-                + PulseDesign.editorialNavigationOuterVerticalPadding
-        case .moonTide, .prismLedger:
-            PulseDesign.ledgerNavigationHeight
-        }
-    }
+    private var estimatedPrimaryNavigationHeight: CGFloat { 72 }
 
     @ViewBuilder
     private func secondaryDestination(_ destination: PulseNavigationDestination) -> some View {

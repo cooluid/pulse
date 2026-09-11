@@ -1498,7 +1498,13 @@ struct PulseWidgetHomeRenderer: View {
     }
 
     private var baseBackground: Color {
-        usesFullColorPalette ? PulseWidgetDesign.background : .clear
+        guard usesFullColorPalette else { return .clear }
+        return switch style {
+        case .stack, .letter: PulseWidgetDesign.widgetPaper
+        case .place, .field: Color("PulseQuietCanvas")
+        case .orbit, .bleed: PulseWidgetDesign.surface
+        case .path, .tide: PulseWidgetDesign.background
+        }
     }
 
     private var surfaceColor: Color {

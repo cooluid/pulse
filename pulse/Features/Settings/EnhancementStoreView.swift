@@ -114,7 +114,7 @@ struct EnhancementStoreView: View {
                     themeSpecimenCards
                 }
             } else {
-                HStack(alignment: .top, spacing: PulseDesign.spacing12) {
+                LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 16) {
                     themeSpecimenCards
                 }
             }
@@ -131,7 +131,7 @@ struct EnhancementStoreView: View {
 
     private func storeThemeSpecimen(_ theme: PulseVisualTheme) -> some View {
         VStack(alignment: .leading, spacing: PulseDesign.spacing8) {
-            PulseVisualThemeSpecimen(theme: theme)
+            PulseVisualThemeSpecimen(theme: theme, model: model)
                 .overlay {
                     RoundedRectangle(
                         cornerRadius: PulseDesign.themePreviewCornerRadius,
@@ -365,9 +365,6 @@ struct EnhancementStoreView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
 
             ZStack {
-                PulseSunlitMapTexture(opacity: 0.34)
-                    .frame(width: 84, height: 84)
-
                 PulseBrandMark(size: PulseDesign.storeBrandMarkSize)
             }
             .accessibilityHidden(true)

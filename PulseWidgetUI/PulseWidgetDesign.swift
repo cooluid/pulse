@@ -51,15 +51,15 @@ enum PulseWidgetDesign {
     static let activityPreviewCornerRadius: CGFloat = 32
     static let stackPhysicalSheetCount = 4
 
-    static let bleedPendingTopSplitMorning: CGFloat = 0.60
-    static let bleedPendingTopSplitDaylight: CGFloat = 0.50
-    static let bleedPendingTopSplitEvening: CGFloat = 0.40
-    static let bleedPendingSkewSmall: CGFloat = 0.16
-    static let bleedPendingSkewMedium: CGFloat = 0.09
-    static let bleedCheckedTopSplitSmall: CGFloat = 0.74
-    static let bleedCheckedBottomSplitSmall: CGFloat = 0.58
-    static let bleedCheckedTopSplitMedium: CGFloat = 0.68
-    static let bleedCheckedBottomSplitMedium: CGFloat = 0.56
+    static let bleedPendingTopSplitMorning: CGFloat = 0.68
+    static let bleedPendingTopSplitDaylight: CGFloat = 0.66
+    static let bleedPendingTopSplitEvening: CGFloat = 0.64
+    static let bleedPendingSkewSmall: CGFloat = 0.18
+    static let bleedPendingSkewMedium: CGFloat = 0.14
+    static let bleedCheckedTopSplitSmall: CGFloat = 0.68
+    static let bleedCheckedBottomSplitSmall: CGFloat = 0.50
+    static let bleedCheckedTopSplitMedium: CGFloat = 0.66
+    static let bleedCheckedBottomSplitMedium: CGFloat = 0.50
 
     static let stackPendingLayerStepMedium: CGFloat = 6.5
     static let stackPendingLayerStepSmall: CGFloat = 5.5

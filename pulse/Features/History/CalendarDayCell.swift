@@ -25,16 +25,6 @@ struct CalendarDayCell: View {
                 todayStroke(style)
             }
         }
-        .overlay(alignment: .bottom) {
-            if style.showsCheckedRule {
-                Rectangle()
-                    .fill(PulseDesign.editorialAccent)
-                    .frame(
-                        width: PulseDesign.calendarDayVisualSize,
-                        height: PulseDesign.thinLineWidth
-                    )
-            }
-        }
         .overlay(alignment: .bottomTrailing) {
             if hasMedia {
                 Image(systemName: "camera.fill")
@@ -55,32 +45,15 @@ struct CalendarDayCell: View {
         .accessibilityIdentifier("calendar.day.\(item.day.storageValue)")
     }
 
-    @ViewBuilder
     private func tile(_ style: PulseDesign.CalendarDayStyle) -> some View {
-        switch style.tile {
-        case .companion:
-            PulseQuietCompanionShape()
-                .fill(style.fill)
-                .frame(width: style.tileSize, height: style.tileSize)
-        case .rounded(let radius):
-            RoundedRectangle(cornerRadius: radius, style: .continuous)
-                .fill(style.fill)
-                .frame(width: style.tileSize, height: style.tileSize)
-        }
+        RoundedRectangle(cornerRadius: style.cornerRadius, style: .continuous)
+            .fill(style.fill).frame(width: style.tileSize, height: style.tileSize)
     }
 
-    @ViewBuilder
     private func todayStroke(_ style: PulseDesign.CalendarDayStyle) -> some View {
-        switch style.tile {
-        case .companion:
-            PulseQuietCompanionShape()
-                .stroke(style.todayStroke, lineWidth: PulseDesign.emphasisLineWidth)
-                .frame(width: style.tileSize, height: style.tileSize)
-        case .rounded(let radius):
-            RoundedRectangle(cornerRadius: radius, style: .continuous)
-                .stroke(style.todayStroke, lineWidth: PulseDesign.emphasisLineWidth)
-                .frame(width: style.tileSize, height: style.tileSize)
-        }
+        RoundedRectangle(cornerRadius: style.cornerRadius, style: .continuous)
+            .stroke(style.todayStroke, lineWidth: 1.5)
+            .frame(width: style.tileSize, height: style.tileSize)
     }
 
     @ViewBuilder
@@ -127,16 +100,11 @@ struct CalendarDayCell: View {
     private func dayNumberFont(_ style: PulseDesign.CalendarDayStyle) -> Font {
         let weight: Font.Weight = (style.mark == .checked || isToday) ? .bold : .regular
         let textStyle: Font.TextStyle = style.mark == .checked ? .caption2 : .caption
-        return .system(textStyle, design: style.fontDesign, weight: weight)
+        return .system(textStyle, design: .default, weight: weight)
     }
 
     private func statusGlyphFont(_ style: PulseDesign.CalendarDayStyle) -> Font {
-        switch visualTheme {
-        case .sunlitDay, .moonTide, .prismLedger:
-            .system(size: PulseDesign.calendarAccessoryGlyphSize, weight: .bold)
-        case .quietField, .editorialJournal:
-            .system(.caption2, design: style.fontDesign, weight: .bold)
-        }
+        .system(size: PulseDesign.calendarAccessoryGlyphSize, weight: .semibold)
     }
 
     private var beforeHabitGlyphFont: Font {

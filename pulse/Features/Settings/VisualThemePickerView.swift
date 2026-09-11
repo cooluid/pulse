@@ -6,13 +6,16 @@ struct VisualThemePickerView: View {
     @Environment(\.locale) private var locale
     @Environment(\.pulseVisualTheme) private var visualTheme
     @State private var showsStore = false
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     var body: some View {
         ScrollView {
-            LazyVStack(spacing: PulseDesign.spacing16) {
+            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 12),
+                                    count: dynamicTypeSize.isAccessibilitySize ? 1 : 2), spacing: 20) {
                 ForEach(PulseVisualTheme.allCases) { theme in
                     PulseVisualThemeChoice(
                         theme: theme,
+                        model: model,
                         isSelected: model.resolvedVisualTheme == theme,
                         isLocked:
                             PulseVisualThemeAccessPolicy
@@ -29,7 +32,7 @@ struct VisualThemePickerView: View {
             .padding(.horizontal, PulseDesign.horizontalPadding)
             .padding(.top, PulseDesign.spacing16)
             .padding(.bottom, PulseDesign.spacing32)
-            .frame(maxWidth: PulseDesign.screenMaxWidth)
+            .frame(maxWidth: 640)
             .frame(maxWidth: .infinity)
         }
         .scrollIndicators(.hidden)
@@ -48,6 +51,7 @@ struct VisualThemePickerView: View {
 
 private struct PulseVisualThemeChoice: View {
     let theme: PulseVisualTheme
+    let model: PulseAppModel
     let isSelected: Bool
     let isLocked: Bool
     let locale: Locale
@@ -57,32 +61,14 @@ private struct PulseVisualThemeChoice: View {
     var body: some View {
         Button(action: action) {
             VStack(alignment: .leading, spacing: PulseDesign.spacing12) {
-                PulseVisualThemeSpecimen(theme: theme)
-                    .overlay {
-                        RoundedRectangle(
-                            cornerRadius: PulseDesign.themePreviewCornerRadius,
-                            style: .continuous
-                        )
-                        .stroke(
-                            selectionColor.opacity(
-                                isSelected ? 1 : PulseDesign.themePreviewUnselectedBorderOpacity
-                            ),
-                            lineWidth: isSelected
-                                ? PulseDesign.emphasisLineWidth
-                                : PulseDesign.thinLineWidth
-                        )
-                    }
+                PulseVisualThemeSpecimen(theme: theme, model: model)
 
                 HStack(alignment: .top, spacing: PulseDesign.spacing12) {
                     VStack(alignment: .leading, spacing: PulseDesign.spacing4) {
                         Text(theme.localizedName(locale: locale))
-                            .font(.headline.weight(.bold))
+                            .font(.subheadline.weight(.semibold))
                             .foregroundStyle(PulseDesign.appInk(for: currentTheme))
 
-                        Text(theme.localizedDescription(locale: locale))
-                            .font(.footnote)
-                            .foregroundStyle(PulseDesign.appMuted(for: currentTheme))
-                            .fixedSize(horizontal: false, vertical: true)
                     }
 
                     Spacer(minLength: 0)

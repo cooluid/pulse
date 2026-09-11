@@ -1,146 +1,88 @@
+import PulseCore
 import SwiftUI
 
 struct PulseVisualThemeSpecimen: View {
     let theme: PulseVisualTheme
+    let model: PulseAppModel
+    @Environment(\.locale) private var locale
 
     var body: some View {
-        ZStack {
-            PulseScreenBackground()
-            PulseFieldBackground(presentation: .today, allowsMotion: false)
-            mark
+        GeometryReader { proxy in
+            let scale = proxy.size.width / 360
+            VStack(spacing: 0) {
+                PulseAppHeader(source: .today)
+                ScrollView {
+                    PulseTodayPage(
+                        today: model.today,
+                        timeZone: model.timeZone,
+                        habitName: model.habit?.name,
+                        recentDays: model.recentDays,
+                        currentStreak: model.statistics.currentStreak,
+                        checkIn: previewCheckIn,
+                        journal: previewJournal
+                    )
+                    .padding(.horizontal, PulseDesign.horizontalPadding)
+                }
+                .scrollDisabled(true)
+                .scrollIndicators(.hidden)
+                PulsePrimaryNavigation(selection: .constant(.today), todayDayNumber: model.today?.day,
+                                       isTodayChecked: model.todayRecord != nil)
+            }
+            .padding(.top, 12)
+            .frame(width: 360, height: 740)
+            .background {
+                PulseScreenBackground()
+                PulseFieldBackground(presentation: .today, allowsMotion: false)
+            }
+            .environment(\.pulseVisualTheme, theme)
+            .environment(\.horizontalSizeClass, .compact)
+            .environment(\.dynamicTypeSize, .medium)
+            .scaleEffect(scale, anchor: .topLeading)
         }
-        .frame(maxWidth: .infinity)
-        .frame(height: PulseDesign.themePreviewHeight)
-        .clipShape(
-            RoundedRectangle(
-                cornerRadius: PulseDesign.themePreviewCornerRadius,
-                style: .continuous
-            )
-        )
-        .environment(\.pulseVisualTheme, theme)
+        .aspectRatio(360.0 / 740.0, contentMode: .fit)
+        .clipShape(RoundedRectangle(cornerRadius: 16))
+        .allowsHitTesting(false)
         .accessibilityHidden(true)
     }
 
-    @ViewBuilder
-    private var mark: some View {
-        switch theme {
-        case .editorialJournal:
-            VStack(alignment: .leading, spacing: PulseDesign.spacing8) {
-                Text(verbatim: "Aa")
-                    .font(.system(.title2, design: .serif, weight: .bold))
-                    .foregroundStyle(PulseDesign.ink)
-
-                VStack(alignment: .leading, spacing: PulseDesign.spacing4) {
-                    Rectangle()
-                        .fill(PulseDesign.ink)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: PulseDesign.emphasisLineWidth)
-                    Rectangle()
-                        .fill(PulseDesign.secondary)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: PulseDesign.thinLineWidth)
-                        .padding(.trailing, PulseDesign.spacing32)
-                    Rectangle()
-                        .fill(PulseDesign.editorialAccent)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: PulseDesign.thinLineWidth)
-                        .padding(.trailing, PulseDesign.spacing32 + PulseDesign.spacing24)
+    private var previewCheckIn: some View {
+        VStack(spacing: 18) {
+            PulseCheckInFace(completedText: model.todayRecord.map { record in
+                String(format: PulseLocalization.string("today.checked_with_time", locale: locale),
+                       PulseFormatting.time(record.checkedAt, timeZone: record.timeZone, locale: locale))
+            })
+            Group {
+                if model.todayRecord == nil {
+                    Text("today.check_in_hint_visible")
+                        .font(.caption)
+                        .foregroundStyle(PulseDesign.appMuted(for: theme))
+                } else if model.settings.mediaInvitationEnabled || model.todayMedia != nil {
+                    Label(model.todayMedia == nil ? "today.media.capture_compact" : "today.media.view_compact", systemImage: "camera.fill")
+                        .font(.caption.bold())
+                        .foregroundStyle(PulseDesign.appInk(for: theme))
+                        .padding(.horizontal, 12)
+                        .frame(minHeight: 44)
+                        .background(PulseDesign.appSurface(for: theme), in: Capsule())
+                        .overlay { Capsule().stroke(PulseDesign.appDivider(for: theme), lineWidth: 1) }
                 }
             }
-            .padding(PulseDesign.spacing16)
-            .frame(maxWidth: .infinity, alignment: .leading)
-        case .quietField:
-            HStack(spacing: PulseDesign.spacing12) {
-                PulseBrandMark(size: PulseDesign.minimumHitTarget)
-
-                VStack(alignment: .leading, spacing: PulseDesign.spacing4) {
-                    Capsule()
-                        .fill(PulseDesign.quietChrome)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: PulseDesign.spacing8)
-                        .padding(.trailing, PulseDesign.spacing32)
-                    Capsule()
-                        .fill(PulseDesign.quietGreen)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: PulseDesign.spacing8)
-                }
-            }
-            .padding(PulseDesign.spacing16)
-            .frame(maxWidth: .infinity)
-        case .sunlitDay:
-            VStack(alignment: .leading, spacing: PulseDesign.spacing12) {
-                HStack(alignment: .firstTextBaseline) {
-                    Image(systemName: "sun.max.fill")
-                        .font(.headline.weight(.bold))
-                    Spacer(minLength: 0)
-                    Circle()
-                        .fill(PulseDesign.sunlitSurface)
-                        .frame(width: PulseDesign.spacing16, height: PulseDesign.spacing16)
-                }
-
-                RoundedRectangle(
-                    cornerRadius: PulseDesign.spacing12,
-                    style: .continuous
-                )
-                .fill(PulseDesign.sunlitChrome)
-                .frame(height: PulseDesign.spacing32)
-                .overlay(alignment: .trailing) {
-                    Circle()
-                        .fill(PulseDesign.sunlitAccent)
-                        .padding(PulseDesign.spacing4)
-                }
-            }
-            .padding(PulseDesign.spacing16)
-            .foregroundStyle(PulseDesign.sunlitInk)
-            .frame(maxWidth: .infinity)
-        case .moonTide:
-            VStack(alignment: .leading, spacing: PulseDesign.spacing12) {
-                HStack {
-                    Text(verbatim: "31")
-                        .font(.system(.title2, design: .rounded, weight: .bold))
-                        .monospacedDigit()
-                    Spacer(minLength: 0)
-                    Circle()
-                        .stroke(PulseDesign.moonAccent, lineWidth: PulseDesign.emphasisLineWidth)
-                        .frame(width: PulseDesign.spacing20, height: PulseDesign.spacing20)
-                }
-
-                Capsule()
-                    .fill(PulseDesign.moonSurface)
-                    .frame(height: PulseDesign.spacing32)
-                    .overlay(alignment: .trailing) {
-                        Circle()
-                            .stroke(PulseDesign.moonAccent, lineWidth: PulseDesign.emphasisLineWidth)
-                            .padding(PulseDesign.spacing4)
-                    }
-            }
-            .padding(PulseDesign.spacing16)
-            .foregroundStyle(PulseDesign.moonInk)
-            .frame(maxWidth: .infinity)
-        case .prismLedger:
-            VStack(alignment: .leading, spacing: PulseDesign.spacing12) {
-                HStack(alignment: .firstTextBaseline) {
-                    Text(verbatim: "31")
-                        .font(.system(.title2, design: .rounded, weight: .black))
-                        .monospacedDigit()
-                    Spacer(minLength: 0)
-                    Circle()
-                        .fill(PulseDesign.prismCoral)
-                        .frame(width: PulseDesign.spacing12, height: PulseDesign.spacing12)
-                }
-
-                RoundedRectangle(cornerRadius: PulseDesign.spacing12, style: .continuous)
-                    .fill(PulseDesign.prismAccent)
-                    .frame(height: PulseDesign.spacing32)
-                    .overlay(alignment: .trailing) {
-                        Circle()
-                            .fill(PulseDesign.prismSurface)
-                            .padding(PulseDesign.spacing4)
-                    }
-            }
-            .padding(PulseDesign.spacing16)
-            .foregroundStyle(PulseDesign.prismInk)
-            .frame(maxWidth: .infinity)
+            .frame(minHeight: 44)
         }
+    }
+
+    @ViewBuilder
+    private var previewJournal: some View {
+        if let record = model.todayRecord {
+            JournalNoteSummary(record: record, onEdit: {})
+        } else {
+            PulseThemeDraftPreview()
+        }
+    }
+}
+
+private struct PulseThemeDraftPreview: View {
+    @FocusState private var isFocused: Bool
+    var body: some View {
+        JournalDraftComposer(text: .constant(""), isFocused: $isFocused, isDisabled: true)
     }
 }
