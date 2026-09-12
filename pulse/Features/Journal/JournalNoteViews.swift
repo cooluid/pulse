@@ -1,5 +1,6 @@
 import PulseCore
 import SwiftUI
+import UIKit
 
 struct JournalNoteSummary: View {
     let record: CheckInRecordSnapshot
@@ -9,20 +10,24 @@ struct JournalNoteSummary: View {
     @Environment(\.pulseVisualTheme) private var visualTheme
 
     var body: some View {
-        VStack(alignment: .leading, spacing: PulseDesign.spacing12) {
+        VStack(alignment: .leading, spacing: PulseDesign.spacing8) {
             HStack(alignment: .firstTextBaseline, spacing: PulseDesign.spacing12) {
-                Label("journal.section.title", systemImage: "square.and.pencil")
-                    .font(.subheadline.weight(.semibold))
+                Text("journal.section.title")
+                    .font(headingFont)
                     .foregroundStyle(PulseDesign.appInk(for: visualTheme))
 
                 Spacer(minLength: PulseDesign.spacing8)
 
-                Button(record.journalNote == nil ? "journal.action.add" : "journal.action.edit") {
-                    onEdit()
+                Button(action: onEdit) {
+                    Image(systemName: "square.and.pencil")
+                        .font(.title3)
+                        .frame(minWidth: PulseDesign.minimumHitTarget,
+                               minHeight: PulseDesign.minimumHitTarget)
+                        .contentShape(Rectangle())
                 }
-                .font(.subheadline.weight(.medium))
+                .buttonStyle(.plain)
                 .foregroundStyle(PulseDesign.appInk(for: visualTheme))
-                .frame(minHeight: 44)
+                .accessibilityLabel(record.journalNote == nil ? "journal.action.add" : "journal.action.edit")
                 .accessibilityIdentifier("journal.edit.button")
             }
 
@@ -33,26 +38,39 @@ struct JournalNoteSummary: View {
                         ? PulseDesign.appMuted(for: visualTheme)
                         : PulseDesign.appInk(for: visualTheme)
                 )
-
+                .lineSpacing(5)
                 .fixedSize(horizontal: false, vertical: true)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(visualTheme == .moonTide ? PulseDesign.spacing16 : 0)
+                .background {
+                    if visualTheme == .moonTide {
+                        RoundedRectangle(cornerRadius: 14)
+                            .fill(PulseDesign.appSurface(for: visualTheme).opacity(0.72))
+                    }
+                }
                 .accessibilityIdentifier("journal.summary.text")
         }
-        .padding(PulseDesign.spacing16)
+        .padding(.horizontal, usesCard ? PulseDesign.spacing16 : 0)
+        .padding(.vertical, PulseDesign.spacing12)
         .frame(maxWidth: .infinity, alignment: .leading)
         .modifier(PulseJournalPanel(theme: visualTheme))
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("journal.summary")
     }
 
-    private var noteFont: Font {
-        switch visualTheme {
-        case .editorialJournal:
-            .system(.body, design: .serif)
-        case .quietField, .sunlitDay, .moonTide, .prismLedger:
-            .system(.body, design: .rounded)
-        }
+    private var usesCard: Bool { visualTheme == .quietField || visualTheme == .prismLedger }
+
+    private var headingFont: Font {
+        visualTheme == .editorialJournal || visualTheme == .sunlitDay
+            ? PulseDesign.editorialDisplayFont(size: 19, relativeTo: .headline).weight(.semibold)
+            : .headline
     }
 
+    private var noteFont: Font {
+        visualTheme == .editorialJournal || visualTheme == .sunlitDay
+            ? PulseDesign.editorialDisplayFont(size: 18, relativeTo: .body)
+            : .body
+    }
 }
 
 struct JournalDraftComposer: View {
@@ -64,86 +82,126 @@ struct JournalDraftComposer: View {
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @Environment(\.locale) private var locale
     @Environment(\.pulseVisualTheme) private var visualTheme
+    @ScaledMetric(relativeTo: .body) private var ruledLineHeight = 28.0
 
     var body: some View {
-        VStack(alignment: .leading, spacing: PulseDesign.spacing12) {
+        VStack(alignment: .leading, spacing: PulseDesign.spacing8) {
             if showsHeader {
-                HStack {
-                    Label("journal.section.title", systemImage: "square.and.pencil")
-                        .font(.subheadline.weight(.medium))
+                HStack(spacing: PulseDesign.spacing12) {
+                    Text("journal.section.title")
+                        .font(headingFont)
                         .foregroundStyle(PulseDesign.appInk(for: visualTheme))
-                    Spacer()
-                    Text("journal.optional").font(.caption)
+                    Text("journal.optional")
+                        .font(.caption)
                         .foregroundStyle(PulseDesign.appMuted(for: visualTheme))
+                    Spacer(minLength: 0)
+                    Button {
+                        isFocused = true
+                    } label: {
+                        Image(systemName: "square.and.pencil")
+                            .font(.title3)
+                            .frame(minWidth: PulseDesign.minimumHitTarget,
+                                   minHeight: PulseDesign.minimumHitTarget)
+                            .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .foregroundStyle(PulseDesign.appInk(for: visualTheme))
+                    .disabled(isDisabled)
+                    .accessibilityLabel("journal.action.add")
                 }
             }
 
-            TextField(
-                "",
-                text: $text,
-                axis: .vertical
-            )
-            .lineLimit(draftLineLimit)
-            .font(draftFont)
-            .foregroundStyle(PulseDesign.appInk(for: visualTheme))
-            .disabled(isDisabled)
-            .focused($isFocused)
-            .accessibilityLabel("journal.section.title")
-            .accessibilityIdentifier("journal.draft.input")
-            .toolbar {
-                ToolbarItemGroup(placement: .keyboard) {
-                    Spacer()
-                    Button("action.done") {
-                        isFocused = false
-                    }
-                    .accessibilityIdentifier("journal.keyboard.done")
+            TextField("", text: $text, axis: .vertical)
+                .lineLimit(draftLineLimit)
+                .font(draftFont)
+                .foregroundStyle(PulseDesign.appInk(for: visualTheme))
+                .disabled(isDisabled)
+                .focused($isFocused)
+                .accessibilityLabel("journal.section.title")
+                .accessibilityIdentifier("journal.draft.input")
+                .padding(visualTheme == .editorialJournal || usesCard ? 0 : PulseDesign.spacing12)
+                .frame(maxWidth: .infinity, minHeight: ruledLineHeight * 3, alignment: .topLeading)
+                .background {
+                    draftBackground
+                        .allowsHitTesting(false)
+                        .accessibilityHidden(true)
                 }
-            }
+                .contentShape(Rectangle())
+                .simultaneousGesture(
+                    TapGesture().onEnded { isFocused = true },
+                    including: isDisabled ? .none : .all
+                )
+                .toolbar {
+                    ToolbarItemGroup(placement: .keyboard) {
+                        Spacer()
+                        Button("action.done") { isFocused = false }
+                            .accessibilityIdentifier("journal.keyboard.done")
+                    }
+                }
 
             HStack(alignment: .firstTextBaseline, spacing: PulseDesign.spacing8) {
                 if !isValid {
                     Text(validationMessage)
                         .foregroundStyle(PulseDesign.systemDestructive)
+                        .fixedSize(horizontal: false, vertical: true)
                         .accessibilityIdentifier("journal.draft.validation")
                 }
 
                 Spacer(minLength: 0)
 
                 Text(characterCountText)
-                    .foregroundStyle(
-                        isValid
-                            ? PulseDesign.appMuted(for: visualTheme)
-                            : PulseDesign.systemDestructive
-                    )
+                    .foregroundStyle(isValid ? PulseDesign.appMuted(for: visualTheme) : PulseDesign.systemDestructive)
                     .accessibilityIdentifier("journal.draft.count")
             }
             .font(.caption2)
         }
-        .padding(PulseDesign.spacing16)
-        .frame(
-            maxWidth: .infinity,
-            minHeight: PulseDesign.journalDraftMinimumHeight,
-            alignment: .leading
-        )
+        .padding(.horizontal, usesCard ? PulseDesign.spacing16 : 0)
+        .padding(.vertical, PulseDesign.spacing12)
+        .frame(maxWidth: .infinity, alignment: .leading)
         .modifier(PulseJournalPanel(theme: visualTheme))
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("journal.draft")
     }
 
-    var isValid: Bool {
-        JournalNote.accepts(userInput: text)
-    }
+    var isValid: Bool { JournalNote.accepts(userInput: text) }
+
+    private var usesCard: Bool { visualTheme == .quietField || visualTheme == .prismLedger }
 
     private var draftLineLimit: ClosedRange<Int> {
-        dynamicTypeSize.isAccessibilitySize ? 3...6 : 1...4
+        dynamicTypeSize.isAccessibilitySize ? 3...6 : 3...4
+    }
+
+    private var headingFont: Font {
+        visualTheme == .editorialJournal || visualTheme == .sunlitDay
+            ? PulseDesign.editorialDisplayFont(size: 19, relativeTo: .headline).weight(.semibold)
+            : .headline
     }
 
     private var draftFont: Font {
-        switch visualTheme {
-        case .editorialJournal:
-            .system(.body, design: .serif)
-        case .quietField, .sunlitDay, .moonTide, .prismLedger:
-            .system(.body, design: .rounded)
+        visualTheme == .editorialJournal || visualTheme == .sunlitDay
+            ? PulseDesign.editorialDisplayFont(size: 18, relativeTo: .body)
+            : .body
+    }
+
+    @ViewBuilder
+    private var draftBackground: some View {
+        if visualTheme == .editorialJournal {
+            VStack(spacing: 0) {
+                ForEach(0..<3) { _ in
+                    Spacer(minLength: 0)
+                    Rectangle()
+                        .fill(PulseDesign.appDivider(for: visualTheme))
+                        .frame(height: PulseDesign.thinLineWidth)
+                }
+            }
+            .accessibilityHidden(true)
+        } else if visualTheme == .moonTide || visualTheme == .sunlitDay {
+            RoundedRectangle(cornerRadius: visualTheme == .moonTide ? 14 : 8)
+                .fill(PulseDesign.appSurface(for: visualTheme).opacity(0.75))
+                .overlay {
+                    RoundedRectangle(cornerRadius: visualTheme == .moonTide ? 14 : 8)
+                        .stroke(PulseDesign.appDivider(for: visualTheme), lineWidth: PulseDesign.thinLineWidth)
+                }
         }
     }
 
@@ -151,10 +209,7 @@ struct JournalDraftComposer: View {
         String(
             format: PulseLocalization.string("journal.character_count_format", locale: locale),
             locale: locale,
-            arguments: [
-                Int64(text.count),
-                Int64(JournalNote.maximumCharacterCount),
-            ]
+            arguments: [Int64(text.count), Int64(JournalNote.maximumCharacterCount)]
         )
     }
 
@@ -162,13 +217,9 @@ struct JournalDraftComposer: View {
         String(
             format: PulseLocalization.string("journal.validation_format", locale: locale),
             locale: locale,
-            arguments: [
-                Int64(JournalNote.maximumCharacterCount),
-                Int64(JournalNote.maximumLineCount),
-            ]
+            arguments: [Int64(JournalNote.maximumCharacterCount), Int64(JournalNote.maximumLineCount)]
         )
     }
-
 }
 
 private struct PulseJournalPanel: ViewModifier {
@@ -177,32 +228,17 @@ private struct PulseJournalPanel: ViewModifier {
     func body(content: Content) -> some View {
         content
             .background {
-                if theme != .moonTide {
-                    RoundedRectangle(cornerRadius: radius)
+                if theme == .quietField || theme == .prismLedger {
+                    RoundedRectangle(cornerRadius: theme == .quietField ? 24 : 4)
                         .fill(PulseDesign.appSurface(for: theme))
                 }
             }
             .overlay {
-                if theme == .editorialJournal || theme == .moonTide {
-                    VStack {
-                        Rectangle().fill(PulseDesign.appDivider(for: theme)).frame(height: 1)
-                        Spacer(minLength: 0)
-                        Rectangle().fill(PulseDesign.appDivider(for: theme)).frame(height: 1)
-                    }
-                } else {
-                    RoundedRectangle(cornerRadius: radius)
-                        .stroke(PulseDesign.appDivider(for: theme), lineWidth: 1)
+                if theme == .quietField || theme == .prismLedger {
+                    RoundedRectangle(cornerRadius: theme == .quietField ? 24 : 4)
+                        .stroke(PulseDesign.appDivider(for: theme), lineWidth: PulseDesign.thinLineWidth)
                 }
             }
-    }
-
-    private var radius: CGFloat {
-        switch theme {
-        case .editorialJournal, .moonTide: 0
-        case .quietField: 24
-        case .sunlitDay: 10
-        case .prismLedger: 4
-        }
     }
 }
 
@@ -214,78 +250,23 @@ struct JournalHistorySection: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            VStack(alignment: .leading, spacing: PulseDesign.spacing4) {
-                Text("journal.history.title")
-                    .font(titleFont)
-                    .foregroundStyle(PulseDesign.appInk(for: visualTheme))
-
-                Text("journal.history.subtitle")
-                    .font(.caption)
-                    .foregroundStyle(PulseDesign.appMuted(for: visualTheme))
-            }
-            .padding(.top, PulseDesign.spacing16)
-            .padding(.bottom, PulseDesign.spacing20)
-
             if records.isEmpty {
-                if visualTheme == .quietField {
-                    VStack(spacing: PulseDesign.spacing16) {
-                        PulseBrandMark(size: 88)
-
-                        Text("journal.history.empty")
-                            .font(.system(.headline, design: .rounded, weight: .bold))
-                            .foregroundStyle(PulseDesign.quietMuted)
-                            .multilineTextAlignment(.center)
-                            .fixedSize(horizontal: false, vertical: true)
-                    }
-                    .padding(.horizontal, PulseDesign.spacing24)
-                    .padding(.top, PulseDesign.spacing20)
-                    .padding(.bottom, PulseDesign.spacing32)
-                    .frame(maxWidth: .infinity)
-                    .background {
-                        PulseQuietSpeechBubbleShape()
-                            .fill(PulseDesign.quietSurface)
-                    }
-                    .overlay {
-                        PulseQuietSpeechBubbleShape()
-                            .stroke(
-                                PulseDesign.quietDivider,
-                                lineWidth: PulseDesign.thinLineWidth
-                            )
-                    }
+                Text("journal.history.empty")
+                    .font(.body)
+                    .foregroundStyle(PulseDesign.appMuted(for: visualTheme))
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.vertical, PulseDesign.spacing24)
                     .accessibilityIdentifier("history.journal.empty")
-                } else if visualTheme == .sunlitDay {
-                    VStack(spacing: PulseDesign.spacing16) {
-                        PulseBrandMark(size: 76)
-
-                        Text("journal.history.empty")
-                            .font(.system(.headline, design: .rounded, weight: .black))
-                            .foregroundStyle(PulseDesign.sunlitMuted)
-                            .multilineTextAlignment(.center)
-                            .fixedSize(horizontal: false, vertical: true)
-                    }
-                    .padding(PulseDesign.spacing24)
-                    .frame(maxWidth: .infinity)
-                    .background {
-                        PulseSunlitSurfaceFill()
-                    }
-                    .accessibilityIdentifier("history.journal.empty")
-                } else {
-                    Text("journal.history.empty")
-                        .font(bodyFont)
-                        .foregroundStyle(PulseDesign.appMuted(for: visualTheme))
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.vertical, PulseDesign.spacing16)
-                        .accessibilityIdentifier("history.journal.empty")
-                }
             } else {
-                LazyVStack(spacing: entrySpacing) {
+                LazyVStack(spacing: usesCards ? PulseDesign.spacing12 : 0) {
                     ForEach(records) { record in
                         Button {
                             selectedDay = record.logicalDay
                         } label: {
                             JournalHistoryEntryRow(
                                 record: record,
-                                timeZone: model.timeZone
+                                media: model.media(for: record.logicalDay),
+                                loadThumbnail: model.thumbnailData
                             )
                         }
                         .buttonStyle(.plain)
@@ -293,9 +274,12 @@ struct JournalHistorySection: View {
                 }
             }
         }
+        .padding(.top, PulseDesign.spacing16)
         .frame(maxWidth: .infinity, alignment: .topLeading)
         .accessibilityIdentifier("history.journal.section")
     }
+
+    private var usesCards: Bool { visualTheme == .quietField || visualTheme == .prismLedger }
 
     private var records: [CheckInRecordSnapshot] {
         let month = model.selectedMonth ?? model.today?.firstDayOfMonth()
@@ -305,133 +289,264 @@ struct JournalHistorySection: View {
                     && record.logicalDay.year == month?.year
                     && record.logicalDay.month == month?.month
             }
-            .sorted { $0.checkedAt > $1.checkedAt }
-    }
-
-    private var titleFont: Font {
-        switch visualTheme {
-        case .editorialJournal:
-            .system(.title2, design: .serif).weight(.bold)
-        case .quietField, .sunlitDay, .moonTide, .prismLedger:
-            visualTheme == .quietField
-                ? .system(.title3, design: .rounded, weight: .black)
-                : .system(.title3, design: .rounded, weight: .black)
-        }
-    }
-
-    private var bodyFont: Font {
-        switch visualTheme {
-        case .editorialJournal: .system(.body, design: .serif)
-        case .quietField, .sunlitDay, .moonTide, .prismLedger:
-            .system(.body, design: .rounded)
-        }
-    }
-
-    private var entrySpacing: CGFloat {
-        visualTheme == .editorialJournal ? 0 : PulseDesign.spacing12
+            .sorted { $0.logicalDay > $1.logicalDay }
     }
 }
 
 private struct JournalHistoryEntryRow: View {
     let record: CheckInRecordSnapshot
-    let timeZone: TimeZone?
+    let media: ImprintMediaSnapshot?
+    let loadThumbnail: (ImprintMediaSnapshot) async throws -> Data
 
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @Environment(\.locale) private var locale
     @Environment(\.pulseVisualTheme) private var visualTheme
 
     var body: some View {
-        VStack(alignment: .leading, spacing: PulseDesign.spacing8) {
-            if let timeZone {
-                Text(
-                    PulseFormatting.fullDate(
-                        record.logicalDay,
-                        timeZone: timeZone,
-                        locale: locale
-                    )
-                )
-                .font(.caption2.weight(.medium))
-                .foregroundStyle(dateForeground)
-                .textCase(.uppercase)
-                .tracking(visualTheme == .editorialJournal ? PulseDesign.editorialKickerTracking : 0)
+        Group {
+            if dynamicTypeSize.isAccessibilitySize {
+                accessibleEntry
+            } else {
+                regularEntry
             }
-
-            Text(record.journalNote ?? "")
-                .font(noteFont)
-                .foregroundStyle(PulseDesign.appInk(for: visualTheme))
-                .lineLimit(PulseDesign.journalHistoryExcerptLineLimit)
-                .multilineTextAlignment(.leading)
-                .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .padding(.horizontal, horizontalPadding)
-        .padding(.vertical, PulseDesign.spacing16)
+        .padding(.horizontal, usesCards ? PulseDesign.spacing16 : 0)
+        .padding(.vertical, PulseDesign.spacing20)
+        .frame(maxWidth: .infinity, minHeight: 108, alignment: .leading)
         .background(entryBackground)
-        .overlay(entryBorder)
+        .overlay(alignment: .bottom) {
+            if !usesCards {
+                Rectangle()
+                    .fill(PulseDesign.appDivider(for: visualTheme))
+                    .frame(height: PulseDesign.thinLineWidth)
+                    .padding(.leading, visualTheme == .moonTide && !dynamicTypeSize.isAccessibilitySize ? 44 : 0)
+            }
+        }
+        .overlay(alignment: .leading) {
+            if visualTheme == .moonTide && !dynamicTypeSize.isAccessibilitySize {
+                Rectangle()
+                    .fill(PulseDesign.appAccent(for: visualTheme).opacity(0.36))
+                    .frame(width: 1)
+                    .padding(.leading, 15)
+                    .accessibilityHidden(true)
+            }
+        }
         .contentShape(Rectangle())
         .accessibilityElement(children: .combine)
         .accessibilityIdentifier("history.journal.entry.\(record.logicalDay.storageValue)")
     }
 
+    private var regularEntry: some View {
+        HStack(alignment: .top, spacing: PulseDesign.spacing12) {
+            if visualTheme == .editorialJournal {
+                stampedDate
+            } else if visualTheme == .sunlitDay {
+                calendarDate
+            } else if visualTheme == .moonTide {
+                Image("PulseTideTick")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 30, height: 16)
+                    .padding(.top, 14)
+                    .accessibilityHidden(true)
+            }
+
+            VStack(alignment: .leading, spacing: PulseDesign.spacing8) {
+                if visualTheme != .editorialJournal && visualTheme != .sunlitDay {
+                    dateHeading
+                }
+                checkedAt
+                noteText
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+
+            if let media {
+                JournalHistoryThumbnail(media: media, load: loadThumbnail)
+            }
+
+            Image(systemName: "chevron.right")
+                .font(.caption.weight(.medium))
+                .foregroundStyle(PulseDesign.appMuted(for: visualTheme))
+                .frame(maxHeight: .infinity)
+                .accessibilityHidden(true)
+        }
+    }
+
+    private var accessibleEntry: some View {
+        VStack(alignment: .leading, spacing: PulseDesign.spacing12) {
+            dateHeading
+            checkedAt
+            noteText
+            if let media {
+                JournalHistoryThumbnail(media: media, load: loadThumbnail)
+            }
+        }
+    }
+
+    private var stampedDate: some View {
+        VStack(spacing: PulseDesign.spacing8) {
+            Text(numericDate)
+                .font(PulseDesign.editorialDisplayFont(size: 19, relativeTo: .headline))
+                .padding(.horizontal, 5)
+                .padding(.vertical, 4)
+                .overlay {
+                    RoundedRectangle(cornerRadius: 2)
+                        .stroke(PulseDesign.appAccent(for: visualTheme), lineWidth: 1.2)
+                }
+                .rotationEffect(.degrees(-7))
+            Text(weekday)
+                .font(PulseDesign.editorialDisplayFont(size: 12, relativeTo: .caption))
+        }
+        .foregroundStyle(PulseDesign.appAccent(for: visualTheme))
+        .frame(width: 72)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(fullDate)
+    }
+
+    private var calendarDate: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(record.logicalDay.day, format: .number)
+                .font(PulseDesign.editorialDisplayFont(size: 44, relativeTo: .largeTitle))
+                .foregroundStyle(PulseDesign.appAccent(for: visualTheme))
+            Text(weekday)
+                .font(.caption2)
+                .foregroundStyle(PulseDesign.appMuted(for: visualTheme))
+        }
+        .frame(width: 66, alignment: .leading)
+        .overlay(alignment: .topLeading) {
+            JournalCalendarFold()
+                .fill(PulseDesign.appAccent(for: visualTheme))
+                .frame(width: 14, height: 14)
+                .offset(x: -4, y: -12)
+                .accessibilityHidden(true)
+        }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(fullDate)
+    }
+
+    private var dateHeading: some View {
+        Text(dynamicTypeSize.isAccessibilitySize ? fullDate : "\(numericDate)  \(weekday)")
+            .font(.subheadline.weight(.medium))
+            .foregroundStyle(PulseDesign.appInk(for: visualTheme))
+            .fixedSize(horizontal: false, vertical: true)
+    }
+
+    private var checkedAt: some View {
+        Text(String(
+            format: PulseLocalization.string("today.checked_with_time", locale: locale),
+            PulseFormatting.time(record.checkedAt, timeZone: record.timeZone, locale: locale)
+        ))
+        .font(.caption)
+        .foregroundStyle(visualTheme == .sunlitDay ? PulseDesign.appAccent(for: visualTheme) : PulseDesign.appMuted(for: visualTheme))
+        .fixedSize(horizontal: false, vertical: true)
+    }
+
+    private var noteText: some View {
+        Text(record.journalNote ?? "")
+            .font(noteFont)
+            .foregroundStyle(PulseDesign.appInk(for: visualTheme))
+            .lineSpacing(4)
+            .lineLimit(dynamicTypeSize.isAccessibilitySize ? nil : PulseDesign.journalHistoryExcerptLineLimit)
+            .multilineTextAlignment(.leading)
+            .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
     private var noteFont: Font {
-        switch visualTheme {
-        case .editorialJournal: .system(.body, design: .serif)
-        case .quietField, .sunlitDay, .moonTide, .prismLedger:
-            .system(.body, design: .rounded)
-        }
+        visualTheme == .editorialJournal || visualTheme == .sunlitDay
+            ? PulseDesign.editorialDisplayFont(size: 17, relativeTo: .body)
+            : .body
     }
 
-    private var dateForeground: Color {
-        switch visualTheme {
-        case .quietField:
-            PulseDesign.quietMuted
-        case .editorialJournal:
-            PulseDesign.editorialAccent
-        case .sunlitDay:
-            PulseDesign.sunlitMuted
-        case .moonTide, .prismLedger:
-            PulseDesign.appAccent(for: visualTheme)
-        }
+    private var numericDate: String {
+        String(format: "%02d.%02d", record.logicalDay.month, record.logicalDay.day)
     }
 
-    private var horizontalPadding: CGFloat {
-        visualTheme == .editorialJournal ? 0 : PulseDesign.spacing16
+    private var weekday: String {
+        PulseFormatting.fullWeekday(record.logicalDay, timeZone: record.timeZone, locale: locale)
     }
+
+    private var fullDate: String {
+        PulseFormatting.fullDate(record.logicalDay, timeZone: record.timeZone, locale: locale)
+    }
+
+    private var usesCards: Bool { visualTheme == .quietField || visualTheme == .prismLedger }
 
     @ViewBuilder
     private var entryBackground: some View {
         if visualTheme == .quietField {
             PulseQuietSpeechBubbleShape()
                 .fill(PulseDesign.quietSurface.opacity(PulseDesign.journalHistorySurfaceOpacity))
-        } else if visualTheme == .sunlitDay {
-            PulseSunlitSurfaceFill(cornerRadius: PulseDesign.spacing20)
-        } else if visualTheme == .moonTide || visualTheme == .prismLedger {
-            RoundedRectangle(cornerRadius: PulseDesign.spacing16, style: .continuous)
-                .fill(PulseDesign.appSurface(for: visualTheme).opacity(0.90))
+                .overlay {
+                    PulseQuietSpeechBubbleShape()
+                        .stroke(PulseDesign.quietDivider, lineWidth: PulseDesign.thinLineWidth)
+                }
+        } else if visualTheme == .prismLedger {
+            RoundedRectangle(cornerRadius: PulseDesign.spacing16)
+                .fill(PulseDesign.appSurface(for: visualTheme).opacity(0.9))
+                .overlay {
+                    RoundedRectangle(cornerRadius: PulseDesign.spacing16)
+                        .stroke(PulseDesign.appDivider(for: visualTheme), lineWidth: PulseDesign.thinLineWidth)
+                }
         }
     }
+}
 
-    @ViewBuilder
-    private var entryBorder: some View {
-        if visualTheme == .quietField {
-            PulseQuietSpeechBubbleShape()
-                .stroke(PulseDesign.quietDivider, lineWidth: PulseDesign.thinLineWidth)
-        } else if visualTheme == .sunlitDay {
-            Color.clear
-        } else if visualTheme == .moonTide || visualTheme == .prismLedger {
-            RoundedRectangle(cornerRadius: PulseDesign.spacing16, style: .continuous)
-                .stroke(
-                    PulseDesign.appDivider(for: visualTheme),
-                    lineWidth: PulseDesign.thinLineWidth
-                )
-        } else {
-            VStack(spacing: 0) {
-                Spacer(minLength: 0)
-                Rectangle()
-                    .fill(
-                        PulseDesign.separator
-                    )
-                    .frame(height: PulseDesign.thinLineWidth)
+private struct JournalCalendarFold: Shape {
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        path.move(to: CGPoint(x: rect.minX, y: rect.minY))
+        path.addLine(to: CGPoint(x: rect.maxX, y: rect.minY))
+        path.addLine(to: CGPoint(x: rect.minX, y: rect.maxY))
+        path.closeSubpath()
+        return path
+    }
+}
+
+private struct JournalHistoryThumbnail: View {
+    let media: ImprintMediaSnapshot
+    let load: (ImprintMediaSnapshot) async throws -> Data
+
+    @Environment(\.pulseVisualTheme) private var visualTheme
+    @State private var image: UIImage?
+    @State private var failed = false
+
+    var body: some View {
+        Group {
+            if let image {
+                Image(uiImage: image)
+                    .resizable()
+                    .scaledToFit()
+            } else if failed {
+                Image(systemName: "photo.badge.exclamationmark")
+                    .foregroundStyle(PulseDesign.appMuted(for: visualTheme))
+            } else {
+                ProgressView().controlSize(.small)
             }
         }
+        .frame(width: thumbnailSize.width, height: thumbnailSize.height)
+        .background(PulseDesign.appSurface(for: visualTheme))
+        .clipShape(RoundedRectangle(cornerRadius: 4))
+        .task(id: media.thumbnailRelativePath) {
+            image = nil
+            failed = false
+            do {
+                let data = try await load(media)
+                try Task.checkCancellation()
+                image = UIImage(data: data)
+                failed = image == nil
+            } catch is CancellationError {
+                return
+            } catch {
+                failed = true
+            }
+        }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(failed ? "media.preview.unavailable" : "media.preview.accessibility")
+    }
+
+    private var thumbnailSize: CGSize {
+        let ratio = CGFloat(media.pixelWidth) / CGFloat(media.pixelHeight)
+        return CGSize(width: min(64, 84 * ratio), height: min(84, 64 / ratio))
     }
 }
 

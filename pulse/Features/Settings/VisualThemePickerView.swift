@@ -6,6 +6,7 @@ struct VisualThemePickerView: View {
     @Environment(\.locale) private var locale
     @Environment(\.pulseVisualTheme) private var visualTheme
     @State private var showsStore = false
+    @State private var previewTheme: PulseVisualTheme?
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     var body: some View {
@@ -21,7 +22,8 @@ struct VisualThemePickerView: View {
                             PulseVisualThemeAccessPolicy
                             .requiresEnhancement(theme)
                             && !model.featureAccess.hasEnhancement,
-                        locale: locale
+                        locale: locale,
+                        onPreview: { previewTheme = theme }
                     ) {
                         if !model.requestVisualTheme(theme) {
                             showsStore = true
@@ -45,6 +47,9 @@ struct VisualThemePickerView: View {
         .navigationDestination(isPresented: $showsStore) {
             EnhancementStoreView(model: model)
         }
+        .sheet(item: $previewTheme) { theme in
+            PulseExpandedThemePreview(theme: theme, model: model)
+        }
         .id("settings.visual-theme.\(locale.identifier)")
     }
 }
@@ -55,10 +60,29 @@ private struct PulseVisualThemeChoice: View {
     let isSelected: Bool
     let isLocked: Bool
     let locale: Locale
+    let onPreview: () -> Void
     let action: () -> Void
     @Environment(\.pulseVisualTheme) private var currentTheme
 
     var body: some View {
+        ZStack(alignment: .topTrailing) {
+            selectionButton
+            Button(action: onPreview) {
+                Image(systemName: "arrow.up.left.and.arrow.down.right")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(PulseDesign.appInk(for: currentTheme))
+                    .frame(width: 36, height: 36)
+                    .background(PulseDesign.appSurface(for: currentTheme), in: Circle())
+                    .frame(width: 44, height: 44)
+            }
+            .buttonStyle(.plain)
+            .padding(6)
+            .accessibilityLabel(previewTitle)
+            .accessibilityIdentifier("settings.visual-theme.preview.\(theme.rawValue)")
+        }
+    }
+
+    private var selectionButton: some View {
         Button(action: action) {
             VStack(alignment: .leading, spacing: PulseDesign.spacing12) {
                 PulseVisualThemeSpecimen(theme: theme, model: model)
@@ -130,16 +154,58 @@ private struct PulseVisualThemeChoice: View {
         }
         .buttonStyle(.plain)
         .frame(maxWidth: .infinity)
-        .accessibilityLabel(theme.localizedName(locale: locale))
-        .accessibilityValue(isLocked ? Text("widget.gallery.locked") : Text(verbatim: ""))
-        .accessibilityHint(
-            isLocked ? Text("widget.gallery.enhancement.hint") : Text(verbatim: "")
-        )
-        .accessibilityAddTraits(isSelected ? .isSelected : [])
-        .accessibilityIdentifier("settings.visual-theme.\(theme.rawValue)")
+        .accessibilityRepresentation {
+            Button(theme.localizedName(locale: locale), action: action)
+                .accessibilityValue(isLocked ? Text("widget.gallery.locked") : Text(verbatim: ""))
+                .accessibilityHint(isLocked ? Text("widget.gallery.enhancement.hint") : Text(verbatim: ""))
+                .accessibilityAddTraits(isSelected ? .isSelected : [])
+                .accessibilityAction(named: Text(previewTitle), onPreview)
+                .accessibilityIdentifier("settings.visual-theme.\(theme.rawValue)")
+        }
     }
 
     private var selectionColor: Color {
         PulseDesign.appAccent(for: theme)
+    }
+
+    private var previewTitle: String {
+        String(format: PulseLocalization.string("settings.visual_theme.preview", locale: locale),
+               theme.localizedName(locale: locale))
+    }
+}
+
+private struct PulseExpandedThemePreview: View {
+    let theme: PulseVisualTheme
+    let model: PulseAppModel
+    @Environment(\.locale) private var locale
+    @Environment(\.dismiss) private var dismiss
+    @Environment(\.colorScheme) private var inheritedColorScheme
+
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                PulseVisualThemeSpecimen(theme: theme, model: model)
+                    .accessibilityRepresentation {
+                        Text(theme.localizedDescription(locale: locale))
+                    }
+                    .frame(maxWidth: 390)
+                    .padding(16)
+                    .frame(maxWidth: .infinity)
+            }
+            .background(PulseScreenBackground())
+            .navigationTitle(theme.localizedName(locale: locale))
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("action.done") { dismiss() }
+                        .accessibilityIdentifier("settings.visual-theme.preview.close")
+                }
+            }
+        }
+        .environment(\.pulseVisualTheme, theme)
+        .tint(PulseDesign.appAccent(for: theme))
+        .preferredColorScheme(PulseThemeAppearance.previewColorScheme(
+            theme: theme, appearance: model.settings.theme, inherited: inheritedColorScheme
+        ))
     }
 }

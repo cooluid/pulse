@@ -5,6 +5,7 @@ struct PulseVisualThemeSpecimen: View {
     let theme: PulseVisualTheme
     let model: PulseAppModel
     @Environment(\.locale) private var locale
+    @Environment(\.colorScheme) private var inheritedColorScheme
 
     var body: some View {
         GeometryReader { proxy in
@@ -18,8 +19,10 @@ struct PulseVisualThemeSpecimen: View {
                         habitName: model.habit?.name,
                         recentDays: model.recentDays,
                         currentStreak: model.statistics.currentStreak,
+                        isChecked: model.todayRecord != nil,
                         checkIn: previewCheckIn,
-                        journal: previewJournal
+                        journal: previewJournal,
+                        media: previewMedia
                     )
                     .padding(.horizontal, PulseDesign.horizontalPadding)
                 }
@@ -35,39 +38,33 @@ struct PulseVisualThemeSpecimen: View {
                 PulseFieldBackground(presentation: .today, allowsMotion: false)
             }
             .environment(\.pulseVisualTheme, theme)
+            .environment(\.colorScheme, previewColorScheme)
             .environment(\.horizontalSizeClass, .compact)
             .environment(\.dynamicTypeSize, .medium)
             .scaleEffect(scale, anchor: .topLeading)
         }
         .aspectRatio(360.0 / 740.0, contentMode: .fit)
-        .clipShape(RoundedRectangle(cornerRadius: 16))
+        .clipShape(RoundedRectangle(cornerRadius: 12))
         .allowsHitTesting(false)
         .accessibilityHidden(true)
     }
 
+    private var previewColorScheme: ColorScheme {
+        PulseThemeAppearance.previewColorScheme(theme: theme, appearance: model.settings.theme,
+                                              inherited: inheritedColorScheme)
+    }
+
     private var previewCheckIn: some View {
-        VStack(spacing: 18) {
-            PulseCheckInFace(completedText: model.todayRecord.map { record in
+        PulseCheckInFace(
+            completedText: model.todayRecord.map { record in
                 String(format: PulseLocalization.string("today.checked_with_time", locale: locale),
                        PulseFormatting.time(record.checkedAt, timeZone: record.timeZone, locale: locale))
-            })
-            Group {
-                if model.todayRecord == nil {
-                    Text("today.check_in_hint_visible")
-                        .font(.caption)
-                        .foregroundStyle(PulseDesign.appMuted(for: theme))
-                } else if model.settings.mediaInvitationEnabled || model.todayMedia != nil {
-                    Label(model.todayMedia == nil ? "today.media.capture_compact" : "today.media.view_compact", systemImage: "camera.fill")
-                        .font(.caption.bold())
-                        .foregroundStyle(PulseDesign.appInk(for: theme))
-                        .padding(.horizontal, 12)
-                        .frame(minHeight: 44)
-                        .background(PulseDesign.appSurface(for: theme), in: Capsule())
-                        .overlay { Capsule().stroke(PulseDesign.appDivider(for: theme), lineWidth: 1) }
-                }
+            },
+            day: model.today,
+            completedTime: model.todayRecord.map {
+                PulseFormatting.time($0.checkedAt, timeZone: $0.timeZone, locale: locale)
             }
-            .frame(minHeight: 44)
-        }
+        )
     }
 
     @ViewBuilder
@@ -76,6 +73,16 @@ struct PulseVisualThemeSpecimen: View {
             JournalNoteSummary(record: record, onEdit: {})
         } else {
             PulseThemeDraftPreview()
+        }
+    }
+
+    @ViewBuilder
+    private var previewMedia: some View {
+        if model.todayRecord != nil && (model.settings.mediaInvitationEnabled || model.todayMedia != nil) {
+            Label(model.todayMedia == nil ? "today.media.capture_compact" : "today.media.view_compact", systemImage: "camera")
+                .font(.subheadline.weight(.medium))
+                .foregroundStyle(PulseDesign.appInk(for: theme))
+                .frame(maxWidth: .infinity, minHeight: 44, alignment: theme == .editorialJournal ? .leading : .center)
         }
     }
 }

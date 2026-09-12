@@ -328,20 +328,11 @@ private struct ConfiguredRootView: View {
             .environment(\.locale, settings.locale)
             .environment(\.pulseVisualTheme, model.resolvedVisualTheme)
             .preferredColorScheme(
-                model.resolvedVisualTheme == .moonTide
-                    ? .dark
-                    : settings.theme.preferredColorScheme
+                PulseThemeAppearance.preferredColorScheme(
+                    theme: model.resolvedVisualTheme,
+                    appearance: settings.theme
+                )
             )
-    }
-}
-
-private extension AppTheme {
-    var preferredColorScheme: ColorScheme? {
-        switch self {
-        case .system: nil
-        case .light: .light
-        case .dark: .dark
-        }
     }
 }
 

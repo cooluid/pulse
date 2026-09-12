@@ -881,6 +881,328 @@ final class PulseFlowUITests: XCTestCase {
         XCTAssertEqual(clearedNote.label, "这一天还没有记事")
     }
 
+    func testApprovedThemesPreserveDraftCheckInAndHistoryEditing() throws {
+        for theme in ["editorialJournal", "moonTide", "sunlitDay"] {
+            try XCTContext.runActivity(named: "Daily note flow: \(theme)") { _ in
+                configureApp()
+                app.launchEnvironment["PULSE_UI_TEST_ENHANCEMENT_PURCHASED"] = "1"
+                app.launchEnvironment["PULSE_UI_TEST_NOW"] = "2026-09-13T11:42:00Z"
+                launchAndConfirmDefaultCommitment()
+
+                app.buttons["settings.navigation.open.today"].tap()
+                openVisualThemePicker()
+                let themeChoice = app.buttons["settings.visual-theme.\(theme)"]
+                for _ in 0..<8 where !themeChoice.isHittable {
+                    app.swipeUp()
+                }
+                XCTAssertTrue(themeChoice.waitForExistence(timeout: 3))
+                XCTAssertTrue(themeChoice.isHittable)
+                themeChoice.tap()
+                XCTAssertTrue(themeChoice.isSelected)
+                app.buttons["navigation.back"].tap()
+                app.buttons["navigation.back"].tap()
+
+                let checkIn = app.buttons["today.checkin.button"]
+                XCTAssertTrue(checkIn.waitForExistence(timeout: 3))
+                XCTAssertTrue(checkIn.isEnabled)
+                let pending = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
+                pending.name = "\(theme) · pending"
+                pending.lifetime = .keepAlways
+                add(pending)
+
+                let note = "晚饭后散步记录，河边走了二十分钟。"
+                let draft = app.descendants(matching: .any)["journal.draft.input"]
+                XCTAssertTrue(draft.waitForExistence(timeout: 3))
+                for _ in 0..<4 where !draft.isHittable {
+                    app.swipeUp()
+                }
+                XCTAssertTrue(draft.isHittable)
+                replaceText(in: draft, with: note)
+                let keyboardDone = app.buttons["journal.keyboard.done"]
+                XCTAssertTrue(keyboardDone.waitForExistence(timeout: 3))
+                keyboardDone.tap()
+                for _ in 0..<4 where !checkIn.isHittable {
+                    app.swipeDown()
+                }
+                XCTAssertTrue(checkIn.isHittable)
+                checkIn.tap()
+                expectation(
+                    for: NSPredicate(format: "isEnabled == false AND label CONTAINS %@", "已签到"),
+                    evaluatedWith: checkIn
+                )
+                waitForExpectations(timeout: 3)
+
+                let summary = app.descendants(matching: .any)
+                    .matching(identifier: "journal.summary.text")
+                    .firstMatch
+                XCTAssertTrue(summary.waitForExistence(timeout: 3))
+                XCTAssertEqual(summary.label, note)
+                let completed = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
+                completed.name = "\(theme) · completed"
+                completed.lifetime = .keepAlways
+                add(completed)
+
+                app.buttons["primary.navigation.history"].tap()
+                let journalMode = app.buttons["history.mode.journal"]
+                XCTAssertTrue(journalMode.waitForExistence(timeout: 3))
+                journalMode.tap()
+                let entry = app.descendants(matching: .any)
+                    .matching(identifier: "history.journal.entry.2026-09-13")
+                    .firstMatch
+                XCTAssertTrue(entry.waitForExistence(timeout: 3))
+                XCTAssertTrue(entry.label.contains(note))
+                let history = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
+                history.name = "\(theme) · history"
+                history.lifetime = .keepAlways
+                add(history)
+                entry.tap()
+                XCTAssertTrue(app.buttons["detail.sheet.close"].waitForExistence(timeout: 3))
+
+                let detailEdit = try XCTUnwrap(
+                    app.buttons.matching(identifier: "journal.edit.button")
+                        .allElementsBoundByIndex.first(where: \.isHittable)
+                )
+                detailEdit.tap()
+                let editor = app.descendants(matching: .any)["journal.editor.input"]
+                XCTAssertTrue(editor.waitForExistence(timeout: 3))
+                XCTAssertEqual(editor.value as? String, note)
+                let save = app.buttons["journal.editor.save"]
+                XCTAssertFalse(save.isEnabled)
+                let editedNote = "晚饭后散步记录，沿河走到桥边再回来。"
+                replaceText(in: editor, with: editedNote)
+                XCTAssertTrue(save.isEnabled)
+                save.tap()
+                expectation(
+                    for: NSPredicate(format: "label == %@", editedNote),
+                    evaluatedWith: summary
+                )
+                waitForExpectations(timeout: 3)
+                app.buttons["detail.sheet.close"].tap()
+
+                app.buttons["primary.navigation.today"].tap()
+                XCTAssertTrue(summary.waitForExistence(timeout: 3))
+                XCTAssertEqual(summary.label, editedNote)
+                XCTAssertFalse(checkIn.isEnabled)
+                XCTAssertTrue(checkIn.label.contains("已签到"))
+                app.terminate()
+            }
+        }
+    }
+
+    func testApprovedThemesAcrossRecordedDays() throws {
+        configureApp()
+        app.launchEnvironment["PULSE_UI_TEST_ENHANCEMENT_PURCHASED"] = "1"
+        app.launchEnvironment["PULSE_UI_TEST_NOW"] = "2026-09-10T11:42:00Z"
+        let fixture = XCTAttachment(string: app.launchEnvironment["PULSE_UI_TEST_STORE_ID"]!)
+        fixture.name = "Theme review isolated store"
+        fixture.lifetime = .keepAlways
+        add(fixture)
+        app.launch()
+        let nameField = app.textFields["commitment.name.field"]
+        XCTAssertTrue(nameField.waitForExistence(timeout: 5))
+        replaceText(in: nameField, with: "晚饭后散步")
+        nameField.typeText(XCUIKeyboardKey.return.rawValue)
+        let purposeField = app.descendants(matching: .any)["commitment.purpose.field"]
+        XCTAssertTrue(purposeField.waitForExistence(timeout: 3))
+        purposeField.typeText(XCUIKeyboardKey.return.rawValue)
+        let commitmentSave = app.buttons["commitment.save.button"]
+        XCTAssertTrue(commitmentSave.isEnabled)
+        commitmentSave.tap()
+        XCTAssertTrue(app.buttons["today.checkin.button"].waitForExistence(timeout: 5))
+
+        let previousDays = [
+            (day: "2026-09-10", note: "雨停后出门走了一圈。"),
+            (day: "2026-09-11", note: "走到桥边再回来。"),
+            (day: "2026-09-12", note: "看到了傍晚的云。"),
+        ]
+        for (index, record) in previousDays.enumerated() {
+            if index > 0 {
+                app.terminate()
+                app.launchEnvironment.removeValue(forKey: "PULSE_UI_TEST_RESET")
+                app.launchEnvironment["PULSE_UI_TEST_NOW"] = "\(record.day)T11:42:00Z"
+                app.launch()
+                XCTAssertTrue(app.buttons["today.checkin.button"].waitForExistence(timeout: 5))
+            }
+            checkInForRecordedDayReview(note: record.note)
+        }
+
+        app.terminate()
+        app.launchEnvironment.removeValue(forKey: "PULSE_UI_TEST_RESET")
+        app.launchEnvironment["PULSE_UI_TEST_NOW"] = "2026-09-13T11:42:00Z"
+        app.launch()
+        let checkIn = app.buttons["today.checkin.button"]
+        XCTAssertTrue(checkIn.waitForExistence(timeout: 5))
+        XCTAssertTrue(checkIn.isEnabled)
+        XCTAssertTrue(checkIn.label.contains("晚饭后散步"))
+
+        let themes = ["editorialJournal", "sunlitDay", "moonTide"]
+        for theme in themes {
+            selectThemeForRecordedDayReview(theme)
+            XCTAssertTrue(checkIn.isEnabled)
+            keepRecordedDayScreenshot("\(theme) · accumulated days · pending")
+        }
+
+        let todayNote = "河边走了二十分钟。"
+        checkInForRecordedDayReview(note: todayNote)
+        let expectedRecords = [(day: "2026-09-13", note: todayNote)] + previousDays.reversed()
+        for theme in themes {
+            selectThemeForRecordedDayReview(theme)
+            XCTAssertFalse(checkIn.isEnabled)
+            XCTAssertTrue(checkIn.label.contains("已签到"))
+            keepRecordedDayScreenshot("\(theme) · accumulated days · completed")
+
+            app.buttons["primary.navigation.history"].tap()
+            let total = app.descendants(matching: .any)
+                .matching(identifier: "history.stat.total")
+                .firstMatch
+            XCTAssertTrue(total.waitForExistence(timeout: 3))
+            XCTAssertTrue(total.label.contains("4"))
+            let journalMode = app.buttons["history.mode.journal"]
+            XCTAssertTrue(journalMode.waitForExistence(timeout: 3))
+            journalMode.tap()
+            let todayEntry = app.descendants(matching: .any)
+                .matching(identifier: "history.journal.entry.2026-09-13")
+                .firstMatch
+            XCTAssertTrue(todayEntry.waitForExistence(timeout: 3))
+            for _ in 0..<4 where !todayEntry.isHittable {
+                app.swipeDown()
+            }
+            keepRecordedDayScreenshot("\(theme) · accumulated days · history")
+
+            for record in expectedRecords {
+                let entry = app.descendants(matching: .any)
+                    .matching(identifier: "history.journal.entry.\(record.day)")
+                    .firstMatch
+                for _ in 0..<4 where !entry.exists {
+                    app.swipeUp()
+                }
+                XCTAssertTrue(entry.waitForExistence(timeout: 3))
+                XCTAssertTrue(entry.label.contains(record.note))
+                XCTAssertTrue(entry.label.contains("19:42"))
+            }
+            let entryIdentifiers = app.descendants(matching: .any)
+                .matching(NSPredicate(format: "identifier BEGINSWITH %@", "history.journal.entry."))
+                .allElementsBoundByIndex.map(\.identifier)
+            var readingOrder: [String] = []
+            for identifier in entryIdentifiers where !readingOrder.contains(identifier) {
+                readingOrder.append(identifier)
+            }
+            XCTAssertEqual(
+                readingOrder,
+                expectedRecords.map { "history.journal.entry.\($0.day)" }
+            )
+            app.buttons["primary.navigation.today"].tap()
+            XCTAssertTrue(checkIn.waitForExistence(timeout: 3))
+            XCTAssertFalse(checkIn.isEnabled)
+        }
+    }
+
+    private func selectThemeForRecordedDayReview(_ theme: String) {
+        let settings = app.buttons["settings.navigation.open.today"]
+        XCTAssertTrue(settings.waitForExistence(timeout: 3))
+        settings.tap()
+        openVisualThemePicker()
+        let choice = app.buttons["settings.visual-theme.\(theme)"]
+        for _ in 0..<8 where !choice.isHittable {
+            app.swipeUp()
+        }
+        XCTAssertTrue(choice.waitForExistence(timeout: 3))
+        XCTAssertTrue(choice.isHittable)
+        choice.tap()
+        XCTAssertTrue(choice.isSelected)
+        app.buttons["navigation.back"].tap()
+        app.buttons["navigation.back"].tap()
+        XCTAssertTrue(app.buttons["today.checkin.button"].waitForExistence(timeout: 3))
+        app.swipeDown()
+    }
+
+    private func checkInForRecordedDayReview(note: String) {
+        let checkIn = app.buttons["today.checkin.button"]
+        XCTAssertTrue(checkIn.waitForExistence(timeout: 3))
+        XCTAssertTrue(checkIn.isEnabled)
+        let draft = app.descendants(matching: .any)["journal.draft.input"]
+        XCTAssertTrue(draft.waitForExistence(timeout: 3))
+        for _ in 0..<4 where !draft.isHittable {
+            app.swipeUp()
+        }
+        XCTAssertTrue(draft.isHittable)
+        replaceText(in: draft, with: note)
+        let done = app.buttons["journal.keyboard.done"]
+        XCTAssertTrue(done.waitForExistence(timeout: 3))
+        done.tap()
+        for _ in 0..<4 where !checkIn.isHittable {
+            app.swipeDown()
+        }
+        XCTAssertTrue(checkIn.isHittable)
+        checkIn.tap()
+        expectation(
+            for: NSPredicate(format: "isEnabled == false AND label CONTAINS %@", "已签到"),
+            evaluatedWith: checkIn
+        )
+        waitForExpectations(timeout: 3)
+        let summary = app.descendants(matching: .any)
+            .matching(identifier: "journal.summary.text")
+            .firstMatch
+        XCTAssertTrue(summary.waitForExistence(timeout: 3))
+        XCTAssertEqual(summary.label, note)
+    }
+
+    private func keepRecordedDayScreenshot(_ name: String) {
+        let attachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
+        attachment.name = name
+        attachment.lifetime = .keepAlways
+        add(attachment)
+    }
+
+    func testBrowsingAndSelectingThemesDoesNotCreateCheckIn() throws {
+        configureApp()
+        app.launchEnvironment["PULSE_UI_TEST_ENHANCEMENT_PURCHASED"] = "1"
+        app.launchEnvironment["PULSE_UI_TEST_NOW"] = "2026-09-13T11:42:00Z"
+        launchAndConfirmDefaultCommitment()
+
+        let checkIn = app.buttons["today.checkin.button"]
+        XCTAssertTrue(checkIn.isEnabled)
+        app.buttons["primary.navigation.history"].tap()
+        let total = app.descendants(matching: .any)
+            .matching(identifier: "history.stat.total")
+            .firstMatch
+        XCTAssertTrue(total.waitForExistence(timeout: 3))
+        XCTAssertTrue(total.label.contains("0"))
+        app.buttons["primary.navigation.today"].tap()
+        app.buttons["settings.navigation.open.today"].tap()
+        openVisualThemePicker()
+
+        for theme in ["editorialJournal", "sunlitDay", "moonTide"] {
+            let themeChoice = app.buttons["settings.visual-theme.\(theme)"]
+            for _ in 0..<8 where !themeChoice.isHittable {
+                app.swipeUp()
+            }
+            XCTAssertTrue(themeChoice.waitForExistence(timeout: 3))
+            XCTAssertTrue(themeChoice.isHittable)
+            themeChoice.tap()
+            XCTAssertTrue(themeChoice.isSelected)
+        }
+        let preview = app.buttons["settings.visual-theme.preview.editorialJournal"]
+        for _ in 0..<4 where !preview.isHittable { app.swipeDown() }
+        XCTAssertTrue(preview.isHittable)
+        preview.tap()
+        let closePreview = app.buttons["settings.visual-theme.preview.close"]
+        XCTAssertTrue(closePreview.waitForExistence(timeout: 3))
+        let previewAttachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
+        previewAttachment.name = "Paper theme preview opened from Moon Tide"
+        previewAttachment.lifetime = .keepAlways
+        add(previewAttachment)
+        closePreview.tap()
+        XCTAssertTrue(app.buttons["settings.visual-theme.moonTide"].isSelected)
+        app.buttons["navigation.back"].tap()
+        app.buttons["navigation.back"].tap()
+        XCTAssertTrue(checkIn.waitForExistence(timeout: 3))
+        XCTAssertTrue(checkIn.isEnabled)
+        app.buttons["primary.navigation.history"].tap()
+        XCTAssertTrue(total.waitForExistence(timeout: 3))
+        XCTAssertTrue(total.label.contains("0"))
+    }
+
     func testPurchasedThemeUsesTheSameCheckInNotePhotoAndHistoryContract() throws {
         configureApp()
         app.launchEnvironment["PULSE_UI_TEST_ENHANCEMENT_PURCHASED"] = "1"
@@ -1010,7 +1332,7 @@ final class PulseFlowUITests: XCTestCase {
         XCTAssertTrue(checkInButton.isHittable)
     }
 
-    func testChineseHistoryUsesLocalizedArchiveHeading() throws {
+    func testChineseHistoryUsesLocalizedMonthHeading() throws {
         configureApp()
         launchAndConfirmDefaultCommitment()
 
@@ -1018,10 +1340,10 @@ final class PulseFlowUITests: XCTestCase {
         XCTAssertTrue(historyNavigation.waitForExistence(timeout: 3))
         historyNavigation.tap()
 
-        let localizedHeading = app.staticTexts
-            .matching(NSPredicate(format: "label == %@", "记录 · 2026"))
-            .firstMatch
+        let localizedHeading = app.descendants(matching: .any)["history.month.heading"]
         XCTAssertTrue(localizedHeading.waitForExistence(timeout: 3))
+        XCTAssertTrue(localizedHeading.label.contains("2026"))
+        XCTAssertTrue(localizedHeading.label.contains("8月"))
         XCTAssertFalse(
             app.staticTexts
                 .matching(NSPredicate(format: "label CONTAINS %@", "ARCHIVE"))
@@ -1126,8 +1448,8 @@ final class PulseFlowUITests: XCTestCase {
         let previousMonth = app.buttons["history.month.previous"]
         let nextMonth = app.buttons["history.month.next"]
         XCTAssertTrue(heading.waitForExistence(timeout: 3))
-        XCTAssertTrue(heading.label.contains("八月"))
-        XCTAssertTrue(heading.label.contains("记录 · 2026"))
+        XCTAssertTrue(heading.label.contains("8月"))
+        XCTAssertTrue(heading.label.contains("2026"))
         XCTAssertFalse(heading.label.contains("ARCHIVE"))
         XCTAssertTrue(previousMonth.exists)
         XCTAssertTrue(nextMonth.exists)

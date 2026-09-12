@@ -58,8 +58,6 @@ struct TodayView: View {
     @State private var imprintRitualPhase: ImprintRitualPhase = .ready
     @State private var completionAnimationSequence = 0
     @State private var imprintGlyphScale: CGFloat = 1
-    @State private var completionRippleVisible = false
-    @State private var completionRippleExpanded = false
     @State private var isCheckInPressed = false
     @State private var showsCamera = false
     @State private var showsCameraPermissionAlert = false
@@ -168,8 +166,10 @@ struct TodayView: View {
             habitName: model.habit?.name,
             recentDays: model.recentDays,
             currentStreak: model.statistics.currentStreak,
+            isChecked: model.todayRecord != nil,
             checkIn: checkInControl,
-            journal: todayJournalSection
+            journal: todayJournalSection,
+            media: mediaCompanionAction
         )
     }
 
@@ -183,44 +183,30 @@ struct TodayView: View {
 
     private var checkInControl: some View {
         let isChecked = model.todayRecord != nil
-        return VStack(spacing: 18) {
-            PulseCheckInFace(
-                completedText: completedCheckInText,
-                isSaving: model.isSaving && showsSavingIndicator,
-                glyphScale: imprintGlyphScale,
-                rippleScale: completionRippleExpanded ? PulseDesign.completionRippleEndScale : 1,
-                rippleVisible: completionRippleVisible
-            )
-            .contentShape(Rectangle())
-            .overlay {
-                PulseCombinedPressControl(
-                    isEnabled: !isChecked && model.canCheckInToday && isJournalDraftValid,
-                    accessibilityLabel: checkInAccessibilityLabel,
-                    accessibilityHint: isChecked ? "" : PulseLocalization.string("today.accessibility.hint", locale: locale),
-                    accessibilityLongPressName: PulseLocalization.string("today.accessibility.check_in_and_photo", locale: locale),
-                    onPressChanged: { isCheckInPressed = $0 },
-                    onTap: { performCheckIn(thenOpenCamera: false) },
-                    onLongPress: {
-                        model.notifyPhotoIntentReady()
-                        performCheckIn(thenOpenCamera: true)
-                    }
-                )
-            }
-            .scaleEffect(!reduceMotion && isCheckInPressed ? 0.97 : 1)
-            .animation(reduceMotion ? nil : .easeOut(duration: 0.18), value: isCheckInPressed)
-
-            Group {
-                if isChecked {
-                    mediaCompanionAction
-                } else {
-                    Text("today.check_in_hint_visible")
-                        .font(.caption)
-                        .foregroundStyle(PulseDesign.appMuted(for: visualTheme))
-                        .multilineTextAlignment(.center)
+        return PulseCheckInFace(
+            completedText: completedCheckInText,
+            day: model.today,
+            completedTime: completedCheckInTime,
+            isSaving: model.isSaving && showsSavingIndicator,
+            glyphScale: imprintGlyphScale
+        )
+        .contentShape(Rectangle())
+        .overlay {
+            PulseCombinedPressControl(
+                isEnabled: !isChecked && model.canCheckInToday && isJournalDraftValid,
+                accessibilityLabel: checkInAccessibilityLabel,
+                accessibilityHint: isChecked ? "" : PulseLocalization.string("today.accessibility.hint", locale: locale),
+                accessibilityLongPressName: PulseLocalization.string("today.accessibility.check_in_and_photo", locale: locale),
+                onPressChanged: { isCheckInPressed = $0 },
+                onTap: { performCheckIn(thenOpenCamera: false) },
+                onLongPress: {
+                    model.notifyPhotoIntentReady()
+                    performCheckIn(thenOpenCamera: true)
                 }
-            }
-            .frame(minHeight: PulseDesign.minimumHitTarget)
+            )
         }
+        .scaleEffect(!reduceMotion && isCheckInPressed ? 0.97 : 1)
+        .animation(reduceMotion ? nil : .easeOut(duration: 0.18), value: isCheckInPressed)
         .onAppear {
             synchronizeRitualState(isChecked: isChecked)
         }
@@ -260,6 +246,12 @@ struct TodayView: View {
         }
     }
 
+    private var completedCheckInTime: String? {
+        model.todayRecord.map {
+            PulseFormatting.time($0.checkedAt, timeZone: $0.timeZone, locale: locale)
+        }
+    }
+
     private var completedCheckInText: String? {
         guard let record = model.todayRecord else { return nil }
         return String(
@@ -291,7 +283,7 @@ struct TodayView: View {
 
     @ViewBuilder
     private var mediaCompanionAction: some View {
-        if model.settings.mediaInvitationEnabled || model.todayMedia != nil {
+        if model.todayRecord != nil && (model.settings.mediaInvitationEnabled || model.todayMedia != nil) {
             Button {
                 if model.todayMedia == nil {
                     requestCamera()
@@ -317,7 +309,7 @@ struct TodayView: View {
                                 ? "today.media.capture_compact"
                                 : "today.media.view_compact"
                         )
-                        .font(.caption.bold())
+                        .font(.subheadline.weight(.medium))
                         .lineLimit(dynamicTypeSize.isAccessibilitySize ? 2 : 1)
                     }
                 }
@@ -325,11 +317,7 @@ struct TodayView: View {
             .foregroundStyle(mediaActionForeground)
             .padding(.horizontal, PulseDesign.spacing12)
             .frame(minHeight: PulseDesign.minimumHitTarget)
-            .background(mediaActionSurface, in: Capsule())
-            .overlay {
-                Capsule()
-                    .stroke(mediaActionBorder, lineWidth: PulseDesign.thinLineWidth)
-            }
+            .frame(maxWidth: .infinity, alignment: visualTheme == .editorialJournal ? .leading : .center)
             .buttonStyle(.plain)
             .disabled(model.operation == .saveMedia)
             .accessibilityIdentifier(
@@ -341,8 +329,6 @@ struct TodayView: View {
     }
 
     private var mediaActionForeground: Color { PulseDesign.appInk(for: visualTheme) }
-    private var mediaActionSurface: Color { PulseDesign.appSurface(for: visualTheme) }
-    private var mediaActionBorder: Color { PulseDesign.appDivider(for: visualTheme) }
 
     private func performCheckIn(thenOpenCamera: Bool) {
         guard model.canCheckInToday, isJournalDraftValid else { return }
@@ -466,12 +452,6 @@ struct TodayView: View {
         }
 
         imprintRitualPhase = .imprinting
-        completionRippleVisible = true
-        completionRippleExpanded = false
-        withAnimation(.easeOut(duration: PulseDesign.completionRippleDuration)) {
-            completionRippleExpanded = true
-            completionRippleVisible = false
-        }
         withAnimation(.easeOut(duration: PulseDesign.imprintFormationDuration)) {
             imprintGlyphScale = PulseDesign.imprintOvershootScale
         }
@@ -511,8 +491,6 @@ struct TodayView: View {
         withTransaction(transaction) {
             imprintRitualPhase = phase
             imprintGlyphScale = 1
-            completionRippleVisible = false
-            completionRippleExpanded = false
         }
     }
 

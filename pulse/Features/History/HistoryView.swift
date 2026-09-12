@@ -12,13 +12,6 @@ private enum HistoryContentMode: String {
         case .journal: "history.mode.journal"
         }
     }
-
-    var systemImage: String {
-        switch self {
-        case .calendar: "calendar"
-        case .journal: "square.and.pencil"
-        }
-    }
 }
 
 struct HistoryView: View {
@@ -78,9 +71,17 @@ struct HistoryView: View {
 
     private var historyContent: some View {
         VStack(spacing: 0) {
+            if visualTheme == .moonTide {
+                PulseMoonSeascapeView(isBanner: true)
+                    .frame(height: usesRegularWidthLayout ? 160 : 96)
+                    .clipped()
+                    .padding(.horizontal, -PulseDesign.horizontalPadding)
+                    .accessibilityHidden(true)
+            }
             historyHeading
             statisticsRow
-            historyModePicker.padding(.top, 20)
+            historyModePicker
+                .padding(.top, PulseDesign.spacing16)
             Group {
                 switch contentMode {
                 case .calendar: animatedCalendar
@@ -88,16 +89,20 @@ struct HistoryView: View {
                 }
             }
         }
-        .padding(.bottom, 24)
+        .padding(.bottom, PulseDesign.spacing24)
     }
 
     private var historyModePicker: some View {
-        HStack(spacing: 4) {
+        HStack(spacing: 0) {
             historyModeButton(.calendar)
             historyModeButton(.journal)
         }
-        .padding(4)
-        .background(PulseDesign.appSurface(for: visualTheme), in: RoundedRectangle(cornerRadius: 14))
+        .padding(visualTheme == .moonTide ? 3 : 0)
+        .background(PulseDesign.appSurface(for: visualTheme), in: RoundedRectangle(cornerRadius: modeCornerRadius))
+        .overlay {
+            RoundedRectangle(cornerRadius: modeCornerRadius)
+                .stroke(PulseDesign.appDivider(for: visualTheme), lineWidth: PulseDesign.thinLineWidth)
+        }
     }
 
     private func historyModeButton(_ mode: HistoryContentMode) -> some View {
@@ -105,13 +110,17 @@ struct HistoryView: View {
         return Button {
             withAnimation(reduceMotion ? nil : .easeOut(duration: 0.18)) { contentMode = mode }
         } label: {
-            Label(mode.titleKey, systemImage: mode.systemImage)
-                .font(.subheadline.weight(selected ? .semibold : .regular))
-                .foregroundStyle(selected ? PulseDesign.appInk(for: visualTheme) : PulseDesign.appMuted(for: visualTheme))
-                .padding(.vertical, 12)
-                .frame(maxWidth: .infinity, minHeight: 44)
-                .background(selected ? PulseDesign.appAccentSoft(for: visualTheme) : .clear,
-                            in: RoundedRectangle(cornerRadius: 10))
+            Text(mode.titleKey)
+                .font(modeFont)
+                .foregroundStyle(modeForeground(selected: selected))
+                .padding(.vertical, 10)
+                .frame(maxWidth: .infinity, minHeight: PulseDesign.minimumHitTarget)
+                .background {
+                    if selected {
+                        RoundedRectangle(cornerRadius: modeCornerRadius)
+                            .fill(selectedModeBackground)
+                    }
+                }
                 .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
@@ -119,25 +128,55 @@ struct HistoryView: View {
         .accessibilityAddTraits(selected ? .isSelected : [])
     }
 
+    private var modeCornerRadius: CGFloat {
+        switch visualTheme {
+        case .editorialJournal, .sunlitDay: 8
+        case .moonTide: 25
+        case .quietField: 14
+        case .prismLedger: 4
+        }
+    }
+
+    private var modeFont: Font {
+        visualTheme == .editorialJournal || visualTheme == .sunlitDay
+            ? PulseDesign.editorialDisplayFont(size: 17, relativeTo: .subheadline)
+            : .subheadline
+    }
+
+    private var selectedModeBackground: Color {
+        visualTheme == .editorialJournal || visualTheme == .sunlitDay
+            ? PulseDesign.appAccent(for: visualTheme)
+            : PulseDesign.appAccentSoft(for: visualTheme)
+    }
+
+    private func modeForeground(selected: Bool) -> Color {
+        if !selected { return PulseDesign.appMuted(for: visualTheme) }
+        return visualTheme == .editorialJournal || visualTheme == .sunlitDay
+            ? PulseDesign.appAccentForeground(for: visualTheme)
+            : PulseDesign.appInk(for: visualTheme)
+    }
+
     private var usesRegularWidthLayout: Bool {
         horizontalSizeClass == .regular && !dynamicTypeSize.isAccessibilitySize
     }
 
     private var historyHeading: some View {
-        HStack(alignment: .bottom, spacing: PulseDesign.spacing16) {
+        HStack(spacing: PulseDesign.spacing8) {
+            monthNavigationButton(offset: -1)
+            Spacer(minLength: 0)
             monthTitle
-
-            Spacer(minLength: PulseDesign.spacing16)
-
-            monthNavigationControls
+            Spacer(minLength: 0)
+            monthNavigationButton(offset: 1)
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.top, PulseDesign.spacing16)
-        .padding(.bottom, PulseDesign.spacing20)
+        .frame(maxWidth: .infinity)
+        .padding(.top, PulseDesign.spacing12)
+        .padding(.bottom, PulseDesign.spacing12)
         .overlay(alignment: .bottom) {
-            Rectangle()
-                .fill(PulseDesign.appDivider(for: visualTheme))
-                .frame(height: PulseDesign.thinLineWidth)
+            if visualTheme != .moonTide {
+                Rectangle()
+                    .fill(PulseDesign.appDivider(for: visualTheme))
+                    .frame(height: PulseDesign.thinLineWidth)
+            }
         }
         .contentShape(Rectangle())
         .simultaneousGesture(monthSwipeGesture)
@@ -150,66 +189,59 @@ struct HistoryView: View {
     }
 
     private var monthTitle: some View {
-        VStack(alignment: .leading, spacing: PulseDesign.spacing8) {
+        Group {
             if let month = selectedMonth, let timeZone = model.timeZone {
-                Text(
-                    String(
-                        format: PulseLocalization.string("history.archive_format", locale: locale),
-                        PulseFormatting.year(month, timeZone: timeZone)
-                    )
-                )
-                .font(.system(.caption2, design: .default, weight: .bold))
-                .foregroundStyle(PulseDesign.appMuted(for: visualTheme))
-
-                Text(PulseFormatting.monthOnly(month, timeZone: timeZone, locale: locale))
-                    .font(.system(.largeTitle, design: monthFontDesign,
-                                  weight: visualTheme == .moonTide ? .regular : .semibold))
-                    .foregroundStyle(PulseDesign.appInk(for: visualTheme))
+                Text(monthHeading(month, timeZone: timeZone))
+                    .font(monthFont)
+                    .foregroundStyle(visualTheme == .sunlitDay ? PulseDesign.appAccent(for: visualTheme) : PulseDesign.appInk(for: visualTheme))
+                    .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
             }
         }
         .accessibilityElement(children: .combine)
         .accessibilityIdentifier("history.month.heading")
     }
 
-    private var monthFontDesign: Font.Design {
+    private var monthFont: Font {
         switch visualTheme {
-        case .editorialJournal: .serif
-        case .quietField, .sunlitDay: .rounded
-        case .moonTide: .default
-        case .prismLedger: .monospaced
+        case .editorialJournal, .sunlitDay:
+            PulseDesign.editorialDisplayFont(size: 23, relativeTo: .title2)
+        case .quietField: .system(.title3, design: .rounded, weight: .semibold)
+        case .moonTide: .title3
+        case .prismLedger: .system(.title3, design: .monospaced, weight: .medium)
         }
     }
 
-    private var monthNavigationControls: some View {
-        HStack(spacing: PulseDesign.spacing8) {
-            Button {
-                moveMonth(by: -1)
-            } label: {
-                Image(systemName: "chevron.left")
-                    .frame(
-                        minWidth: PulseDesign.minimumHitTarget,
-                        minHeight: PulseDesign.minimumHitTarget
-                    )
-            }
-            .accessibilityLabel("history.previous_month")
-            .accessibilityIdentifier("history.month.previous")
+    private func monthHeading(_ month: LogicalDay, timeZone: TimeZone) -> String {
+        let formatter = DateFormatter()
+        formatter.locale = locale
+        formatter.calendar = .pulseGregorian(timeZone: timeZone)
+        formatter.timeZone = timeZone
+        formatter.setLocalizedDateFormatFromTemplate("yMMMM")
+        return formatter.string(from: month.date(timeZone: timeZone))
+    }
 
-            Button {
-                moveMonth(by: 1)
-            } label: {
-                Image(systemName: "chevron.right")
-                    .frame(
-                        minWidth: PulseDesign.minimumHitTarget,
-                        minHeight: PulseDesign.minimumHitTarget
-                    )
-            }
-            .disabled(isShowingCurrentMonth)
-            .accessibilityLabel("history.next_month")
-            .accessibilityIdentifier("history.month.next")
+    private func monthNavigationButton(offset: Int) -> some View {
+        Button {
+            moveMonth(by: offset)
+        } label: {
+            Image(systemName: offset < 0 ? "chevron.left" : "chevron.right")
+                .font(.body.weight(.medium))
+                .foregroundStyle(
+                    offset > 0 && isShowingCurrentMonth
+                        ? PulseDesign.appMuted(for: visualTheme).opacity(0.5)
+                        : visualTheme == .sunlitDay
+                            ? PulseDesign.appAccent(for: visualTheme)
+                            : PulseDesign.appInk(for: visualTheme)
+                )
+                .frame(minWidth: PulseDesign.minimumHitTarget,
+                       minHeight: PulseDesign.minimumHitTarget)
+                .contentShape(Rectangle())
         }
-        .font(.headline.weight(.semibold))
-        .foregroundStyle(PulseDesign.appInk(for: visualTheme))
         .buttonStyle(.plain)
+        .disabled(offset > 0 && isShowingCurrentMonth)
+        .accessibilityLabel(offset < 0 ? "history.previous_month" : "history.next_month")
+        .accessibilityIdentifier(offset < 0 ? "history.month.previous" : "history.month.next")
     }
 
     private var statisticsRow: some View {
@@ -219,17 +251,13 @@ struct HistoryView: View {
                 labelKey: "history.current_streak",
                 accessibilityIdentifier: "history.stat.current"
             )
-
-            Divider()
-
+            statisticDivider
             StatisticTile(
                 value: model.statistics.longestStreak,
                 labelKey: "history.longest_streak",
                 accessibilityIdentifier: "history.stat.longest"
             )
-
-            Divider()
-
+            statisticDivider
             StatisticTile(
                 value: model.statistics.totalCount,
                 labelKey: "history.total",
@@ -238,11 +266,21 @@ struct HistoryView: View {
         }
         .padding(.vertical, PulseDesign.spacing20)
         .overlay(alignment: .bottom) {
-            Rectangle()
-                .fill(PulseDesign.appDivider(for: visualTheme))
-                .frame(height: PulseDesign.thinLineWidth)
+            if visualTheme == .sunlitDay {
+                Rectangle()
+                    .fill(PulseDesign.appDivider(for: visualTheme))
+                    .frame(height: PulseDesign.thinLineWidth)
+            }
         }
         .fixedSize(horizontal: false, vertical: true)
+    }
+
+    private var statisticDivider: some View {
+        Rectangle()
+            .fill(PulseDesign.appDivider(for: visualTheme))
+            .frame(width: PulseDesign.thinLineWidth)
+            .padding(.vertical, 4)
+            .accessibilityHidden(true)
     }
 
     private var calendar: some View {
@@ -372,20 +410,38 @@ private struct StatisticTile: View {
     let accessibilityIdentifier: String
 
     var body: some View {
-        VStack(spacing: PulseDesign.spacing4) {
-            Text(value, format: .number)
-                .font(.title2.bold())
-                .monospacedDigit()
-                .foregroundStyle(PulseDesign.appInk(for: visualTheme))
-
+        VStack(spacing: PulseDesign.spacing8) {
             Text(labelKey)
-                .font(.caption)
+                .font(labelFont)
                 .foregroundStyle(PulseDesign.appMuted(for: visualTheme))
+                .multilineTextAlignment(.center)
                 .fixedSize(horizontal: false, vertical: true)
+
+            Text(value, format: .number)
+                .font(valueFont)
+                .monospacedDigit()
+                .foregroundStyle(
+                    visualTheme == .editorialJournal || visualTheme == .sunlitDay
+                        ? PulseDesign.appAccent(for: visualTheme)
+                        : PulseDesign.appInk(for: visualTheme)
+                )
         }
+        .padding(.horizontal, 4)
         .frame(maxWidth: .infinity)
         .accessibilityElement(children: .combine)
         .accessibilityIdentifier(accessibilityIdentifier)
+    }
+
+    private var labelFont: Font {
+        visualTheme == .editorialJournal || visualTheme == .sunlitDay
+            ? PulseDesign.editorialDisplayFont(size: 14, relativeTo: .caption)
+            : .caption
+    }
+
+    private var valueFont: Font {
+        visualTheme == .editorialJournal || visualTheme == .sunlitDay
+            ? PulseDesign.editorialDisplayFont(size: 31, relativeTo: .title)
+            : .system(.title, design: visualTheme == .quietField ? .rounded : .default)
     }
 }
 

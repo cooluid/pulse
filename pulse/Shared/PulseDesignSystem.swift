@@ -74,6 +74,13 @@ enum PulseDesign {
     static let separator = Color("PulseSeparator")
     static let field = Color("PulseField")
     static let editorialAccent = Color("PulseEditorialAccent")
+    static let editorialCanvas = Color("PulseEditorialCanvas")
+    static let editorialSurface = Color("PulseEditorialSurface")
+    static let editorialInk = Color("PulseEditorialInk")
+    static let editorialMuted = Color("PulseEditorialMuted")
+    static let editorialDivider = Color("PulseEditorialDivider")
+    static let editorialOnAccent = Color("PulseEditorialOnAccent")
+    static let editorialAccentSoft = Color("PulseEditorialAccentSoft")
     static let sunlitCanvas = Color("PulseSunlitCanvas")
     static let sunlitCanvasDeep = Color("PulseSunlitCanvasDeep")
     static let sunlitSurface = Color("PulseSunlitSurface")
@@ -81,6 +88,7 @@ enum PulseDesign {
     static let sunlitMuted = Color("PulseSunlitMuted")
     static let sunlitDivider = Color("PulseSunlitDivider")
     static let sunlitAccent = Color("PulseSunlitAccent")
+    static let sunlitWeekday = Color("PulseSunlitWeekday")
     static let sunlitAccentSoft = Color("PulseSunlitAccentSoft")
     static let sunlitMap = Color("PulseSunlitMap")
     static let sunlitMapDeep = Color("PulseSunlitMapDeep")
@@ -309,15 +317,15 @@ enum PulseDesign {
         switch theme {
         case .editorialJournal:
             PulseThemePalette(
-                canvas: background,
-                canvasDeep: background,
-                surface: surface,
-                ink: ink,
-                muted: secondary,
-                divider: separator,
+                canvas: editorialCanvas,
+                canvasDeep: editorialCanvas,
+                surface: editorialSurface,
+                ink: editorialInk,
+                muted: editorialMuted,
+                divider: editorialDivider,
                 accent: editorialAccent,
-                accentForeground: background,
-                accentSoft: field.opacity(0.14)
+                accentForeground: editorialOnAccent,
+                accentSoft: editorialAccentSoft
             )
         case .sunlitDay:
             PulseThemePalette(
@@ -417,30 +425,29 @@ enum PulseDesign {
         palette(for: theme).accentSoft
     }
 
+    static func editorialDisplayFont(size: CGFloat, relativeTo style: Font.TextStyle) -> Font {
+        .custom("NotoSerifSC-Regular", size: size, relativeTo: style)
+    }
+
 }
 
 struct PulseScreenBackground: View {
     @Environment(\.pulseVisualTheme) private var visualTheme
+    @Environment(\.colorScheme) private var colorScheme
 
     @ViewBuilder
     var body: some View {
-        switch visualTheme {
-        case .sunlitDay:
-            PulseDesign.sunlitCanvas
-                .ignoresSafeArea()
-        case .editorialJournal:
-            PulseDesign.background
-                .ignoresSafeArea()
-        case .quietField:
-            PulseDesign.quietCanvas
-                .ignoresSafeArea()
-        case .moonTide:
-            PulseDesign.moonCanvas
-                .ignoresSafeArea()
-        case .prismLedger:
-            PulseDesign.prismCanvas
-                .ignoresSafeArea()
-        }
+        PulseDesign.appChromeBackground(for: visualTheme)
+            .overlay {
+                if visualTheme == .editorialJournal || visualTheme == .sunlitDay {
+                    Image("PulseJournalPaper")
+                        .resizable(resizingMode: .tile)
+                        .blendMode(colorScheme == .dark ? .softLight : .multiply)
+                        .opacity(visualTheme == .editorialJournal ? 0.42 : 0.18)
+                        .accessibilityHidden(true)
+                }
+            }
+            .ignoresSafeArea()
     }
 }
 
@@ -466,7 +473,7 @@ struct PulseFieldBackground: View {
 
     var body: some View {
         Group {
-            if presentation == .today {
+            if presentation == .today && (theme == .quietField || theme == .prismLedger) {
                 LinearGradient(
                     colors: [PulseDesign.appAccentSoft(for: theme).opacity(0.28), .clear],
                     startPoint: .top,
@@ -538,15 +545,19 @@ struct PulseAppHeader: View {
 
     var body: some View {
         HStack(spacing: 8) {
-            PulseBrandMark(size: 24)
+            if visualTheme == .moonTide || visualTheme == .quietField || visualTheme == .prismLedger {
+                PulseBrandMark(size: 24)
+            }
             Text("today.navigation_title")
-                .font(.subheadline.weight(.medium))
-                .foregroundStyle(PulseDesign.appMuted(for: visualTheme))
+                .font(visualTheme == .editorialJournal || visualTheme == .sunlitDay
+                      ? PulseDesign.editorialDisplayFont(size: 21, relativeTo: .title3).weight(.semibold)
+                      : .headline.weight(.medium))
+                .foregroundStyle(PulseDesign.appInk(for: visualTheme))
                 .lineLimit(1)
             Spacer(minLength: 16)
             NavigationLink(value: PulseNavigationDestination.settings) {
                 Image(systemName: "gearshape")
-                    .font(.body)
+                    .font(.title3)
                     .foregroundStyle(PulseDesign.appMuted(for: visualTheme))
                     .frame(width: 44, height: 44)
                     .contentShape(Rectangle())

@@ -1,6 +1,22 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "settings.visual_theme.preview": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Preview %@"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "预览%@"
+          }
+        }
+      }
+    },
     "accessibility.date_status_format" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -4097,13 +4113,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Deep blue space and a gently closing lunar ring."
+            "value" : "Moonlit water and a trace left by each day."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "深蓝留白与缓缓合拢的月环。"
+            "value" : "月夜水面与每天留下的潮痕。"
           }
         }
       }
@@ -4199,13 +4215,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "A calendar page with bright sunburst details."
+            "value" : "Bold calendar type and a folded corner for today."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "日历分区与明快的日光刻线。"
+            "value" : "醒目的日历排版与今天的折角。"
           }
         }
       }
@@ -5477,13 +5493,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%@ · Checked in"
+            "value" : "Checked in · %@"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%@ · 已签到"
+            "value" : "已签到 · %@"
           }
         }
       }

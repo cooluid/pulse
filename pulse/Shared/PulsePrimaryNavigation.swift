@@ -14,18 +14,30 @@ struct PulsePrimaryNavigation: View {
     @Environment(\.pulseVisualTheme) private var theme
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
+    private var usesPaperNavigation: Bool { theme == .editorialJournal || theme == .sunlitDay }
+
     var body: some View {
         HStack(spacing: 8) {
             navigationButton(.today)
+            if usesPaperNavigation {
+                Rectangle().fill(PulseDesign.appDivider(for: theme)).frame(width: 1, height: 36)
+            }
             navigationButton(.history)
         }
         .padding(6)
         .frame(maxWidth: 420)
-        .background(PulseDesign.appSurface(for: theme), in: Capsule())
-        .overlay { Capsule().stroke(PulseDesign.appDivider(for: theme), lineWidth: 1) }
+        .background {
+            if !usesPaperNavigation {
+                Capsule().fill(PulseDesign.appSurface(for: theme))
+            }
+        }
         .padding(.horizontal, PulseDesign.horizontalPadding)
-        .padding(.vertical, 8)
+        .padding(.vertical, usesPaperNavigation ? 2 : 8)
         .frame(maxWidth: .infinity)
+        .background(PulseScreenBackground())
+        .overlay(alignment: .top) {
+            Rectangle().fill(PulseDesign.appDivider(for: theme)).frame(height: 1)
+        }
     }
 
     private func navigationButton(_ section: PulsePrimarySection) -> some View {
@@ -35,13 +47,28 @@ struct PulsePrimaryNavigation: View {
                 selection = section
             }
         } label: {
-            Label(section == .today ? "tab.today" : "tab.history",
-                  systemImage: section == .today ? "circle.dotted" : "calendar")
-                .font(.subheadline.weight(selected ? .semibold : .regular))
-                .foregroundStyle(selected ? PulseDesign.appInk(for: theme) : PulseDesign.appMuted(for: theme))
-                .padding(.vertical, 12)
+            Group {
+                if usesPaperNavigation {
+                    VStack(spacing: 5) {
+                        Image(systemName: section == .today
+                              ? (selected ? "circle.fill" : "circle")
+                              : (selected ? "text.book.closed.fill" : "text.book.closed"))
+                            .font(.system(size: 22, weight: .regular))
+                        Text(section == .today ? "tab.today" : "tab.history")
+                            .font(.caption.weight(selected ? .semibold : .regular))
+                    }
+                } else {
+                    Label(section == .today ? "tab.today" : "tab.history",
+                          systemImage: section == .today ? "circle" : "text.book.closed")
+                        .font(.subheadline.weight(selected ? .semibold : .regular))
+                }
+            }
+                .foregroundStyle(selected
+                                 ? (usesPaperNavigation ? PulseDesign.appAccent(for: theme) : PulseDesign.appInk(for: theme))
+                                 : PulseDesign.appMuted(for: theme))
+                .padding(.vertical, 8)
                 .frame(maxWidth: .infinity, minHeight: PulseDesign.minimumHitTarget)
-                .background(selected ? PulseDesign.appAccentSoft(for: theme) : .clear, in: Capsule())
+                .background(selected && !usesPaperNavigation ? PulseDesign.appAccentSoft(for: theme) : .clear, in: Capsule())
                 .contentShape(Capsule())
         }
         .buttonStyle(.plain)
