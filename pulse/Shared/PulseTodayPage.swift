@@ -42,6 +42,13 @@ struct PulseTodayPage<CheckIn: View, Journal: View, Media: View>: View {
                 journal: journal,
                 media: media
             )
+        case .prismLedger:
+            PulsePrismLedgerTodayPage(
+                facts: facts,
+                checkIn: checkIn,
+                journal: journal,
+                media: media
+            )
         default:
             legacyComposition
         }
@@ -393,24 +400,38 @@ struct PulseCheckInFace: View {
                         .offset(x: 4, y: -8)
                 }
         case .prismLedger:
-            HStack(spacing: 20) {
-                VStack(alignment: .leading, spacing: 14) {
-                    HStack(spacing: 4) {
-                        ForEach(0..<9) { index in
-                            Rectangle().fill(foreground.opacity(index.isMultiple(of: 3) ? 0.75 : 0.25))
-                                .frame(width: 1, height: index.isMultiple(of: 3) ? 12 : 6)
+            HStack(spacing: PulseDesign.spacing16) {
+                if checked {
+                    VStack(alignment: .leading, spacing: PulseDesign.spacing4) {
+                        if let completedText {
+                            Text(completedText)
+                                .font(.system(size: 17, weight: .semibold))
+                        }
+                        if let completedTime {
+                            Text(completedTime)
+                                .font(.system(size: 13, design: .monospaced))
+                                .opacity(0.7)
                         }
                     }
-                    status
-                }.frame(maxWidth: .infinity, alignment: .leading)
-                glyph.frame(width: 64, height: 64)
-                    .overlay { Rectangle().stroke(foreground.opacity(0.35), lineWidth: 1) }
+                    .foregroundStyle(PulseDesign.appInk(for: theme))
+                } else if isSaving {
+                    ProgressView()
+                        .tint(PulseDesign.appAccentForeground(for: theme))
+                } else {
+                    Text("today.check_in_action")
+                        .font(.system(size: 18, weight: .semibold))
+                        .foregroundStyle(PulseDesign.appAccentForeground(for: theme))
+                }
+
+                Spacer(minLength: 0)
+
+                Rectangle()
+                    .fill(checked ? accent : PulseDesign.appAccentForeground(for: theme))
+                    .frame(width: 14, height: 14)
             }
-            .foregroundStyle(foreground)
-            .padding(24)
-            .frame(maxWidth: 338, minHeight: 148)
-            .background(fill, in: RoundedRectangle(cornerRadius: 4))
-            .overlay { RoundedRectangle(cornerRadius: 4).stroke(accent.opacity(0.5), lineWidth: 1) }
+            .padding(.horizontal, PulseDesign.spacing20)
+            .frame(maxWidth: .infinity, minHeight: 64)
+            .background(checked ? PulseDesign.appAccentSoft(for: theme) : accent)
         case .immersion:
             Group {
                 if checked {

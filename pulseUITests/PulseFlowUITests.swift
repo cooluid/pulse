@@ -1035,7 +1035,7 @@ final class PulseFlowUITests: XCTestCase {
         XCTAssertTrue(checkIn.isEnabled)
         XCTAssertTrue(checkIn.label.contains("晚饭后散步"))
 
-        let themes = ["editorialJournal", "sunlitDay", "immersion"]
+        let themes = ["editorialJournal", "sunlitDay", "immersion", "prismLedger"]
         for theme in themes {
             selectThemeForRecordedDayReview(theme)
             XCTAssertTrue(checkIn.isEnabled)
@@ -1136,7 +1136,7 @@ final class PulseFlowUITests: XCTestCase {
         app.launchEnvironment["PULSE_UI_TEST_ENHANCEMENT_PURCHASED"] = "1"
         launchAndConfirmDefaultCommitment()
 
-        for theme in ["immersion"] {
+        for theme in ["immersion", "prismLedger"] {
             selectThemeForRecordedDayReview(theme)
             attachScreenshot(named: "\(theme) settled")
 

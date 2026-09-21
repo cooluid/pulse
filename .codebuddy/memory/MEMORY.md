@@ -4,7 +4,20 @@
 
 **核心结论：主题改不动，根因是架构而非美术。** `PulseVisualTheme` 原先唯一能力是提供 9 个 `PulseThemePalette` 颜色槽，布局差异只能靠散落在 6+ 文件的 `switch theme` 硬编码。因此每轮迭代必然只产出"换漆"。主题名（视觉隐喻）会让隐喻只能用装饰贴纸兑现，产出细线条。改名无效——git 历史已证明（Tidal Breath → Tide Archive → Sunlit Day）。
 
-**已建立的能力**：`pulse/Shared/PulseTodayPage.swift` 现在是「事实容器 `PulseTodayFacts` + 分派器 + `legacyComposition`」。主题要自己的布局，就新写一个 `Pulse*TodayPage.swift` 并在分派器接一行；不要往 `legacyComposition` 里加 `switch` 分支。`PulseImmersionTodayPage.swift` 是第一个这么做的。
+**已建立的能力**：`pulse/Shared/PulseTodayPage.swift` 现在是「事实容器 `PulseTodayFacts` + 分派器 + `legacyComposition`」。主题要自己的布局，就新写一个 `Pulse*TodayPage.swift` 并在分派器接一行；不要往 `legacyComposition` 里加 `switch` 分支。
+
+**当前阵容与骨架状态（2026-09-21）**：
+
+| 主题 | 骨架 | 结构主张 |
+| --- | --- | --- |
+| `editorialJournal`（免费） | legacy | 纸页 + 印章（未重做） |
+| `quietField` | legacy | 卡片 + 叶形（未重做） |
+| `sunlitDay` | legacy | 日历感（未重做） |
+| `prismLedger` | **已重做** `PulsePrismLedgerTodayPage.swift` | 并排读数格 + 直角签到条 + 等大方块周条（状态靠填充） |
+| `immersion` | **已重做** `PulseImmersionTodayPage.swift` | 纵向：176pt 大日号（在 `PulseThemeBackdrop`）+ 全宽实色签到面 + 连续起伏周带 |
+| ~~`moonTide`~~ | 已删除 | — |
+
+三套（含已删月汐）的结构区分思路：**纵向大数字** vs **并排读数格** vs **居中留白**。不要靠颜色或装饰区分。
 
 **做新主题时的硬约束**：
 - **主题数量不能减少**。`store.capability.themes.title`（"四套额外界面主题"）、`store.hero.promise`、`store.hero.tagline` 都已公开点名静野/晴昼/月汐/棱镜刻度，随 `1.1 (9)` 发布。减套数等于改已公开的商业承诺。
