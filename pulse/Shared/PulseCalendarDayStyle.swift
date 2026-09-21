@@ -24,8 +24,8 @@ extension PulseDesign {
             }
             let radius: CGFloat = switch theme {
             case .editorialJournal, .prismLedger: 3
-            case .quietField: 20
-            case .sunlitDay: 8
+            case .quietField: 4
+            case .sunlitDay: 19
             case .immersion: 19
             }
             return CalendarDayStyle(

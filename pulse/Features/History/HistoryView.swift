@@ -123,7 +123,7 @@ struct HistoryView: View {
     private var modeCornerRadius: CGFloat {
         switch visualTheme {
         case .editorialJournal, .sunlitDay: 8
-        case .quietField: 14
+        case .quietField: 6
         case .prismLedger: 4
         case .immersion: 26
         }
@@ -194,9 +194,8 @@ struct HistoryView: View {
 
     private var monthFont: Font {
         switch visualTheme {
-        case .editorialJournal, .sunlitDay:
+        case .editorialJournal, .sunlitDay, .quietField:
             PulseDesign.editorialDisplayFont(size: 23, relativeTo: .title2)
-        case .quietField: .system(.title3, design: .rounded, weight: .semibold)
         case .prismLedger: .system(.title3, design: .monospaced, weight: .medium)
         case .immersion: .system(.title3, weight: .bold)
         }
@@ -285,13 +284,7 @@ struct HistoryView: View {
                 id: \.offset
             ) { index, weekday in
                 Text(weekday)
-                    .font(
-                        .system(
-                            .caption2,
-                            design: visualTheme == .quietField ? .rounded : .default,
-                            weight: .bold
-                        )
-                    )
+                    .font(.system(.caption2, weight: .bold))
                     .foregroundStyle(PulseDesign.appMuted(for: visualTheme))
                     .frame(maxWidth: .infinity, minHeight: PulseDesign.spacing24)
                     .accessibilityIdentifier("calendar.weekday.\(index)")
@@ -423,15 +416,15 @@ private struct StatisticTile: View {
     }
 
     private var labelFont: Font {
-        visualTheme == .editorialJournal || visualTheme == .sunlitDay
+        visualTheme == .editorialJournal || visualTheme == .sunlitDay || visualTheme == .quietField
             ? PulseDesign.editorialDisplayFont(size: 14, relativeTo: .caption)
             : .caption
     }
 
     private var valueFont: Font {
-        visualTheme == .editorialJournal || visualTheme == .sunlitDay
+        visualTheme == .editorialJournal || visualTheme == .sunlitDay || visualTheme == .quietField
             ? PulseDesign.editorialDisplayFont(size: 31, relativeTo: .title)
-            : .system(.title, design: visualTheme == .quietField ? .rounded : .default)
+            : .system(.title)
     }
 }
 
@@ -604,7 +597,7 @@ struct DayArchiveDetailView: View {
                         locale: locale
                     )
                 )
-                .font(.system(.title3, design: .rounded, weight: .black))
+                .font(PulseDesign.editorialDisplayFont(size: 20, relativeTo: .title3).weight(.semibold))
                 .foregroundStyle(PulseDesign.quietInk)
                 .fixedSize(horizontal: false, vertical: true)
 
@@ -703,7 +696,7 @@ struct DayArchiveDetailView: View {
         .background(
             PulseDesign.sunlitSurface,
             in: RoundedRectangle(
-                cornerRadius: PulseDesign.sunlitCardCornerRadius,
+                cornerRadius: PulseDesign.sunlitPrintCornerRadius,
                 style: .continuous
             )
         )

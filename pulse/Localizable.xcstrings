@@ -1,9 +1,7 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
-    "" : {
-
-    },
+    "" : {},
     "accessibility.date_status_format" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -4186,13 +4184,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Soft paper and an unfolding leaf."
+            "value" : "Ink on paper. One stalk that grows with each kept day."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "柔和纸面与舒展的叶芽。"
+            "value" : "纸与墨双色。一株随签到生长的草。"
           }
         }
       }
@@ -4220,13 +4218,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Bold calendar type and a folded corner for today."
+            "value" : "A cyanotype sheet. Checking in exposes the day in white."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "醒目的日历排版与今天的折角。"
+            "value" : "一整张蓝晒纸。签到即把今天晒成白色印相。"
           }
         }
       }

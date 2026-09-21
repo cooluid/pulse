@@ -38,33 +38,3 @@ struct PulseStampOutline: View {
             .accessibilityHidden(true)
     }
 }
-
-struct PulsePageFold: View {
-    @Environment(\.pulseVisualTheme) private var theme
-
-    var body: some View {
-        Image(systemName: "checkmark")
-            .font(.system(size: 13, weight: .bold))
-            .foregroundStyle(PulseDesign.appAccentForeground(for: theme))
-            .offset(x: 8, y: -8)
-            .frame(width: 42, height: 42)
-            .background {
-                Path { path in
-                    path.move(to: .zero)
-                    path.addLine(to: CGPoint(x: 42, y: 42))
-                    path.addLine(to: CGPoint(x: 4, y: 37))
-                    path.closeSubpath()
-                }
-                .fill(PulseDesign.appSurface(for: theme))
-                .shadow(color: PulseDesign.shadow.opacity(0.22), radius: 3, x: -1, y: 2)
-                Path { path in
-                    path.move(to: .zero)
-                    path.addLine(to: CGPoint(x: 42, y: 0))
-                    path.addLine(to: CGPoint(x: 42, y: 42))
-                    path.closeSubpath()
-                }
-                .fill(PulseDesign.appAccent(for: theme))
-            }
-            .accessibilityHidden(true)
-    }
-}

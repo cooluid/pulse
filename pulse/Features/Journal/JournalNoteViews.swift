@@ -218,17 +218,21 @@ struct JournalDraftComposer: View {
 private struct PulseJournalPanel: ViewModifier {
     let theme: PulseVisualTheme
 
+    private var cornerRadius: CGFloat {
+        theme == .quietField ? 6 : 4
+    }
+
     func body(content: Content) -> some View {
         content
             .background {
                 if theme == .quietField || theme == .prismLedger {
-                    RoundedRectangle(cornerRadius: theme == .quietField ? 24 : 4)
+                    RoundedRectangle(cornerRadius: cornerRadius)
                         .fill(PulseDesign.appSurface(for: theme))
                 }
             }
             .overlay {
                 if theme == .quietField || theme == .prismLedger {
-                    RoundedRectangle(cornerRadius: theme == .quietField ? 24 : 4)
+                    RoundedRectangle(cornerRadius: cornerRadius)
                         .stroke(PulseDesign.appDivider(for: theme), lineWidth: PulseDesign.thinLineWidth)
                 }
             }
@@ -450,11 +454,11 @@ private struct JournalHistoryEntryRow: View {
     @ViewBuilder
     private var entryBackground: some View {
         if visualTheme == .quietField {
-            PulseQuietSpeechBubbleShape()
-                .fill(PulseDesign.quietSurface.opacity(PulseDesign.journalHistorySurfaceOpacity))
+            RoundedRectangle(cornerRadius: 6, style: .continuous)
+                .fill(PulseDesign.appSurface(for: visualTheme).opacity(PulseDesign.journalHistorySurfaceOpacity))
                 .overlay {
-                    PulseQuietSpeechBubbleShape()
-                        .stroke(PulseDesign.quietDivider, lineWidth: PulseDesign.thinLineWidth)
+                    RoundedRectangle(cornerRadius: 6, style: .continuous)
+                        .stroke(PulseDesign.appDivider(for: visualTheme), lineWidth: PulseDesign.thinLineWidth)
                 }
         } else if visualTheme == .prismLedger {
             RoundedRectangle(cornerRadius: PulseDesign.spacing16)
@@ -697,9 +701,9 @@ struct JournalNoteEditorSheet: View {
 
     private var dateFont: Font {
         switch visualTheme {
-        case .editorialJournal:
+        case .editorialJournal, .quietField, .sunlitDay:
             .system(.headline, design: .serif).weight(.semibold)
-        case .quietField, .sunlitDay, .prismLedger:
+        case .prismLedger:
             .system(.headline, design: .rounded).weight(.semibold)
         case .immersion:
             .system(.headline, weight: .semibold)
@@ -708,9 +712,9 @@ struct JournalNoteEditorSheet: View {
 
     private var editorFont: Font {
         switch visualTheme {
-        case .editorialJournal:
+        case .editorialJournal, .quietField, .sunlitDay:
             .system(.body, design: .serif)
-        case .quietField, .sunlitDay, .prismLedger:
+        case .prismLedger:
             .system(.body, design: .rounded)
         case .immersion:
             .system(.body)

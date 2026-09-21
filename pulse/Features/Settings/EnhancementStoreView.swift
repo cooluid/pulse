@@ -319,41 +319,36 @@ struct EnhancementStoreView: View {
     private var playfulQuietHero: some View {
         HStack(alignment: .center, spacing: PulseDesign.spacing16) {
             VStack(alignment: .leading, spacing: PulseDesign.spacing12) {
-                Label("store.lifetime_badge", systemImage: "sparkles")
-                    .font(.system(.caption, design: .rounded, weight: .black))
+                Label("store.lifetime_badge", systemImage: "checkmark.seal.fill")
+                    .font(.system(.caption, design: .serif, weight: .semibold))
                     .foregroundStyle(PulseDesign.quietOnGreen)
                     .padding(.horizontal, PulseDesign.spacing12)
                     .padding(.vertical, PulseDesign.spacing8)
-                    .background(PulseDesign.quietYellow, in: Capsule())
+                    .background(PulseDesign.quietGreen, in: Capsule())
 
                 Text("store.hero.tagline")
-                    .font(.system(.title2, design: .rounded, weight: .black))
+                    .font(PulseDesign.editorialDisplayFont(size: 21, relativeTo: .title2).weight(.bold))
                     .foregroundStyle(PulseDesign.quietInk)
                     .fixedSize(horizontal: false, vertical: true)
 
                 Text("store.hero.scope")
-                    .font(.system(.caption, design: .rounded, weight: .semibold))
+                    .font(.caption.weight(.semibold))
                     .foregroundStyle(PulseDesign.quietMuted)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
 
             ZStack {
-                Image(systemName: "sparkle")
-                    .font(.system(size: PulseDesign.spacing16, weight: .black))
-                    .foregroundStyle(PulseDesign.quietPink)
-                    .offset(x: PulseDesign.spacing24, y: -PulseDesign.spacing24)
-
                 PulseBrandMark(size: PulseDesign.storeBrandMarkSize)
             }
             .accessibilityHidden(true)
         }
         .padding(PulseDesign.spacing20)
-        .background {
-            PulseQuietSpeechBubbleShape()
+        .background(
+            RoundedRectangle(cornerRadius: 10, style: .continuous)
                 .fill(PulseDesign.quietSurface)
-        }
+        )
         .overlay {
-            PulseQuietSpeechBubbleShape()
+            RoundedRectangle(cornerRadius: 10, style: .continuous)
                 .stroke(PulseDesign.quietDivider, lineWidth: PulseDesign.thinLineWidth)
         }
         .accessibilityElement(children: .contain)
@@ -374,7 +369,7 @@ struct EnhancementStoreView: View {
                     )
 
                 Text("store.hero.tagline")
-                    .font(.system(.title2, design: .rounded, weight: .black))
+                    .font(PulseDesign.editorialDisplayFont(size: 21, relativeTo: .title2).weight(.bold))
                     .foregroundStyle(PulseDesign.appInk(for: visualTheme))
                     .fixedSize(horizontal: false, vertical: true)
 
@@ -393,10 +388,17 @@ struct EnhancementStoreView: View {
         .background(
             PulseDesign.sunlitSurface,
             in: RoundedRectangle(
-                cornerRadius: PulseDesign.sunlitCardCornerRadius,
+                cornerRadius: PulseDesign.sunlitPrintCornerRadius,
                 style: .continuous
             )
         )
+        .overlay {
+            RoundedRectangle(
+                cornerRadius: PulseDesign.sunlitPrintCornerRadius,
+                style: .continuous
+            )
+            .stroke(PulseDesign.appDivider(for: visualTheme), lineWidth: PulseDesign.thinLineWidth)
+        }
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("store.hero")
     }

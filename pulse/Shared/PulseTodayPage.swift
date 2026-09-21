@@ -31,7 +31,6 @@ struct PulseTodayPage<CheckIn: View, Journal: View, Media: View>: View {
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @ScaledMetric(relativeTo: .largeTitle) private var calendarDaySize = 136.0
 
     var body: some View {
         switch theme {
@@ -44,6 +43,20 @@ struct PulseTodayPage<CheckIn: View, Journal: View, Media: View>: View {
             )
         case .prismLedger:
             PulsePrismLedgerTodayPage(
+                facts: facts,
+                checkIn: checkIn,
+                journal: journal,
+                media: media
+            )
+        case .quietField:
+            PulseQuietFieldTodayPage(
+                facts: facts,
+                checkIn: checkIn,
+                journal: journal,
+                media: media
+            )
+        case .sunlitDay:
+            PulseSunlitTodayPage(
                 facts: facts,
                 checkIn: checkIn,
                 journal: journal,
@@ -65,6 +78,7 @@ struct PulseTodayPage<CheckIn: View, Journal: View, Media: View>: View {
         )
     }
 
+    /// The editorial journal arrangement. Themes with their own composition never land here.
     private var legacyComposition: some View {
         Group {
             if horizontalSizeClass == .regular && !dynamicTypeSize.isAccessibilitySize {
@@ -81,25 +95,6 @@ struct PulseTodayPage<CheckIn: View, Journal: View, Media: View>: View {
         }
         .padding(.top, 16)
         .padding(.bottom, 12)
-        .background {
-            if theme == .sunlitDay {
-                RoundedRectangle(cornerRadius: 3)
-                    .fill(PulseDesign.appSurface(for: theme))
-                    .overlay {
-                        RoundedRectangle(cornerRadius: 3)
-                            .stroke(PulseDesign.appDivider(for: theme).opacity(0.4), lineWidth: 0.5)
-                    }
-                    .shadow(color: PulseDesign.shadow.opacity(0.08), radius: 10, y: 3)
-                    .padding(.horizontal, -10)
-                    .padding(.top, -6)
-            }
-        }
-        .overlay(alignment: .topTrailing) {
-            if theme == .sunlitDay && isChecked && !dynamicTypeSize.isAccessibilitySize {
-                PulsePageFold().offset(x: 10, y: -6)
-                    .transition(.scale(scale: 0.75, anchor: .topTrailing).combined(with: .opacity))
-            }
-        }
         .animation(reduceMotion ? nil : .easeOut(duration: 0.28), value: isChecked)
     }
 
@@ -108,7 +103,7 @@ struct PulseTodayPage<CheckIn: View, Journal: View, Media: View>: View {
             heading
             checkIn
                 .frame(maxWidth: .infinity)
-                .offset(y: theme == .editorialJournal && isChecked && !dynamicTypeSize.isAccessibilitySize ? -78 : 0)
+                .offset(y: isChecked && !dynamicTypeSize.isAccessibilitySize ? -78 : 0)
         }
     }
 
@@ -117,68 +112,13 @@ struct PulseTodayPage<CheckIn: View, Journal: View, Media: View>: View {
         if dynamicTypeSize.isAccessibilitySize {
             VStack(alignment: .leading, spacing: 12) { date; title }
         } else {
-            switch theme {
-            case .editorialJournal:
-                VStack(alignment: .leading, spacing: 18) {
-                    date
-                    Rectangle().fill(PulseDesign.appDivider(for: theme)).frame(height: 1)
-                    title
-                        .padding(.trailing, isChecked ? 138 : 0)
-                    Rectangle().fill(PulseDesign.appAccent(for: theme)).frame(width: 46, height: 3)
-                }
-            case .sunlitDay:
-                VStack(alignment: .leading, spacing: 18) {
-                    calendarDate
-                    title
-                }
-            case .quietField:
-                VStack(spacing: 12) {
-                    date
-                    title.multilineTextAlignment(.center)
-                }.frame(maxWidth: .infinity)
-            case .prismLedger:
-                HStack(alignment: .bottom, spacing: 16) {
-                    VStack(alignment: .leading, spacing: 12) { date; title }
-                    Spacer(minLength: 0)
-                    dayNumber
-                        .font(.system(size: 38, weight: .light, design: .monospaced))
-                        .padding(.leading, 16)
-                        .overlay(alignment: .leading) {
-                            Rectangle().fill(PulseDesign.appDivider(for: theme)).frame(width: 1)
-                        }
-                }
-            case .immersion:
-                // Immersion renders its own composition and never reaches this path.
-                EmptyView()
+            VStack(alignment: .leading, spacing: 18) {
+                date
+                Rectangle().fill(PulseDesign.appDivider(for: theme)).frame(height: 1)
+                title
+                    .padding(.trailing, isChecked ? 138 : 0)
+                Rectangle().fill(PulseDesign.appAccent(for: theme)).frame(width: 46, height: 3)
             }
-        }
-    }
-
-    @ViewBuilder
-    private var calendarDate: some View {
-        if let today, let timeZone {
-            HStack(alignment: .center, spacing: 24) {
-                dayNumber
-                    .font(.system(size: calendarDaySize, weight: .regular, design: .serif))
-                    .minimumScaleFactor(0.65)
-                    .lineLimit(1)
-                VStack(alignment: .leading, spacing: 8) {
-                    Text(PulseFormatting.year(today, timeZone: timeZone))
-                        .font(.system(.title2, design: .serif))
-                    Text(today.month, format: .number.precision(.integerLength(2)))
-                        .font(.system(.title, design: .serif))
-                    Rectangle().fill(PulseDesign.appAccent(for: theme)).frame(height: 1)
-                    Text(PulseFormatting.fullWeekday(today, timeZone: timeZone, locale: locale))
-                        .font(PulseDesign.editorialDisplayFont(size: 18, relativeTo: .headline))
-                        .foregroundStyle(PulseDesign.sunlitWeekday)
-                }
-                .foregroundStyle(PulseDesign.appAccent(for: theme))
-                .frame(maxWidth: 126, alignment: .leading)
-                Spacer(minLength: 0)
-            }
-            .accessibilityElement(children: .ignore)
-            .accessibilityLabel(PulseFormatting.fullDate(today, timeZone: timeZone, locale: locale))
-            .accessibilityIdentifier("today.hero.kicker")
         }
     }
 
@@ -186,21 +126,9 @@ struct PulseTodayPage<CheckIn: View, Journal: View, Media: View>: View {
     private var date: some View {
         if let today, let timeZone {
             Text(PulseFormatting.fullDate(today, timeZone: timeZone, locale: locale))
-                .font(theme == .editorialJournal
-                      ? PulseDesign.editorialDisplayFont(size: 15, relativeTo: .subheadline)
-                      : .subheadline)
+                .font(PulseDesign.editorialDisplayFont(size: 15, relativeTo: .subheadline))
                 .foregroundStyle(PulseDesign.appMuted(for: theme))
                 .accessibilityIdentifier("today.hero.kicker")
-        }
-    }
-
-    @ViewBuilder
-    private var dayNumber: some View {
-        if let today {
-            Text(today.day, format: .number)
-                .monospacedDigit()
-                .foregroundStyle(PulseDesign.appAccent(for: theme))
-                .accessibilityHidden(true)
         }
     }
 
@@ -208,24 +136,10 @@ struct PulseTodayPage<CheckIn: View, Journal: View, Media: View>: View {
     private var title: some View {
         if let habitName {
             Text(habitName)
-                .font(titleFont)
+                .font(PulseDesign.editorialDisplayFont(size: 31, relativeTo: .largeTitle).weight(.bold))
                 .foregroundStyle(PulseDesign.appInk(for: theme))
                 .fixedSize(horizontal: false, vertical: true)
                 .accessibilityIdentifier("today.commitment.name")
-        }
-    }
-
-    private var titleFont: Font {
-        switch theme {
-        case .editorialJournal, .sunlitDay:
-            PulseDesign.editorialDisplayFont(size: 31, relativeTo: .largeTitle).weight(.bold)
-        case .quietField:
-            .system(.largeTitle, design: .rounded, weight: .semibold)
-        case .prismLedger:
-            .system(.largeTitle, weight: .semibold)
-        case .immersion:
-            // Immersion renders its own composition and never reaches this path.
-            .system(.largeTitle, weight: .bold)
         }
     }
 
@@ -246,9 +160,7 @@ struct PulseTodayPage<CheckIn: View, Journal: View, Media: View>: View {
                 .accessibilityIdentifier("today.week.rail")
                 Rectangle().fill(PulseDesign.appDivider(for: theme)).frame(height: 1)
                 Text(PulseTodayPresentation.rhythmStatusText(currentStreak: currentStreak, locale: locale))
-                    .font(theme == .editorialJournal
-                          ? PulseDesign.editorialDisplayFont(size: 18, relativeTo: .headline)
-                          : .headline.weight(.medium))
+                    .font(PulseDesign.editorialDisplayFont(size: 18, relativeTo: .headline))
                     .foregroundStyle(PulseDesign.appInk(for: theme))
                     .accessibilityIdentifier("today.rhythm.status")
             }
@@ -318,7 +230,6 @@ struct PulseCheckInFace: View {
     private var foreground: Color {
         checked ? PulseDesign.appAccentForeground(for: theme) : PulseDesign.appInk(for: theme)
     }
-    private var fill: Color { checked ? accent : PulseDesign.appSurface(for: theme) }
 
     var body: some View {
         Group {
@@ -376,29 +287,9 @@ struct PulseCheckInFace: View {
             }
             .frame(height: 138)
         case .sunlitDay:
-            Group {
-                if checked {
-                    status.foregroundStyle(accent).frame(maxWidth: .infinity, alignment: .leading)
-                } else {
-                    pendingButton(cornerRadius: 8)
-                }
-            }
-            .frame(minHeight: 62)
+            sunlitFace
         case .quietField:
-            VStack(spacing: 12) { glyph; status }
-                .foregroundStyle(foreground)
-                .frame(width: 190, height: 176)
-                .background {
-                    PulseSeedShape().fill(fill)
-                    PulseSeedShape().stroke(accent.opacity(0.45), lineWidth: 1).padding(-7)
-                }
-                .overlay(alignment: .topTrailing) {
-                    Image(systemName: "leaf.fill").font(.system(size: 23, weight: .light))
-                        .foregroundStyle(accent)
-                        .rotationEffect(.degrees(checked ? -18 : 12))
-                        .scaleEffect(checked ? 1.15 : 0.8)
-                        .offset(x: 4, y: -8)
-                }
+            quietFieldFace
         case .prismLedger:
             HStack(spacing: PulseDesign.spacing16) {
                 if checked {
@@ -442,6 +333,106 @@ struct PulseCheckInFace: View {
             }
             .frame(height: 104)
         }
+    }
+
+    // MARK: - Quiet Field: the check-in is one brush stroke
+
+    /// One stroke of ink under the stalk: press, and the stroke lands.
+    private var quietFieldFace: some View {
+        Group {
+            if checked {
+                HStack(spacing: PulseDesign.spacing12) {
+                    Capsule()
+                        .fill(accent)
+                        .frame(width: 34, height: 4)
+                    if let completedText {
+                        Text(completedText)
+                            .font(.subheadline.weight(.medium))
+                            .foregroundStyle(PulseDesign.appInk(for: theme))
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                    Spacer(minLength: 0)
+                    Image(systemName: "checkmark")
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundStyle(accent)
+                }
+                .padding(.horizontal, PulseDesign.spacing4)
+                .frame(maxWidth: .infinity, minHeight: 56, alignment: .leading)
+            } else if isSaving {
+                ProgressView()
+                    .tint(accent)
+                    .frame(maxWidth: .infinity, minHeight: 58)
+            } else {
+                HStack(spacing: PulseDesign.spacing12) {
+                    Circle()
+                        .fill(PulseDesign.appAccentForeground(for: theme))
+                        .frame(width: 8, height: 8)
+                    Text("today.check_in_action")
+                        .font(PulseDesign.editorialDisplayFont(size: 21, relativeTo: .title2).weight(.semibold))
+                }
+                .foregroundStyle(PulseDesign.appAccentForeground(for: theme))
+                .frame(maxWidth: .infinity, minHeight: 58)
+                .background(accent, in: Capsule())
+                .scaleEffect(reduceMotion ? 1 : max(0.9, glyphScale))
+            }
+        }
+        .frame(height: 58)
+    }
+
+    // MARK: - Sunlit Day: the check-in is an exposure
+
+    /// Pending: the day waits as a white outline on sensitized paper.
+    /// Checked: the print develops — the sheet turns white where the sun struck it.
+    private var sunlitFace: some View {
+        Group {
+            if checked {
+                HStack(spacing: PulseDesign.spacing12) {
+                    if let completedText {
+                        Text(completedText)
+                            .font(.system(size: 17, weight: .semibold))
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                    Spacer(minLength: 0)
+                    Image(systemName: "checkmark")
+                        .font(.system(size: 16, weight: .heavy))
+                }
+                .foregroundStyle(PulseDesign.appAccentForeground(for: theme))
+                .padding(.horizontal, PulseDesign.spacing24)
+                .frame(maxWidth: .infinity, minHeight: 64)
+                .background(
+                    accent,
+                    in: RoundedRectangle(cornerRadius: 32, style: .continuous)
+                )
+            } else if isSaving {
+                ProgressView()
+                    .tint(accent)
+                    .frame(maxWidth: .infinity, minHeight: 64)
+                    .overlay {
+                        RoundedRectangle(cornerRadius: 32, style: .continuous)
+                            .stroke(accent.opacity(0.4), lineWidth: 1.5)
+                    }
+            } else {
+                HStack(spacing: PulseDesign.spacing12) {
+                    Text("today.check_in_action")
+                        .font(PulseDesign.editorialDisplayFont(size: 21, relativeTo: .title2).weight(.semibold))
+                    Spacer(minLength: 0)
+                    Circle()
+                        .stroke(accent, lineWidth: 1.5)
+                        .frame(width: 20, height: 20)
+                        .overlay {
+                            Circle().fill(accent).frame(width: 7, height: 7)
+                        }
+                }
+                .foregroundStyle(accent)
+                .padding(.horizontal, PulseDesign.spacing24)
+                .frame(maxWidth: .infinity, minHeight: 64)
+                .overlay {
+                    RoundedRectangle(cornerRadius: 32, style: .continuous)
+                        .stroke(accent, lineWidth: 1.5)
+                }
+            }
+        }
+        .frame(minHeight: 64)
     }
 
     /// Immersion's control is a full-width surface, not a rectangle with a label sitting on it.
@@ -506,25 +497,12 @@ struct PulseCheckInFace: View {
                 ProgressView().tint(PulseDesign.appAccentForeground(for: theme))
             } else {
                 Text("today.check_in_action")
-                    .font(theme == .editorialJournal || theme == .sunlitDay
-                          ? PulseDesign.editorialDisplayFont(size: 25, relativeTo: .title2).weight(.semibold)
-                          : .title3.weight(.semibold))
+                    .font(PulseDesign.editorialDisplayFont(size: 25, relativeTo: .title2).weight(.semibold))
             }
         }
         .foregroundStyle(PulseDesign.appAccentForeground(for: theme))
-        .frame(maxWidth: .infinity, minHeight: theme == .editorialJournal ? 92 : 62)
+        .frame(maxWidth: .infinity, minHeight: 92)
         .background(accent, in: RoundedRectangle(cornerRadius: cornerRadius))
-    }
-
-    @ViewBuilder
-    private var glyph: some View {
-        if isSaving {
-            ProgressView().tint(foreground)
-        } else {
-            Image(systemName: checked ? "checkmark" : (theme == .quietField ? "leaf" : "plus"))
-                .font(.system(size: 28, weight: theme == .prismLedger ? .light : .regular))
-                .scaleEffect(glyphScale)
-        }
     }
 
     @ViewBuilder
@@ -536,25 +514,5 @@ struct PulseCheckInFace: View {
         } else {
             Text("today.check_in_action").font(.title3.weight(.semibold))
         }
-    }
-}
-private struct PulseSeedShape: Shape {
-    func path(in rect: CGRect) -> Path {
-        var path = Path()
-        path.move(to: CGPoint(x: rect.width * 0.48, y: 0))
-        path.addCurve(to: CGPoint(x: rect.width, y: rect.height * 0.48),
-                      control1: CGPoint(x: rect.width * 0.92, y: -rect.height * 0.02),
-                      control2: CGPoint(x: rect.width, y: rect.height * 0.12))
-        path.addCurve(to: CGPoint(x: rect.width * 0.42, y: rect.height),
-                      control1: CGPoint(x: rect.width, y: rect.height * 0.91),
-                      control2: CGPoint(x: rect.width * 0.80, y: rect.height))
-        path.addCurve(to: CGPoint(x: 0, y: rect.height * 0.52),
-                      control1: CGPoint(x: rect.width * 0.12, y: rect.height),
-                      control2: CGPoint(x: 0, y: rect.height * 0.9))
-        path.addCurve(to: CGPoint(x: rect.width * 0.48, y: 0),
-                      control1: CGPoint(x: 0, y: rect.height * 0.2),
-                      control2: CGPoint(x: rect.width * 0.12, y: 0))
-        path.closeSubpath()
-        return path
     }
 }
