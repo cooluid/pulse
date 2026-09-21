@@ -71,13 +71,6 @@ struct HistoryView: View {
 
     private var historyContent: some View {
         VStack(spacing: 0) {
-            if visualTheme == .moonTide {
-                PulseMoonSeascapeView(isBanner: true)
-                    .frame(height: usesRegularWidthLayout ? 160 : 96)
-                    .clipped()
-                    .padding(.horizontal, -PulseDesign.horizontalPadding)
-                    .accessibilityHidden(true)
-            }
             historyHeading
             statisticsRow
             historyModePicker
@@ -97,7 +90,6 @@ struct HistoryView: View {
             historyModeButton(.calendar)
             historyModeButton(.journal)
         }
-        .padding(visualTheme == .moonTide ? 3 : 0)
         .background(PulseDesign.appSurface(for: visualTheme), in: RoundedRectangle(cornerRadius: modeCornerRadius))
         .overlay {
             RoundedRectangle(cornerRadius: modeCornerRadius)
@@ -131,7 +123,6 @@ struct HistoryView: View {
     private var modeCornerRadius: CGFloat {
         switch visualTheme {
         case .editorialJournal, .sunlitDay: 8
-        case .moonTide: 25
         case .quietField: 14
         case .prismLedger: 4
         case .immersion: 26
@@ -173,11 +164,9 @@ struct HistoryView: View {
         .padding(.top, PulseDesign.spacing12)
         .padding(.bottom, PulseDesign.spacing12)
         .overlay(alignment: .bottom) {
-            if visualTheme != .moonTide {
-                Rectangle()
-                    .fill(PulseDesign.appDivider(for: visualTheme))
-                    .frame(height: PulseDesign.thinLineWidth)
-            }
+            Rectangle()
+                .fill(PulseDesign.appDivider(for: visualTheme))
+                .frame(height: PulseDesign.thinLineWidth)
         }
         .contentShape(Rectangle())
         .simultaneousGesture(monthSwipeGesture)
@@ -208,7 +197,6 @@ struct HistoryView: View {
         case .editorialJournal, .sunlitDay:
             PulseDesign.editorialDisplayFont(size: 23, relativeTo: .title2)
         case .quietField: .system(.title3, design: .rounded, weight: .semibold)
-        case .moonTide: .title3
         case .prismLedger: .system(.title3, design: .monospaced, weight: .medium)
         case .immersion: .system(.title3, weight: .bold)
         }
@@ -542,7 +530,7 @@ struct DayArchiveDetailView: View {
             sunlitDetailIdentity
         case .quietField:
             quietArchiveIdentity
-        case .moonTide, .prismLedger, .immersion:
+        case .prismLedger, .immersion:
             chromaticArchiveIdentity
         }
     }
@@ -586,17 +574,13 @@ struct DayArchiveDetailView: View {
         .background(
             PulseDesign.appSurface(for: visualTheme).opacity(0.90),
             in: RoundedRectangle(
-                cornerRadius: visualTheme == .moonTide
-                    ? PulseDesign.primaryNavigationCornerRadius
-                    : PulseDesign.spacing16,
+                cornerRadius: PulseDesign.spacing16,
                 style: .continuous
             )
         )
         .overlay {
             RoundedRectangle(
-                cornerRadius: visualTheme == .moonTide
-                    ? PulseDesign.primaryNavigationCornerRadius
-                    : PulseDesign.spacing16,
+                cornerRadius: PulseDesign.spacing16,
                 style: .continuous
             )
             .stroke(

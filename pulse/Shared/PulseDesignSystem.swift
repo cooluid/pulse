@@ -360,18 +360,6 @@ enum PulseDesign {
                 accentForeground: quietOnGreen,
                 accentSoft: quietGreenSoft
             )
-        case .moonTide:
-            PulseThemePalette(
-                canvas: moonCanvas,
-                canvasDeep: moonCanvasDeep,
-                surface: moonSurface,
-                ink: moonInk,
-                muted: moonMuted,
-                divider: moonDivider,
-                accent: moonAccent,
-                accentForeground: moonAccentForeground,
-                accentSoft: moonAccentSoft
-            )
         case .prismLedger:
             PulseThemePalette(
                 canvas: prismCanvas,
@@ -411,8 +399,6 @@ enum PulseDesign {
             sunlitAccent
         case .quietField:
             quietGreen
-        case .moonTide:
-            moonAccent
         case .prismLedger:
             prismAccent
         case .immersion:
@@ -581,7 +567,7 @@ struct PulseAppHeader: View {
 
     var body: some View {
         HStack(spacing: 8) {
-            if visualTheme == .moonTide || visualTheme == .quietField || visualTheme == .prismLedger {
+            if visualTheme == .quietField || visualTheme == .prismLedger {
                 PulseBrandMark(size: 24)
             }
             Text("today.navigation_title")

@@ -557,10 +557,38 @@ private struct WidgetStringCatalog: Decodable {
 
         let extractionState: String?
         let localizations: [String: Localization]
+
+        private enum CodingKeys: String, CodingKey {
+            case extractionState
+            case localizations
+        }
+
+        init(from decoder: Decoder) throws {
+            let container = try decoder.container(keyedBy: CodingKeys.self)
+            extractionState = try container.decodeIfPresent(String.self, forKey: .extractionState)
+            // Xcode's String Catalog editor can leave an entry with no localizations at all.
+            localizations = try container
+                .decodeIfPresent([String: Localization].self, forKey: .localizations) ?? [:]
+        }
     }
 
     let sourceLanguage: String
     let strings: [String: Entry]
+
+    private enum CodingKeys: String, CodingKey {
+        case sourceLanguage
+        case strings
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        sourceLanguage = try container.decode(String.self, forKey: .sourceLanguage)
+        // The same editor can leave a nameless placeholder behind. Nothing at runtime can look up
+        // an empty key, so it carries no copy and must not fail a copy-completeness check.
+        strings = try container
+            .decode([String: Entry].self, forKey: .strings)
+            .filter { !$0.key.isEmpty }
+    }
 }
 
 @MainActor

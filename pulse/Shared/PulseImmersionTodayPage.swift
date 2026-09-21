@@ -3,9 +3,9 @@ import SwiftUI
 
 /// Immersion arranges Today as one continuous surface.
 ///
-/// Where the shared arrangement stacks modules, this one builds a single field. The day's number
-/// is the page's one loud event and sinks into it, the week is one stream instead of a row of
-/// tiles, and the check-in control is a full-width surface rather than a labelled button.
+/// The date and the day's number hold still behind this content (see `PulseThemeBackdrop`), so
+/// scrolling moves the day's work across the page instead of dragging the number off a hard cut.
+/// Everything below stays inside the page's language: no cards, no rules, no boxed sections.
 struct PulseImmersionTodayPage<CheckIn: View, Journal: View, Media: View>: View {
     let facts: PulseTodayFacts
     let checkIn: CheckIn
@@ -22,14 +22,13 @@ struct PulseImmersionTodayPage<CheckIn: View, Journal: View, Media: View>: View 
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            dateLine
-
-            if showsHeroNumber {
-                heroNumber
-            }
+            // Room for the date and day number the backdrop draws. The date itself stays readable
+            // to VoiceOver there; this only reserves the space.
+            Color.clear
+                .frame(height: heroReservedHeight)
+                .accessibilityHidden(true)
 
             identity
-                .padding(.top, showsHeroNumber ? 16 : 10)
 
             checkIn
                 .frame(maxWidth: .infinity)
@@ -40,6 +39,14 @@ struct PulseImmersionTodayPage<CheckIn: View, Journal: View, Media: View>: View 
 
             VStack(alignment: .leading, spacing: PulseDesign.spacing20) {
                 journal
+                    .padding(.leading, PulseDesign.spacing12)
+                    .overlay(alignment: .topLeading) {
+                        // One short mark keeps the note in the page's language without boxing it.
+                        Capsule()
+                            .fill(accent)
+                            .frame(width: 3, height: 18)
+                            .padding(.top, PulseDesign.spacing12)
+                    }
                 media
             }
             .padding(.top, PulseDesign.spacing24)
@@ -50,42 +57,9 @@ struct PulseImmersionTodayPage<CheckIn: View, Journal: View, Media: View>: View 
         .padding(.bottom, PulseDesign.spacing12)
     }
 
-    // MARK: - The day is the loudest thing on the page
-
-    private var heroNumber: some View {
-        Text(facts.today.map { String($0.day) } ?? "")
-            .font(.system(size: 176, weight: .black))
-            .kerning(-9)
-            .monospacedDigit()
-            .lineLimit(1)
-            .foregroundStyle(accent.opacity(0.46))
-            .frame(maxWidth: .infinity, alignment: .trailing)
-            .mask(sinkGradient)
-            .accessibilityHidden(true)
-    }
-
-    /// Only the foot of the number dissolves, so the day reads as pressing into the surface.
-    private var sinkGradient: some View {
-        LinearGradient(
-            stops: [
-                .init(color: .black, location: 0),
-                .init(color: .black, location: 0.66),
-                .init(color: .black.opacity(0.34), location: 0.86),
-                .init(color: .clear, location: 1)
-            ],
-            startPoint: .top,
-            endPoint: .bottom
-        )
-    }
-
-    @ViewBuilder
-    private var dateLine: some View {
-        if let today = facts.today, let timeZone = facts.timeZone {
-            Text(PulseFormatting.fullDate(today, timeZone: timeZone, locale: locale))
-                .font(.system(size: 14, weight: .medium))
-                .foregroundStyle(PulseDesign.appMuted(for: theme))
-                .accessibilityIdentifier("today.hero.kicker")
-        }
+    /// The backdrop's date line plus the day number, measured from the top of this content.
+    private var heroReservedHeight: CGFloat {
+        showsHeroNumber ? 243 : 26
     }
 
     // MARK: - Commitment and rhythm

@@ -7,8 +7,13 @@
 **已建立的能力**：`pulse/Shared/PulseTodayPage.swift` 现在是「事实容器 `PulseTodayFacts` + 分派器 + `legacyComposition`」。主题要自己的布局，就新写一个 `Pulse*TodayPage.swift` 并在分派器接一行；不要往 `legacyComposition` 里加 `switch` 分支。`PulseImmersionTodayPage.swift` 是第一个这么做的。
 
 **做新主题时的硬约束**：
-- 不能改名或删除已发布的 `PulseVisualTheme` case（rawValue 是用户设备上的持久化键）。只能新增。
+- **主题数量不能减少**。`store.capability.themes.title`（"四套额外界面主题"）、`store.hero.promise`、`store.hero.tagline` 都已公开点名静野/晴昼/月汐/棱镜刻度，随 `1.1 (9)` 发布。减套数等于改已公开的商业承诺。
+- 可以删 `PulseVisualTheme` case 或改显示名，但**前提是 `AppSettings.init` 对未知 rawValue 回退而不是抛错**。2026-09-21 已把 `loadedVisualTheme` 从 `throw PulseAppError.invalidSettings` 改成回退 `freeTheme`（`testRetiredThemeFallsBackToTheFreeThemeInsteadOfFailingTheLoad` 守住）。旧 rawValue 会静默落到免费主题，不会再有 failed 启动页。
+- **改主题阵容必须同步商店文案四处**：`store.capability.themes.title`（"四套额外界面主题"）、`store.capability.themes.detail`、`store.hero.promise`、`store.hero.tagline`。它们点名了主题名，数量和名字都要与实现一致。
+- 退役主题的清理面：`Pulse*TodayPage.swift`、`PulseThemeBackdrop`/`PulseFieldBackground` 的分支、`PulseCheckInFace` 的 artwork 分支、`PulseDesign` 的 palette/appSuccess、`PulseCalendarDayStyle`、`HistoryView`(3 处)、`JournalNoteViews`(6 处)、`EnhancementStoreView`(3 处)、`PulseThemeAppearance`、UI 测试里的主题数组。`moon*` 颜色令牌保留未删（设计资产，删要同步 tokens + 脚本）。
 - 新增 case 后必须同步：`brand-tokens.json` + `build_brand_assets.py` 的 `COLOR_ASSETS`（两边 key 集合必须完全一致，脚本会校验）、`PulseDesignSystem` 的 palette/appSuccess、`PulseCalendarDayStyle`、`HistoryView`（3 处）、`JournalNoteViews`（2 处）、`EnhancementStoreView`（hero）。
+- **主题不能靠背景图**。用一张照片（或任何位图）当主题表面是"换壁纸"，不是设计：图片不吃 Dynamic Type、深浅色、提高对比度，也无法和内容发生关系。2026-09-21 用户明确否掉了 moonTide 的海面照片方案。主题必须由版式、比例、字重、色彩层次承载。
+- **主视觉不要放进 `ScrollView`**。内容滚到顶部会被硬切（日号被裁成平头、照片底边跑到屏幕中间），加渐变治标不治本。正确做法：固定的东西放 `pulse/Shared/PulseThemeBackdrop.swift`（日期行 + 装饰性主视觉）或 `PulseFieldBackground`（全屏色场），内容侧只留 `Color.clear.frame(height:)` 占位。当前：沉浸的日期+日号在 backdrop，月汐的日期在 backdrop、光场在 `PulseFieldBackground`。日期行（`today.hero.kicker`）要保持可达，装饰性数字才 `accessibilityHidden`。
 - 颜色资产由 `python3 scripts/build_brand_assets.py` 生成，需要 Pillow。
 - 保留的 UI 测试标识符：`today.checkin.button`、`today.week.rail`、`today.rhythm.status`、`today.commitment.name`、`today.hero.kicker`、`today.week.day.<x>`、`today.media.capture.button`。签到控件的可达性由 `TodayView` 的 overlay 提供，`PulseCheckInFace` 本身 `accessibilityHidden`，所以重画它不影响测试。
 

@@ -1,3 +1,4 @@
+import PulseCore
 import XCTest
 
 @testable import pulse
@@ -8,14 +9,13 @@ final class ThemeExperienceContractTests: XCTestCase {
         XCTAssertEqual(PulseVisualThemeAccessPolicy.freeTheme, .editorialJournal)
         XCTAssertEqual(
             PulseVisualThemeAccessPolicy.enhancementThemes,
-            [.quietField, .sunlitDay, .moonTide, .prismLedger, .immersion]
+            [.quietField, .sunlitDay, .prismLedger, .immersion]
         )
         XCTAssertFalse(
             PulseVisualThemeAccessPolicy.requiresEnhancement(.editorialJournal)
         )
         XCTAssertTrue(PulseVisualThemeAccessPolicy.requiresEnhancement(.quietField))
         XCTAssertTrue(PulseVisualThemeAccessPolicy.requiresEnhancement(.sunlitDay))
-        XCTAssertTrue(PulseVisualThemeAccessPolicy.requiresEnhancement(.moonTide))
         XCTAssertTrue(PulseVisualThemeAccessPolicy.requiresEnhancement(.prismLedger))
         XCTAssertEqual(
             PulseVisualThemeAccessPolicy.resolvedTheme(
@@ -37,7 +37,6 @@ final class ThemeExperienceContractTests: XCTestCase {
         )
         XCTAssertNotEqual(PulseVisualThemeEnvironmentKey.defaultValue, .quietField)
         XCTAssertNotEqual(PulseVisualThemeEnvironmentKey.defaultValue, .sunlitDay)
-        XCTAssertNotEqual(PulseVisualThemeEnvironmentKey.defaultValue, .moonTide)
         XCTAssertNotEqual(PulseVisualThemeEnvironmentKey.defaultValue, .prismLedger)
         XCTAssertNotEqual(PulseVisualThemeEnvironmentKey.defaultValue, .immersion)
     }
@@ -52,7 +51,23 @@ final class ThemeExperienceContractTests: XCTestCase {
         XCTAssertEqual(dark.surface, PulseDesign.immersionSurface)
         XCTAssertNotEqual(
             PulseDesign.appAccent(for: .immersion),
-            PulseDesign.appAccent(for: .moonTide)
+            PulseDesign.appAccent(for: .prismLedger)
         )
+    }
+
+    /// A stored theme that is no longer offered must fall back, not fail the whole load.
+    func testRetiredThemeFallsBackToTheFreeThemeInsteadOfFailingTheLoad() throws {
+        let suiteName = "ThemeExperienceContractTests.Retired.\(UUID().uuidString)"
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: suiteName))
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+        defaults.set("moonTide", forKey: AppSettings.StorageKey.visualTheme)
+
+        let settings = try AppSettings(
+            sharedSettings: PulseSharedSettings(defaults: defaults),
+            defaults: defaults
+        )
+
+        XCTAssertNil(PulseVisualTheme(rawValue: "moonTide"))
+        XCTAssertEqual(settings.visualTheme, PulseVisualThemeAccessPolicy.freeTheme)
     }
 }

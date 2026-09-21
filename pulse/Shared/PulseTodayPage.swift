@@ -34,14 +34,15 @@ struct PulseTodayPage<CheckIn: View, Journal: View, Media: View>: View {
     @ScaledMetric(relativeTo: .largeTitle) private var calendarDaySize = 136.0
 
     var body: some View {
-        if theme == .immersion {
+        switch theme {
+        case .immersion:
             PulseImmersionTodayPage(
                 facts: facts,
                 checkIn: checkIn,
                 journal: journal,
                 media: media
             )
-        } else {
+        default:
             legacyComposition
         }
     }
@@ -96,20 +97,11 @@ struct PulseTodayPage<CheckIn: View, Journal: View, Media: View>: View {
     }
 
     private var mainContent: some View {
-        VStack(alignment: .leading, spacing: theme == .moonTide ? 0 : 18) {
+        VStack(alignment: .leading, spacing: 18) {
             heading
             checkIn
                 .frame(maxWidth: .infinity)
-                .padding(.top, theme == .moonTide ? 96 : 0)
-                .padding(.bottom, theme == .moonTide ? 12 : 0)
                 .offset(y: theme == .editorialJournal && isChecked && !dynamicTypeSize.isAccessibilitySize ? -78 : 0)
-        }
-        .background(alignment: .bottom) {
-            if theme == .moonTide {
-                PulseMoonSeascapeView()
-                    .frame(height: 280)
-                    .padding(.horizontal, -PulseDesign.horizontalPadding)
-            }
         }
     }
 
@@ -132,8 +124,6 @@ struct PulseTodayPage<CheckIn: View, Journal: View, Media: View>: View {
                     calendarDate
                     title
                 }
-            case .moonTide:
-                VStack(alignment: .leading, spacing: 14) { date; title }
             case .quietField:
                 VStack(spacing: 12) {
                     date
@@ -222,8 +212,6 @@ struct PulseTodayPage<CheckIn: View, Journal: View, Media: View>: View {
         switch theme {
         case .editorialJournal, .sunlitDay:
             PulseDesign.editorialDisplayFont(size: 31, relativeTo: .largeTitle).weight(.bold)
-        case .moonTide:
-            .system(.largeTitle, weight: .medium)
         case .quietField:
             .system(.largeTitle, design: .rounded, weight: .semibold)
         case .prismLedger:
@@ -389,28 +377,6 @@ struct PulseCheckInFace: View {
                 }
             }
             .frame(minHeight: 62)
-        case .moonTide:
-            Group {
-                if checked {
-                    ZStack(alignment: .bottomTrailing) {
-                        Image("PulseTideTrace").resizable().scaledToFit()
-                            .frame(maxWidth: .infinity)
-                            .opacity(0.9)
-                            .scaleEffect(x: reduceMotion ? 1 : min(1.08, max(0.92, glyphScale)), y: 1, anchor: .leading)
-                        HStack(spacing: 7) {
-                            Circle().fill(accent).frame(width: 7, height: 7)
-                            status
-                        }
-                        .foregroundStyle(accent)
-                        .padding(.bottom, 4)
-                    }
-                    .frame(height: 76)
-                } else {
-                    pendingButton(cornerRadius: 32)
-                        .shadow(color: accent.opacity(0.18), radius: 14)
-                }
-            }
-            .frame(height: 82)
         case .quietField:
             VStack(spacing: 12) { glyph; status }
                 .foregroundStyle(foreground)

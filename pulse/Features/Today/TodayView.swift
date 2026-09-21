@@ -71,6 +71,7 @@ struct TodayView: View {
         ZStack {
             PulseScreenBackground()
             PulseFieldBackground(presentation: .today, allowsMotion: isActive)
+            PulseThemeBackdrop(facts: todayFacts)
 
             VStack(spacing: 0) {
                 PulseAppHeader(source: .today)
@@ -159,14 +160,25 @@ struct TodayView: View {
         }
     }
 
-    private var todayContent: some View {
-        PulseTodayPage(
+    private var todayFacts: PulseTodayFacts {
+        PulseTodayFacts(
             today: model.today,
             timeZone: model.timeZone,
             habitName: model.habit?.name,
             recentDays: model.recentDays,
             currentStreak: model.statistics.currentStreak,
-            isChecked: model.todayRecord != nil,
+            isChecked: model.todayRecord != nil
+        )
+    }
+
+    private var todayContent: some View {
+        PulseTodayPage(
+            today: todayFacts.today,
+            timeZone: todayFacts.timeZone,
+            habitName: todayFacts.habitName,
+            recentDays: todayFacts.recentDays,
+            currentStreak: todayFacts.currentStreak,
+            isChecked: todayFacts.isChecked,
             checkIn: checkInControl,
             journal: todayJournalSection,
             media: mediaCompanionAction

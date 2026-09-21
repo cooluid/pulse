@@ -36,6 +36,8 @@ struct PulseVisualThemeSpecimen: View {
             .background {
                 PulseScreenBackground()
                 PulseFieldBackground(presentation: .today, allowsMotion: false)
+                PulseThemeBackdrop(facts: facts)
+                    .padding(.top, 12)
             }
             .environment(\.pulseVisualTheme, theme)
             .environment(\.colorScheme, previewColorScheme)
@@ -47,6 +49,17 @@ struct PulseVisualThemeSpecimen: View {
         .clipShape(RoundedRectangle(cornerRadius: 12))
         .allowsHitTesting(false)
         .accessibilityHidden(true)
+    }
+
+    private var facts: PulseTodayFacts {
+        PulseTodayFacts(
+            today: model.today,
+            timeZone: model.timeZone,
+            habitName: model.habit?.name,
+            recentDays: model.recentDays,
+            currentStreak: model.statistics.currentStreak,
+            isChecked: model.todayRecord != nil
+        )
     }
 
     private var previewColorScheme: ColorScheme {

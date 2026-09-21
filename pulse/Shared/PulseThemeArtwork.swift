@@ -4,7 +4,7 @@ import UIKit
 enum PulseThemeAppearance {
     static func preferredColorScheme(theme: PulseVisualTheme, appearance: AppTheme) -> ColorScheme? {
         // Immersion is drawn on ink: its accent only carries on a dark surface.
-        if theme == .moonTide || theme == .immersion { return .dark }
+        if theme == .immersion { return .dark }
         switch appearance {
         case .system: return nil
         case .light: return .light
@@ -27,22 +27,6 @@ enum PulseThemeAppearance {
         case .light?: return .light
         default: return inherited
         }
-    }
-}
-
-struct PulseMoonSeascapeView: View {
-    var isBanner = false
-    var body: some View {
-        GeometryReader { proxy in
-            Image("PulseMoonSeascape")
-                .resizable()
-                .scaledToFill()
-                .frame(width: proxy.size.width, height: proxy.size.height, alignment: .top)
-                .offset(y: isBanner ? -max(0, proxy.size.width * 8 / 13 - proxy.size.height) * 0.25 : 0)
-                .clipped()
-        }
-        .allowsHitTesting(false)
-        .accessibilityHidden(true)
     }
 }
 

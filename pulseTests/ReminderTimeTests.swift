@@ -91,23 +91,14 @@ final class AppSettingsTests: XCTestCase {
         XCTAssertEqual(reloaded.locale.identifier, "en")
     }
 
-    func testInvalidPersistedThemeOrLanguageFailsInitialization() throws {
+    /// An unknown interface style or language is a load failure. An unknown *visual theme* is not:
+    /// a retired theme must fall back so appearance can never stop the app from opening.
+    func testInvalidPersistedAppearanceOrLanguageFailsInitialization() throws {
         let invalidThemeSuite = "AppSettingsTests.Theme.\(UUID().uuidString)"
         let invalidThemeDefaults = try XCTUnwrap(UserDefaults(suiteName: invalidThemeSuite))
         invalidThemeDefaults.set("sepia", forKey: AppSettings.StorageKey.theme)
         XCTAssertThrowsError(try makeSettings(defaults: invalidThemeDefaults))
         invalidThemeDefaults.removePersistentDomain(forName: invalidThemeSuite)
-
-        let invalidVisualThemeSuite = "AppSettingsTests.VisualTheme.\(UUID().uuidString)"
-        let invalidVisualThemeDefaults = try XCTUnwrap(
-            UserDefaults(suiteName: invalidVisualThemeSuite)
-        )
-        invalidVisualThemeDefaults.set(
-            "tidalBreath",
-            forKey: AppSettings.StorageKey.visualTheme
-        )
-        XCTAssertThrowsError(try makeSettings(defaults: invalidVisualThemeDefaults))
-        invalidVisualThemeDefaults.removePersistentDomain(forName: invalidVisualThemeSuite)
 
         let invalidLanguageSuite = "AppSettingsTests.Language.\(UUID().uuidString)"
         let invalidLanguageDefaults = try XCTUnwrap(UserDefaults(suiteName: invalidLanguageSuite))

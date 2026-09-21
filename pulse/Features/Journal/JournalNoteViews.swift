@@ -41,13 +41,6 @@ struct JournalNoteSummary: View {
                 .lineSpacing(5)
                 .fixedSize(horizontal: false, vertical: true)
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(visualTheme == .moonTide ? PulseDesign.spacing16 : 0)
-                .background {
-                    if visualTheme == .moonTide {
-                        RoundedRectangle(cornerRadius: 14)
-                            .fill(PulseDesign.appSurface(for: visualTheme).opacity(0.72))
-                    }
-                }
                 .accessibilityIdentifier("journal.summary.text")
         }
         .padding(.horizontal, usesCard ? PulseDesign.spacing16 : 0)
@@ -195,11 +188,11 @@ struct JournalDraftComposer: View {
                 }
             }
             .accessibilityHidden(true)
-        } else if visualTheme == .moonTide || visualTheme == .sunlitDay {
-            RoundedRectangle(cornerRadius: visualTheme == .moonTide ? 14 : 8)
+        } else if visualTheme == .sunlitDay {
+            RoundedRectangle(cornerRadius: 8)
                 .fill(PulseDesign.appSurface(for: visualTheme).opacity(0.75))
                 .overlay {
-                    RoundedRectangle(cornerRadius: visualTheme == .moonTide ? 14 : 8)
+                    RoundedRectangle(cornerRadius: 8)
                         .stroke(PulseDesign.appDivider(for: visualTheme), lineWidth: PulseDesign.thinLineWidth)
                 }
         }
@@ -319,16 +312,6 @@ private struct JournalHistoryEntryRow: View {
                 Rectangle()
                     .fill(PulseDesign.appDivider(for: visualTheme))
                     .frame(height: PulseDesign.thinLineWidth)
-                    .padding(.leading, visualTheme == .moonTide && !dynamicTypeSize.isAccessibilitySize ? 44 : 0)
-            }
-        }
-        .overlay(alignment: .leading) {
-            if visualTheme == .moonTide && !dynamicTypeSize.isAccessibilitySize {
-                Rectangle()
-                    .fill(PulseDesign.appAccent(for: visualTheme).opacity(0.36))
-                    .frame(width: 1)
-                    .padding(.leading, 15)
-                    .accessibilityHidden(true)
             }
         }
         .contentShape(Rectangle())
@@ -342,13 +325,6 @@ private struct JournalHistoryEntryRow: View {
                 stampedDate
             } else if visualTheme == .sunlitDay {
                 calendarDate
-            } else if visualTheme == .moonTide {
-                Image("PulseTideTick")
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 30, height: 16)
-                    .padding(.top, 14)
-                    .accessibilityHidden(true)
             }
 
             VStack(alignment: .leading, spacing: PulseDesign.spacing8) {
@@ -723,7 +699,7 @@ struct JournalNoteEditorSheet: View {
         switch visualTheme {
         case .editorialJournal:
             .system(.headline, design: .serif).weight(.semibold)
-        case .quietField, .sunlitDay, .moonTide, .prismLedger:
+        case .quietField, .sunlitDay, .prismLedger:
             .system(.headline, design: .rounded).weight(.semibold)
         case .immersion:
             .system(.headline, weight: .semibold)
@@ -734,7 +710,7 @@ struct JournalNoteEditorSheet: View {
         switch visualTheme {
         case .editorialJournal:
             .system(.body, design: .serif)
-        case .quietField, .sunlitDay, .moonTide, .prismLedger:
+        case .quietField, .sunlitDay, .prismLedger:
             .system(.body, design: .rounded)
         case .immersion:
             .system(.body)

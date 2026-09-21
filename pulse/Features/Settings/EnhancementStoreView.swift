@@ -192,7 +192,7 @@ struct EnhancementStoreView: View {
             quietHero
         case .quietField:
             playfulQuietHero
-        case .moonTide, .prismLedger:
+        case .prismLedger:
             chromaticHero
         case .immersion:
             immersionHero
@@ -249,17 +249,13 @@ struct EnhancementStoreView: View {
         .background(
             PulseDesign.appSurface(for: visualTheme).opacity(0.90),
             in: RoundedRectangle(
-                cornerRadius: visualTheme == .moonTide
-                    ? PulseDesign.primaryNavigationCornerRadius
-                    : PulseDesign.spacing16,
+                cornerRadius: PulseDesign.spacing16,
                 style: .continuous
             )
         )
         .overlay {
             RoundedRectangle(
-                cornerRadius: visualTheme == .moonTide
-                    ? PulseDesign.primaryNavigationCornerRadius
-                    : PulseDesign.spacing16,
+                cornerRadius: PulseDesign.spacing16,
                 style: .continuous
             )
             .stroke(

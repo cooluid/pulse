@@ -882,7 +882,7 @@ final class PulseFlowUITests: XCTestCase {
     }
 
     func testApprovedThemesPreserveDraftCheckInAndHistoryEditing() throws {
-        for theme in ["editorialJournal", "moonTide", "sunlitDay"] {
+        for theme in ["editorialJournal", "sunlitDay"] {
             try XCTContext.runActivity(named: "Daily note flow: \(theme)") { _ in
                 configureApp()
                 app.launchEnvironment["PULSE_UI_TEST_ENHANCEMENT_PURCHASED"] = "1"
@@ -1035,7 +1035,7 @@ final class PulseFlowUITests: XCTestCase {
         XCTAssertTrue(checkIn.isEnabled)
         XCTAssertTrue(checkIn.label.contains("晚饭后散步"))
 
-        let themes = ["editorialJournal", "sunlitDay", "moonTide"]
+        let themes = ["editorialJournal", "sunlitDay", "immersion"]
         for theme in themes {
             selectThemeForRecordedDayReview(theme)
             XCTAssertTrue(checkIn.isEnabled)
@@ -1131,6 +1131,26 @@ final class PulseFlowUITests: XCTestCase {
         attachScreenshot(named: "Immersion today checked")
     }
 
+    func testNewThemesScrollWithoutSurfaceSeam() throws {
+        configureApp()
+        app.launchEnvironment["PULSE_UI_TEST_ENHANCEMENT_PURCHASED"] = "1"
+        launchAndConfirmDefaultCommitment()
+
+        for theme in ["immersion"] {
+            selectThemeForRecordedDayReview(theme)
+            attachScreenshot(named: "\(theme) settled")
+
+            app.swipeUp()
+            attachScreenshot(named: "\(theme) scrolled once")
+
+            app.swipeUp()
+            attachScreenshot(named: "\(theme) scrolled twice")
+
+            app.swipeDown()
+            app.swipeDown()
+        }
+    }
+
     private func attachScreenshot(named name: String) {
         let attachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
         attachment.name = name
@@ -1213,7 +1233,7 @@ final class PulseFlowUITests: XCTestCase {
         app.buttons["settings.navigation.open.today"].tap()
         openVisualThemePicker()
 
-        for theme in ["editorialJournal", "sunlitDay", "moonTide"] {
+        for theme in ["editorialJournal", "sunlitDay"] {
             let themeChoice = app.buttons["settings.visual-theme.\(theme)"]
             for _ in 0..<8 where !themeChoice.isHittable {
                 app.swipeUp()
@@ -1230,11 +1250,11 @@ final class PulseFlowUITests: XCTestCase {
         let closePreview = app.buttons["settings.visual-theme.preview.close"]
         XCTAssertTrue(closePreview.waitForExistence(timeout: 3))
         let previewAttachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
-        previewAttachment.name = "Paper theme preview opened from Moon Tide"
+        previewAttachment.name = "Paper theme preview opened from Sunlit Day"
         previewAttachment.lifetime = .keepAlways
         add(previewAttachment)
         closePreview.tap()
-        XCTAssertTrue(app.buttons["settings.visual-theme.moonTide"].isSelected)
+        XCTAssertTrue(app.buttons["settings.visual-theme.sunlitDay"].isSelected)
         app.buttons["navigation.back"].tap()
         app.buttons["navigation.back"].tap()
         XCTAssertTrue(checkIn.waitForExistence(timeout: 3))
