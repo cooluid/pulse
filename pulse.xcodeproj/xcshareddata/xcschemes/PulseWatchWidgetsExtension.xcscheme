@@ -112,7 +112,6 @@
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "A40000000000000000000006"
             BuildableName = "PulseWatchWidgetsExtension.appex"
-            BlueprintName = "PulseWatchWidgetsExtension"
             ReferencedContainer = "container:pulse.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>

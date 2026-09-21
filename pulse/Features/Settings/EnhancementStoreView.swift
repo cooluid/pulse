@@ -194,7 +194,31 @@ struct EnhancementStoreView: View {
             playfulQuietHero
         case .moonTide, .prismLedger:
             chromaticHero
+        case .immersion:
+            immersionHero
         }
+    }
+
+    private var immersionHero: some View {
+        VStack(alignment: .leading, spacing: PulseDesign.spacing12) {
+            Label("store.lifetime_badge", systemImage: "checkmark.seal.fill")
+                .font(.caption.weight(.bold))
+                .foregroundStyle(PulseDesign.appAccentForeground(for: visualTheme))
+                .padding(.horizontal, PulseDesign.spacing12)
+                .padding(.vertical, PulseDesign.spacing8)
+                .background(PulseDesign.appAccent(for: visualTheme), in: Capsule())
+
+            Text("store.hero.tagline")
+                .font(.system(.title2, weight: .black))
+                .kerning(-0.5)
+                .foregroundStyle(PulseDesign.appInk(for: visualTheme))
+                .fixedSize(horizontal: false, vertical: true)
+
+            Text("store.hero.scope")
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(PulseDesign.appMuted(for: visualTheme))
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     private var chromaticHero: some View {

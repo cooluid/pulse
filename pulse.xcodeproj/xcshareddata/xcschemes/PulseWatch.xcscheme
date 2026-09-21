@@ -47,7 +47,6 @@
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "A30000000000000000000006"
             BuildableName = "PulseWatch.app"
-            BlueprintName = "PulseWatch"
             ReferencedContainer = "container:pulse.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
@@ -64,7 +63,6 @@
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "A30000000000000000000006"
             BuildableName = "PulseWatch.app"
-            BlueprintName = "PulseWatch"
             ReferencedContainer = "container:pulse.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>

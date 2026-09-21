@@ -26,6 +26,7 @@ extension PulseDesign {
             case .editorialJournal, .prismLedger: 3
             case .quietField, .moonTide: 20
             case .sunlitDay: 8
+            case .immersion: 19
             }
             return CalendarDayStyle(
                 cornerRadius: radius,

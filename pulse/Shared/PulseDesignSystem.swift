@@ -95,6 +95,15 @@ enum PulseDesign {
     static let sunlitChrome = Color("PulseSunlitChrome")
     static let sunlitChromeForeground = Color("PulseSunlitChromeForeground")
     static let sunlitOnAccent = Color("PulseSunlitOnAccent")
+    static let immersionCanvas = Color("PulseImmersionCanvas")
+    static let immersionCanvasDeep = Color("PulseImmersionCanvasDeep")
+    static let immersionSurface = Color("PulseImmersionSurface")
+    static let immersionInk = Color("PulseImmersionInk")
+    static let immersionMuted = Color("PulseImmersionMuted")
+    static let immersionDivider = Color("PulseImmersionDivider")
+    static let immersionAccent = Color("PulseImmersionAccent")
+    static let immersionAccentForeground = Color("PulseImmersionAccentForeground")
+    static let immersionAccentSoft = Color("PulseImmersionAccentSoft")
     static let shadow = Color("PulseShadow")
     static let tint = Color("AccentColor")
     static let systemDestructive = Color(uiColor: .systemRed)
@@ -375,6 +384,18 @@ enum PulseDesign {
                 accentForeground: prismAccentForeground,
                 accentSoft: prismAccentSoft
             )
+        case .immersion:
+            PulseThemePalette(
+                canvas: immersionCanvas,
+                canvasDeep: immersionCanvasDeep,
+                surface: immersionSurface,
+                ink: immersionInk,
+                muted: immersionMuted,
+                divider: immersionDivider,
+                accent: immersionAccent,
+                accentForeground: immersionAccentForeground,
+                accentSoft: immersionAccentSoft
+            )
         }
     }
 
@@ -394,6 +415,8 @@ enum PulseDesign {
             moonAccent
         case .prismLedger:
             prismAccent
+        case .immersion:
+            immersionAccent
         }
     }
 
@@ -473,12 +496,25 @@ struct PulseFieldBackground: View {
 
     var body: some View {
         Group {
-            if presentation == .today && (theme == .quietField || theme == .prismLedger) {
-                LinearGradient(
-                    colors: [PulseDesign.appAccentSoft(for: theme).opacity(0.28), .clear],
-                    startPoint: .top,
-                    endPoint: .center
-                )
+            if presentation == .today {
+                switch theme {
+                case .quietField, .prismLedger:
+                    LinearGradient(
+                        colors: [PulseDesign.appAccentSoft(for: theme).opacity(0.28), .clear],
+                        startPoint: .top,
+                        endPoint: .center
+                    )
+                case .immersion:
+                    // One pool of light behind the day's number.
+                    RadialGradient(
+                        colors: [PulseDesign.appAccentSoft(for: theme).opacity(0.9), .clear],
+                        center: UnitPoint(x: 0.84, y: 0.04),
+                        startRadius: 0,
+                        endRadius: 460
+                    )
+                default:
+                    EmptyView()
+                }
             }
         }
         .ignoresSafeArea()

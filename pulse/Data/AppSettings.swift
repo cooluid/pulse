@@ -45,6 +45,7 @@ enum PulseVisualTheme: String, CaseIterable, Identifiable, Sendable {
     case sunlitDay
     case moonTide
     case prismLedger
+    case immersion
 
     var id: String { rawValue }
 
@@ -60,6 +61,8 @@ enum PulseVisualTheme: String, CaseIterable, Identifiable, Sendable {
             PulseLocalization.string("settings.visual_theme.moon_tide", locale: locale)
         case .prismLedger:
             PulseLocalization.string("settings.visual_theme.prism_ledger", locale: locale)
+        case .immersion:
+            PulseLocalization.string("settings.visual_theme.immersion", locale: locale)
         }
     }
 
@@ -88,6 +91,11 @@ enum PulseVisualTheme: String, CaseIterable, Identifiable, Sendable {
         case .prismLedger:
             PulseLocalization.string(
                 "settings.visual_theme.prism_ledger.detail",
+                locale: locale
+            )
+        case .immersion:
+            PulseLocalization.string(
+                "settings.visual_theme.immersion.detail",
                 locale: locale
             )
         }

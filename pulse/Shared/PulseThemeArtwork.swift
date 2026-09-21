@@ -3,7 +3,8 @@ import UIKit
 
 enum PulseThemeAppearance {
     static func preferredColorScheme(theme: PulseVisualTheme, appearance: AppTheme) -> ColorScheme? {
-        if theme == .moonTide { return .dark }
+        // Immersion is drawn on ink: its accent only carries on a dark surface.
+        if theme == .moonTide || theme == .immersion { return .dark }
         switch appearance {
         case .system: return nil
         case .light: return .light

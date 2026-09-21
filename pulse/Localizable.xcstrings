@@ -1,21 +1,8 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
-    "settings.visual_theme.preview": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Preview %@"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "预览%@"
-          }
-        }
-      }
+    "" : {
+
     },
     "accessibility.date_status_format" : {
       "extractionState" : "manual",
@@ -2581,22 +2568,6 @@
         }
       }
     },
-    "history.navigation.subtitle" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Review records"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "查看记录"
-          }
-        }
-      }
-    },
     "history.next_month" : {
       "localizations" : {
         "en" : {
@@ -2927,6 +2898,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "手记"
+          }
+        }
+      }
+    },
+    "journal.optional" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Optional"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "可选"
           }
         }
       }
@@ -4090,6 +4078,40 @@
         }
       }
     },
+    "settings.visual_theme.immersion" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Immersion"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "沉浸"
+          }
+        }
+      }
+    },
+    "settings.visual_theme.immersion.detail" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "One continuous surface. The day's number fills the page, and checking in presses into it."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "一整块连续的页面。日号铺满这一页，签到是把它按下去。"
+          }
+        }
+      }
+    },
     "settings.visual_theme.moon_tide" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -4120,6 +4142,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "月夜水面与每天留下的潮痕。"
+          }
+        }
+      }
+    },
+    "settings.visual_theme.preview" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Preview %@"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "预览%@"
           }
         }
       }
@@ -5437,22 +5476,6 @@
         }
       }
     },
-    "today.check_in" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Check In Today"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "今日待签到"
-          }
-        }
-      }
-    },
     "today.check_in_action" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -5517,22 +5540,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "我的一件事：%@"
-          }
-        }
-      }
-    },
-    "today.commitment.cue" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Your One Thing Today"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "今天的一件事"
           }
         }
       }
@@ -5662,22 +5669,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "今天已签到"
-          }
-        }
-      }
-    },
-    "today.navigation.pending" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Not checked in yet"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "今天还未签到"
           }
         }
       }
@@ -6090,6 +6081,57 @@
         }
       }
     },
+    "widget.gallery.size" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Widget size"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "小组件尺寸"
+          }
+        }
+      }
+    },
+    "widget.gallery.size.medium" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Medium"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "中号"
+          }
+        }
+      }
+    },
+    "widget.gallery.size.small" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Small"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "小号"
+          }
+        }
+      }
+    },
     "widget.gallery.unavailable.message" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -6273,74 +6315,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "今天还未签到"
-          }
-        }
-      }
-    },
-    "journal.optional" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "可选"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Optional"
-          }
-        }
-      }
-    },
-    "widget.gallery.size" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "小组件尺寸"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Widget size"
-          }
-        }
-      }
-    },
-    "widget.gallery.size.small" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "小号"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Small"
-          }
-        }
-      }
-    },
-    "widget.gallery.size.medium" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "中号"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Medium"
           }
         }
       }

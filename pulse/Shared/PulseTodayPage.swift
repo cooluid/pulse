@@ -1,7 +1,20 @@
 import PulseCore
 import SwiftUI
 
-/// Today and its read-only theme specimen render the same page and facts.
+/// The facts every Today composition reads. How they are arranged is the theme's own business.
+struct PulseTodayFacts {
+    let today: LogicalDay?
+    let timeZone: TimeZone?
+    let habitName: String?
+    let recentDays: [CalendarDayItem]
+    let currentStreak: Int
+    let isChecked: Bool
+}
+
+/// Today and its read-only theme specimen render the same facts.
+///
+/// A theme that has its own composition renders it here; the rest keep the shared
+/// legacy arrangement. Moving a theme out of `legacyComposition` never touches another theme.
 struct PulseTodayPage<CheckIn: View, Journal: View, Media: View>: View {
     let today: LogicalDay?
     let timeZone: TimeZone?
@@ -21,6 +34,30 @@ struct PulseTodayPage<CheckIn: View, Journal: View, Media: View>: View {
     @ScaledMetric(relativeTo: .largeTitle) private var calendarDaySize = 136.0
 
     var body: some View {
+        if theme == .immersion {
+            PulseImmersionTodayPage(
+                facts: facts,
+                checkIn: checkIn,
+                journal: journal,
+                media: media
+            )
+        } else {
+            legacyComposition
+        }
+    }
+
+    var facts: PulseTodayFacts {
+        PulseTodayFacts(
+            today: today,
+            timeZone: timeZone,
+            habitName: habitName,
+            recentDays: recentDays,
+            currentStreak: currentStreak,
+            isChecked: isChecked
+        )
+    }
+
+    private var legacyComposition: some View {
         Group {
             if horizontalSizeClass == .regular && !dynamicTypeSize.isAccessibilitySize {
                 HStack(alignment: .top, spacing: 48) {
@@ -113,6 +150,9 @@ struct PulseTodayPage<CheckIn: View, Journal: View, Media: View>: View {
                             Rectangle().fill(PulseDesign.appDivider(for: theme)).frame(width: 1)
                         }
                 }
+            case .immersion:
+                // Immersion renders its own composition and never reaches this path.
+                EmptyView()
             }
         }
     }
@@ -188,6 +228,9 @@ struct PulseTodayPage<CheckIn: View, Journal: View, Media: View>: View {
             .system(.largeTitle, design: .rounded, weight: .semibold)
         case .prismLedger:
             .system(.largeTitle, weight: .semibold)
+        case .immersion:
+            // Immersion renders its own composition and never reaches this path.
+            .system(.largeTitle, weight: .bold)
         }
     }
 
@@ -402,8 +445,73 @@ struct PulseCheckInFace: View {
             .frame(maxWidth: 338, minHeight: 148)
             .background(fill, in: RoundedRectangle(cornerRadius: 4))
             .overlay { RoundedRectangle(cornerRadius: 4).stroke(accent.opacity(0.5), lineWidth: 1) }
+        case .immersion:
+            Group {
+                if checked {
+                    immersionCheckedFace
+                } else {
+                    immersionPendingFace
+                }
+            }
+            .frame(height: 104)
         }
     }
+
+    /// Immersion's control is a full-width surface, not a rectangle with a label sitting on it.
+    private var immersionPendingFace: some View {
+        HStack(spacing: 0) {
+            if isSaving {
+                ProgressView()
+                    .tint(PulseDesign.appAccentForeground(for: theme))
+                    .padding(.leading, PulseDesign.spacing32)
+            } else {
+                Text("today.check_in_action")
+                    .font(.system(size: 26, weight: .semibold))
+                    .foregroundStyle(PulseDesign.appAccentForeground(for: theme))
+                    .padding(.leading, PulseDesign.spacing32)
+            }
+
+            Spacer(minLength: 0)
+
+            Circle()
+                .fill(PulseDesign.appAccentForeground(for: theme).opacity(0.55))
+                .frame(width: 14, height: 14)
+                .padding(.trailing, PulseDesign.spacing32)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(
+            accent,
+            in: RoundedRectangle(cornerRadius: immersionSurfaceRadius, style: .continuous)
+        )
+        // The surface throws light onto the page instead of sitting flat on it.
+        .shadow(color: accent.opacity(0.30), radius: 26, y: 10)
+    }
+
+    /// Once the day is kept the surface goes quiet instead of staying loud.
+    private var immersionCheckedFace: some View {
+        HStack(spacing: 0) {
+            if let completedText {
+                Text(completedText)
+                    .font(.system(size: 21, weight: .semibold))
+                    .foregroundStyle(accent)
+                    .padding(.leading, PulseDesign.spacing32)
+            }
+
+            Spacer(minLength: 0)
+
+            Image(systemName: "checkmark")
+                .font(.system(size: 20, weight: .heavy))
+                .foregroundStyle(accent)
+                .padding(.trailing, PulseDesign.spacing32)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(
+            PulseDesign.appAccentSoft(for: theme),
+            in: RoundedRectangle(cornerRadius: immersionSurfaceRadius, style: .continuous)
+        )
+    }
+
+    private var immersionSurfaceRadius: CGFloat { 38 }
 
     private func pendingButton(cornerRadius: CGFloat) -> some View {
         Group {

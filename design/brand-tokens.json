@@ -74,7 +74,16 @@
     "editorialDivider" : "#CEC6B8",
     "editorialOnAccent" : "#FFF9F1",
     "editorialAccentSoft" : "#F1DFD6",
-    "sunlitWeekday" : "#B64E12"
+    "sunlitWeekday" : "#B64E12",
+    "immersionCanvas" : "#F3F6F8",
+    "immersionCanvasDeep" : "#E6ECEF",
+    "immersionSurface" : "#FFFFFF",
+    "immersionInk" : "#0A1116",
+    "immersionMuted" : "#63707B",
+    "immersionDivider" : "#DBE2E7",
+    "immersionAccent" : "#07866C",
+    "immersionAccentForeground" : "#FFFFFF",
+    "immersionAccentSoft" : "#D6F0E9"
   },
   "dark" : {
     "action" : "#276D3D",
@@ -151,7 +160,16 @@
     "editorialDivider" : "#514B42",
     "editorialOnAccent" : "#261814",
     "editorialAccentSoft" : "#432B25",
-    "sunlitWeekday" : "#FFBD8C"
+    "sunlitWeekday" : "#FFBD8C",
+    "immersionCanvas" : "#080B10",
+    "immersionCanvasDeep" : "#04060A",
+    "immersionSurface" : "#121A24",
+    "immersionInk" : "#ECF3F7",
+    "immersionMuted" : "#7C8B99",
+    "immersionDivider" : "#1D2733",
+    "immersionAccent" : "#43E0B8",
+    "immersionAccentForeground" : "#04241C",
+    "immersionAccentSoft" : "#12332C"
   },
   "watch" : {
     "canvasTop" : "#04152E",

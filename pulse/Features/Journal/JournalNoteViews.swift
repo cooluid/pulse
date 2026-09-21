@@ -725,6 +725,8 @@ struct JournalNoteEditorSheet: View {
             .system(.headline, design: .serif).weight(.semibold)
         case .quietField, .sunlitDay, .moonTide, .prismLedger:
             .system(.headline, design: .rounded).weight(.semibold)
+        case .immersion:
+            .system(.headline, weight: .semibold)
         }
     }
 
@@ -734,6 +736,8 @@ struct JournalNoteEditorSheet: View {
             .system(.body, design: .serif)
         case .quietField, .sunlitDay, .moonTide, .prismLedger:
             .system(.body, design: .rounded)
+        case .immersion:
+            .system(.body)
         }
     }
 

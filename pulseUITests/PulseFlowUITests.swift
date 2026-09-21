@@ -1097,6 +1097,47 @@ final class PulseFlowUITests: XCTestCase {
         }
     }
 
+    func testImmersionThemeRendersSurfacePickerAndCheckIn() throws {
+        configureApp()
+        app.launchEnvironment["PULSE_UI_TEST_ENHANCEMENT_PURCHASED"] = "1"
+        launchAndConfirmDefaultCommitment()
+
+        let settings = app.buttons["settings.navigation.open.today"]
+        XCTAssertTrue(settings.waitForExistence(timeout: 3))
+        settings.tap()
+        openVisualThemePicker()
+        attachScreenshot(named: "Immersion picker")
+
+        let choice = app.buttons["settings.visual-theme.immersion"]
+        for _ in 0..<8 where !choice.isHittable {
+            app.swipeUp()
+        }
+        XCTAssertTrue(choice.waitForExistence(timeout: 3))
+        XCTAssertTrue(choice.isHittable)
+        choice.tap()
+        XCTAssertTrue(choice.isSelected)
+        attachScreenshot(named: "Immersion picker selected")
+
+        app.buttons["navigation.back"].tap()
+        app.buttons["navigation.back"].tap()
+
+        let checkIn = app.buttons["today.checkin.button"]
+        XCTAssertTrue(checkIn.waitForExistence(timeout: 3))
+        XCTAssertTrue(checkIn.isEnabled)
+        attachScreenshot(named: "Immersion today pending")
+
+        checkIn.tap()
+        XCTAssertTrue(app.buttons["today.media.capture.button"].waitForExistence(timeout: 3))
+        attachScreenshot(named: "Immersion today checked")
+    }
+
+    private func attachScreenshot(named name: String) {
+        let attachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
+        attachment.name = name
+        attachment.lifetime = .keepAlways
+        add(attachment)
+    }
+
     private func selectThemeForRecordedDayReview(_ theme: String) {
         let settings = app.buttons["settings.navigation.open.today"]
         XCTAssertTrue(settings.waitForExistence(timeout: 3))

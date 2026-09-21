@@ -134,6 +134,7 @@ struct HistoryView: View {
         case .moonTide: 25
         case .quietField: 14
         case .prismLedger: 4
+        case .immersion: 26
         }
     }
 
@@ -209,6 +210,7 @@ struct HistoryView: View {
         case .quietField: .system(.title3, design: .rounded, weight: .semibold)
         case .moonTide: .title3
         case .prismLedger: .system(.title3, design: .monospaced, weight: .medium)
+        case .immersion: .system(.title3, weight: .bold)
         }
     }
 
@@ -540,7 +542,7 @@ struct DayArchiveDetailView: View {
             sunlitDetailIdentity
         case .quietField:
             quietArchiveIdentity
-        case .moonTide, .prismLedger:
+        case .moonTide, .prismLedger, .immersion:
             chromaticArchiveIdentity
         }
     }
