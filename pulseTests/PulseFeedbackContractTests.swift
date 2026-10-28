@@ -151,7 +151,7 @@ final class PulseFeedbackContractTests: XCTestCase {
             deviceModelIdentifier: "iPhone17,1",
             interfaceLanguageIdentifier: "zh-Hans",
             appearance: "跟随系统",
-            visualTheme: "纸页手记",
+            visualTheme: "朱砂",
             loadState: "就绪",
             logicalDay: "2026-08-18",
             timeZoneIdentifier: "Asia/Shanghai",

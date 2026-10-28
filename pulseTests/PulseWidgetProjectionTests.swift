@@ -283,9 +283,6 @@ final class PulseWidgetProjectionTests: XCTestCase {
 
         let completedPreview = snapshot.projectingTodayCheckInForGallery(true)
         let pendingPreview = completedPreview.projectingTodayCheckInForGallery(false)
-        let morningPreview = snapshot.projectingGallery(period: .morning, isChecked: false)
-        let daylightPreview = snapshot.projectingGallery(period: .daylight, isChecked: false)
-        let eveningPreview = snapshot.projectingGallery(period: .evening, isChecked: true)
 
         XCTAssertFalse(snapshot.isCheckedToday)
         XCTAssertEqual(snapshot.recentDays.last?.state, .todayPending)
@@ -294,31 +291,7 @@ final class PulseWidgetProjectionTests: XCTestCase {
         XCTAssertFalse(pendingPreview.isCheckedToday)
         XCTAssertEqual(pendingPreview.recentDays.last?.state, .todayPending)
         XCTAssertEqual(completedPreview.previousSixCheckedCount, snapshot.previousSixCheckedCount)
-        XCTAssertEqual(
-            PulseWidgetAmbientPeriod.resolve(
-                at: morningPreview.generatedAt,
-                timeZone: timeZone
-            ),
-            .morning
-        )
-        XCTAssertEqual(
-            PulseWidgetAmbientPeriod.resolve(
-                at: daylightPreview.generatedAt,
-                timeZone: timeZone
-            ),
-            .daylight
-        )
-        XCTAssertEqual(
-            PulseWidgetAmbientPeriod.resolve(
-                at: eveningPreview.generatedAt,
-                timeZone: timeZone
-            ),
-            .evening
-        )
-        XCTAssertEqual(morningPreview.recentDays, snapshot.recentDays)
-        XCTAssertEqual(daylightPreview.recentDays, snapshot.recentDays)
-        XCTAssertEqual(eveningPreview.previousSixCheckedCount, snapshot.previousSixCheckedCount)
-        XCTAssertTrue(eveningPreview.isCheckedToday)
+        XCTAssertEqual(pendingPreview.recentDays, snapshot.recentDays)
         XCTAssertFalse(snapshot.isCheckedToday)
     }
 

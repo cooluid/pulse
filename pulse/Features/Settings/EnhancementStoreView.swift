@@ -11,10 +11,9 @@ struct EnhancementStoreView: View {
     var body: some View {
         ZStack {
             PulseScreenBackground()
-            PulseFieldBackground()
 
             ScrollView {
-                VStack(alignment: .leading, spacing: PulseDesign.spacing32) {
+                VStack(alignment: .leading, spacing: PulseDesign.spacing24) {
                     hero
                     ForEach(PulseEnhancementContract.currentCapabilities) { capability in
                         capabilityCard(capability)
@@ -31,11 +30,6 @@ struct EnhancementStoreView: View {
         .navigationBarTitleDisplayMode(.inline)
         .pulseSecondaryNavigation()
         .tint(PulseDesign.appAccent(for: visualTheme))
-        .toolbarBackground(
-            PulseDesign.appChromeBackground(for: visualTheme),
-            for: .navigationBar
-        )
-        .toolbarBackground(.visible, for: .navigationBar)
         .safeAreaInset(edge: .bottom, spacing: 0) {
             purchaseAction
         }
@@ -53,7 +47,7 @@ struct EnhancementStoreView: View {
         )
         .padding(PulseDesign.spacing16)
         .background(
-            PulseDesign.appSurface(for: visualTheme).opacity(0.82),
+            PulseDesign.appSurface(for: visualTheme),
             in: RoundedRectangle(
                 cornerRadius: PulseDesign.storeCapabilityCornerRadius,
                 style: .continuous
@@ -108,40 +102,23 @@ struct EnhancementStoreView: View {
     }
 
     private var themeSpecimens: some View {
-        Group {
-            if dynamicTypeSize.isAccessibilitySize {
-                VStack(alignment: .leading, spacing: PulseDesign.spacing12) {
-                    themeSpecimenCards
-                }
-            } else {
-                LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 16) {
-                    themeSpecimenCards
-                }
+        VStack(alignment: .leading, spacing: PulseDesign.spacing12) {
+            ForEach(PulseVisualThemeAccessPolicy.enhancementThemes) { theme in
+                storeThemeSpecimen(theme)
             }
         }
         .allowsHitTesting(false)
     }
 
-    private var themeSpecimenCards: some View {
-        ForEach(PulseVisualThemeAccessPolicy.enhancementThemes) { theme in
-            storeThemeSpecimen(theme)
-                .frame(maxWidth: .infinity)
-        }
-    }
-
     private func storeThemeSpecimen(_ theme: PulseVisualTheme) -> some View {
         VStack(alignment: .leading, spacing: PulseDesign.spacing8) {
-            PulseVisualThemeSpecimen(theme: theme, model: model)
-                .overlay {
-                    RoundedRectangle(
-                        cornerRadius: PulseDesign.themePreviewCornerRadius,
-                        style: .continuous
-                    )
-                    .stroke(
-                        PulseDesign.appDivider(for: theme).opacity(0.72),
-                        lineWidth: PulseDesign.thinLineWidth
-                    )
-                }
+            PulseVisualThemeSwatch(
+                theme: theme,
+                habitName: model.habit?.name,
+                today: model.today,
+                recentDays: model.recentDays
+            )
+            .clipShape(RoundedRectangle(cornerRadius: PulseDesign.themePreviewCornerRadius - 4, style: .continuous))
 
             Text(theme.localizedName(locale: locale))
                 .font(.caption.weight(.semibold))
@@ -183,224 +160,59 @@ struct EnhancementStoreView: View {
         }
     }
 
-    @ViewBuilder
+    /// Every theme's seal, laid side by side the way sample prints sit on a desk.
     private var hero: some View {
-        switch visualTheme {
-        case .sunlitDay:
-            sunlitHero
-        case .editorialJournal:
-            quietHero
-        case .quietField:
-            playfulQuietHero
-        case .prismLedger:
-            chromaticHero
-        case .immersion:
-            immersionHero
-        }
-    }
+        VStack(alignment: .leading, spacing: PulseDesign.spacing20) {
+            HStack(spacing: -PulseDesign.spacing16) {
+                ForEach(Array(PulseVisualTheme.allCases.enumerated()), id: \.element) { index, theme in
+                    heroPrint(theme, index: index)
+                }
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, PulseDesign.spacing8)
+            .accessibilityHidden(true)
 
-    private var immersionHero: some View {
-        VStack(alignment: .leading, spacing: PulseDesign.spacing12) {
-            Label("store.lifetime_badge", systemImage: "checkmark.seal.fill")
-                .font(.caption.weight(.bold))
-                .foregroundStyle(PulseDesign.appAccentForeground(for: visualTheme))
-                .padding(.horizontal, PulseDesign.spacing12)
-                .padding(.vertical, PulseDesign.spacing8)
-                .background(PulseDesign.appAccent(for: visualTheme), in: Capsule())
-
-            Text("store.hero.tagline")
-                .font(.system(.title2, weight: .black))
-                .kerning(-0.5)
-                .foregroundStyle(PulseDesign.appInk(for: visualTheme))
-                .fixedSize(horizontal: false, vertical: true)
-
-            Text("store.hero.scope")
-                .font(.caption.weight(.semibold))
-                .foregroundStyle(PulseDesign.appMuted(for: visualTheme))
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-    }
-
-    private var chromaticHero: some View {
-        HStack(alignment: .center, spacing: PulseDesign.spacing16) {
             VStack(alignment: .leading, spacing: PulseDesign.spacing12) {
                 Label("store.lifetime_badge", systemImage: "checkmark.seal.fill")
-                    .font(.caption.weight(.bold))
+                    .font(.caption.weight(.semibold))
                     .foregroundStyle(PulseDesign.appAccentForeground(for: visualTheme))
                     .padding(.horizontal, PulseDesign.spacing12)
                     .padding(.vertical, PulseDesign.spacing8)
                     .background(PulseDesign.appAccent(for: visualTheme), in: Capsule())
 
                 Text("store.hero.tagline")
-                    .font(.system(.title2, design: .rounded, weight: .black))
+                    .font(PulseDesign.displayFont(size: 24, relativeTo: .title2).weight(.bold))
                     .foregroundStyle(PulseDesign.appInk(for: visualTheme))
                     .fixedSize(horizontal: false, vertical: true)
 
                 Text("store.hero.scope")
-                    .font(.caption.weight(.semibold))
+                    .font(.footnote.weight(.medium))
                     .foregroundStyle(PulseDesign.appMuted(for: visualTheme))
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-
-            PulseBrandMark(size: PulseDesign.storeBrandMarkSize)
-                .accessibilityHidden(true)
-        }
-        .padding(PulseDesign.spacing20)
-        .background(
-            PulseDesign.appSurface(for: visualTheme).opacity(0.90),
-            in: RoundedRectangle(
-                cornerRadius: PulseDesign.spacing16,
-                style: .continuous
-            )
-        )
-        .overlay {
-            RoundedRectangle(
-                cornerRadius: PulseDesign.spacing16,
-                style: .continuous
-            )
-            .stroke(
-                PulseDesign.appDivider(for: visualTheme),
-                lineWidth: PulseDesign.thinLineWidth
-            )
-        }
-        .accessibilityElement(children: .contain)
-        .accessibilityIdentifier("store.hero")
-    }
-
-    private var quietHero: some View {
-        HStack(alignment: .center, spacing: PulseDesign.spacing16) {
-            VStack(alignment: .leading, spacing: PulseDesign.spacing12) {
-                Label("store.lifetime_badge", systemImage: "leaf.fill")
-                    .font(.caption.weight(.semibold))
-                    .foregroundStyle(PulseDesign.grassForeground)
-                    .padding(.horizontal, PulseDesign.spacing12)
-                    .padding(.vertical, PulseDesign.spacing8)
-                    .background(PulseDesign.grass, in: Capsule())
-
-                Text("store.hero.tagline")
-                    .font(.title2.weight(.black))
-                    .foregroundStyle(PulseDesign.appInk(for: visualTheme))
                     .fixedSize(horizontal: false, vertical: true)
-
-                Text("store.hero.scope")
-                    .font(.caption.weight(.semibold))
-                    .foregroundStyle(PulseDesign.appMuted(for: visualTheme))
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
-
-            PulseBrandMark(size: PulseDesign.brandMarkSize)
-                .accessibilityHidden(true)
         }
         .padding(PulseDesign.spacing20)
+        .frame(maxWidth: .infinity, alignment: .leading)
         .background(
-            PulseDesign.surface.opacity(0.90),
-            in: RoundedRectangle(
-                cornerRadius: PulseDesign.storeHeroCornerRadius,
-                style: .continuous
-            )
-        )
-        .overlay {
-            RoundedRectangle(
-                cornerRadius: PulseDesign.storeHeroCornerRadius,
-                style: .continuous
-            )
-            .stroke(PulseDesign.separator.opacity(0.72), lineWidth: PulseDesign.thinLineWidth)
-        }
-        .clipShape(
-            RoundedRectangle(
-                cornerRadius: PulseDesign.storeHeroCornerRadius,
-                style: .continuous
-            )
+            PulseDesign.appSurface(for: visualTheme),
+            in: RoundedRectangle(cornerRadius: PulseDesign.storeHeroCornerRadius, style: .continuous)
         )
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("store.hero")
     }
 
-    private var playfulQuietHero: some View {
-        HStack(alignment: .center, spacing: PulseDesign.spacing16) {
-            VStack(alignment: .leading, spacing: PulseDesign.spacing12) {
-                Label("store.lifetime_badge", systemImage: "checkmark.seal.fill")
-                    .font(.system(.caption, design: .serif, weight: .semibold))
-                    .foregroundStyle(PulseDesign.quietOnGreen)
-                    .padding(.horizontal, PulseDesign.spacing12)
-                    .padding(.vertical, PulseDesign.spacing8)
-                    .background(PulseDesign.quietGreen, in: Capsule())
-
-                Text("store.hero.tagline")
-                    .font(PulseDesign.editorialDisplayFont(size: 21, relativeTo: .title2).weight(.bold))
-                    .foregroundStyle(PulseDesign.quietInk)
-                    .fixedSize(horizontal: false, vertical: true)
-
-                Text("store.hero.scope")
-                    .font(.caption.weight(.semibold))
-                    .foregroundStyle(PulseDesign.quietMuted)
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-
-            ZStack {
-                PulseBrandMark(size: PulseDesign.storeBrandMarkSize)
-            }
-            .accessibilityHidden(true)
-        }
-        .padding(PulseDesign.spacing20)
-        .background(
-            RoundedRectangle(cornerRadius: 10, style: .continuous)
-                .fill(PulseDesign.quietSurface)
-        )
-        .overlay {
-            RoundedRectangle(cornerRadius: 10, style: .continuous)
-                .stroke(PulseDesign.quietDivider, lineWidth: PulseDesign.thinLineWidth)
-        }
-        .accessibilityElement(children: .contain)
-        .accessibilityIdentifier("store.hero")
-    }
-
-    private var sunlitHero: some View {
-        HStack(alignment: .center, spacing: PulseDesign.spacing16) {
-            VStack(alignment: .leading, spacing: PulseDesign.spacing12) {
-                Label("store.lifetime_badge", systemImage: "checkmark.seal.fill")
-                    .font(.caption.weight(.black))
-                    .foregroundStyle(PulseDesign.sunlitChromeForeground)
-                    .padding(.horizontal, PulseDesign.spacing12)
-                    .padding(.vertical, PulseDesign.spacing8)
-                    .background(
-                        PulseDesign.sunlitChrome,
-                        in: Capsule()
-                    )
-
-                Text("store.hero.tagline")
-                    .font(PulseDesign.editorialDisplayFont(size: 21, relativeTo: .title2).weight(.bold))
-                    .foregroundStyle(PulseDesign.appInk(for: visualTheme))
-                    .fixedSize(horizontal: false, vertical: true)
-
-                Text("store.hero.scope")
-                    .font(.caption.weight(.semibold))
-                    .foregroundStyle(PulseDesign.appMuted(for: visualTheme))
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-
-            ZStack {
-                PulseBrandMark(size: PulseDesign.storeBrandMarkSize)
-            }
-            .accessibilityHidden(true)
-        }
-        .padding(PulseDesign.spacing20)
-        .background(
-            PulseDesign.sunlitSurface,
-            in: RoundedRectangle(
-                cornerRadius: PulseDesign.sunlitPrintCornerRadius,
-                style: .continuous
-            )
-        )
-        .overlay {
-            RoundedRectangle(
-                cornerRadius: PulseDesign.sunlitPrintCornerRadius,
-                style: .continuous
-            )
-            .stroke(PulseDesign.appDivider(for: visualTheme), lineWidth: PulseDesign.thinLineWidth)
-        }
-        .accessibilityElement(children: .contain)
-        .accessibilityIdentifier("store.hero")
+    private func heroPrint(_ theme: PulseVisualTheme, index: Int) -> some View {
+        let palette = PulseDesign.palette(for: theme)
+        let seed = PulseSealSeed.value(for: theme.rawValue)
+        let side: CGFloat = dynamicTypeSize.isAccessibilitySize ? 76 : 96
+        return PulseSealImpression(inscription: .glyph("印"), ink: palette.seal, seed: seed)
+            .padding(side * 0.16)
+            .frame(width: side, height: side)
+            .background(palette.paper, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+            .shadow(color: .black.opacity(0.12), radius: 10, y: 4)
+            .rotationEffect(.degrees(Double(index - 1) * 7))
+            .offset(y: index == 1 ? -6 : 4)
+            .zIndex(index == 1 ? 1 : 0)
     }
 
     @ViewBuilder
@@ -420,15 +232,21 @@ struct EnhancementStoreView: View {
     private var purchaseAction: some View {
         purchaseState
             .frame(maxWidth: PulseDesign.screenMaxWidth, alignment: .leading)
-            .padding(.horizontal, PulseDesign.primaryNavigationHorizontalInset)
-            .padding(.vertical, PulseDesign.spacing8)
+            .padding(.horizontal, PulseDesign.horizontalPadding)
+            .padding(.top, PulseDesign.spacing12)
+            .padding(.bottom, PulseDesign.spacing8)
             .frame(maxWidth: .infinity)
             .fixedSize(horizontal: false, vertical: true)
-            .background(PulseDesign.appSurface(for: visualTheme))
-            .overlay(alignment: .top) {
-                Rectangle()
-                    .fill(PulseDesign.appDivider(for: visualTheme))
-                    .frame(height: PulseDesign.thinLineWidth)
+            .background {
+                LinearGradient(
+                    colors: [
+                        PulseDesign.appChromeBackground(for: visualTheme).opacity(0),
+                        PulseDesign.appChromeBackground(for: visualTheme),
+                    ],
+                    startPoint: .top,
+                    endPoint: .center
+                )
+                .ignoresSafeArea()
             }
     }
 
@@ -463,6 +281,7 @@ struct EnhancementStoreView: View {
             switch model.featureAccess.productState {
             case .loading:
                 ProgressView("store.loading")
+                    .frame(maxWidth: .infinity, minHeight: PulseDesign.storePurchaseButtonMinimumHeight)
                     .accessibilityIdentifier("store.loading")
             case .available:
                 if let product = model.featureAccess.product {
@@ -516,7 +335,6 @@ struct EnhancementStoreView: View {
         AnyShape(Capsule())
     }
 }
-
 struct PulseReminderActivityStoreCard: View {
     let reminderDate: Date
     let timeZoneIdentifier: String
@@ -524,18 +342,11 @@ struct PulseReminderActivityStoreCard: View {
     @Environment(\.pulseVisualTheme) private var visualTheme
 
     var body: some View {
-        VStack(alignment: .leading, spacing: PulseDesign.spacing16) {
-            VStack(alignment: .leading, spacing: PulseDesign.spacing4) {
-                Text(verbatim: activityString("store.activity.preview.signature"))
-                    .font(.title2.weight(.black))
-                    .foregroundStyle(PulseDesign.appInk(for: visualTheme))
-
-                Text(verbatim: activityString("store.activity.preview.section"))
-                    .font(.caption.weight(.semibold))
-                    .foregroundStyle(PulseDesign.appMuted(for: visualTheme))
-            }
-            .accessibilityElement(children: .combine)
-            .accessibilityIdentifier("store.activity.preview.signature")
+        VStack(alignment: .leading, spacing: PulseDesign.spacing12) {
+            Text(verbatim: activityString("store.activity.preview.section"))
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(PulseDesign.appMuted(for: visualTheme))
+                .accessibilityIdentifier("store.activity.preview.signature")
 
             PulseReminderActivityStoreShowcase(
                 reminderDate: reminderDate,
@@ -609,7 +420,7 @@ struct PulseReminderActivityStoreShowcase: View {
                 minHeight: PulseDesign.activityStoreLockScreenMinimumHeight
             )
             .background(
-                PulseWidgetDesign.activityLockScreenBackground,
+                PulseWidgetDesign.paper,
                 in: RoundedRectangle(
                     cornerRadius: PulseDesign.activityStoreSurfaceCornerRadius,
                     style: .continuous
@@ -647,10 +458,15 @@ struct PulseReminderActivityStoreShowcase: View {
             .lineLimit(1)
     }
 
+    private var reminderDay: Int? {
+        PulseReminderActivityDay.number(reminderDate: reminderDate, timeZoneIdentifier: timeZoneIdentifier)
+    }
+
     private func compactPreview(phase: PulseReminderActivityPhase) -> some View {
         PulseReminderActivityMark(
             phase: phase,
-            layout: .islandCompact
+            layout: .islandCompact,
+            day: reminderDay
         )
         .frame(maxWidth: .infinity)
         .frame(height: PulseDesign.activityStoreCompactHeight)
@@ -662,7 +478,8 @@ struct PulseReminderActivityStoreShowcase: View {
     private var minimalPreview: some View {
         PulseReminderActivityMark(
             phase: .pending,
-            layout: .islandMinimal
+            layout: .islandMinimal,
+            day: reminderDay
         )
         .frame(
             width: PulseDesign.activityStoreMinimalDiameter,
@@ -712,7 +529,7 @@ private extension PulseEnhancementCapability {
         case .advancedWidgetCompositions:
             "square.grid.2x2.fill"
         case .scheduledLiveActivity:
-            "waveform.path.ecg.rectangle.fill"
+            "clock.badge.checkmark.fill"
         }
     }
 }

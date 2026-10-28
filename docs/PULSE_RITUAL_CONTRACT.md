@@ -17,7 +17,7 @@
 
 - Home Screen Widget 提供待落之处、星环、叠印、数影、手札、静场、来路、潮痕八个样式；待落之处免费，其余由统一高级功能 entitlement 解锁。
 - Lock Screen Widget 使用独立 kind，不消费 Home Screen 样式参数，永久免费。
-- iOS 26 scheduled Live Activity 产品名为“萤火日晕”。
+- iOS 26 scheduled Live Activity 不另设产品名，用户侧称“定时实时活动”。
 - Apple Watch 提供基础今日状态、签到、complication 和 Smart Stack，永久免费。
 
 ## 3. App 内签到

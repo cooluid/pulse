@@ -8,6 +8,8 @@ final class PulseFlowUITests: XCTestCase {
         continueAfterFailure = false
         app = XCUIApplication()
         app.launchArguments = ["-AppleLanguages", "(zh-Hans)", "-AppleLocale", "zh_CN"]
+        // Fixture instants and expected times are written for UTC+8, independent of the host's zone.
+        app.launchEnvironment["TZ"] = "Asia/Shanghai"
         app.launchEnvironment["PULSE_UI_TEST_RESET"] = "1"
         app.launchEnvironment["PULSE_UI_TEST_STORE_ID"] = UUID().uuidString
         app.launchEnvironment["PULSE_UI_TEST_NOW"] = "2026-08-10T04:00:00Z"
@@ -625,13 +627,13 @@ final class PulseFlowUITests: XCTestCase {
         )
 
         let freeAttachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
-        freeAttachment.name = "Free Journal Page before check-in"
+        freeAttachment.name = "Free Vermilion before check-in"
         freeAttachment.lifetime = .keepAlways
         add(freeAttachment)
 
         app.buttons["primary.navigation.history"].tap()
         let freeHistoryAttachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
-        freeHistoryAttachment.name = "Free Journal Page history calendar"
+        freeHistoryAttachment.name = "Free Vermilion history calendar"
         freeHistoryAttachment.lifetime = .keepAlways
         add(freeHistoryAttachment)
 
@@ -641,7 +643,7 @@ final class PulseFlowUITests: XCTestCase {
                 .waitForExistence(timeout: 3)
         )
         let freeJournalAttachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
-        freeJournalAttachment.name = "Free Journal Page journal records"
+        freeJournalAttachment.name = "Free Vermilion journal records"
         freeJournalAttachment.lifetime = .keepAlways
         add(freeJournalAttachment)
         app.buttons["history.mode.calendar"].tap()
@@ -1035,7 +1037,7 @@ final class PulseFlowUITests: XCTestCase {
         XCTAssertTrue(checkIn.isEnabled)
         XCTAssertTrue(checkIn.label.contains("晚饭后散步"))
 
-        let themes = ["editorialJournal", "sunlitDay", "immersion", "prismLedger"]
+        let themes = ["editorialJournal", "quietField", "sunlitDay"]
         for theme in themes {
             selectThemeForRecordedDayReview(theme)
             XCTAssertTrue(checkIn.isEnabled)
@@ -1095,67 +1097,6 @@ final class PulseFlowUITests: XCTestCase {
             XCTAssertTrue(checkIn.waitForExistence(timeout: 3))
             XCTAssertFalse(checkIn.isEnabled)
         }
-    }
-
-    func testImmersionThemeRendersSurfacePickerAndCheckIn() throws {
-        configureApp()
-        app.launchEnvironment["PULSE_UI_TEST_ENHANCEMENT_PURCHASED"] = "1"
-        launchAndConfirmDefaultCommitment()
-
-        let settings = app.buttons["settings.navigation.open.today"]
-        XCTAssertTrue(settings.waitForExistence(timeout: 3))
-        settings.tap()
-        openVisualThemePicker()
-        attachScreenshot(named: "Immersion picker")
-
-        let choice = app.buttons["settings.visual-theme.immersion"]
-        for _ in 0..<8 where !choice.isHittable {
-            app.swipeUp()
-        }
-        XCTAssertTrue(choice.waitForExistence(timeout: 3))
-        XCTAssertTrue(choice.isHittable)
-        choice.tap()
-        XCTAssertTrue(choice.isSelected)
-        attachScreenshot(named: "Immersion picker selected")
-
-        app.buttons["navigation.back"].tap()
-        app.buttons["navigation.back"].tap()
-
-        let checkIn = app.buttons["today.checkin.button"]
-        XCTAssertTrue(checkIn.waitForExistence(timeout: 3))
-        XCTAssertTrue(checkIn.isEnabled)
-        attachScreenshot(named: "Immersion today pending")
-
-        checkIn.tap()
-        XCTAssertTrue(app.buttons["today.media.capture.button"].waitForExistence(timeout: 3))
-        attachScreenshot(named: "Immersion today checked")
-    }
-
-    func testNewThemesScrollWithoutSurfaceSeam() throws {
-        configureApp()
-        app.launchEnvironment["PULSE_UI_TEST_ENHANCEMENT_PURCHASED"] = "1"
-        launchAndConfirmDefaultCommitment()
-
-        for theme in ["immersion", "prismLedger"] {
-            selectThemeForRecordedDayReview(theme)
-            attachScreenshot(named: "\(theme) settled")
-
-            app.swipeUp()
-            attachScreenshot(named: "\(theme) scrolled once")
-
-            app.swipeUp()
-            attachScreenshot(named: "\(theme) scrolled twice")
-
-            app.swipeDown()
-            app.swipeDown()
-        }
-    }
-
-    private func attachScreenshot(named name: String) {
-        let attachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
-        attachment.name = name
-        attachment.lifetime = .keepAlways
-        add(attachment)
     }
 
     private func selectThemeForRecordedDayReview(_ theme: String) {
@@ -1330,11 +1271,8 @@ final class PulseFlowUITests: XCTestCase {
             app.swipeUp()
         }
         XCTAssertTrue(appearancePicker.waitForExistence(timeout: 3))
-        selectOption(named: "深色", in: appearancePicker)
-
-        let darkAppearanceApplied = NSPredicate(format: "label CONTAINS %@", "深色")
-        expectation(for: darkAppearanceApplied, evaluatedWith: appearancePicker)
-        waitForExpectations(timeout: 3)
+        // Sunlit Day is printed on dark paper, so it fixes the appearance and the picker steps back.
+        XCTAssertFalse(appearancePicker.isEnabled)
 
         app.buttons["navigation.back"].tap()
 

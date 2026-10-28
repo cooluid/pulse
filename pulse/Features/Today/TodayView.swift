@@ -57,7 +57,8 @@ struct TodayView: View {
     @State private var showsSavingIndicator = false
     @State private var imprintRitualPhase: ImprintRitualPhase = .ready
     @State private var completionAnimationSequence = 0
-    @State private var imprintGlyphScale: CGFloat = 1
+    @State private var inkProgress: CGFloat = 1
+    @State private var impressionScale: CGFloat = 1
     @State private var isCheckInPressed = false
     @State private var showsCamera = false
     @State private var showsCameraPermissionAlert = false
@@ -68,27 +69,24 @@ struct TodayView: View {
     @FocusState private var isJournalFocused: Bool
 
     var body: some View {
-        ZStack {
-            PulseScreenBackground()
-            PulseFieldBackground(presentation: .today, allowsMotion: isActive)
-            PulseThemeBackdrop(facts: todayFacts)
-
-            VStack(spacing: 0) {
-                PulseAppHeader(source: .today)
-
-                ScrollView {
-                    todayContent
-                        .frame(maxWidth: todayContentMaxWidth)
-                        .padding(.horizontal, PulseDesign.horizontalPadding)
-                        .padding(.top, usesRegularWidthLayout ? PulseDesign.regularWidthVerticalPadding : PulseDesign.spacing4)
-                        .padding(.bottom, PulseDesign.spacing16)
-                        .frame(maxWidth: .infinity)
-                }
-                .scrollIndicators(.hidden)
+        GeometryReader { proxy in
+            ScrollView {
+                todayContent
+                    .frame(maxWidth: todayContentMaxWidth)
+                    .padding(.horizontal, PulseDesign.horizontalPadding)
+                    .padding(.top, usesRegularWidthLayout ? PulseDesign.regularWidthVerticalPadding : 0)
+                    .padding(.bottom, PulseDesign.spacing16)
+                    // A wide page sits in the middle of the screen instead of hugging the top.
+                    .frame(
+                        maxWidth: .infinity,
+                        minHeight: usesRegularWidthLayout ? proxy.size.height : nil
+                    )
             }
-
         }
-        .toolbar(.hidden, for: .navigationBar)
+        .scrollIndicators(.hidden)
+        .scrollDismissesKeyboard(.interactively)
+        .background(PulseScreenBackground())
+        .pulsePrimaryToolbar(source: .today)
         .fullScreenCover(isPresented: $showsCamera) {
             ImprintCameraView(
                 onCapture: { image, position in
@@ -160,25 +158,14 @@ struct TodayView: View {
         }
     }
 
-    private var todayFacts: PulseTodayFacts {
-        PulseTodayFacts(
+    private var todayContent: some View {
+        PulseTodayPage(
             today: model.today,
             timeZone: model.timeZone,
             habitName: model.habit?.name,
             recentDays: model.recentDays,
             currentStreak: model.statistics.currentStreak,
-            isChecked: model.todayRecord != nil
-        )
-    }
-
-    private var todayContent: some View {
-        PulseTodayPage(
-            today: todayFacts.today,
-            timeZone: todayFacts.timeZone,
-            habitName: todayFacts.habitName,
-            recentDays: todayFacts.recentDays,
-            currentStreak: todayFacts.currentStreak,
-            isChecked: todayFacts.isChecked,
+            isChecked: model.todayRecord != nil,
             checkIn: checkInControl,
             journal: todayJournalSection,
             media: mediaCompanionAction
@@ -196,11 +183,14 @@ struct TodayView: View {
     private var checkInControl: some View {
         let isChecked = model.todayRecord != nil
         return PulseCheckInFace(
-            completedText: completedCheckInText,
+            habitName: model.habit?.name,
             day: model.today,
-            completedTime: completedCheckInTime,
+            completedText: completedCheckInText,
+            isEnabled: model.canCheckInToday && isJournalDraftValid,
             isSaving: model.isSaving && showsSavingIndicator,
-            glyphScale: imprintGlyphScale
+            isPressed: isCheckInPressed,
+            inkProgress: inkProgress,
+            impressionScale: impressionScale
         )
         .contentShape(Rectangle())
         .overlay {
@@ -217,8 +207,8 @@ struct TodayView: View {
                 }
             )
         }
-        .scaleEffect(!reduceMotion && isCheckInPressed ? 0.97 : 1)
-        .animation(reduceMotion ? nil : .easeOut(duration: 0.18), value: isCheckInPressed)
+        .scaleEffect(!reduceMotion && isCheckInPressed ? 0.96 : 1)
+        .animation(reduceMotion ? nil : .easeOut(duration: 0.16), value: isCheckInPressed)
         .onAppear {
             synchronizeRitualState(isChecked: isChecked)
         }
@@ -232,11 +222,7 @@ struct TodayView: View {
         .onChange(of: reduceMotion) { _, shouldReduceMotion in
             if shouldReduceMotion {
                 isCheckInPressed = false
-                if isChecked, imprintRitualPhase != .imprinted {
-                    completionAnimationSequence += 1
-                } else {
-                    resetRitualPresentation(phase: isChecked ? .imprinted : .ready)
-                }
+                resetRitualPresentation(phase: isChecked ? .imprinted : .ready)
             }
         }
         .task(id: completionAnimationSequence) {
@@ -255,12 +241,6 @@ struct TodayView: View {
             }
             guard !Task.isCancelled, model.isSaving else { return }
             showsSavingIndicator = true
-        }
-    }
-
-    private var completedCheckInTime: String? {
-        model.todayRecord.map {
-            PulseFormatting.time($0.checkedAt, timeZone: $0.timeZone, locale: locale)
         }
     }
 
@@ -303,35 +283,32 @@ struct TodayView: View {
                     showsTodayMediaDetail = true
                 }
             } label: {
-                if model.operation == .saveMedia {
-                    ProgressView()
-                        .tint(PulseDesign.action)
-                        .frame(minWidth: PulseDesign.minimumHitTarget)
-                } else {
-                    HStack(spacing: PulseDesign.spacing8) {
-                        if let media = model.todayMedia {
-                            ImprintMediaThumbnail(media: media, load: model.thumbnailData)
-                        } else {
-                            Image(systemName: "camera.fill")
-                                .accessibilityHidden(true)
-                        }
-
-                        Text(
-                            model.todayMedia == nil
-                                ? "today.media.capture_compact"
-                                : "today.media.view_compact"
-                        )
-                        .font(.subheadline.weight(.medium))
-                        .lineLimit(dynamicTypeSize.isAccessibilitySize ? 2 : 1)
+                ZStack {
+                    if model.operation == .saveMedia {
+                        ProgressView()
+                            .tint(PulseDesign.appAccent(for: visualTheme))
+                    } else if let media = model.todayMedia {
+                        ImprintMediaThumbnail(media: media, load: model.thumbnailData)
+                            .frame(width: PulseDesign.minimumHitTarget, height: PulseDesign.minimumHitTarget)
+                            .clipShape(Circle())
+                    } else {
+                        Image(systemName: "camera")
+                            .font(.system(size: 16, weight: .semibold))
+                            .foregroundStyle(PulseDesign.appInk(for: visualTheme))
+                            .accessibilityHidden(true)
                     }
                 }
+                .frame(width: PulseDesign.minimumHitTarget, height: PulseDesign.minimumHitTarget)
+                .background(PulseDesign.appSurface(for: visualTheme), in: Circle())
+                .contentShape(Circle())
             }
-            .foregroundStyle(mediaActionForeground)
-            .padding(.horizontal, PulseDesign.spacing12)
-            .frame(minHeight: PulseDesign.minimumHitTarget)
-            .frame(maxWidth: .infinity, alignment: visualTheme == .editorialJournal ? .leading : .center)
             .buttonStyle(.plain)
             .disabled(model.operation == .saveMedia)
+            .accessibilityLabel(
+                model.todayMedia == nil
+                    ? Text("today.media.capture_compact")
+                    : Text("today.media.view_compact")
+            )
             .accessibilityIdentifier(
                 model.todayMedia == nil
                     ? "today.media.capture.button"
@@ -340,12 +317,19 @@ struct TodayView: View {
         }
     }
 
-    private var mediaActionForeground: Color { PulseDesign.appInk(for: visualTheme) }
-
     private func performCheckIn(thenOpenCamera: Bool) {
         guard model.canCheckInToday, isJournalDraftValid else { return }
         isJournalFocused = false
-        imprintRitualPhase = .saving
+        var transaction = Transaction()
+        transaction.disablesAnimations = true
+        withTransaction(transaction) {
+            imprintRitualPhase = .saving
+            // The impression must not flash in fully inked before it spreads.
+            if !reduceMotion {
+                inkProgress = 0
+                impressionScale = 1.06
+            }
+        }
 
         Task {
             guard let receipt = await model.checkIn(journalNote: draftJournalNote) else {
@@ -435,6 +419,7 @@ struct TodayView: View {
         }
     }
 
+    /// Runs only after the repository confirmed the check-in; the ink never spreads ahead of the fact.
     private func runCompletionMotion() async {
         guard completionAnimationSequence > 0 else { return }
         guard model.todayRecord != nil else {
@@ -449,48 +434,27 @@ struct TodayView: View {
             return
         }
 
-        resetRitualPresentation(phase: .contracting)
-        await Task.yield()
-
-        withAnimation(.easeIn(duration: PulseDesign.imprintContractionDuration)) {
-            imprintGlyphScale = PulseDesign.imprintDotScale
-        }
-
-        do {
-            try await Task.sleep(for: .seconds(PulseDesign.imprintContractionDuration))
-        } catch {
-            synchronizeRitualState(isChecked: model.todayRecord != nil)
-            return
-        }
-
         imprintRitualPhase = .imprinting
-        withAnimation(.easeOut(duration: PulseDesign.imprintFormationDuration)) {
-            imprintGlyphScale = PulseDesign.imprintOvershootScale
+        await Task.yield()
+        withAnimation(.easeOut(duration: PulseDesign.inkSpreadDuration)) {
+            inkProgress = 1
         }
-
-        do {
-            try await Task.sleep(for: .seconds(PulseDesign.imprintFormationDuration))
-        } catch {
-            synchronizeRitualState(isChecked: model.todayRecord != nil)
-            return
-        }
-
         withAnimation(
             .spring(
-                response: PulseDesign.imprintSettleDuration,
-                dampingFraction: PulseDesign.completionSettleDamping
+                response: PulseDesign.impressionSettleResponse,
+                dampingFraction: PulseDesign.impressionSettleDamping
             )
         ) {
-            imprintGlyphScale = 1
+            impressionScale = 1
         }
 
         do {
-            try await Task.sleep(for: .seconds(PulseDesign.imprintSettleDuration))
+            try await Task.sleep(for: .seconds(PulseDesign.inkSpreadDuration))
         } catch {
             synchronizeRitualState(isChecked: model.todayRecord != nil)
             return
         }
-        resetRitualPresentation(phase: .imprinted)
+        imprintRitualPhase = .imprinted
     }
 
     private func synchronizeRitualState(isChecked: Bool) {
@@ -502,13 +466,11 @@ struct TodayView: View {
         transaction.disablesAnimations = true
         withTransaction(transaction) {
             imprintRitualPhase = phase
-            imprintGlyphScale = 1
+            inkProgress = 1
+            impressionScale = 1
         }
     }
-
-
 }
-
 private struct TodayMediaDetailSheet: View {
     let media: ImprintMediaSnapshot
     let load: (ImprintMediaSnapshot) async throws -> Data

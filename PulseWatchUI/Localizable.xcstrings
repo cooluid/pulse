@@ -66,22 +66,6 @@
         }
       }
     },
-    "watch.field.today" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "TODAY"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "今日"
-          }
-        }
-      }
-    },
     "watch.field.unsaved" : {
       "localizations" : {
         "en" : {
@@ -263,13 +247,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Seven-day rhythm"
+            "value" : "Recent Check-ins"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "七日脉冲"
+            "value" : "最近七天"
           }
         }
       }
@@ -295,7 +279,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Today’s imprint"
+            "value" : "Today’s Seal"
           }
         },
         "zh-Hans" : {

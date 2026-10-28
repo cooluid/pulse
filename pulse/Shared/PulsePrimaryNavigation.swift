@@ -6,6 +6,7 @@ enum PulsePrimarySection: String, CaseIterable, Identifiable {
     var id: Self { self }
 }
 
+/// Two places, floating over the page: today, and the record of every day before it.
 struct PulsePrimaryNavigation: View {
     @Binding var selection: PulsePrimarySection
     let todayDayNumber: Int?
@@ -13,67 +14,84 @@ struct PulsePrimaryNavigation: View {
 
     @Environment(\.pulseVisualTheme) private var theme
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    @Namespace private var selectionNamespace
 
-    private var usesPaperNavigation: Bool { theme == .editorialJournal || theme == .sunlitDay }
+    private var palette: PulseThemePalette { PulseDesign.palette(for: theme) }
 
     var body: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: PulseDesign.spacing4) {
             navigationButton(.today)
-            if usesPaperNavigation {
-                Rectangle().fill(PulseDesign.appDivider(for: theme)).frame(width: 1, height: 36)
-            }
             navigationButton(.history)
         }
-        .padding(6)
-        .frame(maxWidth: 420)
-        .background {
-            if !usesPaperNavigation {
-                Capsule().fill(PulseDesign.appSurface(for: theme))
-            }
-        }
+        .padding(5)
+        .frame(width: dynamicTypeSize.isAccessibilitySize ? nil : PulseDesign.primaryNavigationWidth)
+        .frame(maxWidth: dynamicTypeSize.isAccessibilitySize ? 460 : nil)
+        .pulseGlass(in: Capsule())
         .padding(.horizontal, PulseDesign.horizontalPadding)
-        .padding(.vertical, usesPaperNavigation ? 2 : 8)
+        .padding(.top, PulseDesign.spacing8)
+        .padding(.bottom, PulseDesign.primaryNavigationBottomInset)
         .frame(maxWidth: .infinity)
-        .background(PulseScreenBackground())
-        .overlay(alignment: .top) {
-            Rectangle().fill(PulseDesign.appDivider(for: theme)).frame(height: 1)
-        }
     }
 
     private func navigationButton(_ section: PulsePrimarySection) -> some View {
         let selected = selection == section
         return Button {
-            withAnimation(reduceMotion ? nil : .easeOut(duration: 0.18)) {
+            withAnimation(reduceMotion ? nil : .spring(response: 0.32, dampingFraction: 0.86)) {
                 selection = section
             }
         } label: {
-            Group {
-                if usesPaperNavigation {
-                    VStack(spacing: 5) {
-                        Image(systemName: section == .today
-                              ? (selected ? "circle.fill" : "circle")
-                              : (selected ? "text.book.closed.fill" : "text.book.closed"))
-                            .font(.system(size: 22, weight: .regular))
-                        Text(section == .today ? "tab.today" : "tab.history")
-                            .font(.caption.weight(selected ? .semibold : .regular))
-                    }
-                } else {
-                    Label(section == .today ? "tab.today" : "tab.history",
-                          systemImage: section == .today ? "circle" : "text.book.closed")
-                        .font(.subheadline.weight(selected ? .semibold : .regular))
+            VStack(spacing: 3) {
+                icon(section, selected: selected)
+                Text(section == .today ? "tab.today" : "tab.history")
+                    .font(.caption2.weight(selected ? .semibold : .medium))
+                    .lineLimit(dynamicTypeSize.isAccessibilitySize ? 2 : 1)
+            }
+            .foregroundStyle(selected ? palette.ink : palette.muted)
+            .padding(.vertical, 6)
+            .frame(maxWidth: .infinity, minHeight: PulseDesign.primaryNavigationHeight - 10)
+            .background {
+                if selected {
+                    Capsule()
+                        .fill(palette.ink.opacity(0.08))
+                        .matchedGeometryEffect(id: "selection", in: selectionNamespace)
                 }
             }
-                .foregroundStyle(selected
-                                 ? (usesPaperNavigation ? PulseDesign.appAccent(for: theme) : PulseDesign.appInk(for: theme))
-                                 : PulseDesign.appMuted(for: theme))
-                .padding(.vertical, 8)
-                .frame(maxWidth: .infinity, minHeight: PulseDesign.minimumHitTarget)
-                .background(selected && !usesPaperNavigation ? PulseDesign.appAccentSoft(for: theme) : .clear, in: Capsule())
-                .contentShape(Capsule())
+            .contentShape(Capsule())
         }
         .buttonStyle(.plain)
         .accessibilityIdentifier("primary.navigation.\(section.rawValue)")
         .accessibilityValue(section == .today && isTodayChecked ? Text("today.navigation.checked") : Text(verbatim: ""))
         .accessibilityAddTraits(selected ? .isSelected : [])
+    }
+
+    @ViewBuilder
+    private func icon(_ section: PulsePrimarySection, selected: Bool) -> some View {
+        switch section {
+        case .today:
+            // Today's tab carries today's state: an empty place, or the seal.
+            ZStack {
+                if isTodayChecked {
+                    RoundedRectangle(cornerRadius: 5, style: .continuous)
+                        .fill(palette.seal)
+                } else {
+                    RoundedRectangle(cornerRadius: 5, style: .continuous)
+                        .strokeBorder(palette.seal, style: StrokeStyle(lineWidth: 1.5, dash: [2.6, 2.1]))
+                }
+                if let todayDayNumber {
+                    Text(todayDayNumber, format: .number)
+                        .font(.system(size: 10.5, weight: .black, design: .serif))
+                        .monospacedDigit()
+                        .foregroundStyle(isTodayChecked ? palette.onSeal : palette.seal)
+                }
+            }
+            .frame(width: 23, height: 23)
+            .accessibilityHidden(true)
+        case .history:
+            Image(systemName: selected ? "square.grid.2x2.fill" : "square.grid.2x2")
+                .font(.system(size: 19, weight: .medium))
+                .frame(width: 23, height: 23)
+                .accessibilityHidden(true)
+        }
     }
 }

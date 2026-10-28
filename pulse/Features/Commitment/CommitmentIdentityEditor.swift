@@ -36,34 +36,29 @@ struct CommitmentIdentityEditor: View {
             }
 
             identityFields
-                .listRowBackground(PulseDesign.appSurface(for: visualTheme))
-                .listRowSeparatorTint(PulseDesign.appDivider(for: visualTheme))
+                .pulseFormRows(for: visualTheme)
         }
         .scrollContentBackground(.hidden)
-        .background {
-            ZStack {
-                PulseScreenBackground()
-                PulseFieldBackground()
-            }
-        }
+        .background(PulseScreenBackground())
         .foregroundStyle(PulseDesign.appInk(for: visualTheme))
         .tint(PulseDesign.appAccent(for: visualTheme))
+        .pulseSoftScrollEdges()
         .navigationTitle(navigationTitle)
         .navigationBarTitleDisplayMode(.inline)
         .pulseSecondaryNavigation(isEnabled: mode == .settings)
         .disabled(model.operation != nil)
-        .safeAreaInset(edge: .bottom, spacing: 0) {
+        .pulseBottomBar {
             saveArea
         }
     }
 
     private var onboardingIntroduction: some View {
         Section {
-            VStack(alignment: .leading, spacing: PulseDesign.spacing16) {
-                PulseBrandMark(size: PulseDesign.onboardingBrandMarkSize)
+            VStack(alignment: .leading, spacing: PulseDesign.spacing20) {
+                sealPreview
 
                 Text("commitment.onboarding.title")
-                    .font(.largeTitle.bold())
+                    .font(PulseDesign.displayFont(size: 30, relativeTo: .largeTitle).weight(.bold))
                     .fixedSize(horizontal: false, vertical: true)
             }
             .padding(.vertical, PulseDesign.spacing16)
@@ -72,57 +67,97 @@ struct CommitmentIdentityEditor: View {
         .listRowBackground(Color.clear)
     }
 
+    /// The seal the name will be carved into; it inks itself once the name can be kept.
+    private var sealPreview: some View {
+        let palette = PulseDesign.palette(for: visualTheme)
+        let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        let shownName = trimmed.isEmpty
+            ? PulseLocalization.string("commitment.name.placeholder", locale: locale)
+            : trimmed
+        let seed = PulseSealSeed.value(for: shownName)
+        return ZStack {
+            PulseSealSlot(inscription: .name(shownName), tint: palette.seal)
+                .opacity(canSubmit ? 0 : 1)
+            PulseSealImpression(inscription: .name(shownName), ink: palette.seal, seed: seed)
+                .rotationEffect(PulseSealSeed.tilt(for: seed))
+                .opacity(canSubmit ? 1 : 0)
+        }
+        .frame(width: 112, height: 112)
+        .animation(.easeOut(duration: 0.22), value: canSubmit)
+        .accessibilityHidden(true)
+    }
+
+    /// The live count sits in the field's own row, so it stays in sight while the keyboard is up.
+    @ViewBuilder
     private var identityFields: some View {
         Section {
-            TextField("commitment.name.placeholder", text: $name)
-                .textInputAutocapitalization(.sentences)
-                .submitLabel(.next)
-                .focused($focusedField, equals: .name)
-                .onSubmit {
-                    focusedField = .purpose
-                }
-                .accessibilityIdentifier("commitment.name.field")
+            HStack(alignment: .firstTextBaseline, spacing: PulseDesign.spacing12) {
+                TextField("commitment.name.placeholder", text: $name)
+                    .textInputAutocapitalization(.sentences)
+                    .submitLabel(.next)
+                    .focused($focusedField, equals: .name)
+                    .onSubmit {
+                        focusedField = .purpose
+                    }
+                    .accessibilityIdentifier("commitment.name.field")
 
-            characterCount(
-                value: name,
-                minimum: HabitIdentity.minimumNameLength,
-                maximum: HabitIdentity.maximumNameLength,
-                identifier: "commitment.name.count"
-            )
-
-            TextField(
-                "commitment.purpose.placeholder",
-                text: $purpose,
-                axis: .vertical
-            )
-            .lineLimit(2...4)
-            .textInputAutocapitalization(.sentences)
-            .submitLabel(.done)
-            .focused($focusedField, equals: .purpose)
-            .onSubmit {
-                focusedField = nil
+                characterCount(
+                    value: name,
+                    minimum: HabitIdentity.minimumNameLength,
+                    maximum: HabitIdentity.maximumNameLength,
+                    identifier: "commitment.name.count"
+                )
             }
-            .accessibilityIdentifier("commitment.purpose.field")
-
-            characterCount(
-                value: purpose,
-                maximum: HabitIdentity.maximumPurposeLength,
-                identifier: "commitment.purpose.count"
-            )
-
-            Text("commitment.privacy_note")
-                .font(.footnote)
-                .foregroundStyle(PulseDesign.appMuted(for: visualTheme))
-                .fixedSize(horizontal: false, vertical: true)
         } header: {
             Text("commitment.section")
+        } footer: {
+            Text(
+                String(
+                    format: PulseLocalization.string(
+                        "commitment.name.requirement_format",
+                        locale: locale
+                    ),
+                    locale: locale,
+                    Int64(HabitIdentity.minimumNameLength),
+                    Int64(HabitIdentity.maximumNameLength)
+                )
+            )
+            .foregroundStyle(nameLengthIsInvalid
+                ? PulseDesign.systemDestructive
+                : PulseDesign.appMuted(for: visualTheme))
+        }
+
+        Section {
+            HStack(alignment: .firstTextBaseline, spacing: PulseDesign.spacing12) {
+                TextField(
+                    "commitment.purpose.placeholder",
+                    text: $purpose,
+                    axis: .vertical
+                )
+                .lineLimit(2...4)
+                .textInputAutocapitalization(.sentences)
+                .submitLabel(.done)
+                .focused($focusedField, equals: .purpose)
+                .onSubmit {
+                    focusedField = nil
+                }
+                .accessibilityIdentifier("commitment.purpose.field")
+
+                characterCount(
+                    value: purpose,
+                    maximum: HabitIdentity.maximumPurposeLength,
+                    identifier: "commitment.purpose.count"
+                )
+            }
+        } footer: {
+            Text("commitment.privacy_note")
+                .foregroundStyle(PulseDesign.appMuted(for: visualTheme))
+                .fixedSize(horizontal: false, vertical: true)
         }
     }
 
     private var saveArea: some View {
         VStack(spacing: 0) {
-            Divider()
-
             Button {
                 focusedField = nil
                 Task {
@@ -154,7 +189,7 @@ struct CommitmentIdentityEditor: View {
             .disabled(model.operation != nil || !canSubmit)
             .accessibilityIdentifier("commitment.save.button")
         }
-        .background(PulseDesign.appSurface(for: visualTheme))
+        .padding(.top, PulseDesign.spacing24)
     }
 
     private func characterCount(
@@ -163,31 +198,21 @@ struct CommitmentIdentityEditor: View {
         maximum: Int,
         identifier: String
     ) -> some View {
-        HStack {
-            if let minimum {
-                Text(
-                    String(
-                        format: PulseLocalization.string(
-                            "commitment.name.requirement_format",
-                            locale: locale
-                        ),
-                        locale: locale,
-                        Int64(minimum),
-                        Int64(maximum)
-                    )
-                )
-            }
+        Text(verbatim: "\(value.count)/\(maximum)")
+            .font(.caption)
+            .monospacedDigit()
+            .foregroundStyle(isInvalidLength(value, minimum: minimum, maximum: maximum)
+                ? PulseDesign.systemDestructive
+                : PulseDesign.appMuted(for: visualTheme))
+            .accessibilityIdentifier(identifier)
+    }
 
-            Spacer()
-
-            Text(verbatim: "\(value.count)/\(maximum)")
-                .monospacedDigit()
-        }
-        .font(.caption)
-        .foregroundStyle(isInvalidLength(value, minimum: minimum, maximum: maximum)
-            ? PulseDesign.systemDestructive
-            : PulseDesign.appMuted(for: visualTheme))
-        .accessibilityIdentifier(identifier)
+    private var nameLengthIsInvalid: Bool {
+        isInvalidLength(
+            name,
+            minimum: HabitIdentity.minimumNameLength,
+            maximum: HabitIdentity.maximumNameLength
+        )
     }
 
     private func isInvalidLength(_ value: String, minimum: Int?, maximum: Int) -> Bool {

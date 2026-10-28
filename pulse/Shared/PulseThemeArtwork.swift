@@ -1,10 +1,19 @@
 import SwiftUI
 import UIKit
 
+extension PulseVisualTheme {
+    /// A theme printed on dark paper stays dark, so the system's own bars, menus and keyboards match it.
+    var fixedColorScheme: ColorScheme? {
+        switch self {
+        case .sunlitDay: .dark
+        case .editorialJournal, .quietField: nil
+        }
+    }
+}
+
 enum PulseThemeAppearance {
     static func preferredColorScheme(theme: PulseVisualTheme, appearance: AppTheme) -> ColorScheme? {
-        // Immersion is drawn on ink: its accent only carries on a dark surface.
-        if theme == .immersion { return .dark }
+        if let fixed = theme.fixedColorScheme { return fixed }
         switch appearance {
         case .system: return nil
         case .light: return .light
@@ -27,14 +36,5 @@ enum PulseThemeAppearance {
         case .light?: return .light
         default: return inherited
         }
-    }
-}
-
-struct PulseStampOutline: View {
-    var body: some View {
-        Image("PulseStampBorder")
-            .renderingMode(.template)
-            .resizable()
-            .accessibilityHidden(true)
     }
 }

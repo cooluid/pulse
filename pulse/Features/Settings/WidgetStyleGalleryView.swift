@@ -13,7 +13,6 @@ struct WidgetStyleGalleryView: View {
     var body: some View {
         ZStack {
             PulseScreenBackground()
-            PulseFieldBackground()
 
             ScrollView {
                 VStack(alignment: .leading, spacing: PulseDesign.spacing20) {
@@ -203,51 +202,23 @@ private struct PulseWidgetStyleCard: View {
         transaction.disablesAnimations = true
         withTransaction(transaction) {
             previewState = .playing
-            previewSnapshot = reduceMotion
-                ? pendingSnapshot
-                : pendingSnapshot.projectingGallery(period: .morning, isChecked: false)
+            previewSnapshot = pendingSnapshot
         }
 
         previewTask = Task { @MainActor in
             do {
-                if reduceMotion {
-                    try await Task.sleep(
-                        for: PulseWidgetMotionPresentation.reducedMotionPendingStateHold
-                    )
-                    try Task.checkCancellation()
-                    previewSnapshot = pendingSnapshot.projectingTodayCheckInForGallery(true)
-                    try await Task.sleep(
-                        for: PulseWidgetMotionPresentation.reducedMotionCompletionStateHold
-                    )
-                } else {
-                    try await Task.sleep(
-                        for: PulseWidgetMotionPresentation.galleryInitialStateHold
-                    )
-                    try Task.checkCancellation()
-                    previewSnapshot = pendingSnapshot.projectingGallery(
-                        period: .daylight,
-                        isChecked: false
-                    )
-                    try await Task.sleep(
-                        for: PulseWidgetMotionPresentation.galleryAmbientStateHold
-                    )
-                    try Task.checkCancellation()
-                    previewSnapshot = pendingSnapshot.projectingGallery(
-                        period: .evening,
-                        isChecked: false
-                    )
-                    try await Task.sleep(
-                        for: PulseWidgetMotionPresentation.galleryAmbientStateHold
-                    )
-                    try Task.checkCancellation()
-                    previewSnapshot = pendingSnapshot.projectingGallery(
-                        period: .evening,
-                        isChecked: true
-                    )
-                    try await Task.sleep(
-                        for: PulseWidgetMotionPresentation.galleryCompletionStateHold
-                    )
-                }
+                try await Task.sleep(
+                    for: reduceMotion
+                        ? PulseWidgetMotionPresentation.reducedMotionPendingStateHold
+                        : PulseWidgetMotionPresentation.galleryPendingStateHold
+                )
+                try Task.checkCancellation()
+                previewSnapshot = pendingSnapshot.projectingTodayCheckInForGallery(true)
+                try await Task.sleep(
+                    for: reduceMotion
+                        ? PulseWidgetMotionPresentation.reducedMotionCompletionStateHold
+                        : PulseWidgetMotionPresentation.galleryCompletionStateHold
+                )
                 try Task.checkCancellation()
                 previewState = .completed
                 previewTask = nil
@@ -293,38 +264,6 @@ private struct PulseWidgetStyleCard: View {
 }
 
 extension PulseWidgetSnapshot {
-    func projectingGallery(
-        period: PulseWidgetAmbientPeriod,
-        isChecked: Bool
-    ) -> PulseWidgetSnapshot {
-        let projected = projectingTodayCheckInForGallery(isChecked)
-        let calendar = Calendar.pulseGregorian(timeZone: projectTimeZone)
-        let dayStart = today.startDate(timeZone: projectTimeZone)
-        let hour: Int
-        switch period {
-        case .morning:
-            hour = PulseWidgetAmbientPeriod.morningStartHour + 2
-        case .daylight:
-            hour = PulseWidgetAmbientPeriod.daylightStartHour + 2
-        case .evening:
-            hour = PulseWidgetAmbientPeriod.eveningStartHour + 2
-        }
-        guard let projectedDate = calendar.date(byAdding: .hour, value: hour, to: dayStart) else {
-            preconditionFailure("Gallery ambient projection requires a valid project calendar date.")
-        }
-
-        return PulseWidgetSnapshot(
-            habitID: projected.habitID,
-            habitName: projected.habitName,
-            today: projected.today,
-            checkedAt: projected.checkedAt,
-            recentDays: projected.recentDays,
-            generatedAt: projectedDate,
-            nextDayBoundary: projected.nextDayBoundary,
-            projectTimeZoneIdentifier: projected.projectTimeZoneIdentifier
-        )
-    }
-
     func projectingTodayCheckInForGallery(_ isChecked: Bool) -> PulseWidgetSnapshot {
         let projectedRecentDays = recentDays.map { daySnapshot in
             guard daySnapshot.day == today else { return daySnapshot }
@@ -381,22 +320,17 @@ struct PulseWidgetStylePreview: View {
             pathSummaryFormat: PulseLocalization.string(
                 "widget.path.summary.format",
                 locale: locale
-            ),
-            emptyPlaceText: PulseLocalization.string(
-                "widget.place.empty",
-                locale: locale
-            ),
-            placeStatusText: PulseLocalization.string(
-                snapshot.isCheckedToday
-                    ? "widget.place.checked"
-                    : "widget.place.pending",
-                locale: locale
             )
         )
         .clipShape(RoundedRectangle(
             cornerRadius: PulseDesign.widgetPreviewCornerRadius,
             style: .continuous
         ))
+        .overlay {
+            RoundedRectangle(cornerRadius: PulseDesign.widgetPreviewCornerRadius, style: .continuous)
+                .strokeBorder(PulseWidgetDesign.rule, lineWidth: PulseDesign.thinLineWidth)
+        }
+        .shadow(color: .black.opacity(0.07), radius: 14, y: 6)
         .accessibilityHidden(true)
     }
 }

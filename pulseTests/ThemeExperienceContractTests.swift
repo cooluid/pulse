@@ -5,18 +5,17 @@ import XCTest
 
 @MainActor
 final class ThemeExperienceContractTests: XCTestCase {
-    func testJournalPageIsTheOnlyFreeInterfaceTheme() {
+    func testVermilionPageIsTheOnlyFreeInterfaceTheme() {
         XCTAssertEqual(PulseVisualThemeAccessPolicy.freeTheme, .editorialJournal)
         XCTAssertEqual(
             PulseVisualThemeAccessPolicy.enhancementThemes,
-            [.quietField, .sunlitDay, .prismLedger, .immersion]
+            [.quietField, .sunlitDay]
         )
         XCTAssertFalse(
             PulseVisualThemeAccessPolicy.requiresEnhancement(.editorialJournal)
         )
         XCTAssertTrue(PulseVisualThemeAccessPolicy.requiresEnhancement(.quietField))
         XCTAssertTrue(PulseVisualThemeAccessPolicy.requiresEnhancement(.sunlitDay))
-        XCTAssertTrue(PulseVisualThemeAccessPolicy.requiresEnhancement(.prismLedger))
         XCTAssertEqual(
             PulseVisualThemeAccessPolicy.resolvedTheme(
                 requested: .sunlitDay,
@@ -37,37 +36,30 @@ final class ThemeExperienceContractTests: XCTestCase {
         )
         XCTAssertNotEqual(PulseVisualThemeEnvironmentKey.defaultValue, .quietField)
         XCTAssertNotEqual(PulseVisualThemeEnvironmentKey.defaultValue, .sunlitDay)
-        XCTAssertNotEqual(PulseVisualThemeEnvironmentKey.defaultValue, .prismLedger)
-        XCTAssertNotEqual(PulseVisualThemeEnvironmentKey.defaultValue, .immersion)
     }
 
-    func testImmersionCarriesItsOwnSurfaceTokensAndStaysBehindTheEnhancement() {
-        XCTAssertTrue(PulseVisualThemeAccessPolicy.requiresEnhancement(.immersion))
-        XCTAssertEqual(PulseVisualTheme.immersion.rawValue, "immersion")
-
-        let dark = PulseDesign.palette(for: .immersion)
-        XCTAssertEqual(dark.accent, PulseDesign.immersionAccent)
-        XCTAssertEqual(dark.canvas, PulseDesign.immersionCanvas)
-        XCTAssertEqual(dark.surface, PulseDesign.immersionSurface)
-        XCTAssertNotEqual(
-            PulseDesign.appAccent(for: .immersion),
-            PulseDesign.appAccent(for: .prismLedger)
-        )
+    /// Published identifiers stay readable: a setting saved by an earlier build keeps its theme.
+    func testPublishedThemeIdentifiersStayStable() {
+        XCTAssertEqual(PulseVisualTheme(rawValue: "editorialJournal"), .editorialJournal)
+        XCTAssertEqual(PulseVisualTheme(rawValue: "quietField"), .quietField)
+        XCTAssertEqual(PulseVisualTheme(rawValue: "sunlitDay"), .sunlitDay)
     }
 
     /// A stored theme that is no longer offered must fall back, not fail the whole load.
     func testRetiredThemeFallsBackToTheFreeThemeInsteadOfFailingTheLoad() throws {
-        let suiteName = "ThemeExperienceContractTests.Retired.\(UUID().uuidString)"
-        let defaults = try XCTUnwrap(UserDefaults(suiteName: suiteName))
-        defer { defaults.removePersistentDomain(forName: suiteName) }
-        defaults.set("moonTide", forKey: AppSettings.StorageKey.visualTheme)
+        for retired in ["moonTide", "prismLedger", "immersion"] {
+            let suiteName = "ThemeExperienceContractTests.Retired.\(UUID().uuidString)"
+            let defaults = try XCTUnwrap(UserDefaults(suiteName: suiteName))
+            defer { defaults.removePersistentDomain(forName: suiteName) }
+            defaults.set(retired, forKey: AppSettings.StorageKey.visualTheme)
 
-        let settings = try AppSettings(
-            sharedSettings: PulseSharedSettings(defaults: defaults),
-            defaults: defaults
-        )
+            let settings = try AppSettings(
+                sharedSettings: PulseSharedSettings(defaults: defaults),
+                defaults: defaults
+            )
 
-        XCTAssertNil(PulseVisualTheme(rawValue: "moonTide"))
-        XCTAssertEqual(settings.visualTheme, PulseVisualThemeAccessPolicy.freeTheme)
+            XCTAssertNil(PulseVisualTheme(rawValue: retired))
+            XCTAssertEqual(settings.visualTheme, PulseVisualThemeAccessPolicy.freeTheme, retired)
+        }
     }
 }

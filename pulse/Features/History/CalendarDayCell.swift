@@ -1,41 +1,45 @@
 import PulseCore
 import SwiftUI
 
+/// One day in the month: kept days are small seals carrying their date.
 struct CalendarDayCell: View {
     let item: CalendarDayItem
     let isToday: Bool
     let hasMedia: Bool
     @Environment(\.locale) private var locale
     @Environment(\.pulseVisualTheme) private var visualTheme
+    @ScaledMetric(relativeTo: .body) private var markSide = PulseDesign.calendarMarkSide
 
     var body: some View {
-        let style = PulseDesign.CalendarDayStyle.resolve(
-            theme: visualTheme,
-            status: item.status
+        let palette = PulseDesign.palette(for: visualTheme)
+        PulseDayMark(
+            day: item.day.day,
+            state: PulseDayMarkState(item.status),
+            seed: PulseSealSeed.value(for: item.day),
+            seal: palette.seal,
+            ink: palette.ink,
+            muted: palette.muted,
+            emphasized: isToday
         )
-
-        ZStack {
-            tile(style)
-            dayContent(style)
-        }
+        .frame(width: markSide, height: markSide)
         .frame(maxWidth: .infinity)
-        .frame(height: PulseDesign.calendarDayHitSize)
-        .overlay {
-            if isToday {
-                todayStroke(style)
+        .frame(minHeight: PulseDesign.calendarDayHitSize)
+        .overlay(alignment: .bottom) {
+            if isToday && item.status == .checked {
+                Circle()
+                    .fill(palette.seal)
+                    .frame(width: 4, height: 4)
+                    .offset(y: 2)
+                    .accessibilityHidden(true)
             }
         }
-        .overlay(alignment: .bottomTrailing) {
+        .overlay(alignment: .topTrailing) {
             if hasMedia {
                 Image(systemName: "camera.fill")
-                    .font(
-                        .system(
-                            size: PulseDesign.calendarAccessoryGlyphSize,
-                            weight: .bold
-                        )
-                    )
-                    .foregroundStyle(style.mediaForeground)
-                    .padding(PulseDesign.spacing4)
+                    .font(.system(size: PulseDesign.calendarAccessoryGlyphSize, weight: .bold))
+                    .foregroundStyle(palette.ink)
+                    .padding(3)
+                    .background(palette.paper, in: Circle())
                     .accessibilityHidden(true)
             }
         }
@@ -43,72 +47,6 @@ struct CalendarDayCell: View {
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(accessibilityLabel)
         .accessibilityIdentifier("calendar.day.\(item.day.storageValue)")
-    }
-
-    private func tile(_ style: PulseDesign.CalendarDayStyle) -> some View {
-        RoundedRectangle(cornerRadius: style.cornerRadius, style: .continuous)
-            .fill(style.fill).frame(width: style.tileSize, height: style.tileSize)
-    }
-
-    private func todayStroke(_ style: PulseDesign.CalendarDayStyle) -> some View {
-        RoundedRectangle(cornerRadius: style.cornerRadius, style: .continuous)
-            .stroke(style.todayStroke, lineWidth: 1.5)
-            .frame(width: style.tileSize, height: style.tileSize)
-    }
-
-    @ViewBuilder
-    private func dayContent(_ style: PulseDesign.CalendarDayStyle) -> some View {
-        let numberFont = dayNumberFont(style)
-        switch style.mark {
-        case .checked:
-            VStack(spacing: 0) {
-                Text(item.day.day, format: .number)
-                    .font(numberFont)
-                    .monospacedDigit()
-                Image(systemName: "checkmark")
-                    .font(statusGlyphFont(style))
-            }
-            .foregroundStyle(style.foreground)
-        case .missed:
-            VStack(spacing: 0) {
-                Text(item.day.day, format: .number)
-                    .font(numberFont)
-                    .monospacedDigit()
-                Image(systemName: "minus")
-                    .font(statusGlyphFont(style))
-                    .accessibilityHidden(true)
-            }
-            .foregroundStyle(style.foreground)
-        case .beforeHabit:
-            VStack(spacing: 0) {
-                Text(item.day.day, format: .number)
-                    .font(numberFont)
-                    .monospacedDigit()
-                Image(systemName: "circle.dotted")
-                    .font(beforeHabitGlyphFont)
-                    .accessibilityHidden(true)
-            }
-            .foregroundStyle(style.foreground)
-        case .none:
-            Text(item.day.day, format: .number)
-                .font(numberFont)
-                .monospacedDigit()
-                .foregroundStyle(style.foreground)
-        }
-    }
-
-    private func dayNumberFont(_ style: PulseDesign.CalendarDayStyle) -> Font {
-        let weight: Font.Weight = (style.mark == .checked || isToday) ? .bold : .regular
-        let textStyle: Font.TextStyle = style.mark == .checked ? .caption2 : .caption
-        return .system(textStyle, design: .default, weight: weight)
-    }
-
-    private func statusGlyphFont(_ style: PulseDesign.CalendarDayStyle) -> Font {
-        .system(size: PulseDesign.calendarAccessoryGlyphSize, weight: .semibold)
-    }
-
-    private var beforeHabitGlyphFont: Font {
-        .system(size: PulseDesign.calendarAccessoryGlyphSize, weight: .semibold)
     }
 
     private var accessibilityLabel: String {

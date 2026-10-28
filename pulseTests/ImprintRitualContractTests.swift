@@ -5,37 +5,6 @@ import XCTest
 
 @MainActor
 final class ImprintRitualContractTests: XCTestCase {
-    func testAmbientFieldMotionHonorsVisibilityLifecycleAndReduceMotion() {
-        XCTAssertTrue(
-            PulseAmbientMotionPolicy.allowsMotion(
-                requested: true,
-                reduceMotion: false,
-                sceneIsActive: true
-            )
-        )
-        XCTAssertFalse(
-            PulseAmbientMotionPolicy.allowsMotion(
-                requested: false,
-                reduceMotion: false,
-                sceneIsActive: true
-            )
-        )
-        XCTAssertFalse(
-            PulseAmbientMotionPolicy.allowsMotion(
-                requested: true,
-                reduceMotion: true,
-                sceneIsActive: true
-            )
-        )
-        XCTAssertFalse(
-            PulseAmbientMotionPolicy.allowsMotion(
-                requested: true,
-                reduceMotion: false,
-                sceneIsActive: false
-            )
-        )
-    }
-
     func testEraseAllDisclosureNamesEveryDeletedUserFact() throws {
         let repositoryRoot = URL(fileURLWithPath: #filePath)
             .deletingLastPathComponent()

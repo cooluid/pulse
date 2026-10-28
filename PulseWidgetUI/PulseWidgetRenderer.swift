@@ -2,6 +2,8 @@ import PulseCore
 import SwiftUI
 import WidgetKit
 
+/// Home Screen faces. Every style sets the same fact (today kept or not, and the six days before it)
+/// as a different arrangement of date seals on one sheet of paper.
 struct PulseWidgetHomeRenderer: View {
     let snapshot: PulseWidgetSnapshot
     let style: PulseWidgetStyle
@@ -10,1637 +12,685 @@ struct PulseWidgetHomeRenderer: View {
     let allowsMotion: Bool
     let statusText: String
     let pathSummaryFormat: String
-    let emptyPlaceText: String
-    let placeStatusText: String
 
     @Environment(\.locale) private var locale
-    @Environment(\.colorScheme) private var colorScheme
 
     var body: some View {
         GeometryReader { proxy in
-            Group {
-                switch style {
-                case .place:
-                    place(size: proxy.size)
-                case .orbit:
-                    orbit(size: proxy.size)
-                case .stack:
-                    stack(size: proxy.size)
-                case .bleed:
-                    bleed(size: proxy.size)
-                case .letter:
-                    letter(size: proxy.size)
-                case .field:
-                    field(size: proxy.size)
-                case .path:
-                    path(size: proxy.size)
-                case .tide:
-                    tide(size: proxy.size)
+            let metrics = PulseWidgetMetrics(size: proxy.size, isMedium: usesMediumMetrics)
+            ZStack(alignment: .topLeading) {
+                if usesFullColorPalette {
+                    PulseWidgetDesign.paper
                 }
+                face(metrics)
             }
-            .frame(
-                width: proxy.size.width,
-                height: proxy.size.height,
-                alignment: .topLeading
-            )
+            .frame(width: proxy.size.width, height: proxy.size.height, alignment: .topLeading)
             .clipped()
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .contentTransition(.identity)
     }
 
-    private func place(size: CGSize) -> some View {
-        let blotterSide = pt(usesMediumMetrics ? 122 : 86, in: size)
+    @ViewBuilder
+    private func face(_ metrics: PulseWidgetMetrics) -> some View {
+        switch style {
+        case .place: place(metrics)
+        case .orbit: orbit(metrics)
+        case .stack: stack(metrics)
+        case .bleed: bleed(metrics)
+        case .letter: letter(metrics)
+        case .field: field(metrics)
+        case .path: path(metrics)
+        case .tide: tide(metrics)
+        }
+    }
 
-        return ZStack(alignment: .topLeading) {
-            baseBackground
-            placeAmbientField(size: size)
+    // MARK: - Styles
 
-            if usesMediumMetrics {
-                awaitingPlaceBlotter(side: blotterSide, size: size)
-                    .position(
-                        x: pt(18, in: size) + blotterSide / 2,
-                        y: size.height / 2
-                    )
-
-                VStack(alignment: .leading, spacing: pt(10, in: size)) {
-                    Text(verbatim: PulseLocalizedDateFormatting.monthDayAndWeekday(
-                        snapshot.today,
-                        locale: locale
-                    ))
-                    .font(.system(size: pt(13, in: size), weight: .bold))
-                    .tracking(pt(0.5, in: size))
-                    .foregroundStyle(actionColor)
-                    .lineLimit(1)
-
-                    habitName(
-                        size: pt(22, in: size),
-                        width: pt(166, in: size),
-                        alignment: .leading
-                    )
-
-                    Spacer(minLength: 0)
-
-                    Text(verbatim: placeStatusText)
-                        .font(.system(size: pt(12, in: size), weight: .medium))
-                        .foregroundStyle(secondaryColor)
-                        .lineLimit(1)
+    private func place(_ m: PulseWidgetMetrics) -> some View {
+        Group {
+            if m.isMedium {
+                HStack(alignment: .center, spacing: m.pt(18)) {
+                    todaySeal(side: m.pt(112))
+                    VStack(alignment: .leading, spacing: m.pt(6)) {
+                        dateLine(m, includesWeekday: true)
+                        name(size: m.pt(22), lines: 2)
+                        Spacer(minLength: 0)
+                        status(m)
+                    }
+                    .padding(.vertical, m.pt(4))
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
                 }
-                .frame(
-                    width: pt(166, in: size),
-                    height: size.height - pt(40, in: size),
-                    alignment: .topLeading
-                )
-                .padding(.leading, pt(154, in: size))
-                .padding(.top, pt(20, in: size))
+                .padding(.horizontal, m.pt(20))
+                .padding(.vertical, m.pt(18))
+            } else {
+                VStack(alignment: .leading, spacing: 0) {
+                    todaySeal(side: m.pt(62))
+                    Spacer(minLength: m.pt(6))
+                    name(size: m.pt(15), lines: 2)
+                    status(m)
+                        .padding(.top, m.pt(3))
+                }
+                .padding(m.pt(16))
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+            }
+        }
+    }
+
+    private func orbit(_ m: PulseWidgetMetrics) -> some View {
+        Group {
+            if m.isMedium {
+                HStack(spacing: m.pt(12)) {
+                    VStack(alignment: .leading, spacing: m.pt(6)) {
+                        dateLine(m, includesWeekday: true)
+                        name(size: m.pt(21), lines: 2)
+                        Spacer(minLength: 0)
+                        summary(m)
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+                    ring(side: m.pt(134))
+                }
+                .padding(.leading, m.pt(20))
+                .padding(.trailing, m.pt(12))
+                .padding(.vertical, m.pt(12))
+            } else {
+                ring(side: m.pt(136))
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+            }
+        }
+    }
+
+    private func stack(_ m: PulseWidgetMetrics) -> some View {
+        Group {
+            if m.isMedium {
+                HStack(spacing: m.pt(8)) {
+                    VStack(alignment: .leading, spacing: m.pt(6)) {
+                        dateLine(m, includesWeekday: true)
+                        name(size: m.pt(21), lines: 2)
+                        Spacer(minLength: 0)
+                        status(m)
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+                    pile(side: m.pt(136))
+                }
+                .padding(.leading, m.pt(20))
+                .padding(.trailing, m.pt(10))
+                .padding(.vertical, m.pt(14))
             } else {
                 VStack(spacing: 0) {
-                    Text(verbatim: monthAndDay)
-                        .font(.system(size: pt(11, in: size), weight: .bold))
-                        .tracking(pt(0.7, in: size))
-                        .foregroundStyle(actionColor)
-                        .monospacedDigit()
+                    pile(side: m.pt(110))
+                    Spacer(minLength: 0)
+                    name(size: m.pt(14), lines: 1)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
+                .padding(.horizontal, m.pt(14))
+                .padding(.top, m.pt(8))
+                .padding(.bottom, m.pt(14))
+            }
+        }
+    }
+
+    private func bleed(_ m: PulseWidgetMetrics) -> some View {
+        let isChecked = snapshot.isCheckedToday
+        let onInk = usesFullColorPalette ? PulseWidgetDesign.onSeal : Color.primary
+        return ZStack(alignment: .topLeading) {
+            PulseWidgetBleedNumber(
+                day: snapshot.today.day,
+                isMedium: m.isMedium,
+                color: wash
+            )
+            .opacity(isChecked ? 0 : 1)
+
+            PulseWidgetBleedField(
+                day: snapshot.today.day,
+                isMedium: m.isMedium,
+                ink: seal.opacity(usesFullColorPalette ? 1 : 0.32),
+                seed: todaySeed,
+                texture: usesFullColorPalette ? 0.6 : 0
+            )
+            .opacity(isChecked ? 1 : 0)
+            .scaleEffect(isChecked ? 1 : 1.06)
+            .widgetAccentable()
+
+            VStack(alignment: .leading, spacing: m.pt(4)) {
+                Text(verbatim: PulseLocalizedDateFormatting.monthName(snapshot.today, locale: locale))
+                    .font(.system(size: m.pt(12), weight: .bold))
+                    .foregroundStyle(isChecked ? onInk : seal)
+                    .lineLimit(1)
+                name(size: m.pt(m.isMedium ? 20 : 15), lines: 2, color: isChecked ? onInk : ink)
+                    .frame(maxWidth: m.pt(m.isMedium ? 128 : 126), alignment: .leading)
+                if m.isMedium {
+                    Spacer(minLength: 0)
+                    Text(verbatim: statusText)
+                        .font(.system(size: m.pt(12), weight: .semibold))
+                        .foregroundStyle(isChecked ? onInk.opacity(0.86) : seal)
                         .lineLimit(1)
-
-                    Spacer(minLength: pt(7, in: size))
-
-                    awaitingPlaceBlotter(side: blotterSide, size: size)
-
-                    Spacer(minLength: pt(7, in: size))
-
-                    habitName(
-                        size: pt(13, in: size),
-                        width: pt(130, in: size),
-                        alignment: .center
-                    )
+                        .frame(maxWidth: m.pt(128), alignment: .leading)
                 }
-                .padding(.top, pt(12, in: size))
-                .padding(.bottom, pt(12, in: size))
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
+            .padding(m.pt(16))
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         }
+        .animation(stampAnimation, value: isChecked)
     }
 
-    private func awaitingPlaceBlotter(side: CGFloat, size: CGSize) -> some View {
-        RoundedRectangle(
-            cornerRadius: side * (usesMediumMetrics ? 32 / 122 : 24 / 86),
-            style: .continuous
-        )
-        .fill((snapshot.isCheckedToday ? grassColor : fieldColor).opacity(0.09))
-        .overlay {
-            RoundedRectangle(
-                cornerRadius: side * (usesMediumMetrics ? 32 / 122 : 24 / 86),
-                style: .continuous
-            )
-            .stroke(primaryColor.opacity(0.05), lineWidth: pt(1, in: size))
-        }
-        .overlay {
-            PulseAwaitingPlaceWell(
-                isChecked: snapshot.isCheckedToday,
-                usesFullColorPalette: usesFullColorPalette,
-                emptyText: emptyPlaceText
-            )
-            .frame(
-                width: side * (usesMediumMetrics ? 74 / 122 : 52 / 86),
-                height: side * (usesMediumMetrics ? 74 / 122 : 52 / 86)
-            )
-        }
-        .frame(width: side, height: side)
-        .rotationEffect(.degrees(ambientRotation * 0.32))
-        .offset(x: ambientHorizontalShift(in: size) * 0.28)
-        .animation(motion(.place), value: snapshot.isCheckedToday)
-        .animation(ambientMotion(.place), value: ambientPeriod)
-    }
-
-    private func orbit(size: CGSize) -> some View {
-        return ZStack(alignment: .topLeading) {
-            baseBackground
-            orbitAmbientField(size: size)
-
-            PulseStarRingArtwork(
-                isChecked: snapshot.isCheckedToday,
-                usesFullColorPalette: usesFullColorPalette,
-                ambientPeriod: ambientPeriod
-            )
-            .frame(width: size.width, height: size.height)
-            .offset(
-                x: ambientHorizontalShift(in: size) * 0.10,
-                y: ambientVerticalShift(in: size) * 0.10
-            )
-            .animation(motion(.starRing), value: snapshot.isCheckedToday)
-            .animation(ambientMotion(.starRing), value: ambientPeriod)
-
-            orbitCopyVeil(size: size)
-
-            Text(verbatim: monthAndDay)
-                .font(.system(
-                    size: pt(usesMediumMetrics ? 14 : 11, in: size),
-                    weight: .bold
-                ))
-                .tracking(pt(usesMediumMetrics ? 0.8 : 0.6, in: size))
-                .foregroundStyle(actionColor)
-                .monospacedDigit()
-                .lineLimit(1)
-                .padding(.leading, pt(usesMediumMetrics ? 18 : 12, in: size))
-                .padding(.top, pt(usesMediumMetrics ? 16 : 13, in: size))
-
-            habitName(
-                size: pt(usesMediumMetrics ? 22 : 16, in: size),
-                width: pt(usesMediumMetrics ? 148 : 88, in: size),
-                alignment: .leading
-            )
-            .padding(.leading, pt(usesMediumMetrics ? 18 : 12, in: size))
-            .padding(.top, pt(usesMediumMetrics ? 52 : 46, in: size))
-        }
-    }
-
-    private func stack(size: CGSize) -> some View {
-        let geometry = PulseStackPaperGeometry(
-            size: size,
-            usesMediumMetrics: usesMediumMetrics,
-            isChecked: snapshot.isCheckedToday
-        )
-        let paperFrame = geometry.topPaperFrame
-        let paperInset = geometry.paperInset
-        let copyLeading = paperInset + pt(usesMediumMetrics ? 2 : 1, in: size)
-        let copyTop = paperInset
-        // Keep small copy optically narrow (about 4.6em), but pin it to the
-        // paper's top-leading — a free-floating VStack inside an expanded ZStack
-        // was reading as a centered cluster on small sizes.
-        let copyWidth = min(
-            pt(usesMediumMetrics ? 150 : 74, in: size),
-            paperFrame.width * (usesMediumMetrics ? 0.48 : 0.52)
-        )
-
-        return ZStack(alignment: .topLeading) {
-            baseBackground
-            stackDeskMat(size: size)
-            stackedPaperBackdrop(size: size)
-
-            Color.clear
-                .frame(width: paperFrame.width, height: paperFrame.height)
-                .overlay(alignment: .topLeading) {
-                    VStack(alignment: .leading, spacing: pt(usesMediumMetrics ? 8 : 6, in: size)) {
-                        Text(verbatim: monthAndDay)
-                            .font(.system(size: pt(usesMediumMetrics ? 12 : 11, in: size), weight: .bold))
-                            .tracking(pt(usesMediumMetrics ? 0.5 : 0.4, in: size))
-                            .foregroundStyle(actionColor)
-                            .monospacedDigit()
-                            .lineLimit(1)
-
-                        habitName(
-                            size: pt(usesMediumMetrics ? 24 : 16, in: size),
-                            width: copyWidth,
-                            alignment: .leading
-                        )
-                    }
-                    .frame(width: copyWidth, alignment: .leading)
-                    .padding(.leading, copyLeading)
-                    .padding(.top, copyTop)
-                }
-                .overlay(alignment: .bottomLeading) {
-                    if usesMediumMetrics {
-                        statusLabel(size: pt(11, in: size))
-                            .padding(.leading, copyLeading)
-                            .padding(.bottom, copyTop)
-                    }
-                }
-                .position(x: paperFrame.midX, y: paperFrame.midY)
-        }
-    }
-
-    private func tide(size: CGSize) -> some View {
-        let isMedium = usesMediumMetrics
-        let inset = pt(isMedium ? 16 : 12, in: size)
-        let markSide = pt(isMedium ? 58 : 40, in: size)
-        let shoreHeightRatio = snapshot.isCheckedToday
-            ? (isMedium
-                ? PulseWidgetDesign.tideCheckedHeightRatioMedium
-                : PulseWidgetDesign.tideCheckedHeightRatioSmall)
-            : (isMedium
-                ? PulseWidgetDesign.tidePendingHeightRatioMedium
-                : PulseWidgetDesign.tidePendingHeightRatioSmall)
-        let shoreHeight = size.height * shoreHeightRatio
-        let markX = isMedium
-            ? size.width - pt(28, in: size) - markSide / 2
-            : size.width * PulseWidgetDesign.tideSmallMarkXRatio
-        let markY = size.height - shoreHeight * PulseWidgetDesign.tideLipInverseRatio
-        let copyWidth = isMedium ? size.width - pt(126, in: size) : pt(76, in: size)
-        let skyGeometry = PulseTideSkyGeometry(
-            size: size,
-            usesMediumMetrics: usesMediumMetrics,
-            period: ambientPeriod
-        )
-
-        return ZStack(alignment: .topLeading) {
-            baseBackground
-            tideAtmosphere(size: size)
-                .animation(motion(.tide), value: snapshot.isCheckedToday)
-            tideSky(size: size, geometry: skyGeometry)
-                .animation(motion(.tide), value: snapshot.isCheckedToday)
-                .animation(ambientMotion(.tide), value: ambientPeriod)
-            tideShore(
-                size: size,
-                shoreHeight: shoreHeight,
-                reflectionX: skyGeometry.center.x
-            )
-
-            PulseTideStaffMark(
-                isChecked: snapshot.isCheckedToday,
-                usesFullColorPalette: usesFullColorPalette
-            )
-            .frame(width: markSide, height: markSide)
-            .position(
-                x: markX,
-                y: markY + ambientVerticalShift(in: size) * 0.62
-            )
-            .animation(motion(.tide), value: snapshot.isCheckedToday)
-            .animation(ambientMotion(.tide), value: ambientPeriod)
-
-            VStack(alignment: .leading, spacing: pt(isMedium ? 10 : 8, in: size)) {
-                Text(verbatim: tideDate)
-                    .font(.system(size: pt(isMedium ? 13 : 11, in: size), weight: .bold))
-                    .tracking(pt(0.55, in: size))
-                    .foregroundStyle(actionColor)
-                    .monospacedDigit()
-                    .lineLimit(1)
-
-                habitName(
-                    size: pt(isMedium ? 22 : 15, in: size),
-                    width: copyWidth,
-                    alignment: .leading
-                )
+    private func letter(_ m: PulseWidgetMetrics) -> some View {
+        let chopSide = m.pt(m.isMedium ? 58 : 44)
+        return ZStack(alignment: .bottomTrailing) {
+            VStack(alignment: .leading, spacing: 0) {
+                dateLine(m, includesWeekday: m.isMedium)
+                Rectangle()
+                    .fill(rule)
+                    .frame(height: max(0.5, m.pt(0.75)))
+                    .padding(.top, m.pt(8))
+                Text(verbatim: snapshot.habitName)
+                    .font(.system(size: m.pt(m.isMedium ? 25 : 18), weight: .semibold, design: .serif))
+                    .foregroundStyle(ink)
+                    .lineLimit(m.isMedium ? 2 : 3)
+                    .minimumScaleFactor(0.72)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .padding(.top, m.pt(10))
+                    .padding(.trailing, m.isMedium ? chopSide : 0)
+                Spacer(minLength: 0)
+                status(m)
+                    .padding(.trailing, chopSide)
             }
-            .frame(width: copyWidth, alignment: .leading)
-            .padding(.leading, inset)
-            .padding(.top, pt(isMedium ? 16 : 12, in: size))
+            .padding(m.pt(16))
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
 
-            Text(verbatim: statusText)
-                .font(.system(size: pt(isMedium ? 12 : 11, in: size), weight: .medium))
-                .foregroundStyle(tideFootColor)
-                .lineLimit(1)
-                .padding(.leading, inset)
-                .padding(.bottom, pt(isMedium ? 14 : 10, in: size))
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomLeading)
+            todaySeal(side: chopSide)
+                .padding(m.pt(14))
         }
     }
 
-    private func tideShore(
-        size: CGSize,
-        shoreHeight: CGFloat,
-        reflectionX: CGFloat
-    ) -> some View {
-        let shoreColor = snapshot.isCheckedToday ? grassColor : fieldColor
-        let water = waterColor
-
-        return ZStack(alignment: .topLeading) {
-            PulseTideCurve(kind: .water, usesMediumMetrics: usesMediumMetrics)
-                .fill(
-                    LinearGradient(
-                        stops: [
-                            .init(color: water.opacity(snapshot.isCheckedToday ? 0.18 : 0.07), location: 0),
-                            .init(color: water.opacity(snapshot.isCheckedToday ? 0.36 : 0.16), location: 0.46),
-                            .init(color: shoreColor.opacity(snapshot.isCheckedToday ? 0.48 : 0.20), location: 1),
-                        ],
-                        startPoint: .top,
-                        endPoint: .bottom
-                    )
-                )
-            tideSunReflection(
-                size: size,
-                shoreHeight: shoreHeight,
-                centerX: reflectionX
-            )
-            PulseTideCurve(kind: .lip, usesMediumMetrics: usesMediumMetrics)
-                .stroke(
-                    shoreColor.opacity(snapshot.isCheckedToday ? 0.92 : 0.58),
-                    style: StrokeStyle(lineWidth: pt(1.7, in: size), lineCap: .round)
-                )
-            PulseTideCurve(kind: .trace, usesMediumMetrics: usesMediumMetrics)
-                .stroke(
-                    shoreColor.opacity(snapshot.isCheckedToday ? 0.34 : 0.18),
-                    style: StrokeStyle(lineWidth: pt(1, in: size), lineCap: .round)
-                )
-        }
-        .frame(width: size.width, height: shoreHeight)
-        .offset(
-            x: ambientHorizontalShift(in: size) * 0.72,
-            y: ambientVerticalShift(in: size) * 0.62
-        )
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
-        .animation(motion(.tide), value: snapshot.isCheckedToday)
-        .animation(ambientMotion(.tide), value: ambientPeriod)
-    }
-
-    private func tideSky(
-        size: CGSize,
-        geometry: PulseTideSkyGeometry
-    ) -> some View {
-        let sunOpacity = min(
-            geometry.opacity * (snapshot.isCheckedToday ? 1.30 : 1),
-            0.24
-        )
-
-        return ZStack {
-            Circle()
-                .fill(
-                    RadialGradient(
-                        colors: [
-                            skyGlowColor.opacity(sunOpacity * 0.70),
-                            skyGlowColor.opacity(sunOpacity * 0.18),
-                            Color.clear,
-                        ],
-                        center: .center,
-                        startRadius: geometry.diameter * 0.18,
-                        endRadius: geometry.diameter * 0.96
-                    )
-                )
-                .frame(
-                    width: geometry.diameter * 1.92,
-                    height: geometry.diameter * 1.92
-                )
-
-            Circle()
-                .fill(skyGlowColor.opacity(sunOpacity))
-                .overlay {
-                    Circle()
-                        .stroke(
-                            usesFullColorPalette
-                                ? paperColor.opacity(0.46)
-                                : skyGlowColor.opacity(0.10),
-                            lineWidth: pt(0.8, in: size)
-                        )
-                }
-                .frame(width: geometry.diameter, height: geometry.diameter)
-        }
-        .frame(
-            width: geometry.diameter * 1.92,
-            height: geometry.diameter * 1.92
-        )
-        .position(geometry.center)
-        .offset(
-            x: ambientHorizontalShift(in: size) * 0.22,
-            y: ambientVerticalShift(in: size) * 0.18
-        )
-        .allowsHitTesting(false)
-        .accessibilityHidden(true)
-    }
-
-    private func tideSunReflection(
-        size: CGSize,
-        shoreHeight: CGFloat,
-        centerX: CGFloat
-    ) -> some View {
-        let segmentWidths = usesMediumMetrics
-            ? [CGFloat(34), 26, 18, 10]
-            : [CGFloat(22), 16, 10, 6]
-        let reflectionOpacity: Double = switch ambientPeriod {
-        case .morning: snapshot.isCheckedToday ? 0.21 : 0.16
-        case .daylight: snapshot.isCheckedToday ? 0.16 : 0.11
-        case .evening: snapshot.isCheckedToday ? 0.20 : 0.15
-        }
-        return ZStack {
-            ForEach(segmentWidths.indices, id: \.self) { index in
-                Capsule(style: .continuous)
-                    .fill(skyGlowColor.opacity(reflectionOpacity - Double(index) * 0.018))
-                    .frame(
-                        width: pt(segmentWidths[index], in: size),
-                        height: pt(index == 0 ? 1.5 : 1.1, in: size)
-                    )
-                    .position(
-                        x: centerX,
-                        y: shoreHeight * (0.50 + CGFloat(index) * 0.12)
-                    )
-            }
-        }
-        .frame(width: size.width, height: shoreHeight)
-        .mask {
-            PulseTideCurve(kind: .water, usesMediumMetrics: usesMediumMetrics)
-                .fill(Color.black)
-        }
-        .allowsHitTesting(false)
-        .accessibilityHidden(true)
-    }
-
-    @ViewBuilder
-    private func tideAtmosphere(size: CGSize) -> some View {
-        if usesFullColorPalette {
-            ZStack {
-                LinearGradient(
-                    stops: [
-                        .init(
-                            color: paperColor.opacity(snapshot.isCheckedToday ? 0.62 : 0.52),
-                            location: 0
-                        ),
-                        .init(
-                            color: snapshot.isCheckedToday
-                                ? grassColor.opacity(0.08)
-                                : Color.clear,
-                            location: 0.52
-                        ),
-                        .init(
-                            color: waterColor.opacity(snapshot.isCheckedToday ? 0.17 : 0.08),
-                            location: 1
-                        ),
-                    ],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
-
-                RadialGradient(
-                    colors: [
-                        skyGlowColor.opacity(0.11),
-                        grassColor.opacity(0.055),
-                        Color.clear,
-                    ],
-                    center: .topTrailing,
-                    startRadius: 0,
-                    endRadius: max(size.width, size.height) * 0.72
-                )
-                .opacity(snapshot.isCheckedToday ? 1 : 0)
-            }
-            .frame(width: size.width, height: size.height)
-        }
-    }
-
-    private func bleed(size: CGSize) -> some View {
-        let inset = pt(usesMediumMetrics ? 16 : 12, in: size)
-        let topSplit = bleedTopSplitFraction
-        let bottomSplit = bleedBottomSplitFraction(top: topSplit)
-
-        return ZStack(alignment: .topLeading) {
-            baseBackground
-            bleedPaperWash(size: size)
-
-            bleedSplitTone(size: size, topSplit: topSplit, bottomSplit: bottomSplit)
-                .animation(motion(.number), value: snapshot.isCheckedToday)
-                .animation(ambientMotion(.number), value: ambientPeriod)
-
-            bleedSeamHighlight(size: size, topSplit: topSplit, bottomSplit: bottomSplit)
-                .animation(motion(.number), value: snapshot.isCheckedToday)
-                .animation(ambientMotion(.number), value: ambientPeriod)
-
-            Text(verbatim: monthName)
-                .font(.system(size: pt(11, in: size), weight: .bold))
-                .tracking(pt(0.6, in: size))
-                .foregroundStyle(bleedLeadingColor)
-                .shadow(
-                    color: shadowColor.opacity(usesFullColorPalette ? 0.18 : 0),
-                    radius: 0,
-                    y: pt(1, in: size)
-                )
-                .padding(.leading, inset)
-                .padding(.top, pt(usesMediumMetrics ? 14 : 11, in: size))
-
-            Text(verbatim: snapshot.habitName)
-                .font(.system(size: pt(usesMediumMetrics ? 22 : 16, in: size), weight: .semibold))
-                .foregroundStyle(bleedLeadingColor)
-                .multilineTextAlignment(.leading)
-                .lineLimit(2)
-                .minimumScaleFactor(0.62)
-                .allowsTightening(true)
-                .shadow(
-                    color: shadowColor.opacity(usesFullColorPalette ? 0.16 : 0),
-                    radius: 0,
-                    y: pt(1, in: size)
-                )
-                .frame(
-                    width: pt(usesMediumMetrics ? 168 : 70, in: size),
-                    alignment: .leading
-                )
-                .padding(.leading, inset)
-                .padding(.top, pt(usesMediumMetrics ? 44 : 36, in: size))
-
-            Text(verbatim: dayNumber)
-                .font(.system(size: pt(usesMediumMetrics ? 56 : 42, in: size), weight: .bold))
-                .foregroundStyle(bleedDayColor)
-                .monospacedDigit()
-                .lineLimit(1)
-                .minimumScaleFactor(0.82)
-                .shadow(
-                    color: bleedDayShadow,
-                    radius: 0,
-                    y: pt(1, in: size)
-                )
-                .padding(.trailing, inset)
-                .padding(.bottom, pt(usesMediumMetrics ? 14 : 34, in: size))
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
-                .animation(motion(.number), value: snapshot.isCheckedToday)
-
-            Text(verbatim: statusText)
-                .font(.system(size: pt(usesMediumMetrics ? 11 : 10, in: size), weight: .medium))
-                .foregroundStyle(bleedStatusColor)
-                .lineLimit(1)
-                .shadow(
-                    color: usesMediumMetrics
-                        ? shadowColor.opacity(usesFullColorPalette ? 0.14 : 0)
-                        : .clear,
-                    radius: 0,
-                    y: pt(1, in: size)
-                )
-                .padding(.leading, usesMediumMetrics ? inset : 0)
-                .padding(.trailing, usesMediumMetrics ? 0 : inset)
-                .padding(.bottom, pt(usesMediumMetrics ? 14 : 12, in: size))
-                .frame(
-                    maxWidth: .infinity,
-                    maxHeight: .infinity,
-                    alignment: usesMediumMetrics ? .bottomLeading : .bottomTrailing
-                )
-        }
-    }
-
-    private func bleedSplitTone(
-        size: CGSize,
-        topSplit: CGFloat,
-        bottomSplit: CGFloat
-    ) -> some View {
-        let shape = PulseBleedSplitShape(topFraction: topSplit, bottomFraction: bottomSplit)
-        let pendingGradient = LinearGradient(
-            colors: [
-                actionColor.opacity(usesFullColorPalette ? 0.96 : 0.90),
-                actionColor,
-                actionColor.opacity(usesFullColorPalette ? 0.88 : 0.82),
-            ],
-            startPoint: .topLeading,
-            endPoint: .bottomTrailing
-        )
-        let checkedGradient = LinearGradient(
-            colors: [
-                grassColor.opacity(usesFullColorPalette ? 0.94 : 0.88),
-                grassColor,
-                grassColor.opacity(usesFullColorPalette ? 0.86 : 0.80),
-            ],
-            startPoint: .topLeading,
-            endPoint: .bottomTrailing
-        )
-
-        return shape
-            .fill(snapshot.isCheckedToday ? checkedGradient : pendingGradient)
-            .overlay {
-                shape
-                    .fill(
-                        LinearGradient(
-                            colors: [
-                                .white.opacity(usesFullColorPalette ? 0.16 : 0.08),
-                                .clear,
-                                shadowColor.opacity(usesFullColorPalette ? 0.16 : 0.08),
-                            ],
-                            startPoint: .leading,
-                            endPoint: .trailing
-                        )
-                    )
-                    .allowsHitTesting(false)
-            }
-            .frame(width: size.width, height: size.height)
-    }
-
-    private func bleedPaperWash(size: CGSize) -> some View {
+    private func field(_ m: PulseWidgetMetrics) -> some View {
         ZStack {
-            RadialGradient(
-                colors: [
-                    fieldColor.opacity(usesFullColorPalette ? 0.10 : 0.04),
-                    .clear,
-                ],
-                center: UnitPoint(x: 0.78, y: 0.72),
-                startRadius: 0,
-                endRadius: max(size.width, size.height) * 0.62
-            )
-            LinearGradient(
-                colors: [
-                    surfaceColor.opacity(usesFullColorPalette ? 0.55 : 0.18),
-                    .clear,
-                ],
-                startPoint: .top,
-                endPoint: UnitPoint(x: 0.5, y: 0.42)
-            )
-        }
-        .frame(width: size.width, height: size.height)
-        .allowsHitTesting(false)
-    }
+            todaySeal(side: m.pt(m.isMedium ? 100 : 88))
+                .offset(y: m.isMedium ? 0 : m.pt(6))
 
-    private func bleedSeamHighlight(
-        size: CGSize,
-        topSplit: CGFloat,
-        bottomSplit: CGFloat
-    ) -> some View {
-        let midX = size.width * ((topSplit + bottomSplit) * 0.5)
-        return Rectangle()
-            .fill(
-                LinearGradient(
-                    colors: [
-                        .clear,
-                        shadowColor.opacity(usesFullColorPalette ? 0.10 : 0.05),
-                        Color.white.opacity(usesFullColorPalette ? 0.22 : 0.10),
-                        .clear,
-                    ],
-                    startPoint: .leading,
-                    endPoint: .trailing
-                )
-            )
-            .frame(width: pt(16, in: size), height: size.height * 1.16)
-            .rotationEffect(.degrees(-10))
-            .position(x: midX, y: size.height * 0.5)
-            .blendMode(.softLight)
-            .opacity(snapshot.isCheckedToday ? 0.72 : 0.92)
-            .allowsHitTesting(false)
-    }
-
-    private var bleedTopSplitFraction: CGFloat {
-        if snapshot.isCheckedToday {
-            return usesMediumMetrics
-                ? PulseWidgetDesign.bleedCheckedTopSplitMedium
-                : PulseWidgetDesign.bleedCheckedTopSplitSmall
-        }
-
-        let base: CGFloat
-        switch ambientPeriod {
-        case .morning:
-            base = PulseWidgetDesign.bleedPendingTopSplitMorning
-        case .daylight:
-            base = PulseWidgetDesign.bleedPendingTopSplitDaylight
-        case .evening:
-            base = PulseWidgetDesign.bleedPendingTopSplitEvening
-        }
-        return base
-    }
-
-    private func bleedBottomSplitFraction(top: CGFloat) -> CGFloat {
-        if snapshot.isCheckedToday {
-            return usesMediumMetrics
-                ? PulseWidgetDesign.bleedCheckedBottomSplitMedium
-                : PulseWidgetDesign.bleedCheckedBottomSplitSmall
-        }
-        let skew = usesMediumMetrics
-            ? PulseWidgetDesign.bleedPendingSkewMedium
-            : PulseWidgetDesign.bleedPendingSkewSmall
-        return min(top - 0.04, max(0.16, top - skew))
-    }
-
-    private var bleedDayColor: Color {
-        guard usesFullColorPalette else { return .primary }
-        if colorScheme == .dark {
-            return snapshot.isCheckedToday ? primaryColor : grassColor
-        }
-        return snapshot.isCheckedToday ? PulseWidgetDesign.grassForeground : actionColor
-    }
-
-    private var bleedDayShadow: Color {
-        guard usesFullColorPalette else { return .clear }
-        if colorScheme == .dark {
-            return shadowColor.opacity(0.45)
-        }
-        return Color.white.opacity(0.35)
-    }
-
-    private var bleedStatusColor: Color {
-        guard usesMediumMetrics else { return secondaryColor }
-        guard usesFullColorPalette else { return .secondary }
-        return snapshot.isCheckedToday
-            ? PulseWidgetDesign.grassForeground.opacity(0.82)
-            : actionForegroundColor.opacity(0.86)
-    }
-
-    private var bleedLeadingColor: Color {
-        guard usesFullColorPalette else { return .white }
-        return snapshot.isCheckedToday
-            ? PulseWidgetDesign.grassForeground
-            : PulseWidgetDesign.actionForeground
-    }
-
-    private var actionForegroundColor: Color {
-        usesFullColorPalette ? PulseWidgetDesign.actionForeground : .white
-    }
-
-    private func letter(size: CGSize) -> some View {
-        let inset = pt(usesMediumMetrics ? 22 : 18, in: size)
-        let sealSide = pt(usesMediumMetrics ? 62 : 48, in: size)
-        let sealWidth = sealSide * 1.20
-
-        return ZStack(alignment: .topLeading) {
-            baseBackground
-            letterDeskField(size: size)
-            letterPaper(size: size)
-            letterWritingLines(size: size)
-
-            Text(verbatim: monthName)
-                .font(.system(size: pt(11, in: size), weight: .semibold))
-                .foregroundStyle(actionColor)
-                .lineLimit(1)
-                .padding(.leading, inset)
-                .padding(.top, pt(usesMediumMetrics ? 14 : 16, in: size))
-
-            letterHabitName(
-                size: pt(usesMediumMetrics ? 28 : 22, in: size),
-                width: pt(usesMediumMetrics ? 208 : 70, in: size),
-                alignment: .leading
-            )
-            .padding(.leading, inset)
-            .padding(.top, pt(48, in: size))
-
-            pastPostmarkRow(size: size)
-                .padding(.horizontal, inset)
-                .padding(.bottom, pt(usesMediumMetrics ? 14 : 12, in: size))
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
-
-            PulseLetterDateSeal(
-                isChecked: snapshot.isCheckedToday,
-                dayNumber: dayNumber,
-                usesFullColorPalette: usesFullColorPalette
-            )
-            .frame(width: sealWidth, height: sealSide)
-            .scaleEffect(snapshot.isCheckedToday ? 1 : 0.94)
-            .animation(motion(.letter), value: snapshot.isCheckedToday)
-            .padding(.trailing, pt(usesMediumMetrics ? 16 : 12, in: size))
-            .padding(.top, pt(usesMediumMetrics ? 14 : 12, in: size))
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
-        }
-    }
-
-    private func letterPaper(size: CGSize) -> some View {
-        let cornerRadius = pt(usesMediumMetrics ? 17 : 15, in: size)
-        let paperWidth = size.width - pt(usesMediumMetrics ? 14 : 12, in: size)
-        let paperHeight = size.height - pt(usesMediumMetrics ? 16 : 14, in: size)
-
-        return ZStack(alignment: .leading) {
-            RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                .fill(
-                    LinearGradient(
-                        colors: [
-                            paperColor,
-                            paperColor.opacity(0.97),
-                            surfaceColor.opacity(0.94),
-                        ],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
-                .overlay {
-                    RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                        .stroke(fieldColor.opacity(0.18), lineWidth: pt(1, in: size))
-                }
-                .shadow(
-                    color: shadowColor.opacity(0.07),
-                    radius: pt(6, in: size),
-                    y: pt(3, in: size)
-                )
-                .frame(width: paperWidth, height: paperHeight)
-
-            Rectangle()
-                .fill(fieldColor.opacity(usesFullColorPalette ? 0.11 : 0.06))
-                .frame(width: pt(7, in: size), height: paperHeight)
-
-            PulseOrganicInkShape()
-                .fill(fieldColor.opacity(usesFullColorPalette ? 0.028 : 0.018))
-                .frame(width: paperWidth * 0.24, height: paperHeight * 0.34)
-                .rotationEffect(.degrees(-14))
-                .offset(
-                    x: paperWidth * (usesMediumMetrics ? 0.68 : 0.54),
-                    y: paperHeight * 0.20
-                )
-        }
-        .frame(width: paperWidth, height: paperHeight, alignment: .leading)
-        .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
-        .frame(width: size.width, height: size.height)
-        .rotationEffect(.degrees(ambientRotation * 0.18))
-        .offset(x: ambientHorizontalShift(in: size) * 0.24)
-        .animation(ambientMotion(.letter), value: ambientPeriod)
-    }
-
-    private func letterWritingLines(size: CGSize) -> some View {
-        let paperInset = pt(usesMediumMetrics ? 22 : 18, in: size)
-        let lineWidth = size.width * (usesMediumMetrics ? 0.58 : 0.60)
-        let firstY = size.height * (usesMediumMetrics ? 0.61 : 0.59)
-
-        return PulseLetterPencilRules()
-            .stroke(
-                secondaryColor.opacity(usesFullColorPalette ? 0.14 : 0.09),
-                style: StrokeStyle(
-                    lineWidth: pt(0.9, in: size),
-                    lineCap: .round,
-                    lineJoin: .round
-                )
-            )
-            .frame(
-                width: lineWidth,
-                height: pt(usesMediumMetrics ? 16 : 13, in: size)
-            )
-            .position(
-                x: paperInset + lineWidth / 2,
-                y: firstY
-            )
-    }
-
-    private func letterHabitName(
-        size: CGFloat,
-        width: CGFloat,
-        alignment: TextAlignment
-    ) -> some View {
-        ZStack(alignment: .bottomLeading) {
-            PulseLetterHandUnderline()
-                .stroke(
-                    fieldColor.opacity(usesFullColorPalette ? 0.42 : 0.24),
-                    style: StrokeStyle(
-                        lineWidth: max(1, size * 0.045),
-                        lineCap: .round,
-                        lineJoin: .round
-                    )
-                )
-                .frame(
-                    width: width * (usesMediumMetrics ? 0.74 : 0.90),
-                    height: max(5, size * 0.24)
-                )
-                .offset(x: size * 0.02, y: size * 0.12)
-
-            Text(verbatim: snapshot.habitName)
-                .font(.system(size: size, weight: .semibold))
-                .foregroundStyle(primaryColor)
-                .multilineTextAlignment(alignment)
-                .lineLimit(2)
-                .minimumScaleFactor(0.62)
-                .allowsTightening(true)
-                .frame(width: max(width, 1), alignment: .leading)
-        }
-    }
-
-    private func field(size: CGSize) -> some View {
-        let inset = pt(usesMediumMetrics ? 15 : 12, in: size)
-        let sealSide = pt(usesMediumMetrics ? 48 : 40, in: size)
-
-        return ZStack(alignment: .topLeading) {
-            baseBackground
-            quietFieldAfterimage(size: size)
-
-            Text(verbatim: monthAndDay)
-                .font(.system(size: pt(11, in: size), weight: .bold))
-                .foregroundStyle(actionColor)
-                .padding(.leading, inset)
-                .padding(.top, pt(usesMediumMetrics ? 13 : 12, in: size))
-
-            habitName(
-                size: pt(usesMediumMetrics ? 28 : 22, in: size),
-                width: pt(usesMediumMetrics ? 230 : 112, in: size),
-                alignment: .leading
-            )
-            .padding(.leading, inset)
-            .padding(.top, pt(usesMediumMetrics ? 46 : 48, in: size))
-
-            if usesMediumMetrics {
-                statusLabel(size: pt(11, in: size))
-                    .padding(.leading, inset)
-                    .padding(.bottom, pt(14, in: size))
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomLeading)
-            }
-
-            PulseEchoCompletionMark(
-                isChecked: snapshot.isCheckedToday,
-                usesFullColorPalette: usesFullColorPalette
-            )
-                .frame(width: sealSide, height: sealSide)
-                .animation(motion(.echo), value: snapshot.isCheckedToday)
-                .padding(.trailing, pt(usesMediumMetrics ? 15 : 11, in: size))
-                .padding(.bottom, pt(usesMediumMetrics ? 13 : 11, in: size))
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
-        }
-    }
-
-    private func path(size: CGSize) -> some View {
-        let inset = pt(usesMediumMetrics ? 16 : 12, in: size)
-        let todaySide = pt(usesMediumMetrics ? 60 : 46, in: size)
-        let geometry = pathTrailGeometry(in: size)
-
-        return ZStack(alignment: .topLeading) {
-            baseBackground
-            pathAtmosphere(size: size, geometry: geometry)
-                .animation(motion(.footprint), value: snapshot.isCheckedToday)
-                .animation(ambientMotion(.footprint), value: ambientPeriod)
-
-            pathInkStroke(size: size)
-            pathDayNodes(size: size)
-
-            HStack(alignment: .firstTextBaseline) {
-                Text(verbatim: usesMediumMetrics
-                    ? PulseLocalizedDateFormatting.monthDayAndWeekday(
-                        snapshot.today,
-                        locale: locale
-                    )
-                    : monthAndDay
-                )
-                Spacer(minLength: pt(8, in: size))
-                Text(verbatim: pathSummaryText)
-                    .font(.system(size: pt(11, in: size), weight: .semibold))
-                    .foregroundStyle(
-                        colorScheme == .dark && usesFullColorPalette
-                            ? grassColor.opacity(0.82)
-                            : actionColor
-                    )
+            VStack(alignment: .leading, spacing: 0) {
+                Text(verbatim: PulseLocalizedDateFormatting.shortWeekday(snapshot.today, locale: locale))
+                    .font(.system(size: m.pt(11), weight: .semibold))
+                    .foregroundStyle(muted)
                     .lineLimit(1)
+                Spacer(minLength: 0)
+                if m.isMedium {
+                    name(size: m.pt(13), lines: 1, color: muted)
+                        .frame(maxWidth: m.pt(96), alignment: .leading)
+                }
             }
-            .font(.system(size: pt(11, in: size), weight: .semibold))
-            .foregroundStyle(secondaryColor)
-            .padding(.horizontal, inset)
-            .padding(.top, pt(usesMediumMetrics ? 14 : 11, in: size))
-
-            habitName(
-                size: pt(usesMediumMetrics ? 20 : 16, in: size),
-                width: pt(usesMediumMetrics ? 168 : 90, in: size),
-                alignment: .leading
-            )
-            .padding(.leading, inset)
-            .padding(.top, pt(usesMediumMetrics ? 38 : 32, in: size))
-
-            PulsePathTodaySeal(
-                isChecked: snapshot.isCheckedToday,
-                dayNumber: dayNumber,
-                usesFullColorPalette: usesFullColorPalette
-            )
-            .frame(width: todaySide, height: todaySide)
-            .scaleEffect(snapshot.isCheckedToday ? 1 : 0.94)
-            .animation(motion(.footprint), value: snapshot.isCheckedToday)
-            .position(geometry.todayCenter)
-        }
-        .clipped()
-    }
-
-    @ViewBuilder
-    private func pathAtmosphere(
-        size: CGSize,
-        geometry: PulsePathTrailGeometry
-    ) -> some View {
-        if usesFullColorPalette {
-            LinearGradient(
-                stops: [
-                    .init(color: surfaceColor.opacity(0.72), location: 0),
-                    .init(color: baseBackground.opacity(0.96), location: 0.48),
-                    .init(
-                        color: fieldColor.opacity(snapshot.isCheckedToday ? 0.13 : 0.08),
-                        location: 1
-                    ),
-                ],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-
-            RadialGradient(
-                colors: [
-                    surfaceColor.opacity(0.58),
-                    surfaceColor.opacity(0.14),
-                    Color.clear,
-                ],
-                center: .center,
-                startRadius: 0,
-                endRadius: max(size.width, size.height) * 0.48
-            )
-            .frame(width: size.width * 0.78, height: size.height * 0.82)
-            .position(
-                x: size.width * 0.18 + ambientHorizontalShift(in: size) * 0.72,
-                y: size.height * 0.59 + ambientVerticalShift(in: size) * 0.46
-            )
-
-            PulsePathHillContours()
-                .stroke(
-                    fieldColor.opacity(pathContourOpacity),
-                    style: StrokeStyle(
-                        lineWidth: pt(0.85, in: size),
-                        lineCap: .round,
-                        lineJoin: .round
-                    )
-                )
-                .frame(width: size.width, height: size.height)
-                .offset(
-                    x: ambientHorizontalShift(in: size) * 0.34,
-                    y: ambientVerticalShift(in: size) * 0.24
-                )
-
-            RadialGradient(
-                colors: [
-                    grassColor.opacity(snapshot.isCheckedToday ? 0.16 : 0.09),
-                    grassColor.opacity(snapshot.isCheckedToday ? 0.055 : 0.03),
-                    Color.clear,
-                ],
-                center: .center,
-                startRadius: 0,
-                endRadius: max(size.width, size.height) * 0.40
-            )
-            .frame(width: size.width * 0.66, height: size.height * 1.02)
-            .position(
-                x: geometry.todayCenter.x + ambientHorizontalShift(in: size) * 0.92,
-                y: geometry.todayCenter.y + ambientVerticalShift(in: size) * 0.62
-            )
-        } else {
-            PulsePathHillContours()
-                .stroke(
-                    secondaryColor.opacity(0.10),
-                    style: StrokeStyle(
-                        lineWidth: pt(0.8, in: size),
-                        lineCap: .round,
-                        lineJoin: .round
-                    )
-                )
-                .frame(width: size.width, height: size.height)
+            .padding(m.pt(14))
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         }
     }
 
-    private func pathInkStroke(size: CGSize) -> some View {
-        let geometry = pathTrailGeometry(in: size)
-        let lineWidth = pt(usesMediumMetrics ? 2.2 : 1.6, in: size)
-        let softWidth = pt(usesMediumMetrics ? 24 : 18, in: size)
-        let shape = PulsePathInkSpineShape(points: geometry.spinePoints)
-        let arrivalStart: CGFloat = usesMediumMetrics ? 0.72 : 0.68
-        let arrivalEnd = snapshot.isCheckedToday ? 1.0 : arrivalStart
-
-        return ZStack {
-            shape
-                .stroke(
-                    actionColor.opacity(usesFullColorPalette ? 0.055 : 0.08),
-                    style: StrokeStyle(lineWidth: softWidth, lineCap: .round, lineJoin: .round)
-                )
-            shape
-                .stroke(
-                    actionColor.opacity(usesFullColorPalette ? 0.72 : 0.76),
-                    style: StrokeStyle(lineWidth: lineWidth, lineCap: .round, lineJoin: .round)
-                )
-            shape
-                .trim(from: arrivalStart, to: arrivalEnd)
-                .stroke(
-                    usesFullColorPalette ? grassColor : primaryColor,
-                    style: StrokeStyle(
-                        lineWidth: lineWidth * 1.24,
-                        lineCap: .round,
-                        lineJoin: .round
-                    )
-                )
-            shape
-                .trim(from: arrivalStart, to: arrivalEnd)
-                .stroke(
-                    (usesFullColorPalette ? grassColor : primaryColor).opacity(0.13),
-                    style: StrokeStyle(
-                        lineWidth: softWidth * 0.72,
-                        lineCap: .round,
-                        lineJoin: .round
-                    )
-                )
-        }
-        .frame(width: size.width, height: size.height)
-        .animation(motion(.footprint), value: snapshot.isCheckedToday)
-        .allowsHitTesting(false)
-    }
-
-    private func pathDayNodes(size: CGSize) -> some View {
-        let days = Array(snapshot.recentDays.dropLast())
-        let geometry = pathTrailGeometry(in: size)
-
-        return ZStack {
-            ForEach(Array(days.enumerated()), id: \.element.id) { index, item in
-                let point = geometry.nodePoints[min(index, geometry.nodePoints.count - 1)]
-                pathDayNode(item, diameter: point.diameter)
-                    .position(x: point.center.x, y: point.center.y)
+    private func path(_ m: PulseWidgetMetrics) -> some View {
+        VStack(alignment: .leading, spacing: 0) {
+            name(size: m.pt(m.isMedium ? 20 : 15), lines: m.isMedium ? 1 : 2)
+            summary(m)
+                .padding(.top, m.pt(3))
+            Spacer(minLength: m.pt(6))
+            if m.isMedium {
+                week(m)
+            } else {
+                compactWeek(m)
             }
         }
-        .frame(width: size.width, height: size.height)
-        .allowsHitTesting(false)
+        .padding(.horizontal, m.pt(m.isMedium ? 18 : 14))
+        .padding(.vertical, m.pt(m.isMedium ? 16 : 14))
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
     }
 
-    private func pathDayNode(
-        _ item: PulseWidgetDaySnapshot,
-        diameter: CGFloat
-    ) -> some View {
-        let lineWidth = max(0.9, diameter * 0.15)
-
-        return Circle()
-            .fill(pathNodeFill(item))
-            .overlay {
-                Circle()
-                    .stroke(pathNodeStroke(item), lineWidth: lineWidth)
-            }
-            .frame(width: diameter, height: diameter)
-            .scaleEffect(item.state == .beforeHabit ? 0.82 : 1)
-            .opacity(item.state == .beforeHabit ? 0.42 : 1)
-    }
-
-    private func pathNodeFill(_ item: PulseWidgetDaySnapshot) -> Color {
-        switch item.state {
-        case .checked:
-            return actionColor
-        case .missed, .beforeHabit, .todayPending:
-            return baseBackground.opacity(usesFullColorPalette ? 0.88 : 0.35)
-        }
-    }
-
-    private func pathNodeStroke(_ item: PulseWidgetDaySnapshot) -> Color {
-        guard usesFullColorPalette else {
-            return item.state == .checked ? .primary : .secondary
-        }
-        switch item.state {
-        case .checked:
-            return actionColor
-        case .missed, .beforeHabit, .todayPending:
-            // Pale grass — never gray secondary — for hollow missed marks.
-            return grassColor.opacity(0.42)
-        }
-    }
-
-    private func pathTrailGeometry(in size: CGSize) -> PulsePathTrailGeometry {
-        PulsePathTrailGeometry(
-            size: size,
-            usesMediumMetrics: usesMediumMetrics
-        )
-    }
-
-    private func orbitAmbientField(size: CGSize) -> some View {
-        let color = snapshot.isCheckedToday ? grassColor : fieldColor
-
-        return ZStack {
-            Ellipse()
-                .fill(color.opacity(usesFullColorPalette ? (snapshot.isCheckedToday ? 0.11 : 0.085) : 0.06))
-
-            if usesFullColorPalette {
-                RadialGradient(
-                    colors: [
-                        color.opacity(snapshot.isCheckedToday ? 0.13 : 0.09),
-                        color.opacity(0.035),
-                        Color.clear,
-                    ],
-                    center: UnitPoint(x: 0.68, y: 0.46),
-                    startRadius: 0,
-                    endRadius: max(size.width, size.height) * 0.48
-                )
-            }
-        }
-        .frame(
-            width: size.width * (usesMediumMetrics ? 0.72 : 0.94),
-            height: size.height * (usesMediumMetrics ? 1.04 : 0.86)
-        )
-        .animation(motion(.starRing), value: snapshot.isCheckedToday)
-        .animation(ambientMotion(.starRing), value: ambientPeriod)
-        .position(
-            x: size.width * (usesMediumMetrics ? 0.72 : 0.59)
-                + ambientHorizontalShift(in: size) * 0.35,
-            y: size.height * (usesMediumMetrics ? 0.58 : 0.62)
-        )
-    }
-
-    @ViewBuilder
-    private func orbitCopyVeil(size: CGSize) -> some View {
-        if usesFullColorPalette {
-            RadialGradient(
-                stops: [
-                    .init(color: baseBackground.opacity(0.99), location: 0),
-                    .init(color: baseBackground.opacity(0.92), location: 0.48),
-                    .init(color: baseBackground.opacity(0.28), location: 0.80),
-                    .init(color: baseBackground.opacity(0), location: 1),
-                ],
-                center: UnitPoint(
-                    x: usesMediumMetrics ? 0.12 : 0.13,
-                    y: usesMediumMetrics ? 0.31 : 0.30
-                ),
-                startRadius: 0,
-                endRadius: size.width * (usesMediumMetrics ? 0.62 : 0.78)
+    /// Each kept day of the week raises the ink. The top of the sheet stays paper for the copy.
+    private func tide(_ m: PulseWidgetMetrics) -> some View {
+        let dayCount = CGFloat(snapshot.recentDays.count)
+        let kept = CGFloat(snapshot.recentCheckedCount)
+        let reach: CGFloat = m.isMedium ? 0.6 : 0.63
+        let inkHeight = m.size.height * reach * kept / dayCount
+        let nextHeight = m.size.height * reach * min(kept + 1, dayCount) / dayCount
+        let numberSize = m.pt(m.isMedium ? 54 : 44)
+        let numberCap = numberSize * 0.72
+        let numberSitsInInk = inkHeight >= numberCap + m.pt(20)
+        let waterline = snapshot.isCheckedToday ? inkHeight : nextHeight
+        let numberBaseline = numberSitsInInk
+            ? m.size.height - m.pt(10)
+            : m.size.height - waterline - m.pt(7)
+        let onInk = usesFullColorPalette ? PulseWidgetDesign.onSeal : Color.primary
+        return ZStack(alignment: .topLeading) {
+            PulseWidgetInkTide(
+                ink: seal.opacity(usesFullColorPalette ? 1 : 0.32),
+                seed: todaySeed,
+                texture: usesFullColorPalette ? 0.55 : 0
             )
-            .frame(width: size.width, height: size.height)
-            .allowsHitTesting(false)
+            .frame(width: m.size.width, height: m.size.height)
+            .offset(y: m.size.height - inkHeight)
+            .widgetAccentable()
+
+            if !snapshot.isCheckedToday {
+                PulseWidgetDashedLevel()
+                    .stroke(
+                        seal.opacity(0.8),
+                        style: StrokeStyle(lineWidth: max(1, m.pt(1.4)), lineCap: .round, dash: [m.pt(5), m.pt(4)])
+                    )
+                    .frame(width: m.size.width - m.pt(28), height: max(1, m.pt(1.4)))
+                    .offset(x: m.pt(14), y: m.size.height - nextHeight)
+                    .widgetAccentable()
+                    .transition(.opacity)
+            }
+
+            Text(verbatim: PulseLocalizedDateFormatting.dayNumber(snapshot.today, locale: locale))
+                .font(.system(size: numberSize, weight: .black, design: .serif))
+                .monospacedDigit()
+                .foregroundStyle(numberSitsInInk ? onInk : seal)
+                .lineLimit(1)
+                .fixedSize()
+                .alignmentGuide(.bottom) { $0[.lastTextBaseline] }
+                .frame(width: m.size.width - m.pt(14), height: numberBaseline, alignment: .bottomTrailing)
+                .widgetAccentable(!numberSitsInInk)
+
+            VStack(alignment: .leading, spacing: m.pt(3)) {
+                name(size: m.pt(m.isMedium ? 20 : 14), lines: 1)
+                summary(m)
+            }
+            .padding(.horizontal, m.pt(14))
+            .padding(.top, m.pt(14))
+            .frame(maxWidth: .infinity, alignment: .topLeading)
         }
+        .animation(riseAnimation, value: snapshot.isCheckedToday)
     }
 
-    private func placeAmbientField(size: CGSize) -> some View {
-        let color = snapshot.isCheckedToday ? grassColor : fieldColor
+    // MARK: - Parts
 
-        return ZStack {
-            if usesFullColorPalette {
-                LinearGradient(
-                    stops: [
-                        .init(color: paperColor.opacity(0.34), location: 0),
-                        .init(color: Color.clear, location: 0.42),
-                        .init(color: color.opacity(0.055), location: 1),
-                    ],
-                    startPoint: .topTrailing,
-                    endPoint: .bottomLeading
+    /// Today: a dashed place before the check-in, the impression after.
+    private func todaySeal(side: CGFloat) -> some View {
+        ZStack {
+            if snapshot.isCheckedToday {
+                PulseSealImpression(
+                    inscription: .number(snapshot.today.day),
+                    ink: seal,
+                    seed: todaySeed,
+                    texture: usesFullColorPalette ? 0.75 : 0.35,
+                    typeface: .systemSerif,
+                    cornerFraction: PulseWidgetDesign.sealCornerFraction
                 )
-
-                RadialGradient(
-                    colors: [
-                        Color.white.opacity(0.18),
-                        paperColor.opacity(0.07),
-                        Color.clear,
-                    ],
-                    center: .center,
-                    startRadius: 0,
-                    endRadius: max(size.width, size.height) * 0.34
-                )
-                .frame(width: size.width * 0.64, height: size.height * 0.72)
-                .rotationEffect(.degrees(-10 + ambientRotation * 0.18))
-                .position(
-                    x: size.width * (usesMediumMetrics ? 0.26 : 0.48),
-                    y: size.height * 0.42
+                .rotationEffect(PulseSealSeed.tilt(for: todaySeed, maximum: 4))
+                .transition(
+                    .asymmetric(
+                        insertion: .scale(scale: 1.16).combined(with: .opacity),
+                        removal: .opacity
+                    )
                 )
             } else {
-                Ellipse()
-                    .fill(color.opacity(0.055))
-                    .frame(
-                        width: size.width * (usesMediumMetrics ? 0.58 : 0.92),
-                        height: size.height * (usesMediumMetrics ? 1.18 : 0.72)
-                    )
-                    .position(
-                        x: size.width * (usesMediumMetrics ? 0.20 : 0.46),
-                        y: size.height * (usesMediumMetrics ? 0.54 : 0.50)
-                    )
+                PulseSealSlot(
+                    inscription: .number(snapshot.today.day),
+                    tint: seal,
+                    typeface: .systemSerif,
+                    cornerFraction: PulseWidgetDesign.sealCornerFraction,
+                    ghostOpacity: 0.24
+                )
+                .transition(.opacity)
             }
         }
-        .scaleEffect(snapshot.isCheckedToday ? 1.03 : 1)
-        .offset(x: ambientHorizontalShift(in: size) * 0.42)
-        .animation(motion(.place), value: snapshot.isCheckedToday)
-        .animation(ambientMotion(.place), value: ambientPeriod)
+        .frame(width: side, height: side)
+        .widgetAccentable()
+        .animation(stampAnimation, value: snapshot.isCheckedToday)
     }
 
-    private func stackDeskMat(size: CGSize) -> some View {
-        let geometry = PulseStackPaperGeometry(
-            size: size,
-            usesMediumMetrics: usesMediumMetrics,
-            isChecked: snapshot.isCheckedToday
-        )
-        let color = snapshot.isCheckedToday ? grassColor : fieldColor
-
-        return RoundedRectangle(
-            cornerRadius: geometry.deskCornerRadius,
-            style: .continuous
-        )
-        .fill(color.opacity(usesFullColorPalette ? (snapshot.isCheckedToday ? 0.16 : 0.13) : 0.07))
-        .frame(
-            width: size.width - pt(6, in: size),
-            height: size.height - pt(6, in: size)
-        )
-        .rotationEffect(.degrees((usesMediumMetrics ? 1.1 : 1.6) + ambientRotation * 0.28))
-        .scaleEffect(snapshot.isCheckedToday ? 0.99 : 1)
-        .animation(motion(.paper), value: snapshot.isCheckedToday)
-        .animation(ambientMotion(.paper), value: ambientPeriod)
-        .position(
-            x: size.width / 2 + ambientHorizontalShift(in: size) * 0.28,
-            y: size.height / 2 + pt(1.5, in: size)
-        )
-    }
-
-    private func stackedPaperBackdrop(size: CGSize) -> some View {
-        let geometry = PulseStackPaperGeometry(
-            size: size,
-            usesMediumMetrics: usesMediumMetrics,
-            isChecked: snapshot.isCheckedToday
-        )
-        let paperFrame = geometry.topPaperFrame
-        let foldSide = geometry.foldSize.width
-        let foldOverlap = pt(3.0, in: size)
-
+    /// The six days before today around today's seal: six around one packs into a ring.
+    private func ring(side: CGFloat) -> some View {
+        let previous = Array(snapshot.recentDays.dropLast())
+        let markSide = side * 0.21
+        let radius = side / 2 - markSide / 2
         return ZStack {
-            ForEach(0..<PulseStackPaperGeometry.sheetCount, id: \.self) { index in
-                let depth = PulseStackPaperGeometry.sheetCount - 1 - index
-                let cutsCorner = snapshot.isCheckedToday && depth == 0
-                let sheet = PulseStackedSheetShape(
-                    cornerRadius: geometry.paperCornerRadius,
-                    foldSide: cutsCorner ? geometry.foldSize.width : 0
-                )
+            ForEach(Array(previous.enumerated()), id: \.element.id) { index, item in
+                let angle = (-150 + Double(index) * 60) * .pi / 180
+                dayMark(item, side: markSide)
+                    .offset(x: CGFloat(cos(angle)) * radius, y: CGFloat(sin(angle)) * radius)
+            }
+            todaySeal(side: side * 0.36)
+        }
+        .frame(width: side, height: side)
+    }
 
-                sheet
-                    .fill(paperColor)
-                    .overlay {
-                        sheet
-                            .fill(fieldColor.opacity(Double(depth) * 0.08))
-                    }
-                    .overlay {
-                        sheet
-                            .stroke(
-                                fieldColor.opacity(0.18 + Double(depth) * 0.07),
-                                lineWidth: pt(1, in: size)
-                            )
-                            .opacity(cutsCorner ? 0 : 1)
-                    }
-                    .shadow(
-                        color: shadowColor.opacity(0.07 + Double(depth) * 0.025),
-                        radius: pt(5 + CGFloat(depth), in: size),
-                        y: pt(2.4, in: size)
+    /// Earlier kept days fan out behind today's seal, the oldest farthest back and palest.
+    private func pile(side: CGFloat) -> some View {
+        let impressionSide = side * 0.6
+        let pile = PulseWidgetPilePlacement.pile(
+            for: Array(snapshot.recentDays.dropLast()),
+            room: side - impressionSide
+        )
+        let todayTilt = snapshot.isCheckedToday ? PulseSealSeed.tilt(for: todaySeed, maximum: 4) : .zero
+        return ZStack {
+            ZStack {
+                ForEach(pile.behind) { placement in
+                    PulseSealImpression(
+                        inscription: .number(placement.day.day),
+                        ink: seal,
+                        seed: placement.seed,
+                        texture: usesFullColorPalette ? 0.6 : 0.3,
+                        typeface: .systemSerif,
+                        cornerFraction: PulseWidgetDesign.sealCornerFraction
                     )
-                    .frame(width: paperFrame.width, height: paperFrame.height)
-                    .rotationEffect(.degrees(Double(depth) * geometry.rotationPerLayer))
-                    .offset(
-                        x: -CGFloat(depth) * geometry.layerStep,
-                        y: CGFloat(depth) * geometry.layerStep
-                    )
+                    .frame(width: impressionSide, height: impressionSide)
+                    .rotationEffect(.degrees(placement.rotation))
+                    .offset(placement.offset)
+                    .opacity(placement.opacity)
+                    .widgetAccentable()
+                }
+            }
+            .frame(width: side, height: side)
+            // Today lands on clean paper: earlier ink never shows through its date.
+            .mask {
+                PulseWidgetPunchedRect(
+                    hole: CGSize(width: impressionSide + 3, height: impressionSide + 3),
+                    offset: pile.today,
+                    rotation: todayTilt,
+                    cornerFraction: PulseWidgetDesign.sealCornerFraction
+                )
+                .fill(style: FillStyle(eoFill: true))
             }
 
-            PulsePaperPressMark(
-                isChecked: snapshot.isCheckedToday,
-                usesFullColorPalette: usesFullColorPalette
-            )
-            .frame(width: geometry.pressSize.width, height: geometry.pressSize.height)
-            .position(
-                x: geometry.pressFrame.midX - paperFrame.minX,
-                y: geometry.pressFrame.midY - paperFrame.minY
-            )
-
-            // Keep the outer corner anchored; grow the flap inward so it seals the
-            // cut hypotenuse. Any sub-pixel gap shows the darker under-sheet as a
-            // false black crease.
-            PulseFoldedPaperFlap()
-                .fill(paperColor)
-                .overlay {
-                    PulseFoldedPaperFlap()
-                        .fill(fieldColor.opacity(usesFullColorPalette ? 0.10 : 0.05))
-                }
-                .frame(width: foldSide + foldOverlap, height: foldSide + foldOverlap)
-                .scaleEffect(snapshot.isCheckedToday ? 1 : 0.92, anchor: .bottomTrailing)
-                .opacity(snapshot.isCheckedToday ? 1 : 0)
-                .position(
-                    x: paperFrame.width - (foldSide + foldOverlap) / 2,
-                    y: paperFrame.height - (foldSide + foldOverlap) / 2
-                )
+            todaySeal(side: impressionSide)
+                .offset(pile.today)
         }
-        .frame(width: paperFrame.width, height: paperFrame.height)
-        .rotationEffect(.degrees(ambientRotation * 0.22))
-        .position(x: paperFrame.midX, y: paperFrame.midY)
-        .animation(motion(.paper), value: snapshot.isCheckedToday)
-        .animation(ambientMotion(.paper), value: ambientPeriod)
+        .frame(width: side, height: side)
     }
 
-    private func letterDeskField(size: CGSize) -> some View {
-        let color = snapshot.isCheckedToday ? grassColor : fieldColor
-
-        return Ellipse()
-            .fill(color.opacity(usesFullColorPalette ? 0.065 : 0.04))
-            .frame(width: size.width * 0.94, height: size.height * 0.68)
-            .rotationEffect(.degrees(-4 + ambientRotation * 0.4))
-            .position(
-                x: size.width * 0.48 + ambientHorizontalShift(in: size) * 0.45,
-                y: size.height * 0.58
-            )
-            .animation(motion(.letter), value: snapshot.isCheckedToday)
-            .animation(ambientMotion(.letter), value: ambientPeriod)
-    }
-
-    private func pastPostmarkRow(size: CGSize) -> some View {
+    private func week(_ m: PulseWidgetMetrics) -> some View {
         HStack(spacing: 0) {
-            ForEach(Array(snapshot.recentDays.dropLast()), id: \.id) { item in
-                postmarkNode(
-                    item,
-                    size: pt(usesMediumMetrics ? 17 : 12.5, in: size)
-                )
+            ForEach(snapshot.recentDays) { item in
+                VStack(spacing: m.pt(5)) {
+                    Text(verbatim: PulseLocalizedDateFormatting.narrowWeekday(item.day, locale: locale))
+                        .font(.system(size: m.pt(10), weight: item.day == snapshot.today ? .bold : .medium))
+                        .foregroundStyle(item.day == snapshot.today ? ink : muted)
+                        .lineLimit(1)
+                    dayMark(item, side: m.pt(32))
+                }
                 .frame(maxWidth: .infinity)
             }
         }
-        .frame(height: pt(usesMediumMetrics ? 18 : 13, in: size))
     }
 
-    private func postmarkNode(
-        _ item: PulseWidgetDaySnapshot,
-        size: CGFloat
-    ) -> some View {
-        ZStack {
-            if item.state == .checked {
-                PulseLetterPressedInkMark(markColor: fieldColor)
-            } else {
-                Circle()
-                    .stroke(
-                        secondaryColor.opacity(item.state == .beforeHabit ? 0.24 : 0.42),
-                        lineWidth: max(1, size * 0.10)
-                    )
-                    .scaleEffect(item.state == .beforeHabit ? 0.82 : 1)
+    /// The small face has no room for a legible row of seven, so the week folds into four and three.
+    private func compactWeek(_ m: PulseWidgetMetrics) -> some View {
+        let days = snapshot.recentDays
+        let markSide = m.pt(26)
+        let gap = m.pt(6)
+        return VStack(alignment: .leading, spacing: gap) {
+            HStack(spacing: gap) {
+                ForEach(days.prefix(4)) { item in
+                    dayMark(item, side: markSide)
+                }
+            }
+            HStack(spacing: gap) {
+                ForEach(days.dropFirst(4)) { item in
+                    dayMark(item, side: markSide)
+                }
             }
         }
-        .frame(width: size, height: size)
     }
 
-    private func quietFieldAfterimage(size: CGSize) -> some View {
-        let ringSide = pt(usesMediumMetrics ? 188 : 172, in: size)
-        let center = CGPoint(
-            x: size.width - pt(usesMediumMetrics ? 8 : 4, in: size)
-                + ambientHorizontalShift(in: size) * 0.42,
-            y: size.height - pt(usesMediumMetrics ? 7 : 6, in: size)
-                + ambientVerticalShift(in: size) * 0.42
+    private func dayMark(_ item: PulseWidgetDaySnapshot, side: CGFloat) -> some View {
+        PulseDayMark(
+            day: item.day.day,
+            state: PulseDayMarkState(item.state),
+            seed: PulseSealSeed.value(for: item.day),
+            seal: seal,
+            ink: ink,
+            muted: muted,
+            emphasized: item.day == snapshot.today
         )
-        let color = snapshot.isCheckedToday ? grassColor : fieldColor
-
-        return ZStack {
-            Circle()
-                .fill(color.opacity(snapshot.isCheckedToday ? 0.15 : 0.12))
-                .frame(width: ringSide * 0.82, height: ringSide * 0.82)
-            Circle()
-                .stroke(color.opacity(0.38), lineWidth: pt(1.2, in: size))
-                .frame(width: ringSide, height: ringSide)
-            Circle()
-                .stroke(color.opacity(0.13), lineWidth: pt(16, in: size))
-                .frame(width: ringSide + pt(20, in: size), height: ringSide + pt(20, in: size))
-            Circle()
-                .stroke(color.opacity(0.065), lineWidth: pt(20, in: size))
-                .frame(width: ringSide + pt(58, in: size), height: ringSide + pt(58, in: size))
-        }
-        .scaleEffect(snapshot.isCheckedToday ? 1.06 : 0.96)
-        .animation(motion(.echo), value: snapshot.isCheckedToday)
-        .animation(ambientMotion(.echo), value: ambientPeriod)
-        .position(center)
+        .frame(width: side, height: side)
+        .widgetAccentable(item.state == .checked || item.state == .todayPending)
     }
 
-    private func habitName(
-        size: CGFloat,
-        width: CGFloat,
-        alignment: TextAlignment
-    ) -> some View {
+    private func dateLine(_ m: PulseWidgetMetrics, includesWeekday: Bool) -> some View {
+        Text(verbatim: includesWeekday
+            ? PulseLocalizedDateFormatting.monthDayAndShortWeekday(snapshot.today, locale: locale)
+            : PulseLocalizedDateFormatting.monthAndDay(snapshot.today, locale: locale))
+            .font(.system(size: m.pt(12), weight: .bold))
+            .foregroundStyle(seal)
+            .monospacedDigit()
+            .lineLimit(1)
+            .minimumScaleFactor(0.8)
+            .widgetAccentable()
+    }
+
+    private func name(size: CGFloat, lines: Int, color: Color? = nil) -> some View {
         Text(verbatim: snapshot.habitName)
             .font(.system(size: size, weight: .semibold))
-            .foregroundStyle(primaryColor)
-            .multilineTextAlignment(alignment)
-            .lineLimit(2)
-            .minimumScaleFactor(0.62)
-            .allowsTightening(true)
-            .frame(width: max(width, 1), alignment: alignment == .center ? .center : .leading)
+            .foregroundStyle(color ?? ink)
+            .lineLimit(lines)
+            .minimumScaleFactor(0.75)
+            .fixedSize(horizontal: false, vertical: true)
     }
 
-    private func statusLabel(size: CGFloat) -> some View {
+    private func status(_ m: PulseWidgetMetrics) -> some View {
         Text(verbatim: statusText)
-            .font(.system(size: size, weight: .medium))
-            .foregroundStyle(secondaryColor)
+            .font(.system(size: m.pt(12), weight: .semibold))
+            .foregroundStyle(snapshot.isCheckedToday ? muted : seal)
             .lineLimit(1)
+            .minimumScaleFactor(0.8)
     }
 
-    private var baseBackground: Color {
-        guard usesFullColorPalette else { return .clear }
-        return switch style {
-        case .stack, .letter: PulseWidgetDesign.widgetPaper
-        case .place, .field: Color("PulseQuietCanvas")
-        case .orbit, .bleed: PulseWidgetDesign.surface
-        case .path, .tide: PulseWidgetDesign.background
-        }
-    }
-
-    private var surfaceColor: Color {
-        usesFullColorPalette ? PulseWidgetDesign.surface : .clear
-    }
-
-    private var primaryColor: Color {
-        usesFullColorPalette ? PulseWidgetDesign.ink : .primary
-    }
-
-    private var secondaryColor: Color {
-        usesFullColorPalette ? PulseWidgetDesign.secondary : .secondary
-    }
-
-    private var actionColor: Color {
-        usesFullColorPalette ? PulseWidgetDesign.action : .primary
-    }
-
-    private var grassColor: Color {
-        usesFullColorPalette ? PulseWidgetDesign.grass : .primary
-    }
-
-    private var fieldColor: Color {
-        usesFullColorPalette ? PulseWidgetDesign.field : .primary
-    }
-
-    private var shadowColor: Color {
-        usesFullColorPalette ? PulseWidgetDesign.shadow : .clear
-    }
-
-    private var paperColor: Color {
-        usesFullColorPalette ? PulseWidgetDesign.widgetPaper : .clear
-    }
-
-    private var skyGlowColor: Color {
-        usesFullColorPalette ? PulseWidgetDesign.widgetSkyGlow : .primary
-    }
-
-    private var waterColor: Color {
-        usesFullColorPalette ? PulseWidgetDesign.widgetWater : .primary
-    }
-
-    private var monthAndDay: String {
-        PulseLocalizedDateFormatting.monthAndDay(snapshot.today, locale: locale)
-    }
-
-    private var monthName: String {
-        PulseLocalizedDateFormatting.monthName(snapshot.today, locale: locale)
-    }
-
-    private var dayNumber: String {
-        PulseLocalizedDateFormatting.dayNumber(snapshot.today, locale: locale)
-    }
-
-    private var tideDate: String {
-        usesMediumMetrics
-            ? PulseLocalizedDateFormatting.monthDayAndWeekday(snapshot.today, locale: locale)
-            : monthAndDay
-    }
-
-    private var tideFootColor: Color {
-        guard snapshot.isCheckedToday else { return secondaryColor }
-        guard usesFullColorPalette else { return .primary }
-        return colorScheme == .dark ? grassColor.opacity(0.88) : actionColor
-    }
-
-    private var pathSummaryText: String {
-        return String(
+    private func summary(_ m: PulseWidgetMetrics, color: Color? = nil) -> some View {
+        Text(verbatim: String(
             format: pathSummaryFormat,
             locale: locale,
-            Int32(snapshot.previousSixCheckedCount)
-        )
+            snapshot.previousSixCheckedCount
+        ))
+        .font(.system(size: m.pt(12), weight: .medium))
+        .foregroundStyle(color ?? muted)
+        .monospacedDigit()
+        .lineLimit(1)
+        .minimumScaleFactor(0.8)
     }
 
-    private var pathContourOpacity: Double {
-        switch ambientPeriod {
-        case .morning: 0.055
-        case .daylight: 0.075
-        case .evening: 0.10
-        }
+    // MARK: - Palette and motion
+
+    private var todaySeed: UInt64 { PulseSealSeed.value(for: snapshot.today) }
+
+    private var seal: Color { usesFullColorPalette ? PulseWidgetDesign.seal : .primary }
+    private var ink: Color { usesFullColorPalette ? PulseWidgetDesign.ink : .primary }
+    private var muted: Color { usesFullColorPalette ? PulseWidgetDesign.muted : .secondary }
+    private var rule: Color { usesFullColorPalette ? PulseWidgetDesign.rule : .secondary.opacity(0.4) }
+    private var wash: Color { usesFullColorPalette ? PulseWidgetDesign.sealWash : .primary.opacity(0.16) }
+
+    private var stampAnimation: Animation? {
+        PulseWidgetMotionPresentation.stamp(allowsMotion: allowsMotion)
     }
 
-    private var ambientPeriod: PulseWidgetAmbientPeriod {
-        PulseWidgetAmbientPeriod.resolve(
-            at: snapshot.generatedAt,
-            timeZone: snapshot.projectTimeZone
-        )
+    private var riseAnimation: Animation? {
+        PulseWidgetMotionPresentation.rise(allowsMotion: allowsMotion)
     }
+}
 
-    private var ambientPose: PulseWidgetMotionPresentation.AmbientPose {
-        PulseWidgetMotionPresentation.ambientPose(
-            for: materialForCurrentStyle,
-            period: ambientPeriod
-        )
-    }
+/// Points scale with the family's height, so one layout serves every device's widget size.
+private struct PulseWidgetMetrics {
+    let size: CGSize
+    let isMedium: Bool
 
-    private var ambientRotation: Double {
-        ambientPose.rotationDegrees
-    }
-
-    private func ambientHorizontalShift(in size: CGSize) -> CGFloat {
-        pt(ambientPose.horizontalPoints, in: size)
-    }
-
-    private func ambientVerticalShift(in size: CGSize) -> CGFloat {
-        pt(ambientPose.verticalPoints, in: size)
-    }
-
-    private var materialForCurrentStyle: PulseWidgetMotionPresentation.Material {
-        switch style {
-        case .place: .place
-        case .orbit: .starRing
-        case .stack: .paper
-        case .bleed: .number
-        case .letter: .letter
-        case .field: .echo
-        case .path: .footprint
-        case .tide: .tide
-        }
-    }
-
-    private func motion(_ material: PulseWidgetMotionPresentation.Material) -> Animation? {
-        PulseWidgetMotionPresentation.completionAnimation(
-            for: material,
-            allowsMotion: allowsMotion
-        )
-    }
-
-    private func ambientMotion(_ material: PulseWidgetMotionPresentation.Material) -> Animation? {
-        PulseWidgetMotionPresentation.ambientAnimation(
-            for: material,
-            allowsMotion: allowsMotion
-        )
-    }
-
-    private func pt(_ value: CGFloat, in size: CGSize) -> CGFloat {
+    func pt(_ value: CGFloat) -> CGFloat {
         value * size.height / 158
+    }
+}
+
+struct PulseWidgetPilePlacement: Identifiable {
+    let day: LogicalDay
+    let seed: UInt64
+    let offset: CGSize
+    let rotation: Double
+    let opacity: Double
+
+    var id: LogicalDay { day }
+
+    static let maximumBehind = 4
+
+    /// Fans the most recent kept days up and to the leading side, then centres the whole pile.
+    static func pile(
+        for days: [PulseWidgetDaySnapshot],
+        room: CGFloat
+    ) -> (behind: [PulseWidgetPilePlacement], today: CGSize) {
+        let kept = Array(days.filter { $0.state == .checked }.suffix(maximumBehind))
+        let step = room / (CGFloat(kept.count) + 0.6)
+        var behind: [PulseWidgetPilePlacement] = kept.enumerated().map { index, item in
+            let seed = PulseSealSeed.value(for: item.day)
+            var random = PulseSealRandom(seed: seed ^ 0x51ac_9e37_0f2d_3b11)
+            let depth = CGFloat(kept.count - index)
+            let dx = -depth * step + CGFloat(random.range(-0.2, 0.2)) * step
+            let dy = -depth * step * 0.6 + CGFloat(random.range(-0.2, 0.2)) * step
+            return PulseWidgetPilePlacement(
+                day: item.day,
+                seed: seed,
+                offset: CGSize(width: dx, height: dy),
+                rotation: -Double(depth) * 4 + random.range(-3, 3),
+                opacity: max(0.3, 0.82 - Double(depth - 1) * 0.16)
+            )
+        }
+        let offsets = behind.map(\.offset) + [.zero]
+        let shift = CGSize(
+            width: -((offsets.map(\.width).min() ?? 0) + (offsets.map(\.width).max() ?? 0)) / 2,
+            height: -((offsets.map(\.height).min() ?? 0) + (offsets.map(\.height).max() ?? 0)) / 2
+        )
+        behind = behind.map { placement in
+            PulseWidgetPilePlacement(
+                day: placement.day,
+                seed: placement.seed,
+                offset: CGSize(
+                    width: placement.offset.width + shift.width,
+                    height: placement.offset.height + shift.height
+                ),
+                rotation: placement.rotation,
+                opacity: placement.opacity
+            )
+        }
+        return (behind, shift)
+    }
+}
+
+/// Before the check-in, today's date sits on the paper as a pale ghost, bled off the corner.
+private struct PulseWidgetBleedNumber: View {
+    let day: Int
+    let isMedium: Bool
+    let color: Color
+
+    var body: some View {
+        Canvas { context, size in
+            let text = context.resolve(PulseWidgetBleedLayout.text(day: day, size: size, isMedium: isMedium).foregroundStyle(color))
+            context.draw(text, at: PulseWidgetBleedLayout.anchor(in: size, isMedium: isMedium), anchor: .bottomTrailing)
+        }
+        .accessibilityHidden(true)
+    }
+}
+
+/// After the check-in the whole sheet takes the ink, and the date is what stays paper.
+private struct PulseWidgetBleedField: View {
+    let day: Int
+    let isMedium: Bool
+    let ink: Color
+    let seed: UInt64
+    let texture: Double
+
+    var body: some View {
+        Canvas { context, size in
+            let face = CGRect(origin: .zero, size: size)
+            context.drawLayer { layer in
+                layer.fill(Path(face), with: .color(ink))
+                layer.blendMode = .destinationOut
+                let text = layer.resolve(PulseWidgetBleedLayout.text(day: day, size: size, isMedium: isMedium).foregroundStyle(.black))
+                layer.draw(text, at: PulseWidgetBleedLayout.anchor(in: size, isMedium: isMedium), anchor: .bottomTrailing)
+                let square = CGRect(
+                    x: 0,
+                    y: (size.height - size.width) / 2,
+                    width: size.width,
+                    height: size.width
+                )
+                PulseSealImpression.erode(face: square, seed: seed, texture: texture, bitesRim: false, context: &layer)
+            }
+        }
+        .accessibilityHidden(true)
+    }
+}
+
+private enum PulseWidgetBleedLayout {
+    static func text(day: Int, size: CGSize, isMedium: Bool) -> Text {
+        Text(verbatim: String(day))
+            .font(.system(size: size.height * (isMedium ? 1.0 : 0.86), weight: .black, design: .serif))
+    }
+
+    /// The date runs off the bottom and trailing edges; the copy keeps the top-leading corner.
+    static func anchor(in size: CGSize, isMedium: Bool) -> CGPoint {
+        CGPoint(
+            x: size.width + size.height * (isMedium ? 0.04 : 0.1),
+            y: size.height * (isMedium ? 1.36 : 1.32)
+        )
+    }
+}
+
+/// The ink that rises with each kept day of the week, its edge left rough the way soaked paper is.
+private struct PulseWidgetInkTide: View {
+    let ink: Color
+    let seed: UInt64
+    let texture: Double
+
+    var body: some View {
+        Canvas { context, size in
+            context.drawLayer { layer in
+                layer.fill(Self.edge(in: size, seed: seed), with: .color(ink))
+                layer.blendMode = .destinationOut
+                let square = CGRect(x: 0, y: 0, width: size.width, height: size.width)
+                PulseSealImpression.erode(face: square, seed: seed, texture: texture * 0.6, bitesRim: false, context: &layer)
+            }
+        }
+        .accessibilityHidden(true)
+    }
+
+    static func edge(in size: CGSize, seed: UInt64) -> Path {
+        var random = PulseSealRandom(seed: seed ^ 0x7f4a_7c15_9e37_79b9)
+        let steps = 28
+        var path = Path()
+        path.move(to: CGPoint(x: 0, y: size.height))
+        for step in 0...steps {
+            let x = size.width * CGFloat(step) / CGFloat(steps)
+            let y = CGFloat(random.range(-1, 1)) * min(2.4, size.height * 0.012)
+            path.addLine(to: CGPoint(x: x, y: y))
+        }
+        path.addLine(to: CGPoint(x: size.width, y: size.height))
+        path.closeSubpath()
+        return path
+    }
+}
+
+/// The whole frame with one rounded square cut out of it.
+private struct PulseWidgetPunchedRect: Shape {
+    let hole: CGSize
+    let offset: CGSize
+    let rotation: Angle
+    let cornerFraction: CGFloat
+
+    func path(in rect: CGRect) -> Path {
+        var path = Path(rect)
+        let holeRect = CGRect(
+            x: -hole.width / 2,
+            y: -hole.height / 2,
+            width: hole.width,
+            height: hole.height
+        )
+        let transform = CGAffineTransform(translationX: rect.midX + offset.width, y: rect.midY + offset.height)
+            .rotated(by: rotation.radians)
+        path.addPath(
+            Path(roundedRect: holeRect, cornerRadius: hole.width * cornerFraction, style: .continuous),
+            transform: transform
+        )
+        return path
+    }
+}
+
+private struct PulseWidgetDashedLevel: Shape {
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        path.move(to: CGPoint(x: rect.minX, y: rect.midY))
+        path.addLine(to: CGPoint(x: rect.maxX, y: rect.midY))
+        return path
     }
 }

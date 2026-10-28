@@ -93,6 +93,7 @@ private struct PulseWatchWidgetView: View {
         } else {
             PulseWatchImprintMark(
                 state: displayState,
+                todayLogicalDay: entry.projection.snapshot?.todayLogicalDay,
                 usesWidgetAccent: usesWidgetAccent
             )
                 .padding(PulseWatchDesign.widgetMarkPadding)
@@ -110,11 +111,11 @@ private struct PulseWatchWidgetView: View {
 
     private var systemImage: String {
         switch displayState {
-        case .committed: "circle.inset.filled"
-        case .pendingSync: "circle.dashed"
+        case .committed: "checkmark.seal.fill"
+        case .pendingSync: "hourglass"
         case .failed: "exclamationmark.circle"
         case .needsSync: "iphone.and.arrow.forward"
-        case .ready, .submitting: "circle"
+        case .ready, .submitting: "seal"
         }
     }
 

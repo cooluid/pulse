@@ -170,23 +170,6 @@
           }
         }
       }
-    },
-    "store.activity.preview.signature" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Firefly Halo"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "萤火日晕"
-          }
-        }
-      }
     }
   },
   "version" : "1.0"

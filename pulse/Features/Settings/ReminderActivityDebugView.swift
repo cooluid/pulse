@@ -172,6 +172,7 @@ private final class ReminderActivityDebugController {
 struct ReminderActivityDebugView: View {
     @Bindable var model: PulseAppModel
     @Environment(\.locale) private var locale
+    @Environment(\.pulseVisualTheme) private var visualTheme
     @State private var controller = ReminderActivityDebugController()
 
     var body: some View {
@@ -183,9 +184,9 @@ struct ReminderActivityDebugView: View {
             diagnosticsSection
         }
         .scrollContentBackground(.hidden)
-        .background(PulseDesign.background)
-        .foregroundStyle(PulseDesign.ink)
-        .tint(PulseDesign.tint)
+        .background(PulseScreenBackground())
+        .foregroundStyle(PulseDesign.appInk(for: visualTheme))
+        .tint(PulseDesign.appAccent(for: visualTheme))
         .navigationTitle(copy(.title))
         .navigationBarTitleDisplayMode(.inline)
         .pulseSecondaryNavigation()
@@ -209,7 +210,7 @@ struct ReminderActivityDebugView: View {
                     ? "checkmark.shield.fill"
                     : "exclamationmark.shield.fill"
             )
-            .foregroundStyle(isIsolatedRuntimeIdentity ? PulseDesign.grass : PulseDesign.action)
+            .foregroundStyle(isIsolatedRuntimeIdentity ? PulseDesign.appInk(for: visualTheme) : PulseDesign.systemDestructive)
             LabeledContent(copy(.appIdentifier), value: PulseRuntimeIdentity.bundleIdentifier)
                 .accessibilityIdentifier("debug.identity.app")
             LabeledContent(copy(.appGroup), value: PulseRuntimeIdentity.appGroupIdentifier)
@@ -241,7 +242,7 @@ struct ReminderActivityDebugView: View {
                     : "exclamationmark.triangle.fill"
             )
             .foregroundStyle(
-                controller.activitiesEnabled ? PulseDesign.grass : PulseDesign.action
+                controller.activitiesEnabled ? PulseDesign.appInk(for: visualTheme) : PulseDesign.systemDestructive
             )
 
             Button {
@@ -279,7 +280,7 @@ struct ReminderActivityDebugView: View {
                 .accessibilityIdentifier("debug.activity.schedule-30-seconds")
             } else {
                 LabeledContent(copy(.scheduledStart), value: copy(.requiresIOS26))
-                    .foregroundStyle(PulseDesign.secondary)
+                    .foregroundStyle(PulseDesign.appMuted(for: visualTheme))
             }
         } header: {
             Text(copy(.realActivityHeader))
@@ -345,7 +346,7 @@ struct ReminderActivityDebugView: View {
         Section {
             if controller.activities.isEmpty {
                 Text(copy(.noActivities))
-                    .foregroundStyle(PulseDesign.secondary)
+                    .foregroundStyle(PulseDesign.appMuted(for: visualTheme))
             } else {
                 ForEach(controller.activities) { activity in
                     VStack(alignment: .leading, spacing: PulseDesign.spacing4) {
@@ -355,14 +356,14 @@ struct ReminderActivityDebugView: View {
                             Spacer()
                             Text(lifecycleName(activity.lifecycle))
                                 .font(.caption.weight(.semibold))
-                                .foregroundStyle(PulseDesign.secondary)
+                                .foregroundStyle(PulseDesign.appMuted(for: visualTheme))
                         }
                         Text("\(phaseName(activity.phase)) · \(activity.logicalDay)")
                             .font(.footnote)
-                            .foregroundStyle(PulseDesign.secondary)
+                            .foregroundStyle(PulseDesign.appMuted(for: visualTheme))
                         Text(activity.id)
                             .font(.caption2.monospaced())
-                            .foregroundStyle(PulseDesign.secondary)
+                            .foregroundStyle(PulseDesign.appMuted(for: visualTheme))
                             .textSelection(.enabled)
                     }
                     .padding(.vertical, PulseDesign.spacing4)
@@ -376,7 +377,7 @@ struct ReminderActivityDebugView: View {
             if let message = controller.message {
                 Label(message, systemImage: "info.circle")
                     .font(.footnote)
-                    .foregroundStyle(PulseDesign.secondary)
+                    .foregroundStyle(PulseDesign.appMuted(for: visualTheme))
                     .fixedSize(horizontal: false, vertical: true)
             }
 

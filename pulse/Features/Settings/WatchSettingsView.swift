@@ -1,3 +1,4 @@
+import PulseCore
 import SwiftUI
 
 struct WatchSettingsView: View {
@@ -10,7 +11,7 @@ struct WatchSettingsView: View {
     var body: some View {
         Form {
             Section {
-                PulseWatchSettingsPreview()
+                PulseWatchSettingsPreview(day: model.today?.day)
                     .listRowInsets(EdgeInsets())
                     .listRowBackground(Color.clear)
                     .accessibilityHidden(true)
@@ -108,75 +109,65 @@ extension PulseWatchConnectionStatus {
     }
 }
 
+/// The watch face as it waits for today: the dashed seal over slow ink washes.
 private struct PulseWatchSettingsPreview: View {
+    let day: Int?
+
     var body: some View {
         GeometryReader { proxy in
             let size = proxy.size
+            let sealSide = min(size.width * 0.3, size.height * 0.42)
             ZStack {
-                RoundedRectangle(cornerRadius: 34, style: .continuous)
-                    .fill(LinearGradient(
-                        colors: [
-                            Color("PulseWatchPreviewCanvasTop"),
-                            Color("PulseWatchPreviewCanvasBottom"),
-                        ],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    ))
+                LinearGradient(
+                    colors: [
+                        Color("PulseWatchPreviewPaper"),
+                        Color("PulseWatchPreviewPaperDeep"),
+                    ],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
 
                 previewWave(
-                    color: Color("PulseWatchPreviewWaveBack"),
+                    color: Color("PulseWatchPreviewWashBack"),
                     baseline: 0.66,
                     height: size.height * 0.18,
                     size: size
                 )
                 previewWave(
-                    color: Color("PulseWatchPreviewWaveMiddle"),
+                    color: Color("PulseWatchPreviewWashMiddle"),
                     baseline: 0.76,
                     height: size.height * 0.15,
                     size: size
                 )
                 previewWave(
-                    color: Color("PulseWatchPreviewWaveFront"),
+                    color: Color("PulseWatchPreviewWashFront"),
                     baseline: 0.86,
                     height: size.height * 0.12,
                     size: size
                 )
 
-                HStack(spacing: 12) {
-                    VStack(alignment: .leading, spacing: 5) {
-                        Text("settings.watch.preview.today")
-                            .font(.caption.weight(.semibold))
-                            .foregroundStyle(.white.opacity(0.60))
-                        Text("settings.watch.preview.check_in")
-                            .font(.system(size: 36, weight: .bold, design: .rounded))
-                            .foregroundStyle(.white)
-                        Spacer(minLength: 0)
-                        Text("settings.watch.preview.pending")
-                            .font(.caption.weight(.semibold))
-                            .foregroundStyle(.white.opacity(0.82))
+                VStack(spacing: PulseDesign.spacing8) {
+                    if let day {
+                        PulseDayMark(
+                            day: day,
+                            state: .awaiting,
+                            seed: 0,
+                            seal: Color("PulseWatchPreviewSeal"),
+                            ink: Color("PulseWatchPreviewInk"),
+                            muted: Color("PulseWatchPreviewMuted"),
+                            emphasized: true
+                        )
+                        .frame(width: sealSide, height: sealSide)
                     }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-
-                    ZStack {
-                        Capsule()
-                            .fill(Color("PulseWatchPreviewAxis"))
-                            .frame(width: 2, height: size.height * 0.62)
-                        Circle()
-                            .fill(.white)
-                            .frame(width: 20, height: 20)
-                            .overlay {
-                                Circle()
-                                    .stroke(
-                                        Color("PulseWatchPreviewAxis"),
-                                        lineWidth: 4
-                                    )
-                            }
-                            .offset(y: -size.height * 0.12)
-                    }
-                    .frame(width: 48)
+                    Text("settings.watch.preview.check_in")
+                        .font(.system(size: 24, weight: .bold, design: .serif))
+                        .foregroundStyle(Color("PulseWatchPreviewSeal"))
+                    Text("settings.watch.preview.pending")
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(Color("PulseWatchPreviewMuted"))
                 }
-                .padding(24)
             }
+            .clipShape(RoundedRectangle(cornerRadius: 34, style: .continuous))
         }
         .aspectRatio(1.42, contentMode: .fit)
     }

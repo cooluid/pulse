@@ -27,8 +27,8 @@ struct PulseWatchStatusFieldBackground: View {
             ZStack {
                 LinearGradient(
                     colors: [
-                        Color("PulseWatchCanvasTop"),
-                        Color("PulseWatchCanvasBottom"),
+                        Color("PulseWatchPaper"),
+                        Color("PulseWatchPaperDeep"),
                     ],
                     startPoint: .topLeading,
                     endPoint: .bottomTrailing
@@ -43,7 +43,7 @@ struct PulseWatchStatusFieldBackground: View {
                         offset: 0.08
                     )
                 )
-                .fill(Color("PulseWatchWaveBack"))
+                .fill(Color("PulseWatchWashBack"))
 
                 PulseWatchWaveShape(
                     baseline: waveBaselines.middle,
@@ -54,7 +54,7 @@ struct PulseWatchStatusFieldBackground: View {
                         offset: 0.44
                     )
                 )
-                .fill(Color("PulseWatchWaveMiddle"))
+                .fill(Color("PulseWatchWashMiddle"))
 
                 PulseWatchWaveShape(
                     baseline: waveBaselines.front,
@@ -65,7 +65,7 @@ struct PulseWatchStatusFieldBackground: View {
                         offset: 0.76
                     )
                 )
-                .fill(Color("PulseWatchWaveFront"))
+                .fill(Color("PulseWatchWashFront"))
             }
             .frame(width: proxy.size.width, height: proxy.size.height)
         }
@@ -94,78 +94,6 @@ struct PulseWatchStatusFieldBackground: View {
         let normalized = date.timeIntervalSinceReferenceDate
             .truncatingRemainder(dividingBy: period) / period
         return normalized + offset
-    }
-}
-
-struct PulseWatchDayAxis: View {
-    let state: PulseWatchDisplayState
-
-    var body: some View {
-        GeometryReader { proxy in
-            let top = proxy.size.height * 0.08
-            let bottom = proxy.size.height * 0.92
-            let x = proxy.size.width / 2
-            let y = top + (bottom - top) * nodePosition
-
-            ZStack {
-                Path { path in
-                    path.move(to: CGPoint(x: x, y: top))
-                    path.addLine(to: CGPoint(x: x, y: bottom))
-                }
-                .stroke(
-                    axisColor.opacity(0.86),
-                    style: StrokeStyle(
-                        lineWidth: PulseWatchDesign.statusAxisLineWidth,
-                        lineCap: .round
-                    )
-                )
-
-                Circle()
-                    .fill(Color("PulseWatchInk"))
-                    .frame(
-                        width: PulseWatchDesign.statusAxisNodeSide,
-                        height: PulseWatchDesign.statusAxisNodeSide
-                    )
-                    .overlay {
-                        Circle()
-                            .stroke(
-                                axisColor,
-                                lineWidth: PulseWatchDesign.statusAxisNodeStrokeWidth
-                            )
-                    }
-                    .shadow(
-                        color: axisColor.opacity(0.55),
-                        radius: PulseWatchDesign.statusAxisNodeShadowRadius
-                    )
-                    .position(x: x, y: y)
-            }
-        }
-        .allowsHitTesting(false)
-        .accessibilityHidden(true)
-    }
-
-    private var nodePosition: CGFloat {
-        switch state {
-        case .needsSync:
-            0.16
-        case .ready:
-            0.28
-        case .submitting, .pendingSync, .failed:
-            0.48
-        case .committed:
-            0.74
-        }
-    }
-
-    private var axisColor: Color {
-        switch state {
-        case .submitting, .pendingSync:
-            Color("PulseWatchPending")
-        case .failed:
-            Color("PulseWatchSecondary")
-        case .ready, .committed, .needsSync:
-            Color("PulseWatchAxis")
-        }
     }
 }
 

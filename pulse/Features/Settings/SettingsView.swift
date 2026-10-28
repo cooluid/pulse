@@ -90,7 +90,7 @@ struct SettingsView: View {
     }
 
     private var appearanceSection: some View {
-        Section("settings.personalization.section") {
+        Section {
             NavigationLink {
                 VisualThemePickerView(model: model)
             } label: {
@@ -119,6 +119,7 @@ struct SettingsView: View {
                     Text(theme.localizedName(locale: locale)).tag(theme)
                 }
             }
+            .disabled(model.resolvedVisualTheme.fixedColorScheme != nil)
             .accessibilityIdentifier("settings.theme.picker")
             .id("settings.theme.\(locale.identifier)")
 
@@ -145,7 +146,19 @@ struct SettingsView: View {
                 }
             }
             .accessibilityIdentifier("settings.widget.gallery.link")
-
+        } header: {
+            Text("settings.personalization.section")
+        } footer: {
+            if model.resolvedVisualTheme.fixedColorScheme != nil {
+                Text(
+                    String(
+                        format: PulseLocalization.string("settings.theme.fixed_dark_format", locale: locale),
+                        model.resolvedVisualTheme.localizedName(locale: locale)
+                    )
+                )
+                .foregroundStyle(PulseDesign.appMuted(for: visualTheme))
+                .accessibilityIdentifier("settings.theme.fixed_dark")
+            }
         }
     }
 

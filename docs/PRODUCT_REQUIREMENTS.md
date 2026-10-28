@@ -121,7 +121,7 @@ MVP 的目标不是搭建任务平台，而是让以下闭环稳定成立：
 - 提醒时间。
 - 一周起始日。
 - 主题模式设置：跟随系统、浅色、深色。
-- 界面主题：纸页手记是唯一免费与默认主题；静野、晴昼、月汐、棱镜刻度由同一个高级功能 StoreKit entitlement 解锁。五套主题中的签到、记事、照片、月历、漏签和统计能力必须等价。未验证权益时付费主题只能预览，不得启用、静默替换或保存伪解锁状态；权益撤销时统一切回纸页手记并说明结果。界面语言设置：跟随系统、English、简体中文；App 与 Widget 消费同一语言事实。
+- 界面主题：朱砂（`editorialJournal`）是唯一免费与默认主题；静野、晴昼由同一个高级功能 StoreKit entitlement 解锁。三套主题中的签到、记事、照片、月历、漏签和统计能力必须等价。未验证权益时付费主题只能预览，不得启用、静默替换或保存伪解锁状态；权益撤销时统一切回朱砂并说明结果。晴昼始终使用深色外观，此时主题模式设置不可更改并说明原因。界面语言设置：跟随系统、English、简体中文；App 与 Widget 消费同一语言事实。
 - 导出口令保护的 Pulse 加密备份；口令不保存且无法找回。
 - 从 `.pulsebackup` 恢复数据；认证和完整校验后再由用户确认全量替换，不做隐式合并。
 - 修改签到时区。
@@ -163,7 +163,7 @@ MVP 的目标不是搭建任务平台，而是让以下闭环稳定成立：
 
 ### 5.2 P1：1.1 增强范围
 
-- 免费基础提醒：所有用户均可使用本地通知；一次买断高阶权益在受支持的 iOS 26 系统上增加定时 standard Live Activity，可从 Lock Screen / Dynamic Island 直接签到。该系统表面没有用户样式选择，也不保存视觉偏好。当前产品名为“萤火日晕”。
+- 免费基础提醒：所有用户均可使用本地通知；一次买断高阶权益在受支持的 iOS 26 系统上增加定时 standard Live Activity，可从 Lock Screen / Dynamic Island 直接签到。该系统表面没有用户样式选择，也不保存视觉偏好，用户侧统称“定时实时活动”。
 - Pulse 加密备份 container v2 / payload v3 导出与全量恢复，包含签到、记事、媒体清单、原图与缩略图；备份/恢复永久属于免费数据主权能力。
 - 签到时区设置。
 - 一周起始日设置。
@@ -259,4 +259,4 @@ MVP 的目标不是搭建任务平台，而是让以下闭环稳定成立：
 - 本地优先、系统数据保护和加密备份恢复承诺是否仍成立；任何 iCloud 或远程处理变更都必须先更新隐私政策。
 - 正式视觉、图标、商店素材和文案是否验收。
 - 通知行为是否在真机上通过授权、拒绝和系统设置变更验证。
-- iPhone 伴侣型 Apple Watch App、今日日印/七日脉冲 complication 与 Smart Stack 签到入口；iPhone 设置首页提供 Apple Watch 发现入口、配对/安装状态与波浪动态开关。Watch 只保存可重建快照和 durable command outbox，iPhone Repository 仍是唯一签到真源，iPhone `AppSettings` 是 Watch 外观偏好唯一真源。基础 Watch 查看与可靠签到免费。
+- iPhone 伴侣型 Apple Watch App、今日日印/最近七天 complication 与 Smart Stack 签到入口；iPhone 设置首页提供 Apple Watch 发现入口、配对/安装状态与波浪动态开关。Watch 只保存可重建快照和 durable command outbox，iPhone Repository 仍是唯一签到真源，iPhone `AppSettings` 是 Watch 外观偏好唯一真源。基础 Watch 查看与可靠签到免费。

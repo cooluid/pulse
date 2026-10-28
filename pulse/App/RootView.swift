@@ -37,7 +37,7 @@ struct RootView: View {
                         Task { await model.start() }
                     }
                     .buttonStyle(.borderedProminent)
-                    .tint(PulseDesign.action)
+                    .tint(PulseDesign.appAccent(for: visualTheme))
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .background(PulseScreenBackground())
@@ -198,7 +198,9 @@ struct RootView: View {
             : estimatedPrimaryNavigationHeight
     }
 
-    private var estimatedPrimaryNavigationHeight: CGFloat { 72 }
+    private var estimatedPrimaryNavigationHeight: CGFloat {
+        PulseDesign.primaryNavigationHeight + PulseDesign.spacing16
+    }
 
     @ViewBuilder
     private func secondaryDestination(_ destination: PulseNavigationDestination) -> some View {

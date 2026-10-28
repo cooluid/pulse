@@ -40,11 +40,11 @@ enum AppTheme: String, CaseIterable, Identifiable, Sendable {
 }
 
 enum PulseVisualTheme: String, CaseIterable, Identifiable, Sendable {
+    // Raw values are persisted and were sold under these names; the free vermilion page keeps
+    // the original free theme's identifier so existing settings land on it.
     case editorialJournal
     case quietField
     case sunlitDay
-    case prismLedger
-    case immersion
 
     var id: String { rawValue }
 
@@ -56,10 +56,6 @@ enum PulseVisualTheme: String, CaseIterable, Identifiable, Sendable {
             PulseLocalization.string("settings.visual_theme.quiet_field", locale: locale)
         case .sunlitDay:
             PulseLocalization.string("settings.visual_theme.sunlit_day", locale: locale)
-        case .prismLedger:
-            PulseLocalization.string("settings.visual_theme.prism_ledger", locale: locale)
-        case .immersion:
-            PulseLocalization.string("settings.visual_theme.immersion", locale: locale)
         }
     }
 
@@ -78,16 +74,6 @@ enum PulseVisualTheme: String, CaseIterable, Identifiable, Sendable {
         case .sunlitDay:
             PulseLocalization.string(
                 "settings.visual_theme.sunlit_day.detail",
-                locale: locale
-            )
-        case .prismLedger:
-            PulseLocalization.string(
-                "settings.visual_theme.prism_ledger.detail",
-                locale: locale
-            )
-        case .immersion:
-            PulseLocalization.string(
-                "settings.visual_theme.immersion.detail",
                 locale: locale
             )
         }

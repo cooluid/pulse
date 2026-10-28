@@ -3862,6 +3862,23 @@
         }
       }
     },
+    "settings.theme.fixed_dark_format" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ always uses the dark appearance."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%@”始终使用深色外观。"
+          }
+        }
+      }
+    },
     "settings.theme.light" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -4014,13 +4031,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "The previously selected theme is no longer included with the current entitlement. Pulse has switched to the free Journal Page theme."
+            "value" : "The previously selected theme is no longer included with the current entitlement. Pulse has switched to the free Vermilion theme."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "先前选择的主题已不在当前权益中，一日一印已切换为免费的“纸页手记”。"
+            "value" : "先前选择的主题已不在当前权益中，一日一印已切换为免费的“朱砂”。"
           }
         }
       }
@@ -4048,13 +4065,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Journal Page"
+            "value" : "Vermilion"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "纸页手记"
+            "value" : "朱砂"
           }
         }
       }
@@ -4065,47 +4082,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Book-like typography and a hand-stamped mark."
+            "value" : "A vermilion seal; the page follows Light and Dark."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "书页排版与一枚手工印章。"
-          }
-        }
-      }
-    },
-    "settings.visual_theme.immersion" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Immersion"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "沉浸"
-          }
-        }
-      }
-    },
-    "settings.visual_theme.immersion.detail" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "One continuous surface. The day's number fills the page, and checking in presses into it."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "一整块连续的页面。日号铺满这一页，签到是把它按下去。"
+            "value" : "朱砂红的印，纸色随明暗变化。"
           }
         }
       }
@@ -4123,40 +4106,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "预览%@"
-          }
-        }
-      }
-    },
-    "settings.visual_theme.prism_ledger" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Prism Ledger"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "棱镜刻度"
-          }
-        }
-      }
-    },
-    "settings.visual_theme.prism_ledger.detail" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Precise squares and fine tick marks."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "方形结构与细密刻度。"
           }
         }
       }
@@ -4184,13 +4133,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ink on paper. One stalk that grows with each kept day."
+            "value" : "A pine-green seal on a page with a hint of green."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "纸与墨双色。一株随签到生长的草。"
+            "value" : "松绿的印，纸面带一点草色。"
           }
         }
       }
@@ -4218,13 +4167,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "A cyanotype sheet. Checking in exposes the day in white."
+            "value" : "A cyanotype sheet. Checking in prints the day in white."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "一整张蓝晒纸。签到即把今天晒成白色印相。"
+            "value" : "一整张蓝晒纸。签到即晒出一枚白印。"
           }
         }
       }
@@ -4321,22 +4270,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "今天还未签到"
-          }
-        }
-      }
-    },
-    "settings.watch.preview.today" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "TODAY"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "今日"
           }
         }
       }
@@ -4637,7 +4570,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Day Silhouette"
+            "value" : "Full Bleed"
           }
         },
         "zh-Hans" : {
@@ -4654,13 +4587,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Light and shade frame today’s date."
+            "value" : "After check-in the whole widget takes the ink, leaving today’s date in paper."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "深浅分界，衬出今日日期。"
+            "value" : "签到后整页着色，只留出今天的日期。"
           }
         }
       }
@@ -4671,7 +4604,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Quiet Field"
+            "value" : "Stillness"
           }
         },
         "zh-Hans" : {
@@ -4688,13 +4621,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Concentric rings around a single point."
+            "value" : "Only today’s seal."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "由一点展开的同心圆。"
+            "value" : "只留一枚日印。"
           }
         }
       }
@@ -4722,13 +4655,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ruled paper, like a short letter."
+            "value" : "A short note, signed with today’s seal."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "横线与纸页，像一封简短的手札。"
+            "value" : "一页短笺，落款处盖今天的印。"
           }
         }
       }
@@ -4739,7 +4672,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Star Ring"
+            "value" : "Ring"
           }
         },
         "zh-Hans" : {
@@ -4756,13 +4689,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "An open ring and a small orbiting dot."
+            "value" : "The six days before today in a ring, with today in the middle."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "星环与一枚小小的圆点。"
+            "value" : "前六天围成一圈，今天在中间。"
           }
         }
       }
@@ -4790,13 +4723,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "A fine line connects recent check-ins."
+            "value" : "The last seven days in a row."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "一条细线，连接近期签到。"
+            "value" : "最近七天的日印排成一行。"
           }
         }
       }
@@ -4841,13 +4774,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "A quiet place for today."
+            "value" : "Today’s seal, pressed when you check in."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "为今天留一处空白。"
+            "value" : "今天的一枚日印，签到后落下。"
           }
         }
       }
@@ -4858,7 +4791,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Stacked Imprints"
+            "value" : "Stacked Seals"
           }
         },
         "zh-Hans" : {
@@ -4875,13 +4808,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Layered paper for today’s mark."
+            "value" : "Recent seals pressed one over another, today on top."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "层叠纸页，收下今天的一印。"
+            "value" : "最近签到的日印叠在一起，今天在最上面。"
           }
         }
       }
@@ -4909,13 +4842,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "A tide line carries today’s mark."
+            "value" : "The more of the last seven days you keep, the higher the ink."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "一线潮水，留下今日的痕迹。"
+            "value" : "最近七天签到越多，朱色涨得越高。"
           }
         }
       }
@@ -5023,13 +4956,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Check in directly with the Firefly Halo on the Lock Screen or Dynamic Island on supported devices."
+            "value" : "On supported devices, check in right from the Lock Screen or Dynamic Island when your reminder time arrives."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "在支持的设备上，通过锁屏或灵动岛的萤火日晕直接签到。"
+            "value" : "在支持的设备上，到提醒时间后可直接在锁屏或灵动岛签到。"
           }
         }
       }
@@ -5057,13 +4990,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Unlock Immersion, Quiet Field, Sunlit Day, and Prism Ledger across Today, History, Settings, and Advanced Features."
+            "value" : "Unlock Quiet Field and Sunlit Day across Today, History, Settings, and Advanced Features."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "解锁沉浸、静野、晴昼与棱镜刻度，并统一应用到今天、记录、设置和高级功能页面。"
+            "value" : "解锁静野与晴昼，并统一应用到今天、记录、设置和高级功能页面。"
           }
         }
       }
@@ -5074,13 +5007,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Four Additional Interface Themes"
+            "value" : "Two Additional Interface Themes"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "四套额外界面主题"
+            "value" : "两套额外界面主题"
           }
         }
       }
@@ -5091,7 +5024,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Unlock Star Ring, Stacked Imprints, Day Silhouette, Letter, Quiet Field, Path, and Tide Mark styles."
+            "value" : "Unlock Ring, Stacked Seals, Full Bleed, Letter, Stillness, Path, and Tide Mark."
           }
         },
         "zh-Hans" : {
@@ -5125,13 +5058,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Immersion, Quiet Field, Sunlit Day, Prism Ledger, seven widget styles, and Firefly Halo for Lock Screen and Dynamic Island."
+            "value" : "Quiet Field and Sunlit Day, seven widget styles, and a scheduled Live Activity that appears on the Lock Screen and in the Dynamic Island at your reminder time."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "沉浸、静野、晴昼、棱镜刻度、七种小组件样式，以及用于锁屏与灵动岛的萤火日晕。"
+            "value" : "静野与晴昼两套主题、七种小组件样式，以及到提醒时间出现在锁屏与灵动岛上的定时实时活动。"
           }
         }
       }
@@ -5142,13 +5075,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Themes · Widgets · System Surfaces"
+            "value" : "Themes · Widgets · Live Activity"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "界面主题 · 小组件 · 系统表面"
+            "value" : "界面主题 · 小组件 · 实时活动"
           }
         }
       }
@@ -5159,13 +5092,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Four themes. Seven compositions. One Firefly Halo."
+            "value" : "Two themes. Seven widgets.\nCheck in from the Lock Screen."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "四套主题。七种构图。一个萤火日晕。"
+            "value" : "两套主题。七种小组件。\n在锁屏上直接签到。"
           }
         }
       }
@@ -5605,22 +5538,6 @@
         }
       }
     },
-    "today.navigation_title" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Pulse"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "一日一印"
-          }
-        }
-      }
-    },
     "today.navigation.checked" : {
       "localizations" : {
         "en" : {
@@ -5711,7 +5628,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Day Silhouette"
+            "value" : "Full Bleed"
           }
         },
         "zh-Hans" : {
@@ -5728,7 +5645,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Quiet Field"
+            "value" : "Stillness"
           }
         },
         "zh-Hans" : {
@@ -5762,7 +5679,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Star Ring"
+            "value" : "Ring"
           }
         },
         "zh-Hans" : {
@@ -5830,7 +5747,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Stacked Imprints"
+            "value" : "Stacked Seals"
           }
         },
         "zh-Hans" : {
@@ -5966,30 +5883,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Shows morning, daylight, evening, and check-in changes without saving anything."
+            "value" : "Shows the widget before and after check-in."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "依次演示早间、日间、晚间与签到变化，不会保存任何数据。"
-          }
-        }
-      }
-    },
-    "widget.gallery.preview.notice" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Preview each composition across the day and after check-in. Home Screen timing is scheduled by iOS."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "可在这里预览每种构图随时段和签到发生的变化；主屏幕的实际展示时机由 iOS 调度。"
+            "value" : "演示签到前后的变化。"
           }
         }
       }
@@ -6177,57 +6077,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "六日 · 签到 %d 天"
-          }
-        }
-      }
-    },
-    "widget.place.checked" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Checked in today"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "今天已签到"
-          }
-        }
-      }
-    },
-    "widget.place.empty" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Check in"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "待签到"
-          }
-        }
-      }
-    },
-    "widget.place.pending" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Not checked in today"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "今日待签到"
           }
         }
       }

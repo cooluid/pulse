@@ -2,8 +2,10 @@ import PulseWatchShared
 import SwiftUI
 import WidgetKit
 
+/// Today's seal on the watch: a dashed place until the iPhone confirms the day, then the impression.
 struct PulseWatchImprintMark: View {
     let state: PulseWatchDisplayState
+    let todayLogicalDay: String?
     var usesWidgetAccent = false
 
     var body: some View {
@@ -11,98 +13,28 @@ struct PulseWatchImprintMark: View {
             let side = min(proxy.size.width, proxy.size.height)
             ZStack {
                 switch state {
-                case .needsSync:
-                    Circle()
-                        .stroke(
-                            Color("PulseWatchSecondary"),
-                            style: StrokeStyle(
-                                lineWidth: max(
-                                    PulseWatchDesign.markNeedsSyncMinimumLineWidth,
-                                    side * PulseWatchDesign.markNeedsSyncLineWidthRatio
-                                ),
-                                lineCap: .round,
-                                dash: [
-                                    side * PulseWatchDesign.markDashRatio,
-                                    side * PulseWatchDesign.markDashRatio,
-                                ]
-                            )
-                        )
-                case .ready, .submitting:
-                    Circle()
-                        .trim(
-                            from: PulseWatchDesign.markOpenStart,
-                            to: PulseWatchDesign.markOpenEnd
-                        )
-                        .stroke(
-                            Color("PulseWatchField"),
-                            style: StrokeStyle(
-                                lineWidth: max(
-                                    PulseWatchDesign.markMinimumLineWidth,
-                                    side * PulseWatchDesign.markLineWidthRatio
-                                ),
-                                lineCap: .round
-                            )
-                        )
-                        .rotationEffect(.degrees(PulseWatchDesign.markRotationDegrees))
-                    if case .submitting = state {
-                        ProgressView()
-                            .controlSize(.small)
-                            .tint(Color("PulseWatchInk"))
-                    }
-                case .pendingSync:
-                    Circle()
-                        .trim(
-                            from: PulseWatchDesign.markOpenStart,
-                            to: PulseWatchDesign.markPendingEnd
-                        )
-                        .stroke(
-                            Color("PulseWatchField"),
-                            style: StrokeStyle(
-                                lineWidth: max(
-                                    PulseWatchDesign.markMinimumLineWidth,
-                                    side * PulseWatchDesign.markLineWidthRatio
-                                ),
-                                lineCap: .round
-                            )
-                        )
-                        .rotationEffect(.degrees(PulseWatchDesign.markRotationDegrees))
-                    Circle()
-                        .fill(Color("PulseWatchPending"))
-                        .frame(
-                            width: side * PulseWatchDesign.fireflySideRatio,
-                            height: side * PulseWatchDesign.fireflySideRatio
-                        )
-                        .offset(
-                            x: side * PulseWatchDesign.fireflyHorizontalOffsetRatio,
-                            y: side * PulseWatchDesign.fireflyVerticalOffsetRatio
-                        )
-                        .widgetAccentable(usesWidgetAccent)
                 case .committed:
-                    Circle()
-                        .fill(Color("PulseWatchCommitted"))
+                    PulseWatchSealImpression(text: dayText ?? "印", ink: Color("PulseWatchSeal"), seed: seed)
                         .widgetAccentable(usesWidgetAccent)
+                case .ready:
+                    PulseWatchSealSlot(text: dayText, tint: Color("PulseWatchSeal"))
+                        .widgetAccentable(usesWidgetAccent)
+                case .submitting:
+                    PulseWatchSealSlot(text: nil, tint: Color("PulseWatchSeal"))
+                        .widgetAccentable(usesWidgetAccent)
+                    ProgressView()
+                        .controlSize(.small)
+                        .tint(Color("PulseWatchInk"))
+                case .pendingSync:
+                    // Sent, not yet kept: the place stays dashed until the iPhone answers.
+                    PulseWatchSealSlot(text: dayText, tint: Color("PulseWatchSeal"), ghostOpacity: 0.55)
+                        .widgetAccentable(usesWidgetAccent)
+                case .needsSync:
+                    PulseWatchSealSlot(text: "印", tint: Color("PulseWatchMuted"), ghostOpacity: 0.4)
                 case .failed:
-                    Circle()
-                        .trim(
-                            from: PulseWatchDesign.markOpenStart,
-                            to: PulseWatchDesign.markOpenEnd
-                        )
-                        .stroke(
-                            Color("PulseWatchField"),
-                            style: StrokeStyle(
-                                lineWidth: max(
-                                    PulseWatchDesign.markMinimumLineWidth,
-                                    side * PulseWatchDesign.markLineWidthRatio
-                                ),
-                                lineCap: .round
-                            )
-                        )
-                        .rotationEffect(.degrees(PulseWatchDesign.markRotationDegrees))
+                    PulseWatchSealSlot(text: nil, tint: Color("PulseWatchMuted"))
                     Image(systemName: "exclamationmark")
-                        .font(.system(
-                            size: side * PulseWatchDesign.failureSymbolRatio,
-                            weight: .bold
-                        ))
+                        .font(.system(size: side * PulseWatchDesign.failureSymbolRatio, weight: .bold))
                         .foregroundStyle(Color("PulseWatchInk"))
                 }
             }
@@ -111,36 +43,56 @@ struct PulseWatchImprintMark: View {
         }
         .aspectRatio(1, contentMode: .fit)
     }
-}
 
-struct PulseWatchHistoryNode: View {
-    let state: PulseWatchDayState
-    var usesWidgetAccent = false
+    private var dayText: String? {
+        PulseWatchDayNumber.from(todayLogicalDay).map(String.init)
+    }
 
-    var body: some View {
-        switch state {
-        case .checked:
-            Circle()
-                .fill(Color("PulseWatchCommitted"))
-                .widgetAccentable(usesWidgetAccent)
-        case .missed:
-            Circle().stroke(
-                Color("PulseWatchSecondary"),
-                lineWidth: PulseWatchDesign.historyNodeLineWidth
-            )
-        case .beforeHabit:
-            Circle().fill(
-                Color("PulseWatchSecondary").opacity(PulseWatchDesign.beforeHabitOpacity)
-            )
-        case .todayPending:
-            Circle().stroke(
-                Color("PulseWatchField"),
-                lineWidth: PulseWatchDesign.historyNodeLineWidth
-            )
-        }
+    private var seed: UInt64 {
+        PulseWatchSealRandom.seed(for: todayLogicalDay ?? "")
     }
 }
 
+/// One earlier day in the row: a small impression if it was kept, a dash if it was missed.
+struct PulseWatchHistoryNode: View {
+    let day: PulseWatchDaySnapshot
+    var usesWidgetAccent = false
+
+    var body: some View {
+        GeometryReader { proxy in
+            let side = min(proxy.size.width, proxy.size.height)
+            ZStack {
+                switch day.state {
+                case .checked:
+                    PulseWatchSealImpression(
+                        text: PulseWatchDayNumber.from(day.logicalDay).map(String.init) ?? "",
+                        ink: Color("PulseWatchSeal"),
+                        seed: PulseWatchSealRandom.seed(for: day.logicalDay),
+                        texture: 0.5
+                    )
+                    .widgetAccentable(usesWidgetAccent)
+                case .missed:
+                    Capsule()
+                        .fill(Color("PulseWatchMuted"))
+                        .frame(width: side * 0.42, height: max(1.5, side * 0.1))
+                case .beforeHabit:
+                    Circle()
+                        .fill(Color("PulseWatchMuted").opacity(PulseWatchDesign.beforeHabitOpacity))
+                        .frame(width: side * 0.18, height: side * 0.18)
+                case .todayPending:
+                    PulseWatchSealSlot(text: nil, tint: Color("PulseWatchSeal"))
+                        .widgetAccentable(usesWidgetAccent)
+                }
+            }
+            .frame(width: side, height: side)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+        }
+        .aspectRatio(1, contentMode: .fit)
+        .accessibilityHidden(true)
+    }
+}
+
+/// Six earlier days, then today's seal at the end of the row.
 struct PulseWatchSevenDayPulse: View {
     let days: [PulseWatchDaySnapshot]
     let displayState: PulseWatchDisplayState
@@ -150,99 +102,32 @@ struct PulseWatchSevenDayPulse: View {
     var body: some View {
         GeometryReader { proxy in
             let history = Array(days.dropLast())
-            let historySide = historyNodeSide(in: proxy.size)
-            let todaySide = todayImprintSide(in: proxy.size)
-            let todayCenter = CGPoint(
-                x: proxy.size.width - todaySide / 2,
-                y: proxy.size.height / 2
+            let todaySide = showsTodayImprint ? min(proxy.size.height, proxy.size.width * PulseWatchDesign.rhythmTodayWidthRatio) : 0
+            let historyWidth = proxy.size.width - todaySide - (showsTodayImprint ? PulseWatchDesign.rhythmTodayGap : 0)
+            let nodeSide = min(
+                proxy.size.height * PulseWatchDesign.rhythmHistoryHeightRatio,
+                historyWidth / CGFloat(max(history.count, 1)) - PulseWatchDesign.rhythmHistorySpacing
             )
-            ZStack {
-                Path { path in
-                    let points = history.indices.map {
-                        historyPoint(
-                            index: $0,
-                            count: history.count,
-                            size: proxy.size
-                        )
-                    }
-                    guard let first = points.first else { return }
-                    path.move(to: first)
-                    for point in points.dropFirst() {
-                        path.addLine(to: point)
-                    }
-                    if showsTodayImprint {
-                        path.addLine(to: todayCenter)
+            HStack(spacing: PulseWatchDesign.rhythmTodayGap) {
+                HStack(spacing: 0) {
+                    ForEach(history) { day in
+                        PulseWatchHistoryNode(day: day, usesWidgetAccent: usesWidgetAccent)
+                            .frame(width: nodeSide, height: nodeSide)
+                            .frame(maxWidth: .infinity)
                     }
                 }
-                .stroke(
-                    Color("PulseWatchSecondary")
-                        .opacity(PulseWatchDesign.rectangularTrackOpacity),
-                    style: StrokeStyle(
-                        lineWidth: PulseWatchDesign.rectangularTrackLineWidth,
-                        lineCap: .round,
-                        lineJoin: .round
-                    )
-                )
+                .frame(width: historyWidth)
 
-                ForEach(Array(history.enumerated()), id: \.element.id) { index, day in
-                    PulseWatchHistoryNode(
-                        state: day.state,
-                        usesWidgetAccent: usesWidgetAccent
-                    )
-                    .frame(width: historySide, height: historySide)
-                    .position(historyPoint(
-                        index: index,
-                        count: history.count,
-                        size: proxy.size
-                    ))
-                }
                 if showsTodayImprint {
                     PulseWatchImprintMark(
                         state: displayState,
+                        todayLogicalDay: days.last?.logicalDay,
                         usesWidgetAccent: usesWidgetAccent
                     )
                     .frame(width: todaySide, height: todaySide)
-                    .position(todayCenter)
                 }
             }
+            .frame(width: proxy.size.width, height: proxy.size.height)
         }
-    }
-
-    private func historyPoint(
-        index: Int,
-        count: Int,
-        size: CGSize
-    ) -> CGPoint {
-        let progress = count > 1 ? CGFloat(index) / CGFloat(count - 1) : 0
-        let horizontalInset = size.width
-            * PulseWatchDesign.rectangularHorizontalInsetRatio
-        let historyEnd = showsTodayImprint
-            ? size.width * PulseWatchDesign.rectangularHistoryEndRatio
-            : size.width - horizontalInset
-        let x = horizontalInset + (historyEnd - horizontalInset) * progress
-        let y = size.height / 2
-            + sin(progress * .pi) * size.height
-                * PulseWatchDesign.rectangularArcAmplitudeRatio
-        return CGPoint(x: x, y: y)
-    }
-
-    private func historyNodeSide(in size: CGSize) -> CGFloat {
-        if showsTodayImprint {
-            return min(
-                size.height * PulseWatchDesign.rhythmHistoryHeightRatio,
-                size.width * PulseWatchDesign.rhythmHistoryWidthRatio
-            )
-        }
-        return min(
-            size.height * PulseWatchDesign.rhythmHistoryOnlyHeightRatio,
-            size.width * PulseWatchDesign.rhythmHistoryOnlyWidthRatio
-        )
-    }
-
-    private func todayImprintSide(in size: CGSize) -> CGFloat {
-        min(
-            size.height,
-            size.width * PulseWatchDesign.rhythmTodayWidthRatio
-        )
     }
 }

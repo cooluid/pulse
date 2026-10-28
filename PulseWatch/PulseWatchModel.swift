@@ -34,10 +34,14 @@ enum PulseWatchBootstrap {
         }
         let now = Date()
         let isCommitted = requestedState == "committed"
-        let logicalDays = [
-            "2026-08-17", "2026-08-18", "2026-08-19", "2026-08-20",
-            "2026-08-21", "2026-08-22", "2026-08-23",
-        ]
+        // The receipt must fall on the seeded "today", so the week is built around the capture date.
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(identifier: "Asia/Shanghai")!
+        let logicalDays = (-6...0).map { offset -> String in
+            let date = calendar.date(byAdding: .day, value: offset, to: now)!
+            let parts = calendar.dateComponents([.year, .month, .day], from: date)
+            return String(format: "%04d-%02d-%02d", parts.year!, parts.month!, parts.day!)
+        }
         let states: [PulseWatchDayState] = [
             .missed, .checked, .missed, .checked, .checked, .checked,
             isCommitted ? .checked : .todayPending,
@@ -54,7 +58,7 @@ enum PulseWatchBootstrap {
             projectTimeZoneIdentifier: "Asia/Shanghai",
             todayLogicalDay: logicalDays.last!,
             isCheckedToday: isCommitted,
-            checkedAt: isCommitted ? now.addingTimeInterval(-60 * 30) : nil,
+            checkedAt: isCommitted ? now : nil,
             waveMotionEnabled: true,
             sevenDayPulse: zip(logicalDays, states).map {
                 PulseWatchDaySnapshot(logicalDay: $0.0, state: $0.1)

@@ -15,7 +15,7 @@ struct PulseWatchLayoutMetrics: Equatable {
     let topPadding: CGFloat
     let bottomPadding: CGFloat
     let contentGap: CGFloat
-    let axisWidth: CGFloat
+    let sealSide: CGFloat
     let primaryFontSize: CGFloat
 
     static func resolve(containerSize: CGSize) -> PulseWatchLayoutMetrics {
@@ -28,7 +28,10 @@ struct PulseWatchLayoutMetrics: Equatable {
             topPadding: PulseWatchDesign.pageTopPadding.resolve(for: height),
             bottomPadding: PulseWatchDesign.pageBottomPadding.resolve(for: height),
             contentGap: PulseWatchDesign.pageContentGap.resolve(for: width),
-            axisWidth: PulseWatchDesign.statusAxisWidth.resolve(for: width),
+            sealSide: min(
+                PulseWatchDesign.sealWidth.resolve(for: width),
+                height * PulseWatchDesign.sealMaximumHeightRatio
+            ),
             primaryFontSize: PulseWatchDesign.primaryFontSize.resolve(for: width)
         )
     }
@@ -52,27 +55,25 @@ enum PulseWatchDesign {
         maximum: 12
     )
     fileprivate static let pageContentGap = PulseWatchScaledMetric(
-        ratio: 0.025,
+        ratio: 0.03,
         minimum: 4,
-        maximum: 6
+        maximum: 7
     )
-    fileprivate static let statusAxisWidth = PulseWatchScaledMetric(
-        ratio: 0.23,
-        minimum: 40,
-        maximum: 52
+    fileprivate static let sealWidth = PulseWatchScaledMetric(
+        ratio: 0.46,
+        minimum: 64,
+        maximum: 104
     )
+    fileprivate static let sealMaximumHeightRatio: CGFloat = 0.42
     fileprivate static let primaryFontSize = PulseWatchScaledMetric(
-        ratio: 0.20,
-        minimum: 30,
-        maximum: 41
+        ratio: 0.12,
+        minimum: 19,
+        maximum: 25
     )
 
+    static let sealCornerFraction: CGFloat = 0.12
     static let recoveryButtonHorizontalPadding: CGFloat = 16
     static let recoveryButtonMinimumHeight: CGFloat = 44
-    static let statusAxisLineWidth: CGFloat = 1.5
-    static let statusAxisNodeSide: CGFloat = 16
-    static let statusAxisNodeStrokeWidth: CGFloat = 3
-    static let statusAxisNodeShadowRadius: CGFloat = 6
     static let waveFrameInterval = 1.0 / 12.0
     static let waveBackPeriod = 17.0
     static let waveMiddlePeriod = 13.0
@@ -80,33 +81,14 @@ enum PulseWatchDesign {
     static let waveHorizontalTravelRatio: CGFloat = 0.065
     static let waveVerticalTravelRatio: CGFloat = 0.012
 
-    static let widgetMarkPadding: CGFloat = 3
-    static let widgetRhythmHorizontalPadding: CGFloat = 4
+    static let widgetMarkPadding: CGFloat = 4
+    static let widgetRhythmHorizontalPadding: CGFloat = 2
 
-    static let markMinimumLineWidth: CGFloat = 3.5
-    static let markLineWidthRatio: CGFloat = 0.09
-    static let markNeedsSyncMinimumLineWidth: CGFloat = 2
-    static let markNeedsSyncLineWidthRatio: CGFloat = 0.085
-    static let markDashRatio: CGFloat = 0.12
-    static let markOpenStart: CGFloat = 0.08
-    static let markOpenEnd: CGFloat = 0.92
-    static let markPendingEnd: CGFloat = 0.78
-    static let markRotationDegrees = -90.0
-    static let fireflySideRatio: CGFloat = 0.16
-    static let fireflyHorizontalOffsetRatio: CGFloat = 0.30
-    static let fireflyVerticalOffsetRatio: CGFloat = -0.22
-    static let failureSymbolRatio: CGFloat = 0.28
+    static let failureSymbolRatio: CGFloat = 0.32
+    static let beforeHabitOpacity = 0.4
 
-    static let rhythmTodayWidthRatio: CGFloat = 0.18
-    static let rhythmHistoryHeightRatio: CGFloat = 0.44
-    static let rhythmHistoryWidthRatio: CGFloat = 0.095
-    static let rhythmHistoryOnlyHeightRatio: CGFloat = 0.52
-    static let rhythmHistoryOnlyWidthRatio: CGFloat = 0.11
-    static let historyNodeLineWidth: CGFloat = 1.75
-    static let beforeHabitOpacity = 0.34
-    static let rectangularTrackLineWidth: CGFloat = 1
-    static let rectangularTrackOpacity = 0.34
-    static let rectangularHistoryEndRatio: CGFloat = 0.66
-    static let rectangularHorizontalInsetRatio: CGFloat = 0.045
-    static let rectangularArcAmplitudeRatio: CGFloat = 0.13
+    static let rhythmTodayWidthRatio: CGFloat = 0.27
+    static let rhythmTodayGap: CGFloat = 4
+    static let rhythmHistoryHeightRatio: CGFloat = 0.5
+    static let rhythmHistorySpacing: CGFloat = 2
 }

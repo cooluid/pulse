@@ -25,16 +25,21 @@ struct PulseReminderLiveActivity: Widget {
                 locale: locale,
                 animatesAppearance: true
             )
-                .activityBackgroundTint(nil)
-                .activitySystemActionForegroundColor(nil)
+                .activityBackgroundTint(PulseWidgetDesign.paper)
+                .activitySystemActionForegroundColor(PulseWidgetDesign.ink)
                 .widgetURL(PulseRuntimeIdentity.todayDeepLink)
         } dynamicIsland: { context in
             let locale = Locale(identifier: context.attributes.localeIdentifier)
+            let day = PulseReminderActivityDay.number(
+                reminderDate: context.attributes.reminderDate,
+                timeZoneIdentifier: context.attributes.timeZoneIdentifier
+            )
             return DynamicIsland {
                 DynamicIslandExpandedRegion(.leading) {
                     PulseReminderActivityMark(
                         phase: context.state.phase,
                         layout: .islandExpanded,
+                        day: day,
                         animatesAppearance: true
                     )
                 }
@@ -61,6 +66,7 @@ struct PulseReminderLiveActivity: Widget {
                 PulseReminderActivityMark(
                     phase: context.state.phase,
                     layout: .islandCompact,
+                    day: day,
                     locale: locale,
                     animatesAppearance: true
                 )
@@ -70,11 +76,12 @@ struct PulseReminderLiveActivity: Widget {
                 PulseReminderActivityMark(
                     phase: context.state.phase,
                     layout: .islandMinimal,
+                    day: day,
                     locale: locale,
                     animatesAppearance: true
                 )
             }
-            .keylineTint(PulseWidgetDesign.activityIslandFirefly)
+            .keylineTint(PulseWidgetDesign.activityIslandSeal)
             .widgetURL(PulseRuntimeIdentity.todayDeepLink)
         }
     }
@@ -253,7 +260,7 @@ private struct PulseLocalizedWidgetView: View {
             }
         }
         .containerBackground(for: .widget) {
-            PulseWidgetDesign.background
+            PulseWidgetDesign.paper
         }
     }
 
@@ -297,16 +304,6 @@ private struct PulseLocalizedWidgetView: View {
             pathSummaryFormat: String(
                 localized: "widget.path.summary.format",
                 locale: locale
-            ),
-            emptyPlaceText: String(
-                localized: "widget.place.empty",
-                locale: locale
-            ),
-            placeStatusText: String(
-                localized: snapshot.isCheckedToday
-                    ? "widget.place.checked"
-                    : "widget.place.pending",
-                locale: locale
             )
         )
 
@@ -347,16 +344,20 @@ private struct PulseLocalizedWidgetView: View {
     }
 
     private func accessoryCircularContent(_ snapshot: PulseWidgetSnapshot) -> some View {
-        GeometryReader { proxy in
-            let side = min(proxy.size.width, proxy.size.height)
-            accessoryImprintMark(
-                snapshot,
-                dayNumber: accessoryDayNumber(for: snapshot.today)
+        ZStack {
+            AccessoryWidgetBackground()
+            PulseDayMark(
+                day: snapshot.today.day,
+                state: snapshot.isCheckedToday ? .kept : .awaiting,
+                seed: PulseSealSeed.value(for: snapshot.today),
+                seal: .primary,
+                ink: .primary,
+                muted: .secondary,
+                emphasized: true
             )
-            .frame(width: side, height: side)
-            .position(x: proxy.size.width / 2, y: proxy.size.height / 2)
+            .padding(PulseWidgetDesign.accessoryCircularInset)
+            .widgetAccentable()
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .contentShape(Rectangle())
     }
 
@@ -379,193 +380,40 @@ private struct PulseLocalizedWidgetView: View {
         }
     }
 
+    /// The status, then the week as a row of date seals ending on today.
     private func accessoryRectangularContent(
         _ snapshot: PulseWidgetSnapshot
     ) -> some View {
-        GeometryReader { proxy in
-            let metrics = PulseAccessoryRhythmMetrics(size: proxy.size)
-            let history = Array(snapshot.recentDays.dropLast())
-            let dayNumbers = accessoryDayNumbers(for: snapshot.recentDays)
+        VStack(alignment: .leading, spacing: PulseWidgetDesign.spacing4) {
+            Text(snapshot.isCheckedToday
+                ? "widget.accessory.state.checked"
+                : "widget.accessory.state.pending")
+                .font(.headline)
+                .lineLimit(1)
+                .minimumScaleFactor(0.7)
 
-            ZStack(alignment: .topLeading) {
-                Text(snapshot.isCheckedToday
-                    ? "widget.accessory.state.checked"
-                    : "widget.accessory.state.pending")
-                    .font(.caption2.weight(.semibold))
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.78)
-                    .frame(width: metrics.statusWidth, alignment: .leading)
-
-                accessoryConnectorPath(days: history, metrics: metrics)
-                    .stroke(
-                        Color.primary.opacity(PulseWidgetDesign.accessoryConnectorOpacity),
-                        style: StrokeStyle(
-                            lineWidth: PulseWidgetDesign.accessoryConnectorWidth,
-                            lineCap: .round,
-                            lineJoin: .round
-                        )
+            HStack(spacing: PulseWidgetDesign.accessoryMarkSpacing) {
+                ForEach(snapshot.recentDays) { item in
+                    PulseDayMark(
+                        day: item.day.day,
+                        state: PulseDayMarkState(item.state),
+                        seed: PulseSealSeed.value(for: item.day),
+                        seal: .primary,
+                        ink: .primary,
+                        muted: .secondary,
+                        emphasized: item.day == snapshot.today,
+                        isCompact: true
                     )
-                    .accessibilityHidden(true)
-
-                ForEach(Array(history.enumerated()), id: \.element.id) { index, item in
-                    let side = accessoryHistoryMarkSide(item.state)
-                    accessoryHistoryDayLabel(dayNumbers[index])
-                        .position(
-                            x: metrics.historyCenters[index],
-                            y: metrics.historyDateY
-                        )
-
-                    accessoryHistoryMark(item)
-                        .frame(width: side, height: side)
-                        .position(
-                            x: metrics.historyCenters[index],
-                            y: metrics.railY
-                        )
+                    .frame(
+                        width: PulseWidgetDesign.accessoryMarkSide,
+                        height: PulseWidgetDesign.accessoryMarkSide
+                    )
+                    .widgetAccentable(item.state == .checked || item.state == .todayPending)
                 }
-
-                accessoryImprintMark(
-                    snapshot,
-                    dayNumber: dayNumbers.last
-                        ?? accessoryDayNumber(for: snapshot.today)
-                )
-                .frame(width: metrics.imprintSide, height: metrics.imprintSide)
-                .position(metrics.imprintCenter)
             }
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
         .contentShape(Rectangle())
-    }
-
-    private func accessoryDayNumbers(
-        for days: [PulseWidgetDaySnapshot]
-    ) -> [String] {
-        days.map { item in
-            PulseLocalizedDateFormatting.dayNumber(item.day, locale: locale)
-        }
-    }
-
-    private func accessoryDayNumber(for day: LogicalDay) -> String {
-        PulseLocalizedDateFormatting.dayNumber(day, locale: locale)
-    }
-
-    private func accessoryHistoryDayLabel(_ dayNumber: String) -> some View {
-        Text(verbatim: dayNumber)
-            .font(.system(
-                size: PulseWidgetDesign.accessoryDateFontSize,
-                weight: .semibold
-            ))
-            .monospacedDigit()
-            .foregroundStyle(Color.primary.opacity(PulseWidgetDesign.accessoryDateOpacity))
-            .lineLimit(1)
-            .frame(
-                width: PulseWidgetDesign.accessoryDateLabelWidth,
-                height: PulseWidgetDesign.accessoryDateLabelHeight
-            )
-            .accessibilityHidden(true)
-    }
-
-    private func accessoryConnectorPath(
-        days: [PulseWidgetDaySnapshot],
-        metrics: PulseAccessoryRhythmMetrics
-    ) -> Path {
-        var path = Path()
-        guard days.count == metrics.historyCenters.count,
-              let lastDay = days.last,
-              let lastCenter = metrics.historyCenters.last else {
-            return path
-        }
-
-        for index in 0..<(days.count - 1) {
-            let startX = metrics.historyCenters[index]
-                + accessoryHistoryMarkSide(days[index].state) / 2
-            let endX = metrics.historyCenters[index + 1]
-                - accessoryHistoryMarkSide(days[index + 1].state) / 2
-            path.move(to: CGPoint(x: startX, y: metrics.railY))
-            path.addLine(to: CGPoint(x: endX, y: metrics.railY))
-        }
-
-        let start = CGPoint(
-            x: lastCenter + accessoryHistoryMarkSide(lastDay.state) / 2,
-            y: metrics.railY
-        )
-        let end = metrics.imprintLeadingAnchor
-        let controlX = start.x + (end.x - start.x) * 0.58
-        path.move(to: start)
-        path.addCurve(
-            to: end,
-            control1: CGPoint(x: controlX, y: start.y),
-            control2: CGPoint(x: controlX, y: end.y)
-        )
-        return path
-    }
-
-    private func accessoryHistoryMark(_ item: PulseWidgetDaySnapshot) -> some View {
-        RoundedRectangle(
-            cornerRadius: PulseWidgetDesign.accessoryBlockCornerRadius,
-            style: .continuous
-        )
-        .fill(accessoryHistoryMarkFill(item.state))
-        .overlay {
-            if let stroke = accessoryHistoryMarkStroke(item.state) {
-                RoundedRectangle(
-                    cornerRadius: PulseWidgetDesign.accessoryBlockCornerRadius,
-                    style: .continuous
-                )
-                .stroke(stroke, lineWidth: PulseWidgetDesign.accessoryRailStrokeWidth)
-            }
-        }
-        .widgetAccentable(item.state == .checked)
-        .accessibilityHidden(true)
-    }
-
-    private func accessoryHistoryMarkSide(_ state: PulseWidgetDayState) -> CGFloat {
-        state == .checked
-            ? PulseWidgetDesign.accessoryRailLargeSide
-            : PulseWidgetDesign.accessoryRailSmallSide
-    }
-
-    private func accessoryHistoryMarkFill(_ state: PulseWidgetDayState) -> Color {
-        switch state {
-        case .checked:
-            .primary
-        case .missed:
-            .primary.opacity(PulseWidgetDesign.accessoryMissedOpacity)
-        case .beforeHabit, .todayPending:
-            .clear
-        }
-    }
-
-    private func accessoryHistoryMarkStroke(_ state: PulseWidgetDayState) -> Color? {
-        switch state {
-        case .beforeHabit:
-            Color.primary.opacity(PulseWidgetDesign.accessoryBeforeHabitOpacity)
-        case .todayPending:
-            Color.primary
-        case .checked, .missed:
-            nil
-        }
-    }
-
-    private func accessoryImprintMark(
-        _ snapshot: PulseWidgetSnapshot,
-        dayNumber: String
-    ) -> some View {
-        PulseWidgetImprintMark(
-            isChecked: snapshot.isCheckedToday,
-            usesFullColorPalette: usesFullColorPalette,
-            usesSystemPalette: true,
-            isOnCompletedSurface: false,
-            coreScale: PulseWidgetDesign.imprintCoreScale,
-            ringInsetRatio: PulseWidgetDesign.imprintRingInsetRatio,
-            showsPendingCore: false,
-            pendingLabel: nil,
-            pendingLabelScale: 0,
-            glyphScale: PulseWidgetDesign.imprintGlyphScale,
-            centerLabel: dayNumber,
-            centerLabelScale: PulseWidgetDesign.accessoryTodayDateScale,
-            ringRotationDegrees: 0,
-            coreRotationDegrees: 0
-        )
     }
 
     private func accessorySummary(_ snapshot: PulseWidgetSnapshot) -> String {
@@ -628,7 +476,7 @@ private struct PulseLocalizedWidgetView: View {
     }
 
     private var secondaryForeground: Color {
-        usesFullColorPalette ? PulseWidgetDesign.secondary : .secondary
+        usesFullColorPalette ? PulseWidgetDesign.muted : .secondary
     }
 }
 
@@ -658,65 +506,5 @@ private struct PulseWidgetCheckInHitTarget: View {
         .accessibilityLabel(label)
         .accessibilityHint("widget.action.check_in.hint")
         .accessibilityHidden(!isEnabled)
-    }
-}
-
-private struct PulseAccessoryRhythmMetrics {
-    let imprintSide: CGFloat
-    let imprintCenter: CGPoint
-    let imprintLeadingAnchor: CGPoint
-    let historyCenters: [CGFloat]
-    let historyDateY: CGFloat
-    let railY: CGFloat
-    let statusWidth: CGFloat
-
-    init(size: CGSize) {
-        let imprintSide = min(
-            size.height * PulseWidgetDesign.accessoryImprintHeightRatio,
-            size.width * PulseWidgetDesign.accessoryImprintWidthRatio
-        )
-        let imprintCenter = CGPoint(
-            x: size.width - imprintSide / 2,
-            y: size.height / 2
-        )
-        let visibleRingInset = imprintSide * (
-            PulseWidgetDesign.imprintRingInsetRatio
-                + (1 - 2 * PulseWidgetDesign.imprintRingInsetRatio)
-                * PulseWidgetDesign.ringLayerInsetRatio
-        )
-        let imprintLeadingAnchor = CGPoint(
-            x: size.width - imprintSide + visibleRingInset,
-            y: imprintCenter.y
-        )
-        let firstCenter = max(
-            PulseWidgetDesign.accessoryRailLargeSide / 2,
-            PulseWidgetDesign.accessoryDateLabelWidth / 2
-        )
-        let lastCenter = max(
-            firstCenter,
-            imprintLeadingAnchor.x - PulseWidgetDesign.accessoryRailTerminalGap
-        )
-        let step = (lastCenter - firstCenter) / 5
-        let railY = min(
-            size.height - PulseWidgetDesign.accessoryRailLargeSide / 2,
-            size.height * PulseWidgetDesign.accessoryRailYRatio
-        )
-
-        self.imprintSide = imprintSide
-        self.imprintCenter = imprintCenter
-        self.imprintLeadingAnchor = imprintLeadingAnchor
-        historyCenters = (0..<6).map { firstCenter + CGFloat($0) * step }
-        historyDateY = max(
-            PulseWidgetDesign.accessoryDateLabelHeight / 2,
-            railY
-                - PulseWidgetDesign.accessoryRailLargeSide / 2
-                - PulseWidgetDesign.accessoryDateRailGap
-                - PulseWidgetDesign.accessoryDateLabelHeight / 2
-        )
-        self.railY = railY
-        statusWidth = max(
-            0,
-            size.width - imprintSide - PulseWidgetDesign.spacing8
-        )
     }
 }

@@ -20,6 +20,21 @@ public enum PulseLocalizedDateFormatting {
             .string(from: day.date(timeZone: .gmt))
     }
 
+    public static func monthDayAndShortWeekday(_ day: LogicalDay, locale: Locale) -> String {
+        formatter(locale: locale, template: "MMMdEEE")
+            .string(from: day.date(timeZone: .gmt))
+    }
+
+    public static func shortWeekday(_ day: LogicalDay, locale: Locale) -> String {
+        formatter(locale: locale, template: "EEE")
+            .string(from: day.date(timeZone: .gmt))
+    }
+
+    public static func narrowWeekday(_ day: LogicalDay, locale: Locale) -> String {
+        formatter(locale: locale, template: "EEEEE")
+            .string(from: day.date(timeZone: .gmt))
+    }
+
     public static func accessibilityDate(_ day: LogicalDay, locale: Locale) -> String {
         let formatter = DateFormatter()
         formatter.locale = locale

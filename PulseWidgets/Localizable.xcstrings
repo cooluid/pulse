@@ -250,7 +250,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Day Silhouette"
+            "value" : "Full Bleed"
           }
         },
         "zh-Hans" : {
@@ -266,7 +266,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Quiet Field"
+            "value" : "Stillness"
           }
         },
         "zh-Hans" : {
@@ -298,7 +298,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Star Ring"
+            "value" : "Ring"
           }
         },
         "zh-Hans" : {
@@ -362,7 +362,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Stacked Imprints"
+            "value" : "Stacked Seals"
           }
         },
         "zh-Hans" : {
@@ -450,56 +450,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "六日 · 签到 %d 天"
-          }
-        }
-      }
-    },
-    "widget.place.checked" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Checked in today"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "今天已签到"
-          }
-        }
-      }
-    },
-    "widget.place.empty" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Check in"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "待签到"
-          }
-        }
-      }
-    },
-    "widget.place.pending" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Not checked in today"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "今日待签到"
           }
         }
       }

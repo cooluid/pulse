@@ -1,3 +1,4 @@
+import PulseCore
 import SwiftUI
 
 struct VisualThemePickerView: View {
@@ -7,12 +8,10 @@ struct VisualThemePickerView: View {
     @Environment(\.pulseVisualTheme) private var visualTheme
     @State private var showsStore = false
     @State private var previewTheme: PulseVisualTheme?
-    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     var body: some View {
         ScrollView {
-            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 12),
-                                    count: dynamicTypeSize.isAccessibilitySize ? 1 : 2), spacing: 20) {
+            VStack(spacing: PulseDesign.spacing16) {
                 ForEach(PulseVisualTheme.allCases) { theme in
                     PulseVisualThemeChoice(
                         theme: theme,
@@ -34,7 +33,7 @@ struct VisualThemePickerView: View {
             .padding(.horizontal, PulseDesign.horizontalPadding)
             .padding(.top, PulseDesign.spacing16)
             .padding(.bottom, PulseDesign.spacing32)
-            .frame(maxWidth: 640)
+            .frame(maxWidth: 560)
             .frame(maxWidth: .infinity)
         }
         .scrollIndicators(.hidden)
@@ -70,13 +69,14 @@ private struct PulseVisualThemeChoice: View {
             Button(action: onPreview) {
                 Image(systemName: "arrow.up.left.and.arrow.down.right")
                     .font(.caption.weight(.semibold))
-                    .foregroundStyle(PulseDesign.appInk(for: currentTheme))
-                    .frame(width: 36, height: 36)
-                    .background(PulseDesign.appSurface(for: currentTheme), in: Circle())
+                    .foregroundStyle(PulseDesign.appInk(for: theme))
+                    .frame(width: 34, height: 34)
+                    .background(PulseDesign.appSurface(for: theme), in: Circle())
                     .frame(width: 44, height: 44)
             }
             .buttonStyle(.plain)
-            .padding(6)
+            .environment(\.pulseVisualTheme, theme)
+            .padding(PulseDesign.spacing8)
             .accessibilityLabel(previewTitle)
             .accessibilityIdentifier("settings.visual-theme.preview.\(theme.rawValue)")
         }
@@ -84,15 +84,23 @@ private struct PulseVisualThemeChoice: View {
 
     private var selectionButton: some View {
         Button(action: action) {
-            VStack(alignment: .leading, spacing: PulseDesign.spacing12) {
-                PulseVisualThemeSpecimen(theme: theme, model: model)
+            VStack(alignment: .leading, spacing: 0) {
+                PulseVisualThemeSwatch(
+                    theme: theme,
+                    habitName: model.habit?.name,
+                    today: model.today,
+                    recentDays: model.recentDays
+                )
 
-                HStack(alignment: .top, spacing: PulseDesign.spacing12) {
+                HStack(alignment: .center, spacing: PulseDesign.spacing12) {
                     VStack(alignment: .leading, spacing: PulseDesign.spacing4) {
                         Text(theme.localizedName(locale: locale))
-                            .font(.subheadline.weight(.semibold))
+                            .font(.headline)
                             .foregroundStyle(PulseDesign.appInk(for: currentTheme))
-
+                        Text(theme.localizedDescription(locale: locale))
+                            .font(.footnote)
+                            .foregroundStyle(PulseDesign.appMuted(for: currentTheme))
+                            .fixedSize(horizontal: false, vertical: true)
                     }
 
                     Spacer(minLength: 0)
@@ -108,47 +116,37 @@ private struct PulseVisualThemeChoice: View {
                     } else {
                         ZStack {
                             Circle()
-                                .fill(isSelected ? selectionColor : .clear)
+                                .fill(isSelected ? PulseDesign.appAccent(for: currentTheme) : .clear)
                             Circle()
-                                .stroke(
+                                .strokeBorder(
                                     isSelected
-                                        ? selectionColor
+                                        ? PulseDesign.appAccent(for: currentTheme)
                                         : PulseDesign.appDivider(for: currentTheme),
                                     lineWidth: PulseDesign.emphasisLineWidth
                                 )
                             if isSelected {
                                 Image(systemName: "checkmark")
                                     .font(.caption.weight(.black))
-                                    .foregroundStyle(PulseDesign.appAccentForeground(for: theme))
+                                    .foregroundStyle(PulseDesign.appAccentForeground(for: currentTheme))
                             }
                         }
                         .frame(width: PulseDesign.spacing24, height: PulseDesign.spacing24)
                         .accessibilityHidden(true)
                     }
                 }
+                .padding(PulseDesign.spacing16)
             }
-            .padding(PulseDesign.spacing12)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(
-                PulseDesign.appSurface(for: currentTheme),
-                in: RoundedRectangle(
-                    cornerRadius: PulseDesign.spacing20,
-                    style: .continuous
-                )
-            )
+            .background(PulseDesign.appSurface(for: currentTheme))
+            .clipShape(RoundedRectangle(cornerRadius: PulseDesign.themePreviewCornerRadius, style: .continuous))
             .overlay {
-                RoundedRectangle(
-                    cornerRadius: PulseDesign.spacing20,
-                    style: .continuous
-                )
-                .stroke(
-                    selectionColor.opacity(
-                        isSelected ? 1 : PulseDesign.themePreviewUnselectedBorderOpacity
-                    ),
-                    lineWidth: isSelected
-                        ? PulseDesign.emphasisLineWidth
-                        : PulseDesign.thinLineWidth
-                )
+                RoundedRectangle(cornerRadius: PulseDesign.themePreviewCornerRadius, style: .continuous)
+                    .strokeBorder(
+                        isSelected
+                            ? PulseDesign.appAccent(for: currentTheme)
+                            : PulseDesign.appDivider(for: currentTheme),
+                        lineWidth: isSelected ? PulseDesign.emphasisLineWidth : PulseDesign.thinLineWidth
+                    )
             }
             .contentShape(Rectangle())
         }
@@ -162,10 +160,6 @@ private struct PulseVisualThemeChoice: View {
                 .accessibilityAction(named: Text(previewTitle), onPreview)
                 .accessibilityIdentifier("settings.visual-theme.\(theme.rawValue)")
         }
-    }
-
-    private var selectionColor: Color {
-        PulseDesign.appAccent(for: theme)
     }
 
     private var previewTitle: String {

@@ -8,15 +8,17 @@ from io import BytesIO
 import json
 import os
 from pathlib import Path
+import random
 import shutil
 import tempfile
 
-from PIL import Image, ImageDraw
+from PIL import Image, ImageChops, ImageDraw, ImageFilter, ImageFont
 
 
 ROOT = Path(__file__).resolve().parents[1]
 TOKEN_PATH = ROOT / "design" / "brand-tokens.json"
-MASK_PATH = ROOT / "design" / "app-icon-source" / "open-day-ring-mask.png"
+FONT_PATH = ROOT / "pulse" / "Resources" / "Fonts" / "NotoSerifSC-Variable.ttf"
+GLYPH_SOURCE_PATH = ROOT / "design" / "app-icon-source" / "seal-glyph.png"
 ASSET_CATALOG = ROOT / "pulse" / "Assets.xcassets"
 WATCH_ASSET_CATALOG = ROOT / "PulseWatchAssets" / "Assets.xcassets"
 APP_ICON_OUTPUT = ASSET_CATALOG / "AppIcon.appiconset"
@@ -25,109 +27,64 @@ BRAND_MARK_OUTPUT = ASSET_CATALOG / "PulseMark.imageset"
 APP_ICON_REVIEW_OUTPUT = ROOT / "design" / "app-icon-review.png"
 SIZE = (1024, 1024)
 REVIEW_SIZE = (1600, 1230)
+SUPERSAMPLE = 2
+GLYPH_SOURCE_SIDE = 2048
+SEAL_GLYPH = "印"
+ICON_SEAL_FRACTION = 0.62
+ICON_SEAL_ROTATION = -3.0
+MARK_SEAL_FRACTION = 0.94
 
 COLOR_ASSETS = {
     "AccentColor": "tint",
-    "PulseAction": "action",
-    "PulseActionForeground": "actionForeground",
-    "PulseActivityIslandFirefly": "activityIslandFirefly",
-    "PulseActivityLockScreenFirefly": "activityLockScreenFirefly",
-    "PulseActivityMark": "activityMark",
-    "PulseBackground": "background",
-    "PulseEditorialAccent": "editorialAccent",
-    "PulseEditorialCanvas": "editorialCanvas",
-    "PulseEditorialSurface": "editorialSurface",
-    "PulseEditorialInk": "editorialInk",
-    "PulseEditorialMuted": "editorialMuted",
-    "PulseEditorialDivider": "editorialDivider",
-    "PulseEditorialOnAccent": "editorialOnAccent",
-    "PulseEditorialAccentSoft": "editorialAccentSoft",
-    "PulseField": "field",
-    "PulseGrass": "grass",
-    "PulseGrassForeground": "grassForeground",
-    "PulseInk": "ink",
-    "PulseMoonAccent": "moonAccent",
-    "PulseMoonAccentForeground": "moonAccentForeground",
-    "PulseMoonAccentSoft": "moonAccentSoft",
-    "PulseMoonCanvas": "moonCanvas",
-    "PulseMoonCanvasDeep": "moonCanvasDeep",
-    "PulseMoonCoral": "moonCoral",
-    "PulseMoonDivider": "moonDivider",
-    "PulseMoonDiscInk": "moonDiscInk",
-    "PulseMoonInk": "moonInk",
-    "PulseMoonMuted": "moonMuted",
-    "PulseMoonSurface": "moonSurface",
-    "PulsePrismAccent": "prismAccent",
-    "PulsePrismAccentForeground": "prismAccentForeground",
-    "PulsePrismAccentSoft": "prismAccentSoft",
-    "PulsePrismCanvas": "prismCanvas",
-    "PulsePrismCanvasDeep": "prismCanvasDeep",
-    "PulsePrismCoral": "prismCoral",
-    "PulsePrismDivider": "prismDivider",
-    "PulsePrismInk": "prismInk",
-    "PulsePrismMuted": "prismMuted",
-    "PulsePrismSurface": "prismSurface",
-    "PulseQuietCanvas": "quietCanvas",
-    "PulseQuietDivider": "quietDivider",
-    "PulseQuietGreen": "quietGreen",
-    "PulseQuietGreenSoft": "quietGreenSoft",
+    "PulseVermilionPaper": "vermilionPaper",
+    "PulseVermilionPaperRaised": "vermilionPaperRaised",
+    "PulseVermilionInk": "vermilionInk",
+    "PulseVermilionMuted": "vermilionMuted",
+    "PulseVermilionRule": "vermilionRule",
+    "PulseVermilionSeal": "vermilionSeal",
+    "PulseVermilionOnSeal": "vermilionOnSeal",
+    "PulseVermilionSealWash": "vermilionSealWash",
+    "PulseQuietPaper": "quietPaper",
+    "PulseQuietPaperRaised": "quietPaperRaised",
     "PulseQuietInk": "quietInk",
     "PulseQuietMuted": "quietMuted",
-    "PulseQuietOnGreen": "quietOnGreen",
-    "PulseQuietSurface": "quietSurface",
-    "PulseSecondary": "secondary",
-    "PulseSeparator": "separator",
-    "PulseShadow": "shadow",
-    "PulseSurface": "surface",
-    "PulseSunlitCanvas": "sunlitCanvas",
-    "PulseSunlitCanvasDeep": "sunlitCanvasDeep",
-    "PulseSunlitSurface": "sunlitSurface",
+    "PulseQuietRule": "quietRule",
+    "PulseQuietSeal": "quietSeal",
+    "PulseQuietOnSeal": "quietOnSeal",
+    "PulseQuietSealWash": "quietSealWash",
+    "PulseSunlitPaper": "sunlitPaper",
+    "PulseSunlitPaperRaised": "sunlitPaperRaised",
     "PulseSunlitInk": "sunlitInk",
     "PulseSunlitMuted": "sunlitMuted",
-    "PulseSunlitDivider": "sunlitDivider",
-    "PulseSunlitAccent": "sunlitAccent",
-    "PulseSunlitWeekday": "sunlitWeekday",
-    "PulseSunlitAccentSoft": "sunlitAccentSoft",
-    "PulseSunlitChrome": "sunlitChrome",
-    "PulseSunlitChromeForeground": "sunlitChromeForeground",
-    "PulseImmersionAccent": "immersionAccent",
-    "PulseImmersionAccentForeground": "immersionAccentForeground",
-    "PulseImmersionAccentSoft": "immersionAccentSoft",
-    "PulseImmersionCanvas": "immersionCanvas",
-    "PulseImmersionCanvasDeep": "immersionCanvasDeep",
-    "PulseImmersionDivider": "immersionDivider",
-    "PulseImmersionInk": "immersionInk",
-    "PulseImmersionMuted": "immersionMuted",
-    "PulseImmersionSurface": "immersionSurface",
-    "PulseSunlitOnAccent": "sunlitOnAccent",
-    "PulseWidgetPaper": "widgetPaper",
-    "PulseWidgetSkyGlow": "widgetSkyGlow",
-    "PulseWidgetWater": "widgetWater",
+    "PulseSunlitRule": "sunlitRule",
+    "PulseSunlitSeal": "sunlitSeal",
+    "PulseSunlitOnSeal": "sunlitOnSeal",
+    "PulseSunlitSealWash": "sunlitSealWash",
+    "PulseActivityIslandSeal": "activityIslandSeal",
+    "PulseActivityLockScreenSeal": "activityLockScreenSeal",
 }
 
 WATCH_COLOR_ASSETS = {
-    "AccentColor": "committed",
-    "PulseWatchAxis": "axis",
-    "PulseWatchCanvasBottom": "canvasBottom",
-    "PulseWatchCanvasTop": "canvasTop",
-    "PulseWatchCommitted": "committed",
-    "PulseWatchCommittedForeground": "committedForeground",
-    "PulseWatchField": "field",
+    "AccentColor": "seal",
+    "PulseWatchPaper": "paper",
+    "PulseWatchPaperDeep": "paperDeep",
+    "PulseWatchWashBack": "washBack",
+    "PulseWatchWashMiddle": "washMiddle",
+    "PulseWatchWashFront": "washFront",
     "PulseWatchInk": "ink",
-    "PulseWatchPending": "pending",
-    "PulseWatchSecondary": "secondary",
-    "PulseWatchWaveBack": "waveBack",
-    "PulseWatchWaveFront": "waveFront",
-    "PulseWatchWaveMiddle": "waveMiddle",
+    "PulseWatchMuted": "muted",
+    "PulseWatchSeal": "seal",
 }
 
 WATCH_PREVIEW_COLOR_ASSETS = {
-    "PulseWatchPreviewAxis": "axis",
-    "PulseWatchPreviewCanvasBottom": "canvasBottom",
-    "PulseWatchPreviewCanvasTop": "canvasTop",
-    "PulseWatchPreviewWaveBack": "waveBack",
-    "PulseWatchPreviewWaveFront": "waveFront",
-    "PulseWatchPreviewWaveMiddle": "waveMiddle",
+    "PulseWatchPreviewPaper": "paper",
+    "PulseWatchPreviewPaperDeep": "paperDeep",
+    "PulseWatchPreviewWashBack": "washBack",
+    "PulseWatchPreviewWashMiddle": "washMiddle",
+    "PulseWatchPreviewWashFront": "washFront",
+    "PulseWatchPreviewInk": "ink",
+    "PulseWatchPreviewMuted": "muted",
+    "PulseWatchPreviewSeal": "seal",
 }
 
 
@@ -190,6 +147,112 @@ def solid_color_asset(value: str) -> bytes:
     )
 
 
+def render_glyph_source() -> Image.Image:
+    """Carve the brand glyph once from the bundled font.
+
+    The committed PNG, not the font rasterizer, is what icon builds read, so
+    `--check` stays byte-stable across Pillow and FreeType versions.
+    """
+    side = GLYPH_SOURCE_SIDE
+    glyph = Image.new("L", (side, side), 0)
+    draw = ImageDraw.Draw(glyph)
+    font = ImageFont.truetype(str(FONT_PATH), size=round(side * 0.80))
+    font.set_variation_by_name("Black")
+    left, top, right, bottom = draw.textbbox((0, 0), SEAL_GLYPH, font=font)
+    width, height = right - left, bottom - top
+    scale = min(side * 0.74 / width, side * 0.76 / height)
+    if scale < 1:
+        font = ImageFont.truetype(str(FONT_PATH), size=round(side * 0.80 * scale))
+        font.set_variation_by_name("Black")
+        left, top, right, bottom = draw.textbbox((0, 0), SEAL_GLYPH, font=font)
+        width, height = right - left, bottom - top
+    origin_x = (side - width) / 2 - left
+    origin_y = (side - height) / 2 - top
+    draw.text((origin_x, origin_y), SEAL_GLYPH, font=font, fill=255)
+    return glyph
+
+
+def load_glyph_source() -> Image.Image:
+    glyph = Image.open(GLYPH_SOURCE_PATH)
+    expected = (GLYPH_SOURCE_SIDE, GLYPH_SOURCE_SIDE)
+    if glyph.mode != "L" or glyph.size != expected:
+        raise ValueError(f"Expected a {expected} grayscale glyph, got {glyph.mode} {glyph.size}")
+    return glyph
+
+
+def seal_impression_mask(
+    glyph: Image.Image,
+    *,
+    canvas_side: int,
+    seal_fraction: float,
+    rotation: float,
+    texture: float,
+    seed: int,
+) -> Image.Image:
+    """One square seal impression as an L mask: 255 is ink; paper and the carved glyph are 0."""
+    side = canvas_side * SUPERSAMPLE
+    seal = round(side * seal_fraction)
+    origin = (side - seal) // 2
+    mask = Image.new("L", (side, side), 0)
+    ImageDraw.Draw(mask).rounded_rectangle(
+        (origin, origin, origin + seal - 1, origin + seal - 1),
+        radius=round(seal * 0.075),
+        fill=255,
+    )
+    carved = glyph.resize((seal, seal), resample=Image.Resampling.LANCZOS)
+    mask.paste(0, (origin, origin), carved)
+
+    if texture > 0:
+        rng = random.Random(seed)
+
+        def uniform(low: float, high: float) -> float:
+            return low + (high - low) * rng.random()
+
+        erosion = Image.new("L", (side, side), 0)
+        erosion_draw = ImageDraw.Draw(erosion)
+        for _ in range(round(150 * texture)):
+            edge = int(rng.random() * 4) % 4
+            along = origin + rng.random() * seal
+            radius = seal * uniform(0.003, 0.010)
+            bite = radius * uniform(0.25, 0.75)
+            if edge == 0:
+                center = (along, origin + bite - radius)
+            elif edge == 1:
+                center = (origin + seal - bite + radius, along)
+            elif edge == 2:
+                center = (along, origin + seal - bite + radius)
+            else:
+                center = (origin + bite - radius, along)
+            erosion_draw.ellipse(
+                (center[0] - radius, center[1] - radius, center[0] + radius, center[1] + radius),
+                fill=255,
+            )
+        for _ in range(round(700 * texture)):
+            center = (origin + rng.random() * seal, origin + rng.random() * seal)
+            radius = seal * uniform(0.0012, 0.0045)
+            erosion_draw.ellipse(
+                (center[0] - radius, center[1] - radius, center[0] + radius, center[1] + radius),
+                fill=round(uniform(70, 230)),
+            )
+        erosion = erosion.filter(ImageFilter.GaussianBlur(radius=seal * 0.0012))
+
+        wash = Image.new("L", (side, side), 0)
+        wash_draw = ImageDraw.Draw(wash)
+        for _ in range(7):
+            center = (origin + rng.random() * seal, origin + rng.random() * seal)
+            radius = seal * uniform(0.10, 0.26)
+            wash_draw.ellipse(
+                (center[0] - radius, center[1] - radius, center[0] + radius, center[1] + radius),
+                fill=round(uniform(16, 34) * texture),
+            )
+        wash = wash.filter(ImageFilter.GaussianBlur(radius=seal * 0.07))
+        mask = ImageChops.subtract(ImageChops.subtract(mask, erosion), wash)
+
+    if rotation:
+        mask = mask.rotate(rotation, resample=Image.Resampling.BICUBIC, fillcolor=0)
+    return mask.resize((canvas_side, canvas_side), resample=Image.Resampling.LANCZOS)
+
+
 def paste_rounded_preview(
     canvas: Image.Image,
     source: Image.Image,
@@ -210,7 +273,7 @@ def paste_rounded_preview(
 
 def build_icon_review(
     tokens: dict[str, object],
-    mask: Image.Image,
+    impression: Image.Image,
     default_icon: Image.Image,
     dark_icon: Image.Image,
 ) -> Image.Image:
@@ -232,16 +295,16 @@ def build_icon_review(
     dark_background = Image.new("RGB", SIZE, parse_hex(icon["darkPreviewBackground"]))
     dark_background.paste(dark_icon, (0, 0), dark_icon.getchannel("A"))
     tinted_background = Image.new("RGB", SIZE, tinted_background_color)
-    tinted_mark = Image.new("RGB", SIZE, ink_color)
-    tinted_preview = Image.composite(tinted_mark, tinted_background, mask)
+    tinted_mark = Image.new("RGB", SIZE, (255, 255, 255))
+    tinted_preview = Image.composite(tinted_mark, tinted_background, impression)
 
     top_size = 320
     top_y = 92
     top_origins = ((96, top_y), (640, top_y), (1184, top_y))
     top_sources = (default_icon, dark_background, tinted_preview)
     top_bars = (
-        parse_hex(icon["defaultBackground"]),
-        parse_hex(icon["darkMark"]),
+        parse_hex(icon["seal"]),
+        parse_hex(icon["darkSeal"]),
         tinted_background_color,
     )
     for origin, source, bar_color in zip(top_origins, top_sources, top_bars, strict=True):
@@ -263,7 +326,7 @@ def build_icon_review(
             icon_size,
         )
 
-    draw.rectangle((72, 842, REVIEW_SIZE[0] - 72, 845), fill=secondary_color)
+    draw.rectangle((72, 842, REVIEW_SIZE[0] - 72, 845), fill=ink_color)
 
     enlarged_size = 240
     enlarged_y = 918
@@ -294,15 +357,11 @@ def build_outputs() -> dict[Path, bytes]:
             extra = sorted(roles - expected_roles)
             raise ValueError(f"Invalid {appearance} roles; missing={missing}, extra={extra}")
     watch_roles = set(tokens["watch"])
-    expected_watch_roles = set(WATCH_COLOR_ASSETS.values())
+    expected_watch_roles = set(WATCH_COLOR_ASSETS.values()) | set(WATCH_PREVIEW_COLOR_ASSETS.values())
     if watch_roles != expected_watch_roles:
         missing = sorted(expected_watch_roles - watch_roles)
         extra = sorted(watch_roles - expected_watch_roles)
         raise ValueError(f"Invalid watch roles; missing={missing}, extra={extra}")
-
-    mask = Image.open(MASK_PATH)
-    if mask.mode != "L" or mask.size != SIZE:
-        raise ValueError(f"Expected a {SIZE[0]}x{SIZE[1]} grayscale mask, got {mask.mode} {mask.size}")
 
     outputs: dict[Path, bytes] = {}
     for asset_name, role in COLOR_ASSETS.items():
@@ -321,19 +380,24 @@ def build_outputs() -> dict[Path, bytes]:
         )
 
     icon = tokens["icon"]
-    expected_icon_roles = {
-        "darkMark",
-        "defaultBackground",
-        "defaultMark",
-        "darkPreviewBackground",
-    }
+    expected_icon_roles = {"paper", "seal", "darkSeal", "darkPreviewBackground"}
     if set(icon) != expected_icon_roles:
         missing = sorted(expected_icon_roles - set(icon))
         extra = sorted(set(icon) - expected_icon_roles)
         raise ValueError(f"Invalid icon roles; missing={missing}, extra={extra}")
-    default_background = Image.new("RGB", SIZE, parse_hex(icon["defaultBackground"]))
-    default_mark = Image.new("RGB", SIZE, parse_hex(icon["defaultMark"]))
-    default_icon = Image.composite(default_mark, default_background, mask)
+
+    glyph = load_glyph_source()
+    impression = seal_impression_mask(
+        glyph,
+        canvas_side=SIZE[0],
+        seal_fraction=ICON_SEAL_FRACTION,
+        rotation=ICON_SEAL_ROTATION,
+        texture=1.0,
+        seed=1015,
+    )
+    paper = Image.new("RGB", SIZE, parse_hex(icon["paper"]))
+    seal = Image.new("RGB", SIZE, parse_hex(icon["seal"]))
+    default_icon = Image.composite(seal, paper, impression)
     outputs[APP_ICON_OUTPUT / "AppIcon-Any.png"] = png_bytes(default_icon)
     outputs[WATCH_APP_ICON_OUTPUT / "AppIcon.png"] = png_bytes(default_icon)
     outputs[WATCH_APP_ICON_OUTPUT / "Contents.json"] = json_bytes(
@@ -353,16 +417,24 @@ def build_outputs() -> dict[Path, bytes]:
         {"info": {"author": "xcode", "version": 1}}
     )
 
-    dark_mark = Image.new("RGBA", SIZE, (*parse_hex(icon["darkMark"]), 255))
-    dark_mark.putalpha(mask)
-    outputs[APP_ICON_OUTPUT / "AppIcon-Dark.png"] = png_bytes(dark_mark)
-    outputs[APP_ICON_OUTPUT / "AppIcon-Tinted.png"] = png_bytes(mask)
+    dark_icon = Image.new("RGBA", SIZE, (*parse_hex(icon["darkSeal"]), 255))
+    dark_icon.putalpha(impression)
+    outputs[APP_ICON_OUTPUT / "AppIcon-Dark.png"] = png_bytes(dark_icon)
+    outputs[APP_ICON_OUTPUT / "AppIcon-Tinted.png"] = png_bytes(impression)
     outputs[APP_ICON_REVIEW_OUTPUT] = png_bytes(
-        build_icon_review(tokens, mask, default_icon, dark_mark)
+        build_icon_review(tokens, impression, default_icon, dark_icon)
     )
 
+    mark = seal_impression_mask(
+        glyph,
+        canvas_side=SIZE[0],
+        seal_fraction=MARK_SEAL_FRACTION,
+        rotation=0,
+        texture=0.6,
+        seed=27,
+    )
     runtime_mark = Image.new("RGBA", SIZE, (255, 255, 255, 255))
-    runtime_mark.putalpha(mask)
+    runtime_mark.putalpha(mark)
     outputs[BRAND_MARK_OUTPUT / "PulseMark.png"] = png_bytes(runtime_mark)
     outputs[BRAND_MARK_OUTPUT / "Contents.json"] = json_bytes(
         {
@@ -406,14 +478,17 @@ def output_matches(path: Path, expected: bytes) -> bool:
         return False
 
 
-def unexpected_watch_color_directories(outputs: dict[Path, bytes]) -> list[Path]:
-    expected = {
-        path.parent
-        for path in outputs
-        if path.parent.parent == WATCH_ASSET_CATALOG and path.parent.suffix == ".colorset"
-    }
-    actual = set(WATCH_ASSET_CATALOG.glob("*.colorset"))
-    return sorted(actual - expected)
+def unexpected_color_directories(outputs: dict[Path, bytes]) -> list[Path]:
+    """Every color set in either catalog is generated, so any extra one is stale."""
+    unexpected: list[Path] = []
+    for catalog in (ASSET_CATALOG, WATCH_ASSET_CATALOG):
+        expected = {
+            path.parent
+            for path in outputs
+            if path.parent.parent == catalog and path.parent.suffix == ".colorset"
+        }
+        unexpected.extend(sorted(set(catalog.glob("*.colorset")) - expected))
+    return unexpected
 
 
 def main() -> None:
@@ -423,23 +498,31 @@ def main() -> None:
         action="store_true",
         help="Fail when committed generated assets differ from the brand contract.",
     )
+    parser.add_argument(
+        "--refresh-glyph",
+        action="store_true",
+        help="Re-carve design/app-icon-source/seal-glyph.png from the bundled font.",
+    )
     arguments = parser.parse_args()
+    if arguments.refresh_glyph:
+        write_atomically(GLYPH_SOURCE_PATH, png_bytes(render_glyph_source()))
+        print(f"Carved {GLYPH_SOURCE_PATH.relative_to(ROOT)}")
     outputs = build_outputs()
 
     drifted = [path for path, expected in outputs.items() if not output_matches(path, expected)]
-    unexpected_watch_colors = unexpected_watch_color_directories(outputs)
+    unexpected_colors = unexpected_color_directories(outputs)
     if arguments.check:
-        if drifted or unexpected_watch_colors:
+        if drifted or unexpected_colors:
             relative = ", ".join(
                 str(path.relative_to(ROOT))
-                for path in [*drifted, *unexpected_watch_colors]
+                for path in [*drifted, *unexpected_colors]
             )
             raise SystemExit(f"Generated brand assets are stale: {relative}")
         print(f"Verified {len(outputs)} generated brand assets")
         return
 
     updated_paths = []
-    for directory in unexpected_watch_colors:
+    for directory in unexpected_colors:
         shutil.rmtree(directory)
         updated_paths.append(directory)
     for path, data in outputs.items():

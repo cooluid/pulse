@@ -32,8 +32,8 @@ struct PulseWatchTodayView: View {
             }
             .frame(width: proxy.size.width, height: proxy.size.height)
         }
-        .containerBackground(Color("PulseWatchCanvasTop").gradient, for: .navigation)
-        .background(Color("PulseWatchCanvasTop"))
+        .containerBackground(Color("PulseWatchPaper").gradient, for: .navigation)
+        .background(Color("PulseWatchPaper"))
         .task {
             await model.start()
         }
@@ -63,43 +63,42 @@ struct PulseWatchTodayView: View {
         .contentShape(Rectangle())
     }
 
+    /// Today's seal in the middle of the screen, what it means under it.
     private func statusFace(metrics: PulseWatchLayoutMetrics) -> some View {
-        HStack(spacing: metrics.contentGap) {
-            VStack(alignment: .leading, spacing: 5) {
-                Text("watch.field.today")
-                    .font(.caption2.weight(.semibold))
-                    .foregroundStyle(Color("PulseWatchInk").opacity(0.62))
-                    .tracking(0.7)
-                    .accessibilityHidden(true)
+        VStack(spacing: metrics.contentGap) {
+            Spacer(minLength: 0)
 
-                Text(primaryTitleKey)
-                    .font(.system(
-                        size: metrics.primaryFontSize,
-                        weight: .bold,
-                        design: .rounded
-                    ))
-                    .foregroundStyle(Color("PulseWatchInk"))
-                    .lineLimit(2)
-                    .minimumScaleFactor(0.72)
-                    .accessibilityHidden(true)
+            PulseWatchImprintMark(
+                state: model.displayState,
+                todayLogicalDay: model.projection.snapshot?.todayLogicalDay
+            )
+            .frame(width: metrics.sealSide, height: metrics.sealSide)
+            .accessibilityHidden(true)
 
-                Spacer(minLength: 4)
+            Text(primaryTitleKey)
+                .font(.system(
+                    size: metrics.primaryFontSize,
+                    weight: .bold,
+                    design: .serif
+                ))
+                .foregroundStyle(titleForeground)
+                .lineLimit(1)
+                .minimumScaleFactor(0.72)
+                .accessibilityHidden(true)
 
-                Text(verbatim: statusText)
-                    .font(.caption2.weight(.semibold))
-                    .foregroundStyle(statusForeground)
-                    .lineLimit(dynamicTypeSize.isAccessibilitySize ? nil : 3)
-                    .minimumScaleFactor(0.74)
-                    .fixedSize(horizontal: false, vertical: true)
+            Text(verbatim: statusText)
+                .font(.caption2.weight(.semibold))
+                .foregroundStyle(statusForeground)
+                .multilineTextAlignment(.center)
+                .lineLimit(dynamicTypeSize.isAccessibilitySize ? nil : 2)
+                .minimumScaleFactor(0.74)
+                .fixedSize(horizontal: false, vertical: true)
 
-                if showsRecoveryAction {
-                    recoveryButton
-                }
+            if showsRecoveryAction {
+                recoveryButton
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
 
-            PulseWatchDayAxis(state: model.displayState)
-                .frame(width: metrics.axisWidth)
+            Spacer(minLength: 0)
         }
         .padding(.horizontal, metrics.horizontalPadding)
         .padding(.top, metrics.topPadding)
@@ -121,7 +120,7 @@ struct PulseWatchTodayView: View {
                 .frame(minHeight: PulseWatchDesign.recoveryButtonMinimumHeight)
                 .background(
                     Capsule()
-                        .fill(Color("PulseWatchCanvasTop").opacity(0.46))
+                        .fill(Color("PulseWatchPaper").opacity(0.46))
                 )
         }
         .buttonStyle(.plain)
@@ -141,14 +140,23 @@ struct PulseWatchTodayView: View {
         }
     }
 
+    private var titleForeground: Color {
+        switch model.displayState {
+        case .ready, .submitting, .pendingSync:
+            Color("PulseWatchSeal")
+        case .committed, .needsSync, .failed:
+            Color("PulseWatchInk")
+        }
+    }
+
     private var statusForeground: Color {
         switch model.displayState {
         case .submitting, .pendingSync:
-            Color("PulseWatchPending")
+            Color("PulseWatchSeal")
         case .failed:
             Color("PulseWatchInk")
         case .ready, .committed, .needsSync:
-            Color("PulseWatchInk").opacity(0.82)
+            Color("PulseWatchMuted")
         }
     }
 

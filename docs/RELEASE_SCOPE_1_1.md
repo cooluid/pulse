@@ -23,7 +23,7 @@ Pulse 1.1 把“每天可靠签到”升级为“每天留下一个可验证事�
 - App Group SwiftData `PulseSchema 1.1.1` + 受 Data Protection 保护的 `Media` 文件目录；启动时执行引用完整性和孤儿文件审计。
 - `.pulsebackup` container v2 / payload v3：项目、签到、记事与全部原图/缩略图逐条 AES-256-GCM 认证加密；不把多年影像归档整体读入内存。
 - 免费基础提醒、一次买断高阶权益、八种逐实例 Home Screen Widget 构图（待落之处免费，星环 / 叠印 / 数影 / 手札 / 静场 / 来路 / 潮痕收费）与 iOS 26 scheduled Live Activity，沿用正式权益合同。正式产品枚举只由 `PulseWidgetStyle` 与 String Catalog 持有，外观只由共享 `PulseWidgetHomeRenderer` 持有。
-- English / 简体中文、纸页手记免费默认主题、静野/晴昼付费主题、Dynamic Type、VoiceOver、Reduce Motion、iPhone/iPad 正式布局。
+- English / 简体中文、朱砂免费默认主题、静野/晴昼付费主题、Dynamic Type、VoiceOver、Reduce Motion、iPhone/iPad 正式布局。
 - 设置中的正式“帮助与反馈”信息架构：原生反馈与建议页、独立帮助中心和隐私政策入口；用户在系统邮件编辑器中检查并主动发送，App 不建立账号、反馈数据库、第三方 SDK 或后台上报。
 - App 内评价只使用 StoreKit 系统评分请求和设置“关于”中的 App Store 主动评价链接。系统请求仅在 iPhone App 内真实签到提交成功、累计签到达到 7 / 30 / 100 次且当前任务已经结束后尝试；不使用自定义评分弹窗、满意度分流、五星文案或奖励。
 - watchOS 10+ iPhone 伴侣 App、complication 与 Smart Stack 签到。iPhone 设置提供 Apple Watch 入口、配对/安装状态与当前动效开关；设置随正式快照进入 Watch，并服从 Reduce Motion / Always-On。Watch 本地只保存可重建快照、durable command outbox 和最后回执；即时消息与后台用户信息复用同一 `operationID` 和 iPhone Repository 写入路径。`pendingSync` 不得冒充成功，基础 Watch 能力永久免费。
@@ -32,9 +32,9 @@ Pulse 1.1 把“每天可靠签到”升级为“每天留下一个可验证事�
 
 以下永久免费，不能进付费墙：签到、拍照、查看/重拍/删除自己的照片、关闭拍照邀请、存储占用、加密备份与完整恢复。
 
-基础 Watch App、今日日印/七日脉冲 complication、Smart Stack 与可靠签到同样永久免费；未来只能对高级节律与长期档案收费，不能按表盘尺寸、颜色或基础入口重复收费。
+基础 Watch App、今日日印/最近七天 complication、Smart Stack 与可靠签到同样永久免费；未来只能对高级节律与长期档案收费，不能按表盘尺寸、颜色或基础入口重复收费。
 
-高阶权益当前售卖静野/晴昼/月汐/棱镜刻度界面主题、高级 Widget 构图和支持设备上的 scheduled Live Activity。纸页手记及全部核心签到、历史、记事、照片和备份能力免费。`PulseEnhancementContract.currentCapabilities` 是权益页唯一已交付能力目录；同一永久权益可以在后续版本增值，但新能力只有真正交付后才能进入目录，不能预售路线图。未来能力不得锁住、删除或降级既有原图，也不得把人脸识别、颜值/年龄推断或远程人脸处理包装为卖点。
+高阶权益当前售卖静野/晴昼界面主题、高级 Widget 构图和支持设备上的 scheduled Live Activity。朱砂主题及全部核心签到、历史、记事、照片和备份能力免费。`PulseEnhancementContract.currentCapabilities` 是权益页唯一已交付能力目录；同一永久权益可以在后续版本增值，但新能力只有真正交付后才能进入目录，不能预售路线图。未来能力不得锁住、删除或降级既有原图，也不得把人脸识别、颜值/年龄推断或远程人脸处理包装为卖点。
 
 ## 4. 明确不进入 1.1
 

@@ -1,4 +1,3 @@
-import PulseCore
 import SwiftUI
 
 enum PulseWidgetMotionPresentation {
@@ -7,137 +6,25 @@ enum PulseWidgetMotionPresentation {
     /// to truncate an invalid design specification.
     static let systemMaximumAnimationDuration = 2.0
 
-    static let galleryInitialStateHold: Duration = .milliseconds(550)
-    static let galleryAmbientStateHold: Duration = .milliseconds(1_100)
-    static let galleryCompletionStateHold: Duration = .milliseconds(2_050)
+    /// The seal meeting the paper.
+    static let stampDuration = 0.55
+    /// Ink soaking up to a new level.
+    static let riseDuration = 1.4
+
+    static let galleryPendingStateHold: Duration = .milliseconds(700)
+    static let galleryCompletionStateHold: Duration = .milliseconds(1_700)
     static let reducedMotionPendingStateHold: Duration = .milliseconds(650)
     static let reducedMotionCompletionStateHold: Duration = .milliseconds(350)
 
-    enum Material: CaseIterable {
-        case place
-        case starRing
-        case paper
-        case number
-        case letter
-        case echo
-        case footprint
-        case tide
-    }
-
-    struct AmbientPose: Hashable {
-        let horizontalPoints: CGFloat
-        let verticalPoints: CGFloat
-        let rotationDegrees: Double
-    }
-
-    static func completionDuration(for material: Material) -> TimeInterval {
-        switch material {
-        case .place: 1.45
-        case .starRing: 1.70
-        case .paper: 1.80
-        case .number: 1.45
-        case .letter: 1.75
-        case .echo: 1.85
-        case .footprint: 1.65
-        case .tide: 1.90
-        }
-    }
-
-    static func ambientDuration(for material: Material) -> TimeInterval {
-        switch material {
-        case .place: 0.82
-        case .starRing: 0.88
-        case .paper: 0.88
-        case .number: 0.76
-        case .letter: 0.86
-        case .echo: 0.94
-        case .footprint: 0.84
-        case .tide: 0.96
-        }
-    }
-
-    static func completionAnimation(
-        for material: Material,
-        allowsMotion: Bool
-    ) -> Animation? {
+    static func stamp(allowsMotion: Bool) -> Animation? {
         guard allowsMotion else { return nil }
-        let duration = completionDuration(for: material)
-        precondition(duration <= systemMaximumAnimationDuration)
-
-        switch material {
-        case .place:
-            return .easeInOut(duration: duration)
-        case .starRing:
-            return .easeInOut(duration: duration)
-        case .paper:
-            return .spring(duration: duration, bounce: 0.035)
-        case .number:
-            return .easeOut(duration: duration)
-        case .letter:
-            return .spring(duration: duration, bounce: 0.045)
-        case .echo:
-            return .easeOut(duration: duration)
-        case .footprint:
-            return .easeOut(duration: duration)
-        case .tide:
-            return .easeInOut(duration: duration)
-        }
+        precondition(stampDuration <= systemMaximumAnimationDuration)
+        return .spring(duration: stampDuration, bounce: 0.22)
     }
 
-    static func ambientAnimation(
-        for material: Material,
-        allowsMotion: Bool
-    ) -> Animation? {
+    static func rise(allowsMotion: Bool) -> Animation? {
         guard allowsMotion else { return nil }
-        let duration = ambientDuration(for: material)
-        precondition(duration <= systemMaximumAnimationDuration)
-
-        switch material {
-        case .paper, .letter:
-            return .smooth(duration: duration)
-        default:
-            return .easeInOut(duration: duration)
-        }
-    }
-
-    static func ambientPose(
-        for material: Material,
-        period: PulseWidgetAmbientPeriod
-    ) -> AmbientPose {
-        let phase: CGFloat
-        switch period {
-        case .morning: phase = -1
-        case .daylight: phase = 0
-        case .evening: phase = 1
-        }
-
-        let amplitude: AmbientPose
-        switch material {
-        case .place:
-            amplitude = AmbientPose(horizontalPoints: 4.0, verticalPoints: 0.4, rotationDegrees: 1.0)
-        case .starRing:
-            amplitude = AmbientPose(horizontalPoints: 1.1, verticalPoints: -2.4, rotationDegrees: 0.5)
-        case .paper:
-            amplitude = AmbientPose(horizontalPoints: 1.8, verticalPoints: 0.7, rotationDegrees: -0.8)
-        case .number:
-            // Split ratio is driven by ambient period in the bleed renderer;
-            // keep a distinct low-amplitude pose so material identity stays unique.
-            amplitude = AmbientPose(horizontalPoints: 3.4, verticalPoints: 0.6, rotationDegrees: 0)
-        case .letter:
-            amplitude = AmbientPose(horizontalPoints: 2.1, verticalPoints: 0.9, rotationDegrees: 0.6)
-        case .echo:
-            amplitude = AmbientPose(horizontalPoints: -1.4, verticalPoints: -1.3, rotationDegrees: 0)
-        case .footprint:
-            // The route stays fixed; only its surrounding mist shifts by period.
-            amplitude = AmbientPose(horizontalPoints: 4.2, verticalPoints: 0.5, rotationDegrees: 2.8)
-        case .tide:
-            amplitude = AmbientPose(horizontalPoints: -3.6, verticalPoints: 2.8, rotationDegrees: 0)
-        }
-
-        return AmbientPose(
-            horizontalPoints: amplitude.horizontalPoints * phase,
-            verticalPoints: amplitude.verticalPoints * phase,
-            rotationDegrees: amplitude.rotationDegrees * Double(phase)
-        )
+        precondition(riseDuration <= systemMaximumAnimationDuration)
+        return .easeInOut(duration: riseDuration)
     }
 }
